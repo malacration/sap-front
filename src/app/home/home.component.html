@@ -1,7 +1,10 @@
 <div class="container">
   <h1 class="title">
-    {{ 'PAGES.HOME.TITLE' | translate }}
+    Lista de Romaneios
   </h1>
+  <div *ngFor="let romaneio of getRomaneioPesagem(); let i = index">
+    <h1>{{romaneio}}</h1>
+  </div>
 
   <a routerLink="/detail">{{ 'PAGES.HOME.GO_TO_DETAIL' | translate }}</a>
 </div>
