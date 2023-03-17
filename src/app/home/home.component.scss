@@ -1,3 +1,53 @@
-:host {
+.inicio-content {
+    display: grid;
+    height: calc(100vh - 150px);
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+    h1, h2 {
   
-}
+      font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+      justify-content: center;
+    }
+    h1 {
+      font-size: 72px;
+      background-color: #367fa9;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 4px 4px 0 0 #ccc;
+      align-self: end;
+      animation-name: logotipo;
+      animation-duration: 1.5s;
+      text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+    }
+    h2 {
+      display: flex;
+      font-size: 14px;
+      align-items: flex-start;
+      align-self: flex-start;
+      animation-name: entrada-subtitulo;
+      animation-duration: 2s;
+      .icone-seta-localizadores {
+        margin-right: 10px;
+        animation-name: icone-seta;
+        animation-duration: 2s;
+        animation-delay: 2.5s;
+        animation-iteration-count: infinite;
+      }
+    }
+  
+  }
+  
+  @keyframes logotipo {
+    0% { opacity: 0; transform: translateX(-100px); filter: grayscale(100%) }
+  }
+  
+  @keyframes entrada-subtitulo {
+    0% { transform: translateX(100px); filter: blur(10px); opacity: 0; }
+  }
+  @keyframes icone-seta {
+    100% { transform: translateX(-15px); opacity: 0; }
+  }
+  
+  

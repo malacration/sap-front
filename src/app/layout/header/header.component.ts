@@ -16,7 +16,8 @@ export class HeaderComponent implements OnInit {
     @HostBinding('class') classes: string = BASE_CLASSES;
     public ui: Observable<UiState>;
     public searchForm: UntypedFormGroup;
-
+    public sidebarHeaderButton : boolean = true;
+    
     constructor(
         private store: Store<AppState>
     ) {}
@@ -25,6 +26,7 @@ export class HeaderComponent implements OnInit {
         this.ui = this.store.select('ui');
         this.ui.subscribe((state: UiState) => {
             this.classes = `${BASE_CLASSES} ${state.navbarVariant}`;
+            this.sidebarHeaderButton = state.sidebarHeaderButton;
         });
         this.searchForm = new UntypedFormGroup({
             search: new UntypedFormControl(null)

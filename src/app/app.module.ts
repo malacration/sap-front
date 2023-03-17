@@ -14,9 +14,6 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
-import { HomeModule } from './home/home.module';
-import { DetailModule } from './detail/detail.module';
-
 import { AppComponent } from './app.component';
 import { RomaneioService } from './core/services/romaneio.service';
 import { HeaderComponent } from './layout/header/header.component';
@@ -28,6 +25,10 @@ import { NotificationsComponent } from './layout/header/notifications/notificati
 import { UserComponent } from './layout/header/user/user.component';
 import { ToastrModule } from 'ngx-toastr';
 import { MenuItemComponent } from './layout/menu-sidebar/menu-item/menu-item.component';
+import { HomeComponent } from './home/home.component';
+import { EntradaInsumoComponent } from './sap/components/entrada-insumo/entrada-insumo.component';
+import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
+import { RomaneioEntradaInsumoService } from './sap/service/romaneio-entrada-insumo.service';
 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -40,7 +41,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     MessagesComponent,
     NotificationsComponent,
     UserComponent,
-    MenuItemComponent
+    MenuItemComponent,
+    HomeComponent,
+    RomaneioComponent,
+    EntradaInsumoComponent
   ],
   imports: [
     BrowserModule,
@@ -48,8 +52,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     HttpClientModule,
     CoreModule,
     SharedModule,
-    HomeModule,
-    DetailModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
     AppRoutingModule,
@@ -68,7 +70,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
       }
     })
   ],
-  providers: [RomaneioService],
+  providers: [
+    RomaneioService,
+    RomaneioEntradaInsumoService
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

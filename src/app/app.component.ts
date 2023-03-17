@@ -15,20 +15,22 @@ export class AppComponent {
   @HostBinding('class') class = 'wrapper';
   public ui: Observable<UiState>;
 
+  public itens : Array<string> = ["item1","item2"]
+
   constructor(private renderer: Renderer2, private store: Store<AppState>) {}
 
   ngOnInit() {
       this.ui = this.store.select('ui');
       this.renderer.removeClass(
-          document.querySelector('app-root'),
+          document.querySelector('body'),
           'login-page'
       );
       this.renderer.removeClass(
-          document.querySelector('app-root'),
+          document.querySelector('body'),
           'register-page'
       );
       this.renderer.addClass(
-          document.querySelector('app-root'),
+          document.querySelector('body'),
           'layout-fixed'
       );
 
@@ -36,44 +38,44 @@ export class AppComponent {
           ({menuSidebarCollapsed, controlSidebarCollapsed, darkMode}) => {
               if (menuSidebarCollapsed) {
                   this.renderer.removeClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'sidebar-open'
                   );
                   this.renderer.addClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'sidebar-collapse'
                   );
               } else {
                   this.renderer.removeClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'sidebar-collapse'
                   );
                   this.renderer.addClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'sidebar-open'
                   );
               }
 
               if (controlSidebarCollapsed) {
                   this.renderer.removeClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'control-sidebar-slide-open'
                   );
               } else {
                   this.renderer.addClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'control-sidebar-slide-open'
                   );
               }
 
               if (darkMode) {
                   this.renderer.addClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'dark-mode'
                   );
               } else {
                   this.renderer.removeClass(
-                      document.querySelector('app-root'),
+                      document.querySelector('body'),
                       'dark-mode'
                   );
               }

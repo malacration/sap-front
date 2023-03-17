@@ -1,0 +1,132 @@
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Romaneios de Entrada de Insumo</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="content">
+    <!-- Default box -->
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><b>Romaneios de pesagem</b> &nbsp;{{romaneioPesagem?.DocNum}}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <b>DocNum</b>&nbsp;{{romaneioPesagem?.DocNum}} 
+                    </div>
+                    <div class="col-sm-4">
+                        <b>Cod. PN</b>&nbsp;{{romaneioPesagem?.U_CodParceiro}}
+                    </div>
+                    <div class="col-sm-4">
+                        <b>Nome PN</b>&nbsp;{{romaneioPesagem?.U_NomeParceiro}}
+                    </div>
+                </div>
+                <div class="row">
+                    <b>Observação:</b>&nbsp;{{romaneioPesagem?.U_ObsRomaneio}}
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><b>Romaneios de entrada de insumo (RASCUNHO)</b></h3>
+                <div class="card-tools">
+                    <button (click)="criarRomaneio()" type="button" class="btn">
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <b>Ticket</b>&nbsp;{{draft?.U_NumeroTicket}} 
+                    </div>
+                    <div class="col-sm-2">
+                        <b>B. Colheita</b>&nbsp;{{draft?.U_NumeroBoletim}} 
+                    </div>
+                    <div class="col-sm-4">
+                        <b>Fazenda </b>&nbsp;{{draft?.U_CodFazenda}}&nbsp;-&nbsp;{{draft?.U_DscFazenda}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <b>Safra </b>&nbsp;{{draft?.U_CodSafra}}&nbsp;-&nbsp;{{draft?.U_DscSafra}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Reg. Compra</b>&nbsp;{{draft?.U_CodRegistroCompra}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Cod. Parceiro Negocio</b>&nbsp;{{draft?.U_CodParceiroNegocios}}
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <b>Transportador </b>&nbsp;{{draft?.U_CodTransportador}}&nbsp;-&nbsp;{{draft?.U_NomeTransportador}}
+                    </div>
+                    <div class="col-sm-4">
+                        <b>Motorista </b>&nbsp;{{draft?.U_CodMotorista}}&nbsp;-&nbsp;{{draft?.U_Motorista}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Placa </b>&nbsp;{{draft?.U_PlacaCaminhao}}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <b>Deposito </b>&nbsp;{{draft?.U_CodDeposito}}&nbsp;-&nbsp;{{draft?.U_NomeTransportador}}
+                    </div>
+                    <div class="col-sm-4">
+                        <b>Tipo </b>&nbsp;{{draft?.U_TipoRomaneio}} &nbsp; <small>(G = Grãos)   </small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <b>Pesos</b>
+                </div>
+                <div class="row">
+                    <div class="col-sm-2">
+                        <b>Bruto </b>&nbsp;{{draft?.U_PesoBruto}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Tara </b>&nbsp;{{draft?.U_PesoTara}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Líquido </b>&nbsp;{{draft?.U_PesoLiquido}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Líquido c/ Desc. </b>&nbsp;{{draft?.U_PesoLiquido}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Na Nota. </b>&nbsp;{{draft?.U_PesoNota}}
+                    </div>
+                    <div class="col-sm-2">
+                        <b>Diferença</b>&nbsp;{{draft?.U_Diferenca}}
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center"><b>Tipo Análises</b></div>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <b>Tipo</b>&nbsp;{{draft?.U_Diferenca}}
+                    </div>
+                    <div class="col-sm-3">
+                        <b>Descrição</b>&nbsp;{{draft?.U_Diferenca}}
+                    </div>
+                    <div class="col-sm-3">
+                        <b>Valor</b>&nbsp;{{draft?.U_Diferenca}}
+                    </div>
+                    <div class="col-sm-3">
+                        <b>UN</b>&nbsp;{{draft?.U_Diferenca}}
+                    </div>
+                    <div class="col-sm-3">
+                        <b>Desconto</b>&nbsp;{{draft?.U_Diferenca}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

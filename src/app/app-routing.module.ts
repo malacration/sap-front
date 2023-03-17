@@ -2,14 +2,27 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { PageNotFoundComponent } from './shared/components';
 
-import { HomeRoutingModule } from './home/home-routing.module';
-import { DetailRoutingModule } from './detail/detail-routing.module';
+import { HomeComponent } from './home/home.component';
+import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
+import { EntradaInsumoComponent } from './sap/components/entrada-insumo/entrada-insumo.component';
 
 const routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
+  },
+  {
+    path: 'home',
+    component: HomeComponent
+  },
+  {
+    path: 'romaneio',
+    component: RomaneioComponent
+  },
+  {
+    path: 'entrada-insumo/:id',
+    component: EntradaInsumoComponent
   },
   {
     path: '**',
@@ -19,9 +32,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, {}),
-    HomeRoutingModule,
-    DetailRoutingModule
+    RouterModule.forRoot(routes, {})
   ],
   exports: [RouterModule]
 })
