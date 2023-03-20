@@ -55,10 +55,8 @@ jobs:
       run: |
         file=`find release/ -name *.tar.gz` && echo "$file"
         echo "file=$file" >> $GITHUB_ENV
-        ls
-        ls release
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ./${{ env.file }}
+        files: angular-electron-12.0.0.tar.gz

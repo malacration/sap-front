@@ -45,15 +45,9 @@ jobs:
 
     - name: Install Dependencies
       run: npm i
-
-    - name: Find files matching "*.zip"
-      uses: jeertmans/filesfinder@v0.4.1
-      id: ff
-      with:
-        # Only argument, a single string, to be passed as arguments to ff.
-        # See `ff --help` for more help.
-        # Default: "*"
-        args: "--dir release *.rs"
+    
+    - name: Build the app
+      run: npm run electron:build
     
     - name: Print files
       run: echo "${{ steps.ff.outputs.files }}"
