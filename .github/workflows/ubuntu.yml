@@ -53,10 +53,12 @@ jobs:
 
     - name: get artifact name
       run: |
-        file=`find release/ -name *.tar.gz` && echo "release/$file"
+        file=`find release/ -name *.tar.gz` && echo "$file"
         echo "file=$file" >> $GITHUB_ENV
+        ls
+        ls release
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ env.file }}
+        files: ./${{ env.file }}
