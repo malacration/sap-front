@@ -47,7 +47,6 @@ jobs:
       run: npm i
 
     - name: get artifact name
-      run: npm run electron:build
       run: |
         file=`find release/ -name *.zip` && echo "release/$file"
         echo "file=$file" >> $GITHUB_ENV
