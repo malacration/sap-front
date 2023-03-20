@@ -9,6 +9,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
@@ -50,11 +53,6 @@ jobs:
 
     - name: Build the app
       run: npm run electron:build
-
-    - name: get artifact name
-      run: |
-        file=`find release/ -name *.tar.gz` && echo "$file"
-        echo "file=$file" >> $GITHUB_ENV
 
     - name: Release
       uses: softprops/action-gh-release@v1
