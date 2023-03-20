@@ -20,4 +20,8 @@ export class HomeComponent implements OnInit {
     return this.romaneioService.getRomaneioPesagem();
   }
 
+  public getUrlServer() {
+    return localStorage.getItem("host")
+  }
+
 }

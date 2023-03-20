@@ -11,7 +11,9 @@ export class RomaneioPesagemService {
   url = "http://10.200.30.106:8080/romaneio-pesagem"
 
   constructor(private hppCliente : HttpClient) { 
-    
+    let host = localStorage.getItem("host")
+    if(host)
+      this.url = host+"/romaneio-entrada-insumo" 
   }
 
   get() : Observable<Array<RomaneioPesagem>>{

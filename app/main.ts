@@ -4,11 +4,13 @@ import * as fs from 'fs';
 
 let win: BrowserWindow = null;
 const args = process.argv.slice(1),
-  serve = args.some(val => val === '--serve');
+serve = args.some(val => val === '--serve');
+var host = '';
 
 function createWindow(): BrowserWindow {
 
   const size = screen.getPrimaryDisplay().workAreaSize;
+  
 
   // Create the browser window.
   win = new BrowserWindow({
@@ -26,7 +28,6 @@ function createWindow(): BrowserWindow {
   if (serve) {
     const debug = require('electron-debug');
     debug();
-
     require('electron-reloader')(module);
     win.loadURL('http://localhost:4200');
   } else {
@@ -37,9 +38,8 @@ function createWindow(): BrowserWindow {
        // Path when running electron in local folder
       pathIndex = '../dist/index.html';
     }
-
     const url = new URL(path.join('file:', __dirname, pathIndex));
-    win.loadURL(url.href);
+    win.loadURL(url.href)
   }
 
   // Emitted when the window is closed.
@@ -49,7 +49,7 @@ function createWindow(): BrowserWindow {
     // when you should delete the corresponding element.
     win = null;
   });
-
+  win.webContents.executeJavaScript("localStorage.setItem('host','"+host+"')").then(value => value);
   return win;
 }
 
@@ -58,7 +58,13 @@ try {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   // Added 400 ms to fix the black background issue while using transparent window. More detais at https://github.com/electron/electron/issues/15947
-  app.on('ready', () => setTimeout(createWindow, 400));
+  app.on('ready', () => {
+    host = app.commandLine.getSwitchValue("host");
+    
+    setTimeout(createWindow, 400);
+    // app.commandLine.appendSwitch('--enable-features=GuestViewCrossProcessFrames');    
+    
+  });
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {
