@@ -52,7 +52,7 @@ jobs:
       run: npm run electron:build
 
     - name: Build the app
-      run: echo ${{file}}
+      run: echo ${{ file }}
 
     - name: Release
       uses: softprops/action-gh-release@v1
