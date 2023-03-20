@@ -47,9 +47,12 @@ jobs:
       run: npm i
     
     - name: Build the app
-      run: npm run electron:build
+      run: |
+        npm run electron:build
+        ls
+        ls release
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release\*.zip
+        files: ./release/*.zip
