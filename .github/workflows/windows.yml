@@ -48,11 +48,8 @@ jobs:
     
     - name: Build the app
       run: npm run electron:build
-    
-    - name: Print files
-      run: echo "${{ steps.ff.outputs.files }}"
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release/${{ steps.ff.outputs.files }}
+        files: release/*.zip
