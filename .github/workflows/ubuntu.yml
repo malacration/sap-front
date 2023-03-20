@@ -51,7 +51,7 @@ jobs:
     - name: Build the app
       run: npm run electron:build
 
-    - name: Build the app
+    - name: ver variavel
       run: echo ${{ file }}
 
     - name: Release
