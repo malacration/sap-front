@@ -23,13 +23,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
+    - uses: actions/checkout@v3
 
     - name: Teste relese
       uses: softprops/action-gh-release@v1
       with:
         files: package.json
-
-    - uses: actions/checkout@v3
 
     - name: Cache node modules
       uses: actions/cache@v3
