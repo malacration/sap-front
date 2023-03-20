@@ -51,7 +51,13 @@ jobs:
     - name: Build the app
       run: npm run electron:build
 
+    - name: get artifact name
+      run: npm run electron:build
+      run: |
+        file=`find release/ -name *.tar.gz` && echo "release/$file"
+        echo "file=$file" >> $GITHUB_ENV
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release/*.tar.gz
+        files: ${{ env.file }}

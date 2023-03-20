@@ -46,10 +46,13 @@ jobs:
     - name: Install Dependencies
       run: npm i
 
-    - name: Build the app
+    - name: get artifact name
       run: npm run electron:build
+      run: |
+        file=`find release/ -name *.zip` && echo "release/$file"
+        echo "file=$file" >> $GITHUB_ENV
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release\*.zip
+        files: ${{ env.file }}
