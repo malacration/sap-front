@@ -15,7 +15,7 @@ export class RomaneioPesagemService {
   }
 
   get() : Observable<Array<RomaneioPesagem>>{
-    return this.hppCliente.get<Array<RomaneioPesagem>>(this.url)
+    return this.hppCliente.get<Array<RomaneioPesagem>>(this.url+"/contrato-fazenda")
   }
 
   getByid(id : string) : Observable<Array<RomaneioPesagem>>{
