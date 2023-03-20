@@ -51,9 +51,6 @@ jobs:
     - name: Build the app
       run: npm run electron:build
 
-    - name: ver variavel
-      run: echo ${{ file }}
-
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
