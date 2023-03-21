@@ -13,7 +13,7 @@ export class RomaneioPesagemService {
   constructor(private hppCliente : HttpClient) { 
     let host = localStorage.getItem("host")
     if(host)
-      this.url = host+"/romaneio-entrada-insumo" 
+      this.url = host+"/romaneio-pesagem" 
   }
 
   get() : Observable<Array<RomaneioPesagem>>{
