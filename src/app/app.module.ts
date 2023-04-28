@@ -29,6 +29,8 @@ import { HomeComponent } from './home/home.component';
 import { EntradaInsumoComponent } from './sap/components/entrada-insumo/entrada-insumo.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
 import { RomaneioEntradaInsumoService } from './sap/service/romaneio-entrada-insumo.service';
+import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -44,9 +46,11 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     MenuItemComponent,
     HomeComponent,
     RomaneioComponent,
-    EntradaInsumoComponent
+    EntradaInsumoComponent,
+    PaginacaoComponent
   ],
   imports: [
+    NgxPaginationModule,
     BrowserModule,
     FormsModule,
     HttpClientModule,

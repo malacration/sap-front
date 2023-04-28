@@ -1,0 +1,16 @@
+<div class="dataTables_paginate paging_simple_numbers">
+    <ul class="pagination">
+        <li class="paginate_button page-item previous" [ngClass]="first()">
+            <button (click)="anterior()" href="#" aria-controls="example2" data-dt-idx="0" tabindex="0" class="page-link">Anterior</button>
+        </li>
+        <li *ngFor="let item of pages"
+            class="paginate_button page-item" [ngClass]="active(item)">
+            <button href="#" (click)="change(item)" data-dt-idx="1" tabindex="0" class="page-link" >
+                {{item}}
+            </button>
+        </li>
+        <li class="paginate_button page-item next" [ngClass]="last()">
+            <button href="#" data-dt-idx="0" tabindex="0" class="page-link">Proximo</button>
+        </li>
+    </ul>
+</div>

@@ -12,7 +12,14 @@
 <section class="content">
     <!-- Default box -->
     <div class="container-fluid">
-        <div class="card">
+        <div *ngIf="carregando" class="card">
+            <div class="card-header">
+                <div class="overlay">
+                    <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="!carregando" class="card">
             <div class="card-header">
                 <h3 class="card-title">Romaneios de pesagem</h3>
                 <div class="card-tools">
@@ -31,19 +38,20 @@
                 <div *ngFor="let item of romaneiosPesagem" class="card">
                     <div class="card-header">
                         <h4 class="card-title">{{item.U_CodParceiro}} - {{item.U_NomeParceiro}}</h4>
-                        <div class="card-tools">
+                        <div class="card-tools top">
                             <button [routerLink]="['/entrada-insumo',item.DocNum]" type="button" class="btn">
                                 <i class="fa fa-clipboard"></i> Entrada Insumo
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        {{item.U_ObsRomaneio}}
+                        <h5>{{item.U_ObsRomaneio}}</h5>
                     </div>
                 </div>
+                {{currentPage}}
+                <app-paginacao (pageChange)="currentPage = $event"></app-paginacao>
             </div>
         </div>
+        
     </div>
-    <!-- /.card -->
 </section>
-<!-- /.content -->

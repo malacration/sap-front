@@ -19,7 +19,6 @@ export class EntradaInsumoComponent {
   constructor(private route: ActivatedRoute,
     private romaneioPesagemService : RomaneioPesagemService,
     private romaneioService : RomaneioEntradaInsumoService){
-
   }
 
   ngOnInit(): void {
@@ -38,7 +37,7 @@ export class EntradaInsumoComponent {
 
   criarRomaneio(){
     this.romaneioService.save(this.idRomaneioPesagem).subscribe(it =>{
-      alert("Alerta service")
+      alert("Romaneio cadastrado com sucesso")
       console.log(it)
     })
   }
