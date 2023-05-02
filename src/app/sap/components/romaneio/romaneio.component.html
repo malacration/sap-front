@@ -19,7 +19,7 @@
                 </div>
             </div>
         </div>
-        <div *ngIf="!carregando" class="card">
+        <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Romaneios de pesagem</h3>
                 <div class="card-tools">
@@ -30,11 +30,11 @@
                         data-toggle="tooltip"
                         title="Collapse"
                     >
-                        <i class="fa fa-minus"></i>
+                        <i class="fa fa-minus"></i>x
                     </button>
                 </div>
             </div>
-            <div class="card-body">
+            <div *ngIf="!carregando" class="card-body">
                 <div *ngFor="let item of romaneiosPesagem" class="card">
                     <div class="card-header">
                         <h4 class="card-title">{{item.U_CodParceiro}} - {{item.U_NomeParceiro}}</h4>
@@ -48,8 +48,9 @@
                         <h5>{{item.U_ObsRomaneio}}</h5>
                     </div>
                 </div>
-                {{currentPage}}
-                <app-paginacao (pageChange)="currentPage = $event"></app-paginacao>
+            </div>
+            <div class="card-body">
+                <app-paginacao (pageChange)="loadPage($event)" [totalItens]="total" [pageSize]="size"></app-paginacao>
             </div>
         </div>
         

@@ -1,4 +1,4 @@
-<div class="dataTables_paginate paging_simple_numbers">
+<div class="dataTables_paginate paging_simple_numbers d-flex justify-content-center">
     <ul class="pagination">
         <li class="paginate_button page-item previous" [ngClass]="first()">
             <button (click)="anterior()" href="#" aria-controls="example2" data-dt-idx="0" tabindex="0" class="page-link">Anterior</button>
@@ -10,7 +10,7 @@
             </button>
         </li>
         <li class="paginate_button page-item next" [ngClass]="last()">
-            <button href="#" data-dt-idx="0" tabindex="0" class="page-link">Proximo</button>
+            <button (click)="proximo()" href="#" data-dt-idx="0" tabindex="0" class="page-link">Proximo</button>
         </li>
     </ul>
 </div>

@@ -55,6 +55,12 @@ export class PaginacaoComponent {
     }
   }
 
+  proximo(){
+    if(!this.last()){
+      this.change(this.paginaAtual+1)
+    }
+  }
+
   get totalPages(): number {
     return Math.ceil(this.totalItens / this.pageSize);
   }

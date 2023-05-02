@@ -8,7 +8,7 @@ import { RomaneioEntradaInsumo } from '../model/romaneio-entrada-insumo.model';
 })
 export class RomaneioEntradaInsumoService {
 
-  url = "http://10.200.30.106:8080/romaneio-entrada-insumo"
+  url = "http://localhost:8080/romaneio-entrada-insumo"
   
   constructor(private hppCliente : HttpClient) { 
     let host = localStorage.getItem("host")
