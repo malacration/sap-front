@@ -13,6 +13,7 @@ export class RomaneioComponent implements OnInit {
 
   carregando = true
   total = 0;
+  size = 20;
 
   constructor(private romaneioPesagemService : RomaneioPesagemService){
       
