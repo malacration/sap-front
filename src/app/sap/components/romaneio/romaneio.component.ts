@@ -1,6 +1,9 @@
 import { Component, OnInit, Output } from '@angular/core';
 import { RomaneioPesagem } from '../../model/romaneio-pesagem.model';
 import { RomaneioPesagemService } from '../../service/romaneio-pesagem.service';
+import * as moment from 'moment';
+
+
 
 @Component({
   selector: 'app-romaneio',
@@ -8,7 +11,8 @@ import { RomaneioPesagemService } from '../../service/romaneio-pesagem.service';
   styleUrls: ['./romaneio.component.scss']
 })
 export class RomaneioComponent implements OnInit {
-
+  
+  date : Date = new Date();
   public romaneiosPesagem : Array<RomaneioPesagem>
 
   carregando = true
@@ -20,7 +24,13 @@ export class RomaneioComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    moment(Date()).format('YYYY-MM-DD');
     this.loadPage(1);
+  }
+
+
+  castDate(entrada) : string{
+    return moment(entrada).format('DD/MM/YYYY'); 
   }
 
 

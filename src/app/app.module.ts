@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
 
@@ -31,6 +31,9 @@ import { RomaneioComponent } from './sap/components/romaneio/romaneio.component'
 import { RomaneioEntradaInsumoService } from './sap/service/romaneio-entrada-insumo.service';
 import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { AlertSerice } from './sap/service/alert.service';
+import { ErrorInterceptor } from './error.interceptor';
+import * as moment from 'moment';
 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -76,7 +79,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   ],
   providers: [
     RomaneioService,
-    RomaneioEntradaInsumoService
+    RomaneioEntradaInsumoService,
+    AlertSerice,
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
   ],
   bootstrap: [AppComponent],
 })

@@ -37,7 +37,7 @@
             <div *ngIf="!carregando" class="card-body">
                 <div *ngFor="let item of romaneiosPesagem" class="card">
                     <div class="card-header">
-                        <h4 class="card-title">{{item.U_CodParceiro}} - {{item.U_NomeParceiro}}</h4>
+                        <h4 class="card-title">{{item.DocNum}} - {{item.U_CodParceiro}} - {{item.U_NomeParceiro}} - Data {{castDate(item.CreateDate)}} </h4>
                         <div class="card-tools top">
                             <button [routerLink]="['/entrada-insumo',item.DocNum]" type="button" class="btn">
                                 <i class="fa fa-clipboard"></i> Entrada Insumo

@@ -5,5 +5,6 @@ export class RomaneioPesagem{
     U_CodParceiro : string;
     U_NomeParceiro : string;
     U_ObsRomaneio : string;
-
+    U_Status : string;
+    CreateDate : string;
 }
