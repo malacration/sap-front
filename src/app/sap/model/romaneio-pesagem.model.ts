@@ -7,4 +7,8 @@ export class RomaneioPesagem{
     U_ObsRomaneio : string;
     U_Status : string;
     CreateDate : string;
+    U_NumeroNota : string;
+    U_PlacaCaminhao : string;
+    U_CodContrato : string;
+    collapse : boolean = false;
 }
