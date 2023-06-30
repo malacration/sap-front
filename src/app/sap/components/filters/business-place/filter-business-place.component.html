@@ -1,0 +1,8 @@
+<div class="form-group">
+    <label>Filiais: &nbsp;</label>
+    <select class="form-control" [(ngModel)] ="currentValue" name="filial" (ngModelChange)="change(currentValue)">
+        <option selected [ngValue]="'all'">Todos</option>
+        <option  *ngFor="let item of businessPlaces" [ngValue]="item">{{item.Bplname}}</option>
+    </select>
+</div>
+

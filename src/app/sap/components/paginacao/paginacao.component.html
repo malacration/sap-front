@@ -1,12 +1,13 @@
+{{paginaAtual}}
 <div class="dataTables_paginate paging_simple_numbers d-flex justify-content-center">
     <ul class="pagination">
         <li class="paginate_button page-item previous" [ngClass]="first()">
-            <button (click)="anterior()" href="#" aria-controls="example2" data-dt-idx="0" tabindex="0" class="page-link">Anterior</button>
+            <button (click)="anterior()" href="#" data-dt-idx="0" tabindex="0" class="page-link">Anterior</button>
         </li>
         <li *ngFor="let item of pages"
             class="paginate_button page-item" [ngClass]="active(item)">
             <button href="#" (click)="change(item)" data-dt-idx="1" tabindex="0" class="page-link" >
-                {{item}}
+                {{item+1}}
             </button>
         </li>
         <li class="paginate_button page-item next" [ngClass]="last()">

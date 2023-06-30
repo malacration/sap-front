@@ -11,7 +11,7 @@ export class PaginacaoComponent {
   @Output() 
   pageChange = new EventEmitter<number>();
   
-  paginaAtual : number = 1
+  paginaAtual : number = 0
 
   @Input()
   pageSize : number = 10
@@ -29,7 +29,7 @@ export class PaginacaoComponent {
   }
 
   isFirst() : boolean{
-    return this.paginaAtual == 1
+    return this.paginaAtual == 0
   }
 
   isLast() : boolean{
@@ -68,11 +68,11 @@ export class PaginacaoComponent {
   get pages(): number[] {
     const visiblePages: number[] = [];
     const totalVisiblePages = 10;
-    let startPage = Math.max(1, this.paginaAtual - Math.floor(totalVisiblePages / 2));
+    let startPage = Math.max(0, this.paginaAtual - Math.floor(totalVisiblePages / 2));
     let endPage = startPage + totalVisiblePages - 1;
     if (endPage > this.totalPages) {
       endPage = this.totalPages;
-      startPage = Math.max(1, endPage - totalVisiblePages + 1);
+      startPage = Math.max(0, endPage - totalVisiblePages + 1);
     }
     for (let i = startPage; i <= endPage; i++) {
       visiblePages.push(i);

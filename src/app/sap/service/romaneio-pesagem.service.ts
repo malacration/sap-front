@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { RomaneioPesagem } from '../model/romaneio-pesagem.model';
 import { Page } from '../model/page.model';
+import { Filter } from '../model/filter.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,8 +18,9 @@ export class RomaneioPesagemService {
       this.url = host+"/romaneio-pesagem" 
   }
 
-  get(page) : Observable<Page<RomaneioPesagem>>{
-    return this.hppCliente.get<Page<RomaneioPesagem>>(this.url+"/contrato-fazenda?page="+page)
+  get(page, filters : Map<string,Filter> = new Map()) : Observable<Page<RomaneioPesagem>>{
+    let strFiltger = (filters.size > 0 ? "&"  : "") + Array.from(filters.values()).map(it => it.getUrlFilter()).join('&')
+    return this.hppCliente.get<Page<RomaneioPesagem>>(this.url+"/contrato-fazenda?page="+page+strFiltger)
   }
 
   getByid(id : string) : Observable<Array<RomaneioPesagem>>{

@@ -34,6 +34,9 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertSerice } from './sap/service/alert.service';
 import { ErrorInterceptor } from './error.interceptor';
 import * as moment from 'moment';
+import { BusinessPlacesService } from './sap/service/business-places.service';
+import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
+import { FilterNumeroNfComponent } from './sap/components/filters/numero-nf/filter-numero-nf.component';
 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -50,7 +53,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     HomeComponent,
     RomaneioComponent,
     EntradaInsumoComponent,
-    PaginacaoComponent
+    PaginacaoComponent,
+    FilterNumeroNfComponent,
+    FilterBusinessPlaceComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -80,6 +85,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   providers: [
     RomaneioService,
     RomaneioEntradaInsumoService,
+    BusinessPlacesService,
     AlertSerice,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
   ],
