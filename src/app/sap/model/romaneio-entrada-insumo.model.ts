@@ -26,5 +26,14 @@ export class RomaneioEntradaInsumo{
     U_CodParceiroNegocios: string
     U_CodDeposito: string
     U_TipoRomaneio = "G"
+    PECU_REGACollection = Array<TipoAnalise>()
 
+}
+
+export class TipoAnalise{
+    U_CodTipoAnalise : string
+    U_DscTipoAnalise : string
+    U_ValorEncontrado  : string
+    U_DscUnidadeMedida : string
+    U_DescontoPeso : string
 }
