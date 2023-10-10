@@ -37,6 +37,15 @@ import * as moment from 'moment';
 import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
 import { FilterNumeroNfComponent } from './sap/components/filters/numero-nf/filter-numero-nf.component';
+import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
+import { EnderecoComponent } from './sap/components/cadastro/endereco/endereco.component';
+import { ReferenciaComponent } from './sap/components/cadastro/referencia-comercial/referencia.component';
+import { SelectComponent } from './sap/components/form/select/select.component';
+import { StateSelectComponent } from './sap/components/form/state/state-select.component';
+import { StateService } from './sap/service/addresses/state.service';
+import { CitySelectComponent } from './sap/components/form/city/city-select.component';
+import { CityService } from './sap/service/addresses/city.service';
+import { BusinessPartnerService } from './sap/service/business-partners.service';
 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -55,7 +64,13 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     EntradaInsumoComponent,
     PaginacaoComponent,
     FilterNumeroNfComponent,
-    FilterBusinessPlaceComponent
+    FilterBusinessPlaceComponent,
+    CadastroComponent,
+    EnderecoComponent,
+    ReferenciaComponent,
+    SelectComponent,
+    StateSelectComponent,
+    CitySelectComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -86,7 +101,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RomaneioService,
     RomaneioEntradaInsumoService,
     BusinessPlacesService,
+    StateService,
     AlertSerice,
+    CityService,
+    BusinessPartnerService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
   ],
   bootstrap: [AppComponent],

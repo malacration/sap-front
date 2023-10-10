@@ -1,0 +1,180 @@
+<br>
+
+<section *ngIf="!finalizado" class="content">
+    <!-- Default box -->
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <h1>Atualização Cadastral &nbsp; <small>{{pn?.CardName}}</small></h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><b>Geral</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="CardCode">Codigo Parceiro de Negocio</label>
+                            <input type="text" [disabled]="true" class="form-control" [(ngModel)]="pn.CardCode">
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label *ngIf="isPessoaFisica" for="dataNascimento">Data Nascimento</label>
+                            <label *ngIf="!isPessoaFisica" for="dataNascimento">Data Abertura</label>
+                            <input type="date" class="form-control" id="dataNascimento" [(ngModel)]="pn.U_Rov_Data_Nascimento">
+                        </div>
+                    </div>
+                    <div *ngIf="isPessoaFisica" class="col-sm-4">
+                        <div class="form-group">
+                            <label for="nomeMae">Nome da Mae</label>
+                            <input type="text" class="form-control" [(ngModel)]="pn.U_Rov_Nome_Mae">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+        </div>
+        
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><b>Contato</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="celular">Numero Celular</label>
+                            <input type="text" class="form-control" [(ngModel)]="pn.Phone1">
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="celular2">Numero Alternativo</label>
+                            <input type="text" class="form-control" [(ngModel)]="pn.Phone2">
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="mail">Email</label>
+                            <input type="email" class="form-control" [(ngModel)]="pn.EmailAddress">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+        </div>
+
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><b>Endereços</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <app-select [options]="pn?.getAddressOptions()" 
+                                [label]="'Endereços'" 
+                                (selectedOut)="selecionaEndereco($event)"
+                                [loading]="loading">
+                            </app-select>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="bs-stepper linear line"></div>
+                        </div>
+                        <div class="col-sm-4">
+                            
+                                <label for="cep">Nome do Endereço</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="AddressName" [(ngModel)]="nameNewsAddress">
+                                <span class="input-group-append">
+                                    <button class="btn btn-primary" (click)="novoEndereco()">Confirmar</button>
+                                </span>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <app-endereco *ngIf="enderecoSelecionado" [endereco]="enderecoSelecionado"></app-endereco>
+            </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+        </div>        
+
+        <div class="card card-info" *ngIf="isPessoaFisica">
+            <div class="card-header">
+                <h3 class="card-title"><b>Estado Civil</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="estadoCivil">Estado Civil</label>
+                            <select class="form-control" name="estadoCivil" [(ngModel)]="pn.estadoCivil" >
+                                <option value="-1" selected disabled>Selecione</option>
+                                <option value="solteiro">Solteiro</option>
+                                <option value="casado">Casado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div *ngIf="pn?.estadoCivil == 'casado'" class="col-sm-4">
+                        <div class="form-group">
+                            <label for="nomeConjuge">Nome Conjungue</label>
+                            <input type="text" class="form-control" id="nomeConjuge">
+                        </div>
+                    </div>
+                    <div *ngIf="pn?.estadoCivil == 'casado'" class="col-sm-4">
+                        <div class="form-group">
+                            <label for="nomeConjuge">CPF Conjuge</label>
+                            <input type="text" class="form-control" id="nomeConjuge">
+                        </div>
+                    </div>
+                    <div *ngIf="pn?.estadoCivil == 'casado'" class="col-sm-4">
+                        <div class="form-group">
+                            <label *ngIf="isPessoaFisica" for="dataNascimentoConjuge">Data Nascimento</label>
+                            <input type="date" class="form-control" id="dataNascimentoConjuge">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+        </div>
+
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><b>Referencias Comerciais</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <select class="form-control" name="estadoCivil" >
+                        <option value="solteiro">Referencia 1</option>
+                        <option value="casado">Referencia 2</option>
+                        <option value="new">Incluir novo</option>
+                    </select>
+                </div>
+            </div>
+            <app-referencia-comercial></app-referencia-comercial>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <button [disabled]="loading" type="button" class="btn btn-primary" (click)="onSubmit()">
+                    Salvar
+                </button>
+            </div>
+        </div>
+        <br>
+    </div>
+</section>

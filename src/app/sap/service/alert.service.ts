@@ -31,10 +31,10 @@ export class AlertSerice {
         })
     }
 
-    info(){
-        Swal.fire({
+    info(msg : string = 'Do you want to continue') : Promise<any>{
+        return Swal.fire({
             title: 'Info!',
-            text: 'Do you want to continue',
+            text: msg,
             icon: 'info',
             confirmButtonText: 'Ok'
         })

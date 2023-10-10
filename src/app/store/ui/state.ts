@@ -6,6 +6,7 @@ export default <UiState>{
     menuSidebarCollapsed: true,
     controlSidebarCollapsed: true,
     sidebarHeaderButton: false,
+    debug : true
     // screenSize: calculateWindowSize(window.innerWidth)
 };
 
@@ -17,4 +18,5 @@ export interface UiState {
     sidebarSkin: string;
     sidebarHeaderButton: boolean;
     screenSize: any;
+    debug : boolean
 }

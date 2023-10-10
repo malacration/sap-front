@@ -9,15 +9,19 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700');
 
 @import '~admin-lte/plugins/fontawesome-free/css/all.min.css';
+
+@import '~admin-lte/plugins/bs-stepper/css/bs-stepper.css';
 // @import '~admin-lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css';
 @import '~admin-lte/dist/css/adminlte.min.css';
 
 @import 'ngx-toastr/toastr';
 
+
 body {
     width: 100vw;
     height: 100vh;
 }
+
 
 ::-webkit-scrollbar {
     width: 0px;
