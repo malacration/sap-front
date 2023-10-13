@@ -138,15 +138,14 @@
                                 <th>Desconto Peso</th>
                             </tr>
                             </thead>
-                            <tbody>
-                                <option  *ngFor="let item of businessPlaces" [ngValue]="item">{{item.Bplname}}</option>
-                                <tr *ngFor="let item of draft?.PECU_REGACollection">
-                                    <td>{{item.U_CodTipoAnalise}}</td>
-                                    <td>{{item.U_DscTipoAnalise}}</td>
-                                    <td>{{item.U_ValorEncontrado}}</td>
-                                    <td>{{item.U_DscUnidadeMedida}}</td>
-                                    <td>{{item.U_DescontoPeso}}</td>
-                                </tr>
+                        <tbody>
+                            <tr *ngFor="let item of draft?.PECU_REGACollection">
+                                <td>{{item.U_CodTipoAnalise}}</td>
+                                <td>{{item.U_DscTipoAnalise}}</td>
+                                <td>{{item.U_ValorEncontrado}}</td>
+                                <td>{{item.U_DscUnidadeMedida}}</td>
+                                <td>{{item.U_DescontoPeso}}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

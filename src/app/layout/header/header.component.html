@@ -1,4 +1,4 @@
-<ul class="navbar-nav">
+<ul class="navbar-nav" *ngIf="headerMenu">
     <li *ngIf="sidebarHeaderButton" class="nav-item">
         <a class="nav-link" (click)="onToggleMenuSidebar()" role="button"
             ><i class="fas fa-bars"></i
@@ -29,10 +29,6 @@
 </form>
 
 <ul class="navbar-nav ml-auto">
-    <!-- <app-messages></app-messages> -->
-    <!-- <app-notifications></app-notifications> -->
-    <!-- <app-language></app-language> -->
-    <!-- <app-user></app-user> -->
     <li class="nav-item">
         <button class="nav-link" (click)="onToggleControlSidebar()">
             <i class="fas fa-th-large"></i>

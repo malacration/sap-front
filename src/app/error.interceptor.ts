@@ -12,9 +12,10 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        let msg = error.message;
+        console.log(error)
+        let msg = error.error.mensagem;
         if(error.error.mensagem == undefined || error.error.mensagem == null)
-          msg = error.error.mensagem;
+          msg = error.message;
         this. alertService.error(msg);
         return throwError(error);
       })

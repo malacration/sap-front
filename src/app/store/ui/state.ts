@@ -1,6 +1,7 @@
 
 export default <UiState>{
     darkMode: false,
+    headerMenu: true,
     navbarVariant: 'navbar-light',
     sidebarSkin: 'sidebar-dark-primary',
     menuSidebarCollapsed: true,
@@ -12,6 +13,7 @@ export default <UiState>{
 
 export interface UiState {
     darkMode: boolean;
+    headerMenu : boolean;
     menuSidebarCollapsed: boolean;
     controlSidebarCollapsed: boolean;
     navbarVariant: string;

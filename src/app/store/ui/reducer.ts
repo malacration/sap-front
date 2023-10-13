@@ -48,6 +48,11 @@ export function uiReducer(state: UiState = initialState, action: UiAction) {
                 ...state,
                 navbarVariant
             };
+        case Actions.TOGGLE_HEADER_MENU:
+            return {
+                ...state,
+                headerMenu: !state.headerMenu
+            };
         case Actions.SET_SIDEBAR_SKIN:
             let sidebarSkin: string;
             if (state.darkMode) {

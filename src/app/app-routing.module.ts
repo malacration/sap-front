@@ -26,7 +26,7 @@ const routes: Routes = [
     component: EntradaInsumoComponent
   },
   {
-    path: 'cadastro',
+    path: 'cadastro/:id',
     component: CadastroComponent
   },
   {

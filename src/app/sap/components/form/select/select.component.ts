@@ -26,9 +26,11 @@ export class SelectComponent implements OnInit {
   @Output()
   selectedOut = new EventEmitter<string>();
 
-  onChange(valor : string){
-    this.initialSelect = valor
-    this.selectedOut.emit(valor)
+  onChange($event){
+    const element = $event.currentTarget as HTMLInputElement
+    const value = element.value
+    this.initialSelect = value
+    this.selectedOut.emit(value)
   }
 
   ngOnInit(): void {

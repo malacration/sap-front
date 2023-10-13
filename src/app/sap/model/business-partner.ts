@@ -8,21 +8,68 @@ export class BusinessPartner{
     Phone2 : Number
     U_Rov_Data_Nascimento : Date
     EmailAddress : String
-
-
-    estadoCivil : string = null
     U_Rov_Nome_Mae : string
-
     BPAddresses : Array<BPAddress> = new Array()
+    ContactEmployees : Array<Person> = new Array()
+    RemoveContacts : Array<number> = new Array()
+    Referencias : ReferenciaComercial
 
     getAddressOptions() : Array<Option>{
         return this.BPAddresses.map(it => new Option(it.AddressName , it.AddressName))
     }
 
+    getReferenciaOptions() : Array<Option>{
+        if(this.Referencias)
+            return this.Referencias.REFERENCIACollection
+            .map(it => new Option(it.LineId , "Ref Nº "+it.LineId))
+        else
+            return new Array()
+    }
+
     getAddressesByAddressName(addressName : string) : BPAddress{
         return this.BPAddresses.find(it => it.AddressName == addressName)
     }
+
+    getConjugue() : Person{
+        return this.ContactEmployees.find(it => it.U_tipoPessoa == 'conjuge')
+    }
     
+}
+
+export class ReferenciaComercial{
+    Code : string
+    U_cardCode : string
+
+    REFERENCIACollection : Array<Referencia> = new Array()
+
+    constructor(cardCode){
+        this.Code = cardCode
+        this.U_cardCode = cardCode
+    }
+
+}
+
+export class Referencia{
+    constructor(code, lineId){
+        this.Code = code
+        this.LineId = lineId
+    }
+
+    Code : string
+    LineId : number
+    U_nome : string
+    U_telefone : string
+    U_anotacao : string
+}
+
+export class Person{
+
+    Name : string
+    DateOfBirth : Date
+    U_TX_IdFiscalAut : string
+    U_tipoPessoa : string
+    CardCode : string
+    InternalCode : number
 }
 
 export class BPAddress{

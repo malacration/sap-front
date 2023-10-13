@@ -4,7 +4,7 @@
     <i class="fas fa-2x fa-sync-alt fa-spin"></i>
 </div>
 <select *ngIf="!loading" class="form-control"
-        (change)="onChange($event.target.value)">
+        (change)="onChange($event.target)">
     <option value="" disabled [selected]="!initialSelect || initialSelect==''">Selecione</option>
     <option *ngFor="let it of options"
             [selected]="initialSelect==it.value" 

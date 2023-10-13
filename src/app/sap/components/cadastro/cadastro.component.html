@@ -100,7 +100,6 @@
                             </div>
                         </div>
                     </div>
-                    
                 </div>
                 <app-endereco *ngIf="enderecoSelecionado" [endereco]="enderecoSelecionado"></app-endereco>
             </div>
@@ -118,29 +117,32 @@
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label for="estadoCivil">Estado Civil</label>
-                            <select class="form-control" name="estadoCivil" [(ngModel)]="pn.estadoCivil" >
+                            <select class="form-control" name="estadoCivil" (change)="changeEstadoCivil($event.target)">
                                 <option value="-1" selected disabled>Selecione</option>
-                                <option value="solteiro">Solteiro</option>
-                                <option value="casado">Casado</option>
+                                <option value="solteiro" [selected]="!isCasado()">Solteiro</option>
+                                <option value="casado"   [selected]="isCasado()" >Casado</option>
                             </select>
                         </div>
                     </div>
-                    <div *ngIf="pn?.estadoCivil == 'casado'" class="col-sm-4">
+                    <div *ngIf="isCasado()" class="col-sm-4">
                         <div class="form-group">
                             <label for="nomeConjuge">Nome Conjungue</label>
-                            <input type="text" class="form-control" id="nomeConjuge">
+                            <input type="text" class="form-control" id="nomeConjuge" 
+                                [(ngModel)]="pn.getConjugue().Name">
                         </div>
                     </div>
-                    <div *ngIf="pn?.estadoCivil == 'casado'" class="col-sm-4">
+                    <div *ngIf="isCasado()" class="col-sm-4">
                         <div class="form-group">
-                            <label for="nomeConjuge">CPF Conjuge</label>
-                            <input type="text" class="form-control" id="nomeConjuge">
+                            <label for="cpfConjuge">CPF Conjuge</label>
+                            <input type="text" class="form-control" id="cpfConjuge"
+                                [(ngModel)]="pn.getConjugue().U_TX_IdFiscalAut">
                         </div>
                     </div>
-                    <div *ngIf="pn?.estadoCivil == 'casado'" class="col-sm-4">
+                    <div *ngIf="isCasado()" class="col-sm-4">
                         <div class="form-group">
                             <label *ngIf="isPessoaFisica" for="dataNascimentoConjuge">Data Nascimento</label>
-                            <input type="date" class="form-control" id="dataNascimentoConjuge">
+                            <input type="date" class="form-control" id="dataNascimentoConjuge"
+                                [(ngModel)]="pn.getConjugue().DateOfBirth">
                         </div>
                     </div>
                 </div>
@@ -156,14 +158,24 @@
             </div>
             <div class="card-body">
                 <div class="form-group">
-                    <select class="form-control" name="estadoCivil" >
-                        <option value="solteiro">Referencia 1</option>
-                        <option value="casado">Referencia 2</option>
-                        <option value="new">Incluir novo</option>
-                    </select>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <app-select [options]="pn?.getReferenciaOptions()" 
+                                [label]="'Referencias'" 
+                                (selectedOut)="selecionaReferencia($event)"
+                                [loading]="loading">
+                            </app-select>
+                        </div>
+                        <div class="col-sm-4">
+                            <label ></label>
+                            <div class="input-group">
+                                <button class="btn btn-primary" (click)="novaReferencia()">Nova Referencia</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <app-referencia-comercial [referencia]="referenciaSelecionada"></app-referencia-comercial>
             </div>
-            <app-referencia-comercial></app-referencia-comercial>
             <div *ngIf="loading" class="overlay">
                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
             </div>
