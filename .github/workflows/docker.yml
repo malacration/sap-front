@@ -9,7 +9,7 @@ env:
 
 jobs:
   push_to_registry:
-    envrioment: production
+    environment: production
     name: Build and Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
