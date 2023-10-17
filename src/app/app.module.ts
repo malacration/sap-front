@@ -15,7 +15,6 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { AppComponent } from './app.component';
-import { RomaneioService } from './core/services/romaneio.service';
 import { HeaderComponent } from './layout/header/header.component';
 import { StoreModule } from '@ngrx/store';
 import { uiReducer } from './store/ui/reducer';
@@ -46,6 +45,7 @@ import { StateService } from './sap/service/addresses/state.service';
 import { CitySelectComponent } from './sap/components/form/city/city-select.component';
 import { CityService } from './sap/service/addresses/city.service';
 import { BusinessPartnerService } from './sap/service/business-partners.service';
+import { ConfigService } from './core/services/config.service';
 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -98,7 +98,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     })
   ],
   providers: [
-    RomaneioService,
     RomaneioEntradaInsumoService,
     BusinessPlacesService,
     StateService,

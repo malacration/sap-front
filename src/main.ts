@@ -15,9 +15,21 @@ if (APP_CONFIG.production) {
   }
 };
 
+function bootstrapFailed() {
+  document.querySelector('app-root')!.innerHTML = 'Não foi possível carregar as configurações. Por favor, tente novamente.';
+}
+function bootstrap() {
+  platformBrowserDynamic()
+    .bootstrapModule(AppModule, {preserveWhitespaces: false})
+    .catch((err: any) => console.error(err));
+}
 
-platformBrowserDynamic()
-  .bootstrapModule(AppModule, {
-    preserveWhitespaces: false
+
+fetch('config')
+  .then(response => response.json())
+  .then(conf => {
+    bootstrap()
+    // @ts-ignore
+    window['app-config'] = conf;
   })
-  .catch(err => console.error(err));
+  .catch(bootstrap);

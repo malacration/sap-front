@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { BusinessPartner } from '../model/business-partner';
+import { ConfigService } from '../../core/services/config.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,10 +11,8 @@ export class BusinessPartnerService {
 
   url = "http://localhost:8080/business-partners"
   
-  constructor(private hppCliente : HttpClient) { 
-    let host = localStorage.getItem("host")
-    if(host)
-      this.url = host+"/business-partners"
+  constructor(private config : ConfigService, private hppCliente : HttpClient) {
+    this.url = config.getHost()+"/business-partners"
   }
 
   getByUpdate(hashCode : string) : Observable<BusinessPartner>{
