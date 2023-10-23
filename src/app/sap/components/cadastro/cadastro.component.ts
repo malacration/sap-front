@@ -6,98 +6,119 @@ import { AlertSerice } from '../../service/alert.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../store/state';
-import { uiReducer } from '../../../store/ui/reducer';
-import { ToggleControlSidebar, ToggleDarkMode, ToggleHeaderMenu } from '../../../store/ui/actions';
+import { ToggleHeaderMenu } from '../../../store/ui/actions';
+import { Observable, concatAll, delay, forkJoin, from, map, merge, of, reduce, subscribeOn, switchMap, timer } from 'rxjs';
 
 @Component({
   selector: 'app-cadastro',
   templateUrl: './cadastro.component.html',
 })
-export class CadastroComponent implements OnInit{
+export class CadastroComponent implements OnInit {
 
   private stepper: Stepper;
 
-  loading : boolean = true;
+  loading: boolean = true;
   finalizado = false
 
-  isPessoaFisica : boolean = true
+  isPessoaFisica: boolean = true
 
-  pn : BusinessPartner = new BusinessPartner()
+  pn: BusinessPartner = new BusinessPartner()
 
-  enderecoSelecionado : BPAddress
+  enderecoSelecionado: BPAddress
 
-  hash : string
+  hash: string
+
+  files: Array<any> = [];
+
+  getFiles(files) {
+    console.log(files)
+    this.files = files
+  }
 
   next() {
     this.stepper.next();
   }
 
-  isCasado() : boolean{
+  isCasado(): boolean {
     let conjugue = this.pn.getConjugue()
     return (conjugue != undefined && conjugue != null)
   }
 
-  changeEstadoCivil($event){
-    const element = $event.currentTarget as HTMLInputElement
+  changeEstadoCivil($event) {
+    const element = $event.currentTarget as HTMLSelectElement
     const value = element.value
 
-    if(value == 'solteiro'){
+    if (value == 'solteiro') {
       this.pn.RemoveContacts.push(this.pn.getConjugue().InternalCode)
-      this.pn.ContactEmployees = this.pn.ContactEmployees.filter(it => it.U_tipoPessoa != 'conjuge') 
+      this.pn.ContactEmployees = this.pn.ContactEmployees.filter(it => it.U_tipoPessoa != 'conjuge')
     }
-    else if(value == 'casado' && !this.isCasado()){
+    else if (value == 'casado' && !this.isCasado()) {
       let conjuge = new Person();
       conjuge.CardCode = this.pn.CardCode;
       conjuge.U_tipoPessoa = 'conjuge';
       this.pn.ContactEmployees.push(conjuge)
     }
-    
+
   }
 
-  nameNewsAddress : string
-  novoEndereco(){
-    if(this.nameNewsAddress && this.nameNewsAddress != ''){
+  nameNewsAddress: string
+  
+  novoEndereco() {
+    if (this.nameNewsAddress && this.nameNewsAddress != '') {
       let address = new BPAddress(this.nameNewsAddress)
       address.BPCode = this.pn.CardCode;
-      address.RowNum = this.pn.BPAddresses.reduce((a,b) => a.RowNum > b.RowNum ? a : b).RowNum + 1
+      address.RowNum = this.pn.BPAddresses.reduce((a, b) => a.RowNum > b.RowNum ? a : b).RowNum + 1
       this.pn.BPAddresses.push(address)
       this.nameNewsAddress = null
       this.enderecoSelecionado = this.pn.BPAddresses.slice(-1)[0]
     }
   }
 
-  onSubmit(){
-    this.loading = true;
-    this.pnService.save(this.hash,this.pn).subscribe( data => {
-      this.alert.info('Cadastro atualizdo com sucesso').then(( ) => {
-        this.finalizado = true
-        window.close()
-      })
-    }, error => {
-      this.loading = false;
-    })
+  onSubmit() {
+    let subiscribers = Array<Observable<any>>();
+    if (this.files.length > 0) {
+      this.files.forEach(file => {
+        subiscribers.push(this.pnService.attachment(this.hash, file))
+      });
+    }
+
+    const data$ = from(subiscribers).pipe(
+      concatAll()
+    );
+    
+    this.loading = true
+    data$.pipe( 
+      switchMap(it => this.pnService.save(this.hash,this.pn).pipe(
+        map(() => {
+          this.alert.info('Cadastro atualizdo com sucesso').then(() => {
+            this.finalizado = true
+            window.close()
+          })}
+        )
+      ))
+    ).subscribe()
   }
 
-  selecionaEndereco($event){
+  selecionaEndereco($event) {
     this.enderecoSelecionado = this.pn.getAddressesByAddressName($event)
   }
 
-  referenciaSelecionada : Referencia
+  referenciaSelecionada: Referencia
 
-  selecionaReferencia($event){
+  selecionaReferencia($event) {
     this.referenciaSelecionada = this.pn.Referencias.REFERENCIACollection.find(it => it.LineId == $event)
   }
 
-  novaReferencia(){
-    let lineNum = this.pn.Referencias.REFERENCIACollection.length+1
-    this.pn.Referencias.REFERENCIACollection.push(new Referencia(this.pn.CardCode,lineNum))
+  novaReferencia() {
+    let lineNum = this.pn.Referencias.REFERENCIACollection.length + 1
+    this.pn.Referencias.REFERENCIACollection.push(new Referencia(this.pn.CardCode, lineNum))
     this.referenciaSelecionada = this.pn.Referencias.REFERENCIACollection.slice(-1)[0]
   }
 
-  constructor(private pnService: BusinessPartnerService, 
-    private alert : AlertSerice,
+  constructor(private pnService: BusinessPartnerService,
+    private alert: AlertSerice,
     private store: Store<AppState>,
-    private route: ActivatedRoute){
+    private route: ActivatedRoute) {
   }
 
   ngOnInit(): void {

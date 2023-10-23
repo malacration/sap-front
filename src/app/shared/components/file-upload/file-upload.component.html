@@ -1,0 +1,21 @@
+<div class="row">
+    <div class="col-4">
+        <div class="input-group">
+        <div class="input-group-append">
+            <input class="form-control" type="text" placeholder="Nome do arquivo" [(ngModel)]="newName" />
+        </div>
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="exampleInputFile" (change)="selectFile($event)">
+            <label class="custom-file-label" for="exampleInputFile">{{nameSelectedFile}}</label>
+        </div>
+        <div class="input-group-append">
+            <button class="input-group-text" (click)="getNewFile()">Confirmar</button>
+        </div>
+    </div>
+    </div>
+</div>
+<div class="table table-striped files" id="previews">
+    <div *ngFor="let file of files">
+        {{file.name}} | {{(file.size / (1024*1024)).toFixed(2)}}MB
+    </div>
+</div>

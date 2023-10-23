@@ -27,7 +27,7 @@ export class SelectComponent implements OnInit {
   selectedOut = new EventEmitter<string>();
 
   onChange($event){
-    const element = $event.currentTarget as HTMLInputElement
+    const element = $event.currentTarget as HTMLSelectElement
     const value = element.value
     this.initialSelect = value
     this.selectedOut.emit(value)

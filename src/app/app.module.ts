@@ -45,8 +45,9 @@ import { StateService } from './sap/service/addresses/state.service';
 import { CitySelectComponent } from './sap/components/form/city/city-select.component';
 import { CityService } from './sap/service/addresses/city.service';
 import { BusinessPartnerService } from './sap/service/business-partners.service';
-import { ConfigService } from './core/services/config.service';
+import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
 
+ 
 // AoT requires an exported function for factories
 const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
 
@@ -70,7 +71,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ReferenciaComponent,
     SelectComponent,
     StateSelectComponent,
-    CitySelectComponent
+    CitySelectComponent,
+    FileUploadComponent
   ],
   imports: [
     NgxPaginationModule,

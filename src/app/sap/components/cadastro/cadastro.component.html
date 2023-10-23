@@ -117,7 +117,7 @@
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label for="estadoCivil">Estado Civil</label>
-                            <select class="form-control" name="estadoCivil" (change)="changeEstadoCivil($event.target)">
+                            <select class="form-control" name="estadoCivil" (change)="changeEstadoCivil($event)">
                                 <option value="-1" selected disabled>Selecione</option>
                                 <option value="solteiro" [selected]="!isCasado()">Solteiro</option>
                                 <option value="casado"   [selected]="isCasado()" >Casado</option>
@@ -180,6 +180,23 @@
                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
             </div>
         </div>
+
+
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><b>Anexo</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <file-upload (filesOutput)="getFiles($event)"></file-upload>
+                </div>
+            </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+        </div>
+
+        
         <div class="card">
             <div class="card-header">
                 <button [disabled]="loading" type="button" class="btn btn-primary" (click)="onSubmit()">

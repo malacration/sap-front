@@ -21,6 +21,13 @@ export class BusinessPartnerService {
       .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
   }
 
+  attachment(hashCode : string, file : any) : Observable<BusinessPartner> {
+    let formData = new FormData();
+        formData.append('file', file, file.name);
+    return this.hppCliente.post<BusinessPartner>(this.url+"/key/"+hashCode+'/attachment',formData)
+  }
+
+
   save(hashCode : string, pn : BusinessPartner) : Observable<BusinessPartner> {
     return this.hppCliente.post<BusinessPartner>(this.url+"/key/"+hashCode,pn)
   }

@@ -51,6 +51,7 @@
     "bs-stepper": "1.7.0",
     "core-js": "3.25.0",
     "luxon": "3.0.3",
+    "ngx-dropzone-wrapper": "15.0.0",
     "ngx-pagination": "6.0.3",
     "ngx-toastr": "16.1.0",
     "rxjs": "7.8.0",
