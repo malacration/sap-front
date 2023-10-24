@@ -1,0 +1,13 @@
+
+services:
+  sap-front:
+    build: .
+    restart: always
+    environment:
+      config: |
+        {
+         "host": "http://sap-cadastro:8080"
+        }
+    ports:
+      - 8082:80
+      

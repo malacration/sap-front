@@ -11,5 +11,7 @@ COPY . /app
 RUN ng build
 
 FROM nginx
+COPY entrypoint-config.sh /docker-entrypoint.d
+RUN chmod +x /docker-entrypoint.d/entrypoint-config.sh
 COPY --from=build /app/dist/ /usr/share/nginx/html
 COPY nginx-custom.conf /etc/nginx/conf.d/default.conf
