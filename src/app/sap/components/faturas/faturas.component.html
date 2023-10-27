@@ -1,14 +1,10 @@
 <section *ngIf="!finalizado" class="content">
     <!-- Default box -->
-    <div class="row mb-2">
-        <div class="col-sm-6">
-            <h1>Fatura Selecionada &nbsp; <small>{{pn?.CardName}}</small></h1>
-        </div>
-    </div>
-    <div class="container-fluid">
+    <br />
+    <div class="container-fluid legend">
         <div class="card card-info">
             <div class="card-header">
-
+                <h3 class="card-title"><b>Fatura Selecionada</b></h3>
             </div>
             <div class="card-body">
                 <div *ngIf="!faturaSelecionada" class="projects">
@@ -25,12 +21,13 @@
                             *ngFor="let item of faturas" 
                             (faturaSelected)="selecionaFatura($event)"
                             [fatura]="item">
-                        </app-fatura>
+                    </app-fatura>
                 </div>
                 
                 <div *ngIf="faturaSelecionada" class="fatura-selecionada">
                     <app-fatura-selecionada (close)="descelecionarFatura($event)" [fatura]="faturaSelecionada"></app-fatura-selecionada>
                 </div>
+                <app-table [content]="faturas"></app-table>
             </div>
         </div>
     </div>

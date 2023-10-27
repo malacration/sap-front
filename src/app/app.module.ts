@@ -51,6 +51,7 @@ import { FaturaComponent } from './sap/components/faturas/fatura/fatura.componen
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
 import { ParcelasComponent } from './sap/components/faturas/fatura-selecionada/parcela/parcela.component';
 import { FaturasService } from './sap/service/fatura/faturas.service';
+import { TableComponent } from './shared/components/table/table.component';
 
  
 // AoT requires an exported function for factories
@@ -81,7 +82,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FaturasComponent,
     FaturaComponent,
     FaturaSelecionadaComponent,
-    ParcelasComponent
+    ParcelasComponent,
+    TableComponent,
   ],
   imports: [
     NgxPaginationModule,

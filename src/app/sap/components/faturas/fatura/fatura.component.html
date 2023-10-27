@@ -1,7 +1,6 @@
 <div class="row">
     <div class="col-md-2">
-        {{fatura.id}} <button (click)="selecionaFatura()">Selecionar</button>
-        
+        {{fatura.id}}
     </div>
     <div class="col-1">
         {{fatura.data}}
@@ -24,7 +23,7 @@
         {{fatura.vencimentoUltimaParcela}}
     </div>
     <div class="col-sm-2 text-right">
-        <a class="btn btn-primary" href="#"><i class="fas fa-eye"></i> Ver</a>
+        <a class="btn btn-primary" (click)="selecionaFatura()" href="#"><i class="fas fa-eye"></i> Ver</a>
     </div>
 </div>
 <!-- 
