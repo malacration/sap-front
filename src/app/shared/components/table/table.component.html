@@ -2,12 +2,18 @@
   <thead class="thead-light">
     <tr>
       <th *ngFor="let def of definition" scope="col">{{def.label}}</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let item of content">
       <td *ngFor="let def of definition" scope="col">
-        <div [innerHTML]="renderContent(item,def)"></div>
+        <div [innerHTML]="renderContent(item,def) | appSafeHtml"></div>
+      </td>
+      <td>
+        <div *ngFor="let action of item.getActions()">
+          <app-action [action]="action"></app-action>
+        </div>
       </td>
     </tr>
   </tbody>

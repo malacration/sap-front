@@ -1,5 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit } from '@angular/core';
 import { FaturaDefinition } from '../../../sap/model/fatura/fatura.model';
+import * as Handlebars from 'handlebars';
+import { Column } from './column.model';
 
 @Component({
   selector: 'app-table',
@@ -14,7 +16,7 @@ export class TableComponent implements OnInit {
   @Input()
   definition : Array<Column> = new FaturaDefinition().getFaturaDefinition()
 
-  constructor() {}
+  constructor(private elementRef: ElementRef) {}
 
   ngOnInit(): void {
     
@@ -23,20 +25,8 @@ export class TableComponent implements OnInit {
   renderContent(item : any, definition : Column){
     let value = item[definition.property]
     if(definition.html){
-      return definition.html
+      return Handlebars.compile(definition.html)({ 'value' : value})
     }
     return value
-  }
-}
-
-export class Column{
-  label : string
-  property : string
-  html : string = null
-
-  constructor(label : string, property : string, html : string = null){
-    this.label = label
-    this.property = property
-    this.html = html
   }
 }
