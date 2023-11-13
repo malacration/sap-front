@@ -1,6 +1,6 @@
 
 import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { Action } from '../table/column.model';
+import { Action } from './action.model';
 
 
 @Component({
@@ -11,5 +11,13 @@ export class ActionComponent {
 
     @Input()
     action : Action
+
+    @Output()
+    actionOutput = new EventEmitter<any>()
+
+    bClick() : any{
+        this.actionOutput.emit(this.action.retorno)
+    }
+
     
 }

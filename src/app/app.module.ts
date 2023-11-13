@@ -47,9 +47,7 @@ import { CityService } from './sap/service/addresses/city.service';
 import { BusinessPartnerService } from './sap/service/business-partners.service';
 import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
-import { FaturaComponent } from './sap/components/faturas/fatura/fatura.component';
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
-import { ParcelasComponent } from './sap/components/faturas/fatura-selecionada/parcela/parcela.component';
 import { FaturasService } from './sap/service/fatura/faturas.service';
 import { TableComponent } from './shared/components/table/table.component';
 import { SafeHtmlDirective } from './shared/directives/safe-html/safe-html.directive';
@@ -83,9 +81,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CitySelectComponent,
     FileUploadComponent,
     FaturasComponent,
-    FaturaComponent,
     FaturaSelecionadaComponent,
-    ParcelasComponent,
     TableComponent,
     ActionComponent,
   ],

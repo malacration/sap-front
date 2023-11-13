@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FaturasService } from '../../service/fatura/faturas.service';
+import { ActionReturn } from '../../../shared/components/action/action.model';
+import { FaturaDefinition } from '../../model/fatura/fatura.model';
 
 
 
@@ -12,9 +14,11 @@ import { FaturasService } from '../../service/fatura/faturas.service';
 export class FaturasComponent implements OnInit {
   
 
-  faturas : Array<string> = ["1","2"]
+  faturas : Array<any>
   
   faturaSelecionada : any;
+  
+  definition = new FaturaDefinition().getFaturaDefinition();
 
   constructor(private faturaService : FaturasService){
       
@@ -28,11 +32,17 @@ export class FaturasComponent implements OnInit {
 
   selecionaFatura($event){
     this.faturaSelecionada = $event;
-    console.log($event)
   }
 
   descelecionarFatura($event){
     this.faturaSelecionada = undefined;
+  }
+
+
+  action(event : ActionReturn){
+    if(event.type == "ver-fatura"){
+      this.faturaSelecionada = event.data
+    }
   }
 
 

@@ -3,4 +3,5 @@
 <div>
     Fatura selecionada : {{fatura}}
 </div>
-<app-parcelas *ngFor="let parcela of parcelas" [parcela]="parcela+'-'+fatura"></app-parcelas>
+
+<app-table [content]="parcelas" [definition]="definition"></app-table>

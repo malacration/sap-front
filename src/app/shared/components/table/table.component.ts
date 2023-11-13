@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FaturaDefinition } from '../../../sap/model/fatura/fatura.model';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
@@ -14,7 +14,10 @@ export class TableComponent implements OnInit {
   content : Array<any>
 
   @Input()
-  definition : Array<Column> = new FaturaDefinition().getFaturaDefinition()
+  definition : Array<Column>
+
+  @Output()
+  actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
   constructor(private elementRef: ElementRef) {}
 
@@ -29,4 +32,9 @@ export class TableComponent implements OnInit {
     }
     return value
   }
+
+  evento(retorno : any){
+    this.actionOutput.emit(retorno)
+  }
+
 }

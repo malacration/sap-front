@@ -1,7 +1,8 @@
-import { Actiable, Action, Column } from "../../../shared/components/table/column.model"
+import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
+import { Column } from "../../../shared/components/table/column.model"
 
 
-export class Fatura implements Actiable{
+export class Fatura implements Actiable {
     
     id : string
     data : string
@@ -12,7 +13,7 @@ export class Fatura implements Actiable{
 
     getActions() : Array<Action>{
         return [
-            new Action("Ver", this, "fas fa-eye")
+            new Action("Ver", new ActionReturn("ver-fatura",this), "fas fa-eye")
         ]
     }
     
@@ -56,8 +57,7 @@ export class FaturaDefinition{
             new Column('Parcelas', 'parcelas', this.progressBarHtml),
             new Column('Valor R$:', 'valor'),
             new Column('Vencimento Proxima Parcela', 'vencimentoProximaParcela'),
-            new Column('Vencimento ultima parcela', 'vencimentoUltimaParcela'),
-            new Column('', 'id',this.actionHtml),
+            new Column('Vencimento ultima parcela', 'vencimentoUltimaParcela')
         ]   
     }
 }
