@@ -76,12 +76,14 @@ export class CadastroComponent implements OnInit {
 
   onSubmit() {
     let subiscribers = Array<Observable<any>>();
+    
     if (this.files.length > 0) {
       this.files.forEach(file => {
         subiscribers.push(this.pnService.attachment(this.hash, file))
       });
     }
 
+    subiscribers.push(of(delay(1000)))
     const data$ = from(subiscribers).pipe(
       concatAll()
     );
