@@ -19,8 +19,7 @@
                     </div>
                     <app-fatura  
                             *ngFor="let item of faturas" 
-                            (faturaSelected)="selecionaFatura($event)"
-                            [fatura]="item">
+                            (faturaSelected)="selecionaFatura($event)">
                     </app-fatura>
                 </div>
                 
