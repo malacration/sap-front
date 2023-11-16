@@ -6,6 +6,7 @@ import { HomeComponent } from './home/home.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
 import { EntradaInsumoComponent } from './sap/components/entrada-insumo/entrada-insumo.component';
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
+import { FaturasComponent } from './sap/components/faturas/faturas.component';
 
 const routes: Routes = [
   {
@@ -24,6 +25,10 @@ const routes: Routes = [
   {
     path: 'entrada-insumo/:id',
     component: EntradaInsumoComponent
+  },
+  {
+    path: 'faturas',
+    component: FaturasComponent
   },
   {
     path: 'cadastro/:id',
