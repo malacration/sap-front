@@ -11,7 +11,7 @@ import { FaturasService } from '../../service/fatura/faturas.service';
 })
 export class FaturasComponent implements OnInit {
   
-
+  finalizado = false;
   faturas : Array<string> = ["1","2"]
   
   faturaSelecionada : any;
