@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v3.5.2
         with:
           fetch-depth: 0 # get all tags, needed to get git log
-          ref: main
+          ref: master
 
       # docker hub credentials
       - name: login to docker hub
