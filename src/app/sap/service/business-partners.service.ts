@@ -31,4 +31,11 @@ export class BusinessPartnerService {
   save(hashCode : string, pn : BusinessPartner) : Observable<BusinessPartner> {
     return this.hppCliente.post<BusinessPartner>(this.url+"/key/"+hashCode,pn)
   }
+
+  getByCpfCnpj(cpfCnpj : string) : Observable<BusinessPartner>{
+    cpfCnpj = cpfCnpj.replace(/\D/g, '');
+    return this.hppCliente
+      .get<BusinessPartner>(this.url+"/cpf-cnpj/"+cpfCnpj)
+      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
+  }
 }

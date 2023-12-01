@@ -3,26 +3,25 @@ import { Injectable } from '@angular/core';
 import { Observable, map, of } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { Fatura } from '../../model/fatura/fatura.model';
+import { Page } from '../../model/page.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FaturasService {
 
-    url = "http://localhost:8080/windson"
+    url = "http://localhost:8080/invoice"
 
     constructor(private config : ConfigService, private hppCliente : HttpClient) {
-    this.url = config.getHost()+"/windson"
+    this.url = config.getHost()+"/invoice"
     }
 
-    getFaturas() : Observable<any>{
-        let f1 = new Fatura("1","1",500,5,"55","5052")
-        let f2 = new Fatura("2","1",500,5,"55","5052")
-        let faturas = [
-            f1,
-            f2
-        ]
-        return of(faturas)
-
+    getFaturas(cardCode : string, page = 0) : Observable<Page<Fatura>>{
+        return this.hppCliente
+            .get<Page<Fatura>>(this.url+"/cardcode/"+cardCode+"/payment?page="+page+"&size=10")
+            .pipe(map((f) => { 
+                f.content = f.content.map((ff) => Object.assign(new Fatura(),ff))
+                return f
+            }))
     }
 }

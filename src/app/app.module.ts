@@ -47,13 +47,12 @@ import { CityService } from './sap/service/addresses/city.service';
 import { BusinessPartnerService } from './sap/service/business-partners.service';
 import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
-import { FaturaComponent } from './sap/components/faturas/fatura/fatura.component';
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
-import { ParcelasComponent } from './sap/components/faturas/fatura-selecionada/parcela/parcela.component';
 import { FaturasService } from './sap/service/fatura/faturas.service';
 import { TableComponent } from './shared/components/table/table.component';
 import { SafeHtmlDirective } from './shared/directives/safe-html/safe-html.directive';
 import { ActionComponent } from './shared/components/action/action.component';
+import { CpfCnpjPipe } from './shared/directives/cpf-cnpj-pipe';
 
  
 // AoT requires an exported function for factories
@@ -61,6 +60,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
 
 @NgModule({
   declarations: [
+    CpfCnpjPipe,
     SafeHtmlDirective,
     AppComponent,
     HeaderComponent,
@@ -83,9 +83,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CitySelectComponent,
     FileUploadComponent,
     FaturasComponent,
-    FaturaComponent,
     FaturaSelecionadaComponent,
-    ParcelasComponent,
     TableComponent,
     ActionComponent,
   ],
