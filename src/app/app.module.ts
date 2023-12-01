@@ -32,7 +32,6 @@ import { PaginacaoComponent } from './sap/components/paginacao/paginacao.compone
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertSerice } from './sap/service/alert.service';
 import { ErrorInterceptor } from './error.interceptor';
-import * as moment from 'moment';
 import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
 import { FilterNumeroNfComponent } from './sap/components/filters/numero-nf/filter-numero-nf.component';
@@ -52,7 +51,14 @@ import { FaturasService } from './sap/service/fatura/faturas.service';
 import { TableComponent } from './shared/components/table/table.component';
 import { SafeHtmlDirective } from './shared/directives/safe-html/safe-html.directive';
 import { ActionComponent } from './shared/components/action/action.component';
-import { CpfCnpjPipe } from './shared/directives/cpf-cnpj-pipe';
+import { CpfCnpjPipe } from './shared/directives/pipes/cpf-cnpj-pipe';
+import { MomentPipe } from './shared/directives/pipes/moment-pipe';
+import localeBr from '@angular/common/locales/pt';
+import { registerLocaleData } from '@angular/common';
+
+
+
+registerLocaleData(localeBr, 'pt');
 
  
 // AoT requires an exported function for factories
@@ -61,6 +67,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
 @NgModule({
   declarations: [
     CpfCnpjPipe,
+    MomentPipe,
     SafeHtmlDirective,
     AppComponent,
     HeaderComponent,

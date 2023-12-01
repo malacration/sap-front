@@ -4,26 +4,14 @@
     <div class="container-fluid legend">
         <div class="card card-info">
             <div class="card-header" *ngIf="clienteSelecionado">
-                <h3 class="card-title"><b>Fatura Selecionada -  Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
+                <h3 class="card-title"><b>Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
                 <div class="card-tools">
                     <button *ngIf="clienteSelecionado" (click)="close()" type="button" class="btn btn-warning btn-sm">
                         Sair
                     </button>
                 </div>
             </div>
-            <div *ngIf="clienteSelecionado" class="card-body">
-                <div *ngIf="!faturaSelecionada" class="projects">
-                    <div class="row">
-                        <div class="col-md-2">#ID</div>
-                        <div class="col-1">Data</div>
-                        <div class="col-sm-2">Parcelas</div>
-                        <div class="col">Valor R$</div>
-                        <div class="col-sm-2">Vencimento Proxima Parcela</div>
-                        <div class="col-sm-2">Vencimento ultima parcela</div>
-                        <div class="col-sm-2"></div>
-                    </div>
-                </div>
-                
+            <div *ngIf="clienteSelecionado" class="card-body">                
                 <div *ngIf="faturaSelecionada" class="fatura-selecionada">
                     <app-fatura-selecionada 
                         (close)="descelecionarFatura($event)" 
@@ -35,7 +23,7 @@
                     (actionOutput)="action($event)"
                     [definition]="definition">
                 </app-table>
-                <app-paginacao (pageChange)="loadFaturas($event)" [totalItens]="faturas.totalElements" [pageSize]="faturas.size"></app-paginacao>
+                <app-paginacao *ngIf="!faturaSelecionada" (pageChange)="loadFaturas($event)" [totalItens]="faturas.totalElements" [pageSize]="faturas.size"></app-paginacao>
             </div>
             <div *ngIf="!clienteSelecionado" class="card-body">
                 <div class="form-group">

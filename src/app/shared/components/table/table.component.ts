@@ -2,6 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@ang
 import { FaturaDefinition } from '../../../sap/model/fatura/fatura.model';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-table',

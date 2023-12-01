@@ -33,7 +33,7 @@ export class PaginacaoComponent {
   }
 
   isLast() : boolean{
-    return this.paginaAtual == this.totalPages
+    return this.paginaAtual == this.totalPages-1
   }
 
   first() : String {
@@ -71,7 +71,7 @@ export class PaginacaoComponent {
     let startPage = Math.max(0, this.paginaAtual - Math.floor(totalVisiblePages / 2));
     let endPage = startPage + totalVisiblePages - 1;
     if (endPage > this.totalPages) {
-      endPage = this.totalPages;
+      endPage = this.totalPages-1;
       startPage = Math.max(0, endPage - totalVisiblePages + 1);
     }
     for (let i = startPage; i <= endPage; i++) {

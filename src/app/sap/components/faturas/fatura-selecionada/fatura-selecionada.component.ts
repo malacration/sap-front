@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Parcela, ParcelaDefinition } from '../../../model/fatura/parcela.model';
+import { Fatura } from '../../../model/fatura/fatura.model';
 
 
 
@@ -10,11 +11,9 @@ import { Parcela, ParcelaDefinition } from '../../../model/fatura/parcela.model'
 export class FaturaSelecionadaComponent implements OnInit {
   
   @Input()
-  fatura: any; 
+  fatura: Fatura; 
 
-  parcelas : Array<any> = [
-    new Parcela("1", "01/01/2021", 100, "01/01/2021"),
-  ];
+  parcelas : Array<any> = [];
 
   definition = new ParcelaDefinition().getFaturaDefinition();
 
@@ -22,7 +21,8 @@ export class FaturaSelecionadaComponent implements OnInit {
   close : EventEmitter<any> = new EventEmitter<any>();;
 
   ngOnInit(): void {
-
+    this.parcelas = this.fatura.parcelas
+    console.log(this.fatura)
   }
 
   voltar($event){

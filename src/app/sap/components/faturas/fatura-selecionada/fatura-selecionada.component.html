@@ -1,7 +1,10 @@
-<button class="btn btn-warning btn-sm" (click)="voltar($event)">voltar</button>
-
-<div>
-    Fatura selecionada : {{fatura}}
+<div class="row">
+    <div class="col-sm-2">
+        <div class="form-group">
+            <label for="voltar">Fatura selecionada : {{fatura.id}}&nbsp;</label>
+            <button name="voltar" class="btn btn-warning btn-sm" (click)="voltar($event)">voltar</button>
+        </div>
+    </div>
 </div>
 
 <app-table [content]="parcelas" [definition]="definition"></app-table>
