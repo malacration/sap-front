@@ -9,6 +9,7 @@ export class Action{
   label : string
   icon : string
   retorno : ActionReturn
+  color : string
 
   constructor(label : string, retorno : ActionReturn, icon : string = null){
     this.label = label
@@ -23,7 +24,8 @@ export class ActionReturn{
 
   type : string
   data : any
-
+  carregando : boolean = false
+  
   constructor(type : string, data : any){
     this.type = type
     this.data = data

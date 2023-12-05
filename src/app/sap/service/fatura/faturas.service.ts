@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient  } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { Fatura } from '../../model/fatura/fatura.model';
 import { Page } from '../../model/page.model';
@@ -28,5 +28,13 @@ export class FaturasService {
                 })
                 return f
             }))
+    }
+
+    getPdf(docEntry : string, parcela : string) : Observable<Blob>{
+        return this.hppCliente
+            .get<Blob>(
+                this.url+"/"+docEntry+"/parcela/"+parcela,
+                { observe: 'body', responseType: 'blob' as 'json' }
+            )
     }
 }

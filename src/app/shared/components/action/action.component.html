@@ -1,4 +1,9 @@
 
-<button type="button" class="btn btn-primary" (click)="bClick()">
+<button *ngIf="!this.action.retorno.carregando" type="button" class="btn btn-{{color}}" (click)="bClick()">
     <i class="{{action.icon}}"></i> {{action.label}}
 </button>
+
+
+<div *ngIf="this.action.retorno.carregando" class="overlay">
+    <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+</div>

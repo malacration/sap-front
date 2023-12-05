@@ -3,6 +3,7 @@ import { Actiable, Action, ActionReturn } from "../../../shared/components/actio
 import { Column } from "../../../shared/components/table/column.model"
 import { formatCurrency } from "@angular/common"
 import { Parcela } from "./parcela.model"
+import { Paga } from "./paga.model"
 
 
 export class Fatura implements Actiable {
@@ -14,6 +15,7 @@ export class Fatura implements Actiable {
     vencimentoUltimaParcela : string
     vencimentoProximaParcela : string
     parcelas : Array<Parcela>
+    docEntry : string;
     
 
     get dataF(){
@@ -36,6 +38,16 @@ export class Fatura implements Actiable {
         return [
             new Action("Ver", new ActionReturn("ver-fatura",this), "fas fa-eye")
         ]
+    }
+
+    registraPagamento(list : Array<Paga>){
+        list.forEach((p) => {
+            this.parcelas.forEach((parcela) => {
+                if(parcela.id == p.instId)
+                    parcela.pago = true;
+            })
+        })
+        return list.filter((p) => p.DocNum == this.docEntry).length > 0
     }
 }
     

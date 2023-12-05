@@ -1,5 +1,5 @@
 
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { Action } from './action.model';
 
 
@@ -7,7 +7,9 @@ import { Action } from './action.model';
     selector: 'app-action',
     templateUrl: "action.component.html",
 })
-export class ActionComponent {
+export class ActionComponent implements OnInit {
+
+    color = "primary"
 
     @Input()
     action : Action
@@ -18,6 +20,11 @@ export class ActionComponent {
     bClick() : any{
         this.actionOutput.emit(this.action.retorno)
     }
+
+    ngOnInit(): void {
+        if(this.action.color)
+            this.color = this.action.color
+      }
 
     
 }

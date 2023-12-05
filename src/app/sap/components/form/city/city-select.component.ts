@@ -31,11 +31,9 @@ export class CitySelectComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes)
     if(changes.estado && changes.estado.currentValue != changes.estado.previousValue){
       this.loading = true;
       this.service.get(changes.estado.currentValue).subscribe( data =>{
-        console.log(data)
         this.opcoes = data.map(it => new Option(it.AbsId,it.Name))
         this.loading = false;
       })
