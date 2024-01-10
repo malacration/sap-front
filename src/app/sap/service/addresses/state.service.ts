@@ -12,7 +12,7 @@ export class StateService {
   url = "http://localhost:8080/state"
   
   constructor(private config : ConfigService, private hppCliente : HttpClient) { 
-      this.url = config.getHost+"/state"
+      this.url = config.getHost()+"/state"
   }
 
   get() : Observable<Array<State>>{
