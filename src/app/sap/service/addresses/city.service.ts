@@ -12,7 +12,11 @@ export class CityService {
   url = "http://localhost:8080/city"
   
   constructor(private config : ConfigService, private hppCliente : HttpClient) { 
-      this.url = config.getHost()+"/state"
+      this.url = config.getHost()+"/city"
+  }
+
+  ngOnInit(){
+    this.url = this.config.getHost()+"/city"
   }
 
   get(estado : string) : Observable<Array<City>>{

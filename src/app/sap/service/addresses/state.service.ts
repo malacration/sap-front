@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { State } from '../../model/adressess/state';
 import { ConfigService } from '../../../core/services/config.service';
@@ -7,12 +7,16 @@ import { ConfigService } from '../../../core/services/config.service';
 @Injectable({
   providedIn: 'root'
 })
-export class StateService {
+export class StateService implements OnInit {
 
   url = "http://localhost:8080/state"
   
   constructor(private config : ConfigService, private hppCliente : HttpClient) { 
-      this.url = config.getHost()+"/state"
+      
+  }
+
+  ngOnInit(){
+    this.url = this.config.getHost()+"/state"
   }
 
   get() : Observable<Array<State>>{
