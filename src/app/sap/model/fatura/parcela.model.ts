@@ -51,7 +51,7 @@ export class ParcelaDefinition{
 
     getFaturaDefinition() {
         return [
-            new Column('N Parcela', 'id'),
+            new Column('N', 'id'),
             new Column('Vencimento', 'vencimentoF'),
             new Column('Valor', 'valorCurrency')
         ]   
