@@ -31,7 +31,7 @@ import { RomaneioEntradaInsumoService } from './sap/service/romaneio-entrada-ins
 import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertSerice } from './sap/service/alert.service';
-import { ErrorInterceptor } from './error.interceptor';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
 import { FilterNumeroNfComponent } from './sap/components/filters/numero-nf/filter-numero-nf.component';
@@ -55,6 +55,11 @@ import { CpfCnpjPipe } from './shared/directives/pipes/cpf-cnpj-pipe';
 import { MomentPipe } from './shared/directives/pipes/moment-pipe';
 import localeBr from '@angular/common/locales/pt';
 import { registerLocaleData } from '@angular/common';
+import { ListaFaturaComponent } from './sap/components/faturas/lista-fatura/lista-fatura.component';
+import { AutenticacaoFaturaComponent } from './sap/components/faturas/autenticacao-fatura/autenticacao-fatura.component';
+import { RadioComponent } from './sap/components/form/radio/radio.component';
+import { OneTimePasswordService } from './sap/service/one-time-password.service';
+import { JwtInterceptor } from './interceptors/jwt.interceptor';
 
 
 
@@ -91,6 +96,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FileUploadComponent,
     FaturasComponent,
     FaturaSelecionadaComponent,
+    ListaFaturaComponent,
+    AutenticacaoFaturaComponent,
+    RadioComponent,
     TableComponent,
     ActionComponent,
   ],
@@ -127,7 +135,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FaturasService,
     CityService,
     BusinessPartnerService,
-    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+    OneTimePasswordService,
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ],
   bootstrap: [AppComponent],
 })

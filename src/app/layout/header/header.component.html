@@ -4,12 +4,6 @@
             ><i class="fas fa-bars"></i
         ></a>
     </li>
-    <li class="nav-item d-none d-sm-inline-block">
-        <a [routerLink]="['/']" class="nav-link">Home</a>
-    </li>
-    <li class="nav-item d-none d-sm-inline-block">
-        <a [routerLink]="['/romaneio']" class="nav-link">Romaneio</a>
-    </li>
 </ul>
 
 <form class="form-inline ml-3" [formGroup]="searchForm" *ngIf="false">
@@ -29,9 +23,17 @@
 </form>
 
 <ul class="navbar-nav ml-auto">
-    <li class="nav-item">
+    <li *ngIf="false" class="nav-item">
         <button class="nav-link" (click)="onToggleControlSidebar()">
             <i class="fas fa-th-large"></i>
         </button>
+    </li>
+    <li class="nav-item" style="margin-left: 35px;">
+        <div class="theme-switch theme-switch-wrapper nav-link custom-control custom-switch">
+          <input type="checkbox" id="checkbox" class="custom-control-input" 
+          [checked]="isDarkMode" (change)="onToggleDarkMode()">
+          <span class="slider round"></span>
+          <label class="custom-control-label" for="checkbox"> </label>
+        </div>
     </li>
 </ul>

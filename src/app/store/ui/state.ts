@@ -6,7 +6,7 @@ export default <UiState>{
     sidebarSkin: 'sidebar-dark-primary',
     menuSidebarCollapsed: true,
     controlSidebarCollapsed: true,
-    sidebarHeaderButton: false,
+    sidebarHeaderButton: true,
     debug : true
     // screenSize: calculateWindowSize(window.innerWidth)
 };

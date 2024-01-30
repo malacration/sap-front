@@ -28,7 +28,7 @@ export class FaturaSelecionadaComponent implements OnInit {
   }
 
   @Output()
-  close : EventEmitter<any> = new EventEmitter<any>();;
+  close : EventEmitter<any> = new EventEmitter<any>();
 
   ngOnInit(): void {
     this.parcelas = this.fatura.parcelas

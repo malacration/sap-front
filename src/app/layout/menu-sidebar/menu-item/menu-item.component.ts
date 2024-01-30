@@ -1,7 +1,8 @@
 import {Component, HostBinding, Input, OnInit} from '@angular/core';
-import {NavigationEnd, Router} from '@angular/router';
+import {NavigationEnd, Router, RouterLinkActive} from '@angular/router';
 import {filter} from 'rxjs/operators';
 import {openCloseAnimation, rotateAnimation} from './menu-item.animations';
+import { MenuItem } from '../menu-item.model';
 
 @Component({
     selector: 'app-menu-item',
@@ -10,14 +11,15 @@ import {openCloseAnimation, rotateAnimation} from './menu-item.animations';
     animations: [openCloseAnimation, rotateAnimation]
 })
 export class MenuItemComponent implements OnInit {
-    @Input() menuItem: any = null;
+    @Input() menuItem: MenuItem = null;
     public isExpandable: boolean = false;
     @HostBinding('class.nav-item') isNavItem: boolean = true;
     @HostBinding('class.menu-open') isMenuExtended: boolean = false;
     public isMainActive: boolean = false;
     public isOneOfChildrenActive: boolean = false;
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router) {}
 
     ngOnInit(): void {
         if (

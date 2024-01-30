@@ -124,7 +124,6 @@ export class CadastroComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.dispatch(new ToggleHeaderMenu());
     this.route.paramMap.subscribe((params: ParamMap) => {
       this.hash = params.get('id')
       this.pnService.getByUpdate(this.hash).subscribe(pn => {

@@ -38,7 +38,6 @@ export class EntradaInsumoComponent {
   criarRomaneio(){
     this.romaneioService.save(this.idRomaneioPesagem).subscribe(it =>{
       alert("Romaneio cadastrado com sucesso")
-      console.log(it)
     })
   }
 

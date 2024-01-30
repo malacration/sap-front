@@ -5,6 +5,9 @@ import { Fatura, FaturaDefinition } from '../../model/fatura/fatura.model';
 import { BusinessPartnerService } from '../../service/business-partners.service';
 import { BusinessPartner } from '../../model/business-partner';
 import { Page } from '../../model/page.model';
+import { AlertSerice } from '../../service/alert.service';
+import { RadioItem } from '../form/radio/radio.model';
+import { OneTimePasswordService } from '../../service/one-time-password.service';
 
 
 
@@ -14,7 +17,7 @@ import { Page } from '../../model/page.model';
   styleUrls: ['./faturas.component.scss']
   
 })
-export class FaturasComponent {
+export class FaturasComponent implements OnInit {
   
   finalizado = false;
   faturas : Page<Fatura> = new Page();
@@ -23,17 +26,35 @@ export class FaturasComponent {
   cpfCnpjInput : any;
   loading = false;
   definition = new FaturaDefinition().getFaturaDefinition();
+  disableAvancar : boolean = false
+  contatosOpcoes : Array<RadioItem>
 
   constructor(private faturaService : FaturasService,
+    private otpService : OneTimePasswordService,
+    private alertService : AlertSerice,
     private bpService : BusinessPartnerService){
       
   }
 
-  buscar(){
-    this.bpService.getByCpfCnpj(this.cpfCnpjInput).subscribe((cliente) => {
-      this.clienteSelecionado = cliente;
-      this.loadFaturas();
-    })
+  ngOnInit(){
+    if(localStorage.getItem("token")){
+      this.getCurrentBp()
+    }
+  }
+
+  buscarContatos(){
+    this.disableAvancar=true
+    this.bpService.getContactsOpaco(this.cpfCnpjInput)
+    .subscribe({
+      next: (it) => {
+        this.disableAvancar=false
+        let i = -1
+        this.contatosOpcoes = it.map( c => new RadioItem(c.contato,i++))
+      }, error: (err) => {
+        this.disableAvancar=false
+        console.log(err)
+      }
+    });
   }
 
   loadFaturas(page = 0){
@@ -59,7 +80,28 @@ export class FaturasComponent {
     }
   }
 
+  recebeCodigo(codigo){
+    this.otpService.loginOtp(this.cpfCnpjInput,codigo).subscribe({next: (it) => {
+        localStorage.setItem("token",it)
+        this.getCurrentBp()
+      },
+      error : (err) => {
+        this.alertService.error("Codigo invalido")
+      }
+    })
+  }
+
+  getCurrentBp(){
+    this.loading = true
+    this.bpService.getByCurrentUser().subscribe((cliente) => {
+      this.clienteSelecionado = cliente;
+      this.loading = false
+      this.loadFaturas();
+    })
+  }
+
   close(){
+    this.contatosOpcoes = undefined
     this.faturaSelecionada = undefined;
     this.clienteSelecionado = undefined;
   }

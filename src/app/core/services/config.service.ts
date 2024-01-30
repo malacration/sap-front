@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
 export class ConfigService {
 
   private host: string;
+  public title: string = 'SAP - A R Soluções';
 
   getHost(){
     if(this.host)

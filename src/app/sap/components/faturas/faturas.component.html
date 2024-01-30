@@ -1,44 +1,34 @@
+
 <section *ngIf="!finalizado" class="content">
-    <!-- Default box -->
+
     <br />
-    <div class="container-fluid legend">
-        <div class="card card-info">
-            <div class="card-header" *ngIf="clienteSelecionado">
-                <h3 class="card-title"><b>Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
-                <div class="card-tools">
-                    <button *ngIf="clienteSelecionado" (click)="close()" type="button" class="btn btn-warning btn-sm">
-                        Sair
-                    </button>
-                </div>
+
+    <app-lista-fatura *ngIf="clienteSelecionado"
+    [clienteSelecionado]="clienteSelecionado"
+        (closeEvent)="close()">
+    </app-lista-fatura>
+
+
+    <app-auth-fatura *ngIf="contatosOpcoes && !clienteSelecionado" 
+        [opcoes]="contatosOpcoes" 
+        [cpf]="cpfCnpjInput" 
+        (getCodigo)="recebeCodigo($event)">
+    </app-auth-fatura>
+
+    <div class="card card-info" *ngIf="!contatosOpcoes && !this.clienteSelecionado">
+        <div class="card-header">
+            <h3 class="card-title"><b>Extrato de 2ª Via de fatura</b></h3>
+        </div>
+        <div class="card-body">                
+            <div class="form-group">
+                <label for="cpfCnpj">Entre com CPF ou CNPJ</label>
+                <input type="text" placeholder="CPF ou CNPJ"
+                    class="form-control" id="cpfCnpj" 
+                    [ngModel]="cpfCnpjInput | cpfCnpj"
+                    (ngModelChange)="cpfCnpjInput=$event">
             </div>
-            <div *ngIf="clienteSelecionado" class="card-body">                
-                <div *ngIf="faturaSelecionada" class="fatura-selecionada">
-                    <app-fatura-selecionada 
-                        (close)="descelecionarFatura($event)" 
-                        [fatura]="faturaSelecionada">
-                    </app-fatura-selecionada>
-                </div>
-                <app-table *ngIf="!faturaSelecionada" 
-                    [content]="faturas.content" 
-                    (actionOutput)="action($event)"
-                    [definition]="definition">
-                </app-table>
-                <app-paginacao *ngIf="!faturaSelecionada" (pageChange)="loadFaturas($event)" [totalItens]="faturas.totalElements" [pageSize]="faturas.size"></app-paginacao>
-            </div>
-            <div *ngIf="!clienteSelecionado" class="card-body">
-                <div class="form-group">
-                    <label for="cpfCnpj">CPF ou CNPJ</label>
-                    <input type="text" placeholder="CPF ou CNPJ" 
-                        class="form-control" id="cpfCnpj" 
-                        [ngModel]="cpfCnpjInput | cpfCnpj"
-                        (ngModelChange)="cpfCnpjInput=$event">
-                </div>
-                <div class="form-group">
-                    <button (click)="buscar()" class="btn btn-primary" >Buscar</button>
-                </div>
-            </div>
-            <div *ngIf="loading" class="overlay">
-                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            <div class="form-group">
+                <button (click)="buscarContatos()" [disabled]="disableAvancar" class="btn btn-primary" >Avançar</button>
             </div>
         </div>
     </div>

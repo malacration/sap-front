@@ -31,7 +31,7 @@ export class Parcela implements Actiable {
     getActions(force = false) : Array<Action> {
         if(this._actions && !force)
             return this._actions;
-        let pago = new Action("Parcela Paga", new ActionReturn("ver-parcela",this),"")
+        let pago = new Action("Pago", new ActionReturn("ver-parcela",this),"")
         pago.color = "success"
         if(this._pago){
             this._actions = [

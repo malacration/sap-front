@@ -3,7 +3,7 @@ import {UntypedFormGroup, UntypedFormControl} from '@angular/forms';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import { AppState } from '../../store/state';
-import { ToggleControlSidebar, ToggleSidebarMenu } from '../../store/ui/actions';
+import { ToggleControlSidebar, ToggleDarkMode, ToggleSidebarMenu } from '../../store/ui/actions';
 import { UiState } from '../../store/ui/state';
 
 const BASE_CLASSES = 'main-header navbar navbar-expand';
@@ -15,6 +15,7 @@ const BASE_CLASSES = 'main-header navbar navbar-expand';
 export class HeaderComponent implements OnInit {
     @HostBinding('class') classes: string = BASE_CLASSES;
     public ui: Observable<UiState>;
+    public isDarkMode : Boolean = false
     public searchForm: UntypedFormGroup;
     public sidebarHeaderButton : boolean = true;
     public headerMenu : boolean = true;
@@ -29,6 +30,7 @@ export class HeaderComponent implements OnInit {
             this.classes = `${BASE_CLASSES} ${state.navbarVariant}`;
             this.sidebarHeaderButton = state.sidebarHeaderButton;
             this.headerMenu = state.headerMenu;
+            this.isDarkMode = state.darkMode;
         });
         this.searchForm = new UntypedFormGroup({
             search: new UntypedFormControl(null)
@@ -45,5 +47,9 @@ export class HeaderComponent implements OnInit {
 
     onToggleControlSidebar() {
         this.store.dispatch(new ToggleControlSidebar());
+    }
+
+    onToggleDarkMode() {
+        this.store.dispatch(new ToggleDarkMode());
     }
 }

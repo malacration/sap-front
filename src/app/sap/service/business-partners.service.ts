@@ -32,10 +32,21 @@ export class BusinessPartnerService {
     return this.hppCliente.post<BusinessPartner>(this.url+"/key/"+hashCode,pn)
   }
 
-  getByCpfCnpj(cpfCnpj : string) : Observable<BusinessPartner>{
+  getByCurrentUser() : Observable<BusinessPartner>{
+    return this.hppCliente
+      .get<BusinessPartner>(this.url+"/cpf-cnpj")
+      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
+  }
+
+  getContactsOpaco(cpfCnpj : string) : Observable<Array<any>>{
     cpfCnpj = cpfCnpj.replace(/\D/g, '');
     return this.hppCliente
-      .get<BusinessPartner>(this.url+"/cpf-cnpj/"+cpfCnpj)
-      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
+      .get<Array<any>>(this.url+"/cpf-cnpj/contact/"+cpfCnpj)
+  }
+
+  selectOTPContat(cpfCnpj : string, otp : string) : Observable<Array<any>>{
+    cpfCnpj = cpfCnpj.replace(/\D/g, '');
+    return this.hppCliente
+      .get<Array<any>>(this.url+"/cpf-cnpj/"+cpfCnpj+"/otp?otp="+otp)
   }
 }

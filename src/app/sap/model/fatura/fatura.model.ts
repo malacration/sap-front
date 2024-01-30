@@ -67,13 +67,12 @@ export class FaturaDefinition{
 
     getFaturaDefinition() {
         return [
-            new Column('Código', 'id'),
             new Column('Nº Nota', 'nota'),
             new Column('Data', 'dataF'),
             new Column('Parcelas', 'numParcelas'),
             new Column('Valor R$:', 'valorCurrency'),
             // new Column('Vencimento Proxima Parcela', 'vencimentoProximaParcela'),
-            new Column('Vencimento ultima parcela', 'vencimento')
+            new Column('Termina em', 'vencimento')
         ]   
     }
 }

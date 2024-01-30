@@ -1,6 +1,8 @@
 <a
     (click)="handleMainMenuAction()"
     class="nav-link"
+    [routerLink]="menuItem.path"
+    [routerLinkActive]="'active'"
     [ngClass]="{active: isMainActive || isOneOfChildrenActive}"
 >
     <i class="nav-icon {{ menuItem.iconClasses }}"></i>

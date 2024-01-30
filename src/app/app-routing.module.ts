@@ -12,30 +12,40 @@ const routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'home',
+    title: 'Inicio',
     component: HomeComponent
   },
   {
     path: 'romaneio',
+    title: 'Romaneio',
+    data: ["hidden"],
     component: RomaneioComponent
   },
   {
     path: 'entrada-insumo/:id',
+    title: 'Entrada Insumo',
+    data: ["hidden"],
     component: EntradaInsumoComponent
   },
   {
     path: 'faturas',
+    title: 'Faturas',
     component: FaturasComponent
   },
   {
     path: 'cadastro/:id',
+    title: 'Cadastro',
+    data: ["hidden"],
     component: CadastroComponent
   },
   {
     path: '**',
+    title: 'Não encontrado',
+    data: ["hidden"],
     component: PageNotFoundComponent
   }
 ];

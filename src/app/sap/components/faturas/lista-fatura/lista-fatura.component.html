@@ -1,0 +1,27 @@
+<div class="card card-info">
+    <div class="card-header">
+        <h3 class="card-title"><b>Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
+        <div class="card-tools">
+            <button (click)="close($event)" type="button" class="btn btn-warning btn-sm">
+                Sair
+            </button>
+        </div>
+    </div>
+    <div class="card-body">                
+        <div *ngIf="faturaSelecionada" class="fatura-selecionada">
+            <app-fatura-selecionada 
+                (close)="descelecionarFatura($event)" 
+                [fatura]="faturaSelecionada">
+            </app-fatura-selecionada>
+        </div>
+        <app-table *ngIf="!faturaSelecionada" 
+            [content]="faturas.content" 
+            (actionOutput)="action($event)"
+            [definition]="definition">
+        </app-table>
+        <app-paginacao *ngIf="!faturaSelecionada" (pageChange)="loadFaturas($event)" [totalItens]="faturas.totalElements" [pageSize]="faturas.size"></app-paginacao>
+    </div>
+    <div *ngIf="loading" class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+</div>

@@ -4,6 +4,8 @@ import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
 import { UiState } from './store/ui/state';
 import { Observable } from 'rxjs';
+import { Title } from '@angular/platform-browser';
+import { ConfigService } from './core/services/config.service';
 
 @Component({
   selector: 'app-root',
@@ -17,9 +19,13 @@ export class AppComponent {
 
   public itens : Array<string> = ["item1","item2"]
 
-  constructor(private renderer: Renderer2, private store: Store<AppState>) {}
+  constructor(private renderer: Renderer2, 
+    private titleService : Title,
+    private config : ConfigService,
+    private store: Store<AppState>) {}
 
   ngOnInit() {
+    this.titleService.setTitle(this.config.title)
       this.ui = this.store.select('ui');
       this.renderer.removeClass(
           document.querySelector('body'),

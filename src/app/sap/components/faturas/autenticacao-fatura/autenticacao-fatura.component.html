@@ -1,0 +1,53 @@
+<div class="card card-info" *ngIf="!this.aguardaCodeReturn">
+    <div class="card-header">
+        <h3 class="card-title"><b>
+            Escolha um contato para receber o código de acesso
+            </b></h3>
+            <div class="card-tools">
+                <small>
+                    *Parte dos dados estão ocultados para sua segurança
+                </small>
+            </div>
+    </div>
+    <div class="card-body" *ngIf="!this.aguardaCodeReturn">                
+        <app-radio
+            [opcoes]="opcoes"
+            (change)="select($event)"
+        ></app-radio>
+        <div class="form-group">
+            <button (click)="next()" class="btn btn-primary" [disabled]="!selecionado" >Avançar</button>
+        </div>
+    </div>
+
+    
+</div>
+
+
+<div class="card card-info" *ngIf="this.aguardaCodeReturn">
+    <div class="card-header">
+        <h3 class="card-title"><b>
+            Enviamos uma mensagem para {{selecionado.label}}
+            </b></h3>
+    </div>
+    <div class="card-body">                
+        <div class="form-group">
+            <div class="form-group">
+                <label for="codigo">Informe o código recebido</label>
+                <input type="number" class="form-control" id="codigo" [(ngModel)]="codigo">
+            </div>
+            <div class="form-group">
+                <button (click)="acessaComCodigo()" class="btn btn-primary" [disabled]="!codigo" >Avançar</button>
+            </div>
+        </div>
+        <hr>
+        <div>
+            <label>Ainda não recebeu o código?&nbsp;</label>
+            <small *ngIf="reenviaDisable()">Aguarde <span style="color: red">{{count.display}}</span> para pedir um novo código</small>
+            <div class="form-group">
+                <button (click)="next()" class="btn btn-primary" [disabled]="reenviaDisable()" >Reenviar Codigo</button>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
