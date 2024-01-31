@@ -33,6 +33,10 @@ export class ListaFaturaComponent implements OnInit {
   }
 
   ngOnInit(page = 0){
+    this.loadFaturas(page)
+  }
+
+  loadFaturas(page){
     this.loading = true;
     this.faturaService.getFaturas(this.clienteSelecionado.CardCode,page).subscribe((faturas) => {
       this.faturas = faturas;
