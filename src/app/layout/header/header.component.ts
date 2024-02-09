@@ -6,6 +6,8 @@ import { AppState } from '../../store/state';
 import { ToggleControlSidebar, ToggleDarkMode, ToggleSidebarMenu } from '../../store/ui/actions';
 import { UiState } from '../../store/ui/state';
 
+//main-header navbar navbar-expand navbar-light navbar-white
+
 const BASE_CLASSES = 'main-header navbar navbar-expand';
 @Component({
     selector: 'app-header',

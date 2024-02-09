@@ -5,6 +5,7 @@ import { InstallmentService } from '../../../service/fatura/installment.service 
 import { Paga } from '../../../model/fatura/paga.model';
 import { FaturasService } from '../../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { AlertSerice } from '../../../service/alert.service';
 
 
 
@@ -24,7 +25,9 @@ export class FaturaSelecionadaComponent implements OnInit {
 
   definition = new ParcelaDefinition().getFaturaDefinition();
 
-  constructor(private service : InstallmentService, private faturaService : FaturasService){
+  constructor(
+    private service : InstallmentService, 
+    private faturaService : FaturasService){
   }
 
   @Output()
@@ -32,9 +35,13 @@ export class FaturaSelecionadaComponent implements OnInit {
 
   ngOnInit(): void {
     this.parcelas = this.fatura.parcelas
-    this.service.getFaturaPaga(this.fatura.docEntry).subscribe((f) => {
-      this.fatura.registraPagamento(f)
-      this.carregado = true
+    this.service.getFaturaPaga(this.fatura.docEntry).subscribe({
+      next : (f)  => {
+        this.fatura.registraPagamento(f)
+      },
+      complete : () => this.carregado = true,
+      error : () => this.carregado = true,
+      
     })
   }
 
@@ -45,11 +52,14 @@ export class FaturaSelecionadaComponent implements OnInit {
   action(action : ActionReturn){
     if(action.type == 'ver-boleto'){
       action.carregando = true;
-      this.faturaService.getPdf(this.fatura.docEntry,action.data.id).subscribe((response) => {
-        action.carregando = false;
-        var fileURL = window.URL.createObjectURL(response);                        
-        window.open(fileURL, '_blank');
-      })
+      this.faturaService.getPdf(this.fatura.docEntry,action.data.id).subscribe({
+        next: (response) => {
+          var fileURL = window.URL.createObjectURL(response);                        
+          window.open(fileURL, '_blank');
+        },
+        complete : () => action.carregando = false,
+        error : () => action.carregando = false,
+    })
     }
   }
 

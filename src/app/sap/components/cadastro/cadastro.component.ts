@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import Stepper from 'bs-stepper';
 import { BusinessPartnerService } from '../../service/business-partners.service';
 import { BPAddress, BusinessPartner, Person, Referencia, ReferenciaComercial } from '../../model/business-partner';
 import { AlertSerice } from '../../service/alert.service';
@@ -14,8 +13,6 @@ import { Observable, concatAll, delay, forkJoin, from, map, merge, of, reduce, s
   templateUrl: './cadastro.component.html',
 })
 export class CadastroComponent implements OnInit {
-
-  private stepper: Stepper;
 
   loading: boolean = true;
   finalizado = false
@@ -34,11 +31,7 @@ export class CadastroComponent implements OnInit {
     console.log(files)
     this.files = files
   }
-
-  next() {
-    this.stepper.next();
-  }
-
+  
   isCasado(): boolean {
     let conjugue = this.pn.getConjugue()
     return (conjugue != undefined && conjugue != null)

@@ -2,29 +2,59 @@
 // @import '~bootstrap/scss/bootstrap';
 
 /* Importing Bootstrap SCSS file. */
-/*// @import '~bootstrap/scss/bootstrap';*/
-
+// @import '~bootstrap/scss/bootstrap';
 @import url('https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.3.0/css/flag-icon.min.css');
 
 @import '~admin-lte/plugins/fontawesome-free/css/all.min.css';
 
-@import '~admin-lte/plugins/bs-stepper/css/bs-stepper.css';
-@import '~admin-lte/plugins/icheck-bootstrap/icheck-bootstrap.min.css';
-@import '~admin-lte/dist/css/adminlte.min.css';
+@import 'admin-lte/node_modules/bootstrap/scss/functions';
+@import 'admin-lte/build/scss/bootstrap-variables';
+
 
 @import 'ngx-toastr/toastr';
 
-// @import '~bootstrap/scss/functions';
-// @import '~admin-lte/build/scss/bootstrap-variables';
+$custom-color: #25A246;
+
+
+$theme-colors: (
+  "primary": #25A246
+);
 
 
 
-$custom-color: #00FF00;
-// $theme-colors: map-merge((
-//     'custom-color': $custom-color,
-// ), $theme-colors);
+.my-custom-style {
+    background-color: $custom-color;
+    padding: .5rem 0;
+}
 
+@import 'admin-lte/node_modules/bootstrap/scss/bootstrap';
+
+@import 'admin-lte/build/scss/variables';
+@import 'admin-lte/build/scss/variables-alt';
+
+@import 'admin-lte/build/scss/mixins';
+
+@import 'admin-lte/build/scss/parts/core';
+
+@import 'admin-lte/build/scss/parts/components';
+@import 'admin-lte/build/scss/parts/extra-components';
+@import 'admin-lte/build/scss/parts/pages';
+@import 'admin-lte/build/scss/parts/plugins';
+
+// @import 'admin-lte/build/scss/parts/miscellaneous';
+
+@import 'admin-lte/build/scss/miscellaneous';
+@import 'admin-lte/build/scss/print';
+@import 'admin-lte/build/scss/text';
+@import 'admin-lte/build/scss/elevation';
+// @import 'admin-lte/build/scss/colors';
+
+
+
+.btn-color {
+    @include button-variant($custom-color, $custom-color);
+}
 
 
 body {

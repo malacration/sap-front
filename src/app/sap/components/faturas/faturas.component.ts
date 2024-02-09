@@ -8,6 +8,7 @@ import { Page } from '../../model/page.model';
 import { AlertSerice } from '../../service/alert.service';
 import { RadioItem } from '../form/radio/radio.model';
 import { OneTimePasswordService } from '../../service/one-time-password.service';
+import { ConfigService } from '../../../core/services/config.service';
 
 
 
@@ -29,8 +30,11 @@ export class FaturasComponent implements OnInit {
   disableAvancar : boolean = false
   contatosOpcoes : Array<RadioItem>
 
+  phoneNumber = this.configService.commercial_phone
+
   constructor(private faturaService : FaturasService,
     private otpService : OneTimePasswordService,
+    private configService :  ConfigService,
     private alertService : AlertSerice,
     private bpService : BusinessPartnerService){
       

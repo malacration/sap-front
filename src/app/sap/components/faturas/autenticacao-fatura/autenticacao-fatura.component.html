@@ -1,4 +1,4 @@
-<div class="card card-info" *ngIf="!this.aguardaCodeReturn">
+<div class="card card-primary" *ngIf="!this.aguardaCodeReturn">
     <div class="card-header">
         <h3 class="card-title"><b>
             Escolha um contato para receber o código de acesso
@@ -23,7 +23,7 @@
 </div>
 
 
-<div class="card card-info" *ngIf="this.aguardaCodeReturn">
+<div class="card card-primary" *ngIf="this.aguardaCodeReturn">
     <div class="card-header">
         <h3 class="card-title"><b>
             Enviamos uma mensagem para {{selecionado.label}}
