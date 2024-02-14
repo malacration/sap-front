@@ -1,9 +1,10 @@
-import * as moment from "moment"
 import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
 import { Column } from "../../../shared/components/table/column.model"
 import { formatCurrency } from "@angular/common"
 import { Parcela } from "./parcela.model"
 import { Paga } from "./paga.model"
+import * as moment from 'moment';
+
 
 
 export class Fatura implements Actiable {
@@ -19,7 +20,7 @@ export class Fatura implements Actiable {
     
 
     get dataF(){
-        return moment(this.data).format('L');
+        return moment(moment(this.data)).locale("pt-br").format('L');
     }
 
     get valorCurrency(){
@@ -27,7 +28,7 @@ export class Fatura implements Actiable {
     }
 
     get vencimento(){
-        return moment(this.vencimentoUltimaParcela).format('L');
+        return moment(moment(this.vencimentoUltimaParcela)).locale("pt-br").format('L');
     }
 
     get numParcelas(){

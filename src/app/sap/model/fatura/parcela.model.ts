@@ -14,7 +14,7 @@ export class Parcela implements Actiable {
     carregando = false;
 
     get vencimentoF(){
-        return moment(this.vencimento).format('L');
+        return moment(moment(this.vencimento)).locale("pt-br").format('L');
     }
 
     get valorCurrency(){
