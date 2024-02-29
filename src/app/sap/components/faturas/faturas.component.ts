@@ -9,6 +9,7 @@ import { AlertSerice } from '../../service/alert.service';
 import { RadioItem } from '../form/radio/radio.model';
 import { OneTimePasswordService } from '../../service/one-time-password.service';
 import { ConfigService } from '../../../core/services/config.service';
+import { TaxService } from '../../service/fatura/tax.service';
 
 
 
@@ -75,13 +76,6 @@ export class FaturasComponent implements OnInit {
 
   descelecionarFatura($event){
     this.faturaSelecionada = undefined;
-  }
-
-
-  action(event : ActionReturn){
-    if(event.type == "ver-fatura"){
-      this.faturaSelecionada = event.data
-    }
   }
 
   recebeCodigo(codigo){

@@ -1,9 +1,6 @@
 
-<button *ngIf="!this.action.retorno.carregando" type="button" class="btn btn-{{color}}" (click)="bClick()">
-    <i class="{{action.icon}}"></i> {{action.label}}
+<button type="button" class="btn btn-{{color}}" (click)="bClick()" [disabled]="action.retorno.carregando">
+    <i *ngIf="!action.retorno.carregando" class="{{action.icon}}"></i> 
+    <span *ngIf="action.retorno.carregando" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    {{action.label}}
 </button>
-
-
-<div *ngIf="this.action.retorno.carregando" class="overlay">
-    <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-</div>

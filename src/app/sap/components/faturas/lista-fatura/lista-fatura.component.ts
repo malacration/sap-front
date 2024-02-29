@@ -4,6 +4,7 @@ import { FaturasService } from '../../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { BusinessPartner } from '../../../model/business-partner';
 import { Page } from '../../../model/page.model';
+import { TaxService } from '../../../service/fatura/tax.service';
 
 
 
@@ -28,7 +29,8 @@ export class ListaFaturaComponent implements OnInit {
   loading = false;
   definition = new FaturaDefinition().getFaturaDefinition();
 
-  constructor(private faturaService : FaturasService){
+  constructor(private faturaService : FaturasService,
+    private taxService : TaxService){
       
   }
 
@@ -56,6 +58,29 @@ export class ListaFaturaComponent implements OnInit {
   action(event : ActionReturn){
     if(event.type == "ver-fatura"){
       this.faturaSelecionada = event.data
+      event.carregando = false
+    }
+    else if(event.type == "show-nf"){
+      event.carregando = true
+      this.taxService.getPdf(event.data.docEntry).subscribe({
+        next: (response) => {
+          var fileURL = window.URL.createObjectURL(response);                        
+          window.open(fileURL, '_blank');
+        },
+        complete : () => event.carregando = false,
+        error : () => event.carregando = false,
+      })
+    }
+    else if(event.type == "show-boleto"){
+      event.carregando = true;
+      this.faturaService.getPdf(event.data.docEntry,"0").subscribe({
+        next: (response) => {
+          var fileURL = window.URL.createObjectURL(response);                        
+          window.open(fileURL, '_blank');
+        },
+        complete : () => event.carregando = false,
+        error : () => event.carregando = false,
+      })
     }
   }
 

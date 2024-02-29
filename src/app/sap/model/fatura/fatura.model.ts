@@ -17,6 +17,9 @@ export class Fatura implements Actiable {
     vencimentoProximaParcela : string
     parcelas : Array<Parcela>
     docEntry : string;
+    isBoleto : Boolean = true
+
+    private _actions : Array<Action>
     
 
     get dataF(){
@@ -36,9 +39,16 @@ export class Fatura implements Actiable {
     }
 
     getActions() : Array<Action>{
-        return [
-            new Action("Ver", new ActionReturn("ver-fatura",this), "fas fa-eye")
-        ]
+        if(!this._actions){
+            this._actions = [
+                new Action("Nota", new ActionReturn("show-nf",this), "fas fa-file-invoice"),
+            ];
+            if(this.numParcelas > 1)
+                this._actions.push(new Action("Parcelas", new ActionReturn("ver-fatura",this)))
+            else if(this.isBoleto)                    
+                new Action("Boleto", new ActionReturn("show-boleto",this), "fas fa-barcode")
+        }
+        return this._actions
     }
 
     registraPagamento(list : Array<Paga>){

@@ -13,8 +13,8 @@
             <div [innerHTML]="renderContent(item,def) | appSafeHtml"></div>
           </td>
           <td>
-            <div class="btn-group">
-                <app-action class="btn-group" 
+            <div>
+                <app-action class="app-action"
                   *ngFor="let action of item.getActions()"
                   [action]="action" 
                   (actionOutput)="evento($event)">

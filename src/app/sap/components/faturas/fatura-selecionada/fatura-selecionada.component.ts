@@ -59,7 +59,7 @@ export class FaturaSelecionadaComponent implements OnInit {
         },
         complete : () => action.carregando = false,
         error : () => action.carregando = false,
-    })
+      })
     }
   }
 

@@ -12,6 +12,7 @@ export class Parcela implements Actiable {
     vencimento : string
     private _pago : boolean = false
     carregando = false;
+    isBoleto = true
 
     get vencimentoF(){
         return moment(moment(this.vencimento)).locale("pt-br").format('L');
@@ -38,7 +39,7 @@ export class Parcela implements Actiable {
                 pago
             ]
         }
-        else
+        else if(this.isBoleto)
             this._actions = [
                 new Action("Boleto", new ActionReturn("ver-boleto",this), "fa-solid fa-barcodeima"),
                 // new Action("Pix", new ActionReturn("ver-pix",this), "fa-brands fa-pix")
