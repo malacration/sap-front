@@ -8,7 +8,7 @@ RUN npm install
 RUN npm install -g @angular/cli
 RUN npm install --save-dev @angular-devkit/build-angular --force
 COPY . /app
-RUN ng build
+RUN ng build --configuration production
 
 FROM nginx
 COPY entrypoint-config.sh /docker-entrypoint.d
