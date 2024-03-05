@@ -34,7 +34,7 @@ export class TableComponent implements OnInit {
 
   calculateTableWidth() {
     // Get the table container width:
-    console.log(document.getElementById('tableCard'))
+    
     const pageWidth = document.getElementById('tableCard').offsetWidth;
     // Get the longest column name
     const longest = this.tableColumns.sort(function (a, b) { return b.length - a.length; })[0];

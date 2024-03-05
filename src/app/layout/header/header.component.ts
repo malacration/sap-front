@@ -40,7 +40,7 @@ export class HeaderComponent implements OnInit {
     }
 
     logout() {
-        alert("logout")
+        
     }
 
     onToggleMenuSidebar() {

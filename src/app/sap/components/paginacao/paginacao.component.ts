@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 
 @Component({
@@ -6,7 +6,7 @@ import { ActivatedRoute, ParamMap } from '@angular/router';
   templateUrl: './paginacao.component.html',
   styleUrls: ['./paginacao.component.scss']
 })
-export class PaginacaoComponent {
+export class PaginacaoComponent implements OnInit {
   
   @Output() 
   pageChange = new EventEmitter<number>();
@@ -19,13 +19,35 @@ export class PaginacaoComponent {
   @Input()
   totalItens : number = 20
 
+  totalVisiblePages = 10;
+
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.totalMaxPage(window.innerWidth)
+  }
 
   constructor(private route: ActivatedRoute){
+    
+  }
+
+  ngOnInit() {
+    this.totalMaxPage(window.innerWidth)
+  }
+
+
+  totalMaxPage(size){
+    let tamanhoPorIndex = 30
+    let botaoFixo = 150
+    this.totalVisiblePages = Math.trunc((size-botaoFixo)/tamanhoPorIndex)
+    if(this.totalVisiblePages > 10 || this.paginaAtual+(this.totalVisiblePages/2) > 9)
+      this.totalVisiblePages = Math.trunc((size-botaoFixo)/(tamanhoPorIndex*1.30))
   }
 
   change(number) {
     this.paginaAtual = number
     this.pageChange.emit(number)
+    this.totalMaxPage(window.innerWidth)
   }
 
   isFirst() : boolean{
@@ -67,12 +89,11 @@ export class PaginacaoComponent {
 
   get pages(): number[] {
     const visiblePages: number[] = [];
-    const totalVisiblePages = 10;
-    let startPage = Math.max(0, this.paginaAtual - Math.floor(totalVisiblePages / 2));
-    let endPage = startPage + totalVisiblePages - 1;
+    let startPage = Math.max(0, this.paginaAtual - Math.floor(this.totalVisiblePages / 2));
+    let endPage = startPage + this.totalVisiblePages - 1;
     if (endPage > this.totalPages) {
       endPage = this.totalPages-1;
-      startPage = Math.max(0, endPage - totalVisiblePages + 1);
+      startPage = Math.max(0, endPage - this.totalVisiblePages + 1);
     }
     for (let i = startPage; i <= endPage; i++) {
       visiblePages.push(i);

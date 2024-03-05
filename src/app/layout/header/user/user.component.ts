@@ -16,7 +16,7 @@ export class UserComponent implements OnInit {
     }
 
     logout() {
-        alert("logout")
+        
     }
 
     formatDate(date) {

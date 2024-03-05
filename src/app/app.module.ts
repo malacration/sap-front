@@ -60,6 +60,7 @@ import { AutenticacaoFaturaComponent } from './sap/components/faturas/autenticac
 import { RadioComponent } from './sap/components/form/radio/radio.component';
 import { OneTimePasswordService } from './sap/service/one-time-password.service';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
+import { DatasComponent } from './sap/components/filters/datas/datas.component';
 
 
 
@@ -101,6 +102,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RadioComponent,
     TableComponent,
     ActionComponent,
+    DatasComponent,
   ],
   imports: [
     NgxPaginationModule,

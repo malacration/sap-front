@@ -28,7 +28,6 @@ export class CadastroComponent implements OnInit {
   files: Array<any> = [];
 
   getFiles(files) {
-    console.log(files)
     this.files = files
   }
   

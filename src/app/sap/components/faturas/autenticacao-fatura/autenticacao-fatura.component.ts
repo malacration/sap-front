@@ -33,7 +33,6 @@ export class AutenticacaoFaturaComponent {
   getCodigo = new EventEmitter<number>();
   
   select($event){
-    console.log($event)
     if(!($event instanceof Event)){
       this.selecionado = $event
     }
