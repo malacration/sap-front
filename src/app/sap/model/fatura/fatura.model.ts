@@ -46,7 +46,7 @@ export class Fatura implements Actiable {
             if(this.numParcelas > 1)
                 this._actions.push(new Action("Parcelas", new ActionReturn("ver-fatura",this)))
             else if(this.isBoleto)                    
-                new Action("Boleto", new ActionReturn("show-boleto",this), "fas fa-barcode")
+            this._actions.push(new Action("Boleto", new ActionReturn("show-boleto",this), "fas fa-barcode"))
         }
         return this._actions
     }
