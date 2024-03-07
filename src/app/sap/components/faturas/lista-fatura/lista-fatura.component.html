@@ -14,7 +14,7 @@
                 [fatura]="faturaSelecionada">
             </app-fatura-selecionada>
         </div>
-        <div class="row">
+        <div *ngIf="!faturaSelecionada" class="row">
             <!-- <filter-business-place class="col-md-3" /> -->
             <filter-datas (changeFilter)="changeDatas($event)" class="col-md-3"  />
             <filter-numero-nf (changeFilter)="changeNumeroNf($event)"  class="col-sm-2"/>
