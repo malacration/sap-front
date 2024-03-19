@@ -96,7 +96,7 @@ export class ListaFaturaComponent implements OnInit {
     }
     else if(event.type == "show-boleto"){
       event.carregando = true;
-      this.faturaService.getPdf(event.data.docEntry,"0").subscribe({
+      this.faturaService.getPdf(event.data.docEntry,"1").subscribe({
         next: (response) => {
           var fileURL = window.URL.createObjectURL(response);                        
           window.open(fileURL, '_blank');
