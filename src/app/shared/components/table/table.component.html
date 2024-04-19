@@ -15,8 +15,8 @@
           <td *ngIf="item.getActions">
             <div>
                 <app-action class="app-action"
-                  *ngFor="let action of item.getActions()"
-                  [action]="action" 
+                  *ngFor="let action of item.getActions(); trackBy: trackByFn"
+                  [action]="action"
                   (actionOutput)="evento($event)">
                 </app-action>
             </div>

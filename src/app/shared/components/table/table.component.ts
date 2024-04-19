@@ -69,4 +69,8 @@ export class TableComponent implements OnInit {
     return this.content.filter(item => item.getActions).length > 0
   }
 
+  trackByFn(index, response) {
+    return index;
+  }
+
 }
