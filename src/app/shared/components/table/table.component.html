@@ -4,7 +4,7 @@
       <thead class="thead-light">
         <tr>
           <th *ngFor="let def of definition" scope="col">{{def.label}}</th>
-          <th></th>
+          <th *ngIf="hasAction()"></th>
         </tr>
       </thead>
       <tbody>
@@ -12,7 +12,7 @@
           <td *ngFor="let def of definition" scope="col">
             <div [innerHTML]="renderContent(item,def) | appSafeHtml"></div>
           </td>
-          <td>
+          <td *ngIf="item.getActions">
             <div>
                 <app-action class="app-action"
                   *ngFor="let action of item.getActions()"

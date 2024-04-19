@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { BusinessPartnerService } from '../../service/business-partners.service';
-import { BPAddress, BusinessPartner, Person, Referencia, ReferenciaComercial } from '../../model/business-partner';
 import { AlertSerice } from '../../service/alert.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../store/state';
 import { ToggleHeaderMenu } from '../../../store/ui/actions';
 import { Observable, concatAll, delay, forkJoin, from, map, merge, of, reduce, subscribeOn, switchMap, timer } from 'rxjs';
+import { BPAddress, BusinessPartner, Person, Referencia } from '../../model/business-partner/business-partner';
 
 @Component({
   selector: 'app-cadastro',

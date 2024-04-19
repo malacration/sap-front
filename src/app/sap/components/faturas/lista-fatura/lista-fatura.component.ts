@@ -2,10 +2,10 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Fatura, FaturaDefinition } from '../../../model/fatura/fatura.model';
 import { FaturasService } from '../../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
-import { BusinessPartner } from '../../../model/business-partner';
 import { Page } from '../../../model/page.model';
 import { TaxService } from '../../../service/fatura/tax.service';
 import { error } from 'console';
+import { BusinessPartner } from '../../../model/business-partner/business-partner';
 
 
 

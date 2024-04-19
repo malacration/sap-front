@@ -1,6 +1,8 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
+import { pipe } from 'rxjs';
+
 
 @Component({
   selector: 'app-table',
@@ -33,20 +35,21 @@ export class TableComponent implements OnInit {
   }
 
   calculateTableWidth() {
-    // Get the table container width:
-    
-    const pageWidth = document.getElementById('tableCard').offsetWidth;
-    // Get the longest column name
-    const longest = this.tableColumns.sort(function (a, b) { return b.length - a.length; })[0];
-    // Calculate table width
-    let tableWidth = this.tableColumns.length * longest.length * 10;
-    // If the width is less than the pageWidth
-    if (tableWidth < (pageWidth - 10)) {
-      // We set tableWidth to pageWidth - scrollbarWidth (10 in my project)
-      tableWidth = pageWidth - 10;
+    if(document.getElementById('tableCard')){
+      // Get the table container width:
+      const pageWidth = document.getElementById('tableCard').offsetWidth;
+      // Get the longest column name
+      const longest = this.tableColumns.sort(function (a, b) { return b.length - a.length; })[0];
+      // Calculate table width
+      let tableWidth = this.tableColumns.length * longest.length * 10;
+      // If the width is less than the pageWidth
+      if (tableWidth < (pageWidth - 10)) {
+        // We set tableWidth to pageWidth - scrollbarWidth (10 in my project)
+        tableWidth = pageWidth - 10;
+      }
+      // Then we update the --table-width variable:
+      document.querySelector('body').style.cssText = '--table-width: ' + tableWidth + 'px';
     }
-    // Then we update the --table-width variable:
-    document.querySelector('body').style.cssText = '--table-width: ' + tableWidth + 'px';
   }
 
   renderContent(item : any, definition : Column){
@@ -58,7 +61,12 @@ export class TableComponent implements OnInit {
   }
 
   evento(retorno : any){
+    alert("teste")
     this.actionOutput.emit(retorno)
+  }
+
+  hasAction() : Boolean{
+    return this.content.filter(item => item.getActions).length > 0
   }
 
 }

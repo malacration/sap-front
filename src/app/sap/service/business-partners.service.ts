@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { BusinessPartner } from '../model/business-partner';
 import { ConfigService } from '../../core/services/config.service';
+import { BusinessPartner } from '../model/business-partner/business-partner';
 
 @Injectable({
   providedIn: 'root'

@@ -1,7 +1,8 @@
-import { Option } from "./form/option"
+import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
+import { Option } from "../form/option"
 
 
-export class BusinessPartner{
+export class BusinessPartner implements Actiable{
     CardCode : string
     CardName : string
     Phone1 : Number
@@ -32,6 +33,12 @@ export class BusinessPartner{
 
     getConjugue() : Person{
         return this.ContactEmployees.find(it => it.U_tipoPessoa == 'conjuge')
+    }
+
+    getActions(): Action[] {
+        return [
+            new Action("teste", new ActionReturn("selected",this), "far fa-check-circle")
+        ]
     }
     
 }

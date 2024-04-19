@@ -61,6 +61,11 @@ import { RadioComponent } from './sap/components/form/radio/radio.component';
 import { OneTimePasswordService } from './sap/service/one-time-password.service';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { DatasComponent } from './sap/components/filters/datas/datas.component';
+import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
+import { ItensComponent } from './sap/components/document/itens/itens.component';
+import { ModalComponent } from './shared/components/modal/modal.component';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { ClienteComponent } from './sap/components/cliente/cliente.component';
 
 
 
@@ -103,6 +108,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     TableComponent,
     ActionComponent,
     DatasComponent,
+    DocumentStatementComponent,
+    ItensComponent,
+    ModalComponent,
+    ClienteComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -138,6 +147,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CityService,
     BusinessPartnerService,
     OneTimePasswordService,
+    BsModalService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ],
