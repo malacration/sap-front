@@ -21,6 +21,13 @@
                     <div class="col-sm-3">
                         <filter-numero-nf (changeFilter)="numberNfFilter($event)" />
                     </div>
+                    <div class="form-group">
+                        <label>Tipo Romaneio: </label>
+                        <select class="form-control container-fluid card-outline" [(ngModel)]="tipoRomaneio" (change)="changeTipo()">
+                            <option selected value="ENTRADA">Entrada</option>
+                            <option value="SAIDA">Saída</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -41,8 +48,11 @@
                     <div class="card-header">
                         <h4 class="card-title">{{item.DocNum}} - Nota: {{item.U_NumeroNota}} - {{item.U_CodParceiro}} - {{item.U_NomeParceiro}} - Data {{castDate(item.CreateDate)}} </h4>
                         <div class="card-tools top">
-                            <button [routerLink]="['/entrada-insumo',item.DocNum]" type="button" class="btn btn-primary btn-sm mr-1">
-                                <i class="fa fa-clipboard"></i> Entrada Insumo
+                            <button *ngIf="tipoRomaneio === 'ENTRADA'" [routerLink]="['/romaneio-fazenda-insumo', item.DocNum,'entrada']" type="button" class="btn btn-primary btn-sm mr-1">
+                                <i rou class="fa fa-clipboard"></i> Entrada Insumo
+                            </button>
+                            <button *ngIf="tipoRomaneio === 'SAIDA'" [routerLink]="['/romaneio-fazenda-insumo', item.DocNum,'saida']" type="button" class="btn btn-primary btn-sm mr-1">
+                                <i rou class="fa fa-clipboard"></i> Saída Insumo
                             </button>
                             <button type="button" class="btn btn-outline-primary btn-sm" (click)="item.collapse = !item.collapse">
                                 <i *ngIf="!item.collapse" class="fa fa-plus"></i>

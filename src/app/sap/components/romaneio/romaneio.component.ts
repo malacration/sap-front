@@ -4,6 +4,7 @@ import { RomaneioPesagemService } from '../../service/romaneio-pesagem.service';
 import * as moment from 'moment';
 import { BusinessPlace } from '../../model/business-place';
 import { Filter } from '../../model/filter.model';
+import { TipoRomaneio } from '../../model/tipo-romaneio';
 
 
 
@@ -24,12 +25,15 @@ export class RomaneioComponent implements OnInit {
   currentPage = 0;
   filtros : Map<string,Filter> = new Map();
 
+  tipoRomaneio = "ENTRADA"
+
   constructor(private romaneioPesagemService : RomaneioPesagemService){
       
   }
 
   ngOnInit(): void {
     moment(Date()).format('YYYY-MM-DD');
+    this.filtros.set('tipo-contrato',new Filter('tipo-contrato','ENTRADA'));
     this.loadPage(this.currentPage);
   }
 
@@ -46,10 +50,19 @@ export class RomaneioComponent implements OnInit {
     this.loadPage(this.currentPage);
   }
 
+  tipoRomaneioFilter(event : TipoRomaneio) {
+    this.filtros.set('bp',new Filter("bp",event.DefaultVendorID));
+    this.loadPage(this.currentPage);
+  }
+
+  changeTipo(){
+    this.filtros.set('tipo-contrato',new Filter('tipo-contrato',this.tipoRomaneio));
+    this.loadPage(0);
+  }
+
   castDate(entrada) : string{
     return moment(entrada).format('DD/MM/YYYY'); 
   }
-
 
   loadPage($event){
     this.currentPage = $event;

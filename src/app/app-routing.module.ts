@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { PageNotFoundComponent } from './shared/components';
-
 import { HomeComponent } from './home/home.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
-import { EntradaInsumoComponent } from './sap/components/entrada-insumo/entrada-insumo.component';
+import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 
-const routes: Routes = [
+ let routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
@@ -22,14 +21,14 @@ const routes: Routes = [
   {
     path: 'romaneio',
     title: 'Romaneio',
-    data: ["hidden"],
+    data: ["internal"],
     component: RomaneioComponent
   },
   {
-    path: 'entrada-insumo/:id',
-    title: 'Entrada Insumo',
+    path: 'romaneio-fazenda-insumo/:id/:tipo',
+    title: 'Romaneio Fazenda Insumo',
     data: ["hidden"],
-    component: EntradaInsumoComponent
+    component: RomaneioFazendaInsumoComponent
   },
   {
     path: 'faturas',
@@ -39,7 +38,7 @@ const routes: Routes = [
   {
     path: 'cadastro/:id',
     title: 'Cadastro',
-    data: ["hidden"],
+    data: ["internal","hidden"],
     component: CadastroComponent
   },
   {
