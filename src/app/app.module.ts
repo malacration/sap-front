@@ -25,9 +25,11 @@ import { UserComponent } from './layout/header/user/user.component';
 import { ToastrModule } from 'ngx-toastr';
 import { MenuItemComponent } from './layout/menu-sidebar/menu-item/menu-item.component';
 import { HomeComponent } from './home/home.component';
-import { EntradaInsumoComponent } from './sap/components/entrada-insumo/entrada-insumo.component';
+import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
-import { RomaneioEntradaInsumoService } from './sap/service/romaneio-entrada-insumo.service';
+import { RomaneioFazendaInsumoService } from './sap/service/romaneio-fazenda-insumo.service';
+
+
 import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertSerice } from './sap/service/alert.service';
@@ -84,7 +86,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     MenuItemComponent,
     HomeComponent,
     RomaneioComponent,
-    EntradaInsumoComponent,
+    RomaneioFazendaInsumoComponent,
     PaginacaoComponent,
     FilterNumeroNfComponent,
     FilterBusinessPlaceComponent,
@@ -130,7 +132,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     })
   ],
   providers: [
-    RomaneioEntradaInsumoService,
+    RomaneioFazendaInsumoService,
     BusinessPlacesService,
     StateService,
     AlertSerice,

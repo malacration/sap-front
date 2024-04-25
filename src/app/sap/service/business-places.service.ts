@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { RomaneioEntradaInsumo } from '../model/romaneio-entrada-insumo.model';
+import { RomaneioFazendaInsumo } from '../model/romaneio-fazenda-insumo.model';
 import { BusinessPlace } from '../model/business-place';
 
 @Injectable({
