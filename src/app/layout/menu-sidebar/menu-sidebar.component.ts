@@ -19,6 +19,7 @@ export class MenuSidebarComponent implements OnInit {
     public user;
     title
     menu
+    modoOperacao = "external"
 
     constructor(
         private config : ConfigService,
@@ -27,6 +28,7 @@ export class MenuSidebarComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.modoOperacao = this.config.modoOperacao
         this.title = this.config.title
         this.ui = this.store.select('ui');
         this.ui.subscribe((state: UiState) => {
@@ -35,10 +37,17 @@ export class MenuSidebarComponent implements OnInit {
         this.menu = this.createMenu(this.router.config);
     }
 
-
     createMenu(routes: Route[]) : Array<MenuItem> {
+        // internal or external
         let menu : Array<MenuItem> = new Array<MenuItem>()
-        routes.filter(it => it.title != undefined && !(it.data?['hidden'] : undefined))
+        routes.filter(it =>
+            this.isTemTitulo(it) && !this.isHidden(it)
+            && (
+                (this.modoOperacao == "internal" && this.isRouteInternal(it))
+                ||
+                (this.modoOperacao != "internal" && !this.isRouteInternal(it))
+            )
+        )
         .map(route =>{
             let item = new MenuItem(route)
             if (route.children) {
@@ -48,6 +57,18 @@ export class MenuSidebarComponent implements OnInit {
             item
         })
         return menu
+    }
+
+    isHidden(it){
+        return it?.data?.filter(item => item.toString() == "hidden").toString() == 'hidden'
+    }
+
+    isTemTitulo(it){
+        return it.title != undefined
+    }
+
+    isRouteInternal(it : Route) : boolean {
+        return it?.data?.filter(item => item.toString() == "internal").toString() == 'internal'
     }
 
 }
