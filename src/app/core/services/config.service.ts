@@ -6,7 +6,7 @@ export class ConfigService {
   private host: string;
   public title: string = 'SAP - A R Soluções';
   public commercial_phone : string = '69 9 9999 6666'
-  public modoOperacao : string = "external"
+  private modoOperacao : string = "external"
 
   getHost(){
     if(this.host)
@@ -15,5 +15,13 @@ export class ConfigService {
     if(storageHost)
       return storageHost
     return "http://localhost:8080"
+  }
+
+  getModoOperacao() : string{
+    let modoOperacao = localStorage.getItem("modoOperacao")
+    if(modoOperacao)
+      return modoOperacao
+    if(this.modoOperacao)
+      return this.modoOperacao
   }
 }
