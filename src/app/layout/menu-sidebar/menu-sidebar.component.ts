@@ -27,6 +27,7 @@ export class MenuSidebarComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.modoOperacao = this.config.getModoOperacao()
         this.title = this.config.title
         this.ui = this.store.select('ui');
         this.ui.subscribe((state: UiState) => {
