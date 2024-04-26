@@ -1,6 +1,6 @@
 
 
-export class RomaneioEntradaInsumo{
+export class RomaneioFazendaInsumo{
     U_NumeroTicket : number
     U_PesoNota : number
     U_PesoBruto : number
@@ -8,6 +8,7 @@ export class RomaneioEntradaInsumo{
     U_PlacaCaminhao : string
     U_NumeroBoletim : string
     U_DataEntrada : Date
+    U_DataSaida : Date
     DocEntry : number
     U_PesoLiquido : number
     U_PesoLiquidoDesc : number
@@ -23,10 +24,13 @@ export class RomaneioEntradaInsumo{
     U_CodMotorista: string; //Objeto customizado
     U_Motorista : string //Objeto customizado
     U_CodRegistroCompra: string
+    U_CodContratoVenda: string
     U_CodParceiroNegocios: string
     U_CodDeposito: string
     U_TipoRomaneio = "G"
     PECU_REGACollection = Array<TipoAnalise>()
+    AGRI_RMSACollection = Array<TipoAnalise>()
+
 
 }
 

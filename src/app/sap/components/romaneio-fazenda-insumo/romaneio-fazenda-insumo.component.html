@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>Romaneios de Entrada de Insumo</h1>
+                <h1>Romaneios de {{tipo}} de Insumo</h1> 
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><b>Romaneios de entrada de insumo (RASCUNHO)</b></h3>
+                <h3  class="card-title"><b>Romaneios de {{tipo}} de insumo (RASCUNHO)</b></h3>
                 <div class="card-tools">
                     <button (click)="criarRomaneio()" type="button" class="btn btn-primary btn-sm">
                         Confirmar
@@ -61,9 +61,13 @@
                         <dt>Safra</dt>
                         <dd>{{draft?.U_CodSafra}}&nbsp;-&nbsp;{{draft?.U_DscSafra}}</dd>
                     </dl>
-                    <dl class="col-sm-2">
+                    <dl *ngIf="tipo === 'entrada'" class="col-sm-2">
                         <dt>Reg. Compra</dt>
                         <dd>{{draft?.U_CodRegistroCompra}}</dd>
+                    </dl>
+                    <dl *ngIf="tipo === 'saida'" class="col-sm-2">
+                        <dt>Contrato Venda</dt>
+                        <dd>{{draft?.U_CodContratoVenda}}</dd>
                     </dl>
                     <dl class="col-sm-2">
                         <dt>Cod. Parceiro Negocio </dt>
