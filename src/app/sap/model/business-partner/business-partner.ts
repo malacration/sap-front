@@ -14,6 +14,17 @@ export class BusinessPartner implements Actiable{
     ContactEmployees : Array<Person> = new Array()
     RemoveContacts : Array<number> = new Array()
     Referencias : ReferenciaComercial
+    
+    CpfCnpjStr() {
+        get : { return this.TaxId0 ? this.TaxId0 : this.TaxId4}
+    }
+    
+    TaxId0 : String
+    TaxId4 : String
+
+    constructor(){
+        console.log("Criando obj")
+    }
 
     getAddressOptions() : Array<Option>{
         return this.BPAddresses.map(it => new Option(it.AddressName , it.AddressName))
@@ -37,8 +48,12 @@ export class BusinessPartner implements Actiable{
 
     getActions(): Action[] {
         return [
-            new Action("teste", new ActionReturn("selected",this), "far fa-check-circle")
+            new Action("", new ActionReturn("selected",this), "far fa-check-circle")
         ]
+    }
+
+    toString(){
+        return this.CardName
     }
     
 }

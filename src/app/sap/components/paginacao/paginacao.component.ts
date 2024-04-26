@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 
 @Component({
@@ -11,6 +11,7 @@ export class PaginacaoComponent implements OnInit {
   @Output() 
   pageChange = new EventEmitter<number>();
   
+  @Input()
   paginaAtual : number = 0
 
   @Input()
@@ -19,20 +20,27 @@ export class PaginacaoComponent implements OnInit {
   @Input()
   totalItens : number = 20
 
+  @Input()
+  hardCodeWidth : number
+
   totalVisiblePages = 10;
 
 
   @HostListener('window:resize', ['$event'])
-  onResize(event) {
-    this.totalMaxPage(window.innerWidth)
+  onResize() {
+    if(this.hardCodeWidth)
+      this.totalMaxPage(this.hardCodeWidth)
+    else
+      this.totalMaxPage(window.innerWidth)
   }
 
   constructor(private route: ActivatedRoute){
     
   }
 
+
   ngOnInit() {
-    this.totalMaxPage(window.innerWidth)
+    this.onResize()
   }
 
 
@@ -47,7 +55,7 @@ export class PaginacaoComponent implements OnInit {
   change(number) {
     this.paginaAtual = number
     this.pageChange.emit(number)
-    this.totalMaxPage(window.innerWidth)
+    this.onResize()
   }
 
   isFirst() : boolean{

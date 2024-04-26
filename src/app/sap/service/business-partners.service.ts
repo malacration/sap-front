@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { BusinessPartner } from '../model/business-partner/business-partner';
+import { Page } from '../model/page.model';
 
 @Injectable({
   providedIn: 'root'
@@ -48,5 +49,14 @@ export class BusinessPartnerService {
     cpfCnpj = cpfCnpj.replace(/\D/g, '');
     return this.hppCliente
       .get<Array<any>>(this.url+"/cpf-cnpj/"+cpfCnpj+"/otp?otp="+otp)
+  }
+
+  search(keyWord) : Observable<Page<BusinessPartner>>{
+    return this.hppCliente
+      .post<Page<BusinessPartner>>(this.url+"/search",keyWord)
+      .pipe(map((page) => {
+        page.content = page.content.map((ff) => Object.assign(new BusinessPartner(),ff) )
+        return page
+      }))
   }
 }

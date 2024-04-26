@@ -65,7 +65,8 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
 import { ItensComponent } from './sap/components/document/itens/itens.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { ClienteComponent } from './sap/components/cliente/cliente.component';
+import { ModalSelectComponent } from './sap/components/modalSelect/modal.select.component';
+import { BusinesPartnerSearchComponent } from './sap/components/busines-partner-search/busines-partner-search.component';
 
 
 
@@ -111,7 +112,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DocumentStatementComponent,
     ItensComponent,
     ModalComponent,
-    ClienteComponent
+    ModalSelectComponent,
+    BusinesPartnerSearchComponent
   ],
   imports: [
     NgxPaginationModule,

@@ -8,7 +8,7 @@ export class BusinessPartnerDefinition{
         return [
             new Column('Id', 'CardCode'),
             new Column('Nome', 'CardName'),
-            new Column('Doc.', 'numParcelas')
+            new Column('Doc.', 'CpfCnpjStr')
         ]   
     }
 }

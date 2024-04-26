@@ -53,7 +53,7 @@ export class TableComponent implements OnInit {
   }
 
   renderContent(item : any, definition : Column){
-    let value = item[definition.property]
+    let value = typeof item[definition.property] === 'function' ? item[definition.property]() : item[definition.property]
     if(definition.html){
       return Handlebars.compile(definition.html)({ 'value' : value})
     }
@@ -61,7 +61,6 @@ export class TableComponent implements OnInit {
   }
 
   evento(retorno : any){
-    alert("teste")
     this.actionOutput.emit(retorno)
   }
 
