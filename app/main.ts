@@ -6,6 +6,7 @@ let win: BrowserWindow = null;
 const args = process.argv.slice(1),
 serve = args.some(val => val === '--serve');
 var host = '';
+var modoOperacao = 'external'
 
 function createWindow(): BrowserWindow {
 
@@ -50,6 +51,7 @@ function createWindow(): BrowserWindow {
     win = null;
   });
   win.webContents.executeJavaScript("localStorage.setItem('host','"+host+"')").then(value => value);
+  win.webContents.executeJavaScript("localStorage.setItem('modoOperacao','"+modoOperacao+"')").then(value => value);
   return win;
 }
 
@@ -60,7 +62,7 @@ try {
   // Added 400 ms to fix the black background issue while using transparent window. More detais at https://github.com/electron/electron/issues/15947
   app.on('ready', () => {
     host = app.commandLine.getSwitchValue("host");
-    
+    modoOperacao = app.commandLine.getSwitchValue("modoOperacao");
     setTimeout(createWindow, 400);
     // app.commandLine.appendSwitch('--enable-features=GuestViewCrossProcessFrames');    
     
