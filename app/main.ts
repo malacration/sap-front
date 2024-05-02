@@ -3,16 +3,27 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 let win: BrowserWindow = null;
-const args = process.argv.slice(1),
-serve = args.some(val => val === '--serve');
-var host = '';
-var modoOperacao = 'external'
+const args = process.argv
+const serve = args.some(val => val === '--serve');
+var host = args.find(it => it.includes("host"))?.split("=").slice(-1)[0]
+var modoOperacao = args.find(it => it.includes("modoOperacao"))?.split("=").slice(-1)[0]
+
+
+function loadAngular(win : BrowserWindow){
+  if (serve) {
+    win.loadURL('http://localhost:4200');
+  } else {
+    let pathIndex = './index.html';
+    if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
+      pathIndex = '../dist/index.html';
+    }
+    const url = new URL(path.join('file:', __dirname, pathIndex));
+    win.loadURL(url.href)
+  }
+}
 
 function createWindow(): BrowserWindow {
-
   const size = screen.getPrimaryDisplay().workAreaSize;
-  
-
   // Create the browser window.
   win = new BrowserWindow({
     x: 0,
@@ -25,33 +36,26 @@ function createWindow(): BrowserWindow {
       contextIsolation: false,  // false if you want to run e2e test with Spectron
     },
   });
+  if(!host)
+    host = "http://localhost:8080"
+  if(!modoOperacao)
+    modoOperacao = "external"
 
-  if (serve) {
-    const debug = require('electron-debug');
-    debug();
-    require('electron-reloader')(module);
-    win.loadURL('http://localhost:4200');
-  } else {
-    // Path when running electron executable
-    let pathIndex = './index.html';
-
-    if (fs.existsSync(path.join(__dirname, '../dist/index.html'))) {
-       // Path when running electron in local folder
-      pathIndex = '../dist/index.html';
-    }
-    const url = new URL(path.join('file:', __dirname, pathIndex));
-    win.loadURL(url.href)
-  }
-
-  // Emitted when the window is closed.
+  console.log("host: ",host)
+  console.log("modoOperacao",modoOperacao)
+  console.log("args",args)
+  
+  loadAngular(win)
+  
+  win.webContents.executeJavaScript("localStorage.setItem('host','"+host+"')").then((value) => {
+    win.webContents.executeJavaScript("localStorage.setItem('modoOperacao','"+modoOperacao+"')",true).then(value => {
+      loadAngular(win)
+    });
+  });
+  
   win.on('closed', () => {
-    // Dereference the window object, usually you would store window
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
     win = null;
   });
-  win.webContents.executeJavaScript("localStorage.setItem('host','"+host+"')").then(value => value);
-  win.webContents.executeJavaScript("localStorage.setItem('modoOperacao','"+modoOperacao+"')").then(value => value);
   return win;
 }
 
@@ -61,11 +65,8 @@ try {
   // Some APIs can only be used after this event occurs.
   // Added 400 ms to fix the black background issue while using transparent window. More detais at https://github.com/electron/electron/issues/15947
   app.on('ready', () => {
-    host = app.commandLine.getSwitchValue("host");
-    modoOperacao = app.commandLine.getSwitchValue("modoOperacao");
     setTimeout(createWindow, 400);
     // app.commandLine.appendSwitch('--enable-features=GuestViewCrossProcessFrames');    
-    
   });
 
   // Quit when all windows are closed.
