@@ -4,11 +4,12 @@ import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { BusinessPartner } from '../model/business-partner/business-partner';
 import { Page } from '../model/page.model';
+import { SearchService } from './search.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class BusinessPartnerService {
+export class BusinessPartnerService implements SearchService<BusinessPartner> {
 
   url = "http://localhost:8080/business-partners"
   

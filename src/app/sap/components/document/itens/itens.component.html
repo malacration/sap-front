@@ -6,6 +6,9 @@
     </div>
   </div>
   <div class="card-body py-3 px-1">
+    <div class="col">
+      <app-item-search></app-item-search>
+    </div>
     <div class="row m-0 p-0">
       <div *ngIf="showThumbnail" class="col p-0"></div>
       <div class="col-3 m-0 p-0 ml-2 text-center">
@@ -23,25 +26,25 @@
     <hr>
     <div *ngFor="let item of itens" class="align-items-center mb-4 mx-1 p-0 items rounded">
       <div class="row m-0 p-0">
-          <div *ngIf="showThumbnail" class="col p-0">
-            <img class="img-fluid teste border-0 m-0" src="https://i.imgur.com/1GrakTl.jpg" alt="Generic placeholder image">
+          <div *ngIf="showThumbnail && item.urlImagem != null" class="col p-0">
+            <img class="img-fluid teste border-0 m-0" src="{{item.urlImagem}}" alt="Generic placeholder image">
           </div>
           <div class="col-3 m-0 p-0 ml-2">
-            <div class="row m-0 p-0">QUIRELA DE MILHO FINA</div>
-            <div class="row m-0 p-0 text-muted">R$: 5,49 por KG</div>
+            <div class="row m-0 p-0">{{item.descricao}}</div>
+            <div class="row m-0 p-0 text-muted">R$: {{item.preco}} por {{item.unidade}}</div>
           </div>
           <div class="col-2 m-0 p-0 ml-2 text-center">
             <div class="input-group m-0">
-              <input class="form-control text-center p-1" type="number" value="300">
+              <input class="form-control text-center p-1" type="number" [(ngModel)]="item.quantidade">
             </div>
           </div>
           <div class="col-3 m-0 p-0 ml-2 text-center">
             <div class="input-group m-0">
               <div class="col-sm">
-                  <input class="form-control text-center p-1" type="number" placeholder="desc">
+                  <input class="form-control text-center p-1" type="number" [(ngModel)]="item.desconto" placeholder="desc">
               </div>
               <div class="col-sm text-center">
-                <span class="text-nowrap small text-center">R$ 54.231,00</span>
+                <span class="text-nowrap small text-center">R$ {{item.quantidade*(item.preco*(1-item.desconto/100))}}</span>
               </div>
             </div>
           </div>

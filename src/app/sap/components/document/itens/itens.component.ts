@@ -7,15 +7,26 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ItensComponent implements OnInit {
   
-  itens = new Array()
+  itens = new Array<Item>()
   showThumbnail = false
 
   ngOnInit(): void {
-
-    this.itens.push(1)
-    this.itens.push(3)
-    this.itens.push(2)
+    let item1 = new Item()
+    item1.descricao = "Produto 1"
+    item1.quantidade = 1
+    item1.preco = 50.5
+    this.itens.push(item1)
   }
 
 
+
+}
+
+export class Item{
+  descricao : string
+  quantidade : number
+  unidade : string
+  preco : number
+  urlImagem : string
+  desconto : number = 0
 }

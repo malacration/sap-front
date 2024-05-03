@@ -1,7 +1,6 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
-import { pipe } from 'rxjs';
 
 
 @Component({
@@ -15,7 +14,7 @@ export class TableComponent implements OnInit {
   content : Array<any>
 
   @Input()
-  definition : Array<Column>
+  definition : Array<Column> = new Array()
 
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()

@@ -29,21 +29,24 @@ export class ModalSelectComponent implements OnInit {
   changePage = new EventEmitter<number>();
   @Output() 
   search = new EventEmitter<String>();
+
+  @Output() 
+  contentSelected = new EventEmitter<any>();
   
   keyWord = ""
-  contentSelected : any = null
+  content : any = null
   currentPage = 0
 
   ngOnInit(): void {
   }
     
-  @ViewChild('busca', {static: true}) buscaClienteComponent: ModalComponent;
+  @ViewChild('busca', {static: true}) buscaModal: ModalComponent;
   @ViewChild('paginacao', {static: true}) paginacaoComponent: PaginacaoComponent;
 
   searchFunction(){
     if(this.paginacaoComponent)
       this.paginacaoComponent.paginaAtual = 0
-    this.buscaClienteComponent.openModal()
+    this.buscaModal.openModal()
     this.search.emit(this.keyWord)
   }
 
@@ -52,18 +55,19 @@ export class ModalSelectComponent implements OnInit {
   }
 
   closeModal(){
-    this.buscaClienteComponent.closeModal()
+    this.buscaModal.closeModal()
   }
 
   action(action : ActionReturn){
     if(action.type == 'selected'){
-      this.contentSelected = action.data
+      this.content = action.data
       this.closeModal()
+      this.contentSelected.emit(this.content)
     }
   }
 
   clear(){
-    this.contentSelected = null
+    this.content = null
   }
 
   disableSearch(){
@@ -71,6 +75,6 @@ export class ModalSelectComponent implements OnInit {
   }
   
   isSelected() : boolean{
-    return this.contentSelected ? true : false
+    return this.content ? true : false
   }
 }
