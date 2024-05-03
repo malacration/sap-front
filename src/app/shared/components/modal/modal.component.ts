@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-modal',
@@ -10,6 +10,9 @@ export class ModalComponent {
   
   @Input()
   show = false
+  @Input()
+  classeModal : string = undefined
+
   modalRef?: BsModalRef;
   
   @Output()
@@ -23,7 +26,9 @@ export class ModalComponent {
   @ViewChild('template') template;
  
   openModal() {
-    this.modalRef = this.modalService.show(this.template);
+    this.modalRef = this.modalService.show(this.template,{
+      class: this.classeModal
+    });
   }
 
   closeModal() {

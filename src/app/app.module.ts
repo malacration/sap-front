@@ -67,10 +67,10 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
 import { ItensComponent } from './sap/components/document/itens/itens.component';
 import { ModalComponent } from './shared/components/modal/modal.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { ModalSelectComponent } from './sap/components/modalSelect/modal.select.component';
 import { BusinesPartnerSearchComponent } from './sap/components/search/busines-partner-search/busines-partner-search.component';
-import { SearchComponent } from './sap/components/search/search.component';
 import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
+import { SearchComponent } from './shared/components/search/search.component';
+import { ModalSelectComponent } from './shared/components/modal/select/modal.select.component';
 
 
 

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Page } from '../../model/page.model';
 import { Column } from '../../../shared/components/table/column.model';
-import { SearchService } from '../../service/search.service';
+import { Page } from '../../../sap/model/page.model';
+import { SearchService } from '../../../sap/service/search.service';
 
 
 

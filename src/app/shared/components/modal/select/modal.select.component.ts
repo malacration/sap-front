@@ -1,11 +1,9 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { ModalComponent } from '../../../shared/components/modal/modal.component';
-import { delay, from, of } from 'rxjs';
-import { BusinessPartner } from '../../model/business-partner/business-partner';
-import { ActionReturn } from '../../../shared/components/action/action.model';
-import { Column } from '../../../shared/components/table/column.model';
-import { Page } from '../../model/page.model';
-import { PaginacaoComponent } from '../paginacao/paginacao.component';
+import { ModalComponent } from '../../modal/modal.component';
+import { ActionReturn } from '../../action/action.model';
+import { Column } from '../../table/column.model';
+import { PaginacaoComponent } from '../../../../sap/components/paginacao/paginacao.component';
+import { Page } from '../../../../sap/model/page.model';
 
 
 
@@ -38,6 +36,7 @@ export class ModalSelectComponent implements OnInit {
   currentPage = 0
 
   ngOnInit(): void {
+    this.buscaModal.classeModal = "modal-xl"
   }
     
   @ViewChild('busca', {static: true}) buscaModal: ModalComponent;
