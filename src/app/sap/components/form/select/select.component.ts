@@ -21,10 +21,10 @@ export class SelectComponent implements OnInit {
   ]
 
   @Input()
-  initialSelect : string = ''
+  initialSelect : any
   
   @Output()
-  selectedOut = new EventEmitter<string>();
+  selectedOut = new EventEmitter<any>();
 
   onChange($event){
     const element = $event.currentTarget as HTMLSelectElement

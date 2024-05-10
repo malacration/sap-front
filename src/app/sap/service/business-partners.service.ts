@@ -17,6 +17,12 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     this.url = config.getHost()+"/business-partners"
   }
 
+  get(cardCode){
+    return this.hppCliente
+      .get<BusinessPartner>(this.url+"/"+cardCode)
+      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
+  }
+
   getByUpdate(hashCode : string) : Observable<BusinessPartner>{
     return this.hppCliente
       .get<BusinessPartner>(this.url+"/key/"+hashCode)

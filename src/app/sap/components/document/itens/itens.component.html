@@ -1,13 +1,13 @@
 <div class="card card-primary">
   <div class="card-header">
-    <b>Carrinho de Compra</b>
+    <b>Produtos</b>
     <div class="card-tools" *ngIf="itens && itens.length > 0">
       {{itens.length}} item{{itens.length > 1 ? "s" : ""}}
     </div>
   </div>
   <div class="card-body py-3 px-1">
-    <div class="col">
-      <app-item-search></app-item-search>
+    <div class="col mb-4">
+      <app-item-search (contentSelected)="addItem($event)" [branchId]="branchId"></app-item-search>
     </div>
     <div class="row m-0 p-0">
       <div *ngIf="showThumbnail" class="col p-0"></div>
@@ -15,7 +15,7 @@
         Descrição
       </div>
       <div class="col-2 m-0 p-0 ml-2 text-center">
-        Qtd
+        Qtd | Desc %
       </div>
       <div class="col-3 m-0 p-0 ml-2 text-center">
         Valor
@@ -30,27 +30,25 @@
             <img class="img-fluid teste border-0 m-0" src="{{item.urlImagem}}" alt="Generic placeholder image">
           </div>
           <div class="col-3 m-0 p-0 ml-2">
-            <div class="row m-0 p-0">{{item.descricao}}</div>
-            <div class="row m-0 p-0 text-muted">R$: {{item.preco}} por {{item.unidade}}</div>
+            <div class="row m-0 p-0">{{item.ItemDescription}}</div>
+            <div class="row m-0 p-0 text-muted">{{item.unitPriceBrl()}} por {{item.SalUnitMsr}}</div>
           </div>
           <div class="col-2 m-0 p-0 ml-2 text-center">
             <div class="input-group m-0">
               <input class="form-control text-center p-1" type="number" [(ngModel)]="item.quantidade">
+              <input class="form-control text-center p-1" type="number" [(ngModel)]="item.desconto" placeholder="desc">
             </div>
           </div>
           <div class="col-3 m-0 p-0 ml-2 text-center">
             <div class="input-group m-0">
-              <div class="col-sm">
-                  <input class="form-control text-center p-1" type="number" [(ngModel)]="item.desconto" placeholder="desc">
-              </div>
               <div class="col-sm text-center">
-                <span class="text-nowrap small text-center">R$ {{item.quantidade*(item.preco*(1-item.desconto/100))}}</span>
+                <span class="text-nowrap small text-center">{{item.total()}}</span>
               </div>
             </div>
           </div>
-          <div class="col m-0 p-0 ml-2">
+          <div class="col-sm m-0 p-0 ml-2">
             <div class="float-right">
-              <button type="button" class="btn btn-sm ml-1 small" title="Remove item">
+              <button (click)="remover(item)" type="button" class="btn btn-sm ml-1 small" title="Remove item">
                 <i class="fas fa-trash"></i>
               </button>
             </div>

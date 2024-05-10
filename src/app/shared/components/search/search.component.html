@@ -1,9 +1,11 @@
 
-<app-modal-select 
+<app-modal-select #modal
     [name]="name" 
     [definition]="definition" 
     [loading]="loading"
     [resultadoBusca]="resultadoBusca"
-    (changePage)="changePage($event)"
-    (search)="search($event)">
+    (changePage)="changePageService($event)"
+    (search)="searchService($event)"
+    (contentSelected)="contentSelectedFun($event)"
+    >
 </app-modal-select>

@@ -1,6 +1,6 @@
 <div class="form-group">
-    <div class="icheck-primary" *ngFor="let item of opcoes">
-        <input type="radio" id="{{item.content}}" name="radio" (change)="handleChange(item)" />
-        <label for="{{item.content}}">{{item.label}}</label>
+    <div class="form-check form-check-inline" *ngFor="let item of opcoes">
+        <input class="form-check-input" type="radio" id="{{item.content}}" name="radio" (change)="handleChange(item)" />
+        <label class="form-check-label" for="{{item.content}}">{{item.label}}</label>
     </div>
 </div>

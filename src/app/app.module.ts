@@ -41,9 +41,8 @@ import { CadastroComponent } from './sap/components/cadastro/cadastro.component'
 import { EnderecoComponent } from './sap/components/cadastro/endereco/endereco.component';
 import { ReferenciaComponent } from './sap/components/cadastro/referencia-comercial/referencia.component';
 import { SelectComponent } from './sap/components/form/select/select.component';
-import { StateSelectComponent } from './sap/components/form/state/state-select.component';
 import { StateService } from './sap/service/addresses/state.service';
-import { CitySelectComponent } from './sap/components/form/city/city-select.component';
+import { CitySelectComponent } from './sap/components/form/select/city/city-select.component';
 import { CityService } from './sap/service/addresses/city.service';
 import { BusinessPartnerService } from './sap/service/business-partners.service';
 import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
@@ -71,6 +70,13 @@ import { BusinesPartnerSearchComponent } from './sap/components/search/busines-p
 import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
 import { SearchComponent } from './shared/components/search/search.component';
 import { ModalSelectComponent } from './shared/components/modal/select/modal.select.component';
+import { ItemService } from './sap/service/item.service';
+import { BranchSelectComponent } from './sap/components/form/branch/branch-select.component';
+import { BranchService } from './sap/service/branch.service';
+import { StateSelectComponent } from './sap/components/form/select/state/state-select.component';
+import { FormaPagamentoSelectComponent } from './sap/components/form/select/forma-pagamento/forma-pagamento-select.component';
+import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
+import { OrderSalesService } from './sap/service/order-sales.service';
 
 
 
@@ -119,7 +125,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ModalSelectComponent,
     BusinesPartnerSearchComponent,
     SearchComponent,
-    ItemSearchComponent
+    ItemSearchComponent,
+    BranchSelectComponent,
+    FormaPagamentoSelectComponent,
+    CondicaoPagamentoSelectComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -156,6 +165,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BusinessPartnerService,
     OneTimePasswordService,
     BsModalService,
+    ItemService,
+    BranchService,
+    OrderSalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ],

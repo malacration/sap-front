@@ -1,4 +1,5 @@
 import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
+import { City } from "../adressess/city"
 import { Option } from "../form/option"
 
 
@@ -23,11 +24,14 @@ export class BusinessPartner implements Actiable{
     TaxId4 : String
 
     constructor(){
-        console.log("Criando obj")
+
     }
 
-    getAddressOptions() : Array<Option>{
-        return this.BPAddresses.map(it => new Option(it.AddressName , it.AddressName))
+    getAddressOptions(tipo = null) : Array<Option>{
+        return this.BPAddresses
+            .map(it => Object.assign(new BPAddress(null),it))
+            .filter(it => tipo == null || it.AddressType == tipo)
+            .map(it => new Option(it , it.toString()))
     }
 
     getReferenciaOptions() : Array<Option>{
@@ -109,5 +113,9 @@ export class BPAddress{
 
     constructor(addressName : string){
         this.AddressName = addressName
+    }
+
+    toString() : string{
+        return this.Street+" | "+this.StreetNo+" | "+this.ZipCode
     }
 }

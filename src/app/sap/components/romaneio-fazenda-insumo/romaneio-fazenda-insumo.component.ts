@@ -57,12 +57,11 @@ export class RomaneioFazendaInsumoComponent {
         this.tipo = params.get('tipo');
         console.log('ButtonType:', this.tipo);
     });
-}
+  }
 
 
   criarRomaneio(){
     this.romaneioService.save(this.idRomaneioPesagem,this.tipo).subscribe(it =>{
-      //alert("Romaneio cadastrado com sucesso")
       this.alertService.info("Romaneio cadastrado com sucesso").then(
         it => {
           this.count.timer(1)

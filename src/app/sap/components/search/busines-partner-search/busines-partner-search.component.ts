@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { BusinessPartnerDefinition } from '../../../model/business-partner/business-partner-definition';
 import { BusinessPartnerService } from '../../../service/business-partners.service';
 
@@ -13,7 +13,15 @@ export class BusinesPartnerSearchComponent {
 
   businessPartnerDefinition = new BusinessPartnerDefinition().getDefinition()
 
+  @Output()
+  selected = new EventEmitter();
+
   constructor(public bpService : BusinessPartnerService){
 
   }
+
+  selectedFun($event){
+    this.selected.emit($event)
+  }
+
 }

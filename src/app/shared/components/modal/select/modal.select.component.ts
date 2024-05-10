@@ -23,9 +23,11 @@ export class ModalSelectComponent implements OnInit {
   loading = false
   @Input()
   resultadoBusca : Page<any> = new Page()
-  @Output() 
+  
+  @Output()
   changePage = new EventEmitter<number>();
-  @Output() 
+  
+  @Output()
   search = new EventEmitter<String>();
 
   @Output() 

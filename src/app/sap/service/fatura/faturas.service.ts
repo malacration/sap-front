@@ -18,9 +18,7 @@ export class FaturasService {
     }
 
     getFaturas(cardCode : string, page = 0, filter : any = undefined) : Observable<Page<Fatura>>{
-        console.log(filter)
         filter = Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v != ''))
-        console.log(filter)
         return this.hppCliente
             .get<Page<Fatura>>(this.url+"/cardcode/"+cardCode+"/payment?page="+page+"&size=10",{
                 params : filter

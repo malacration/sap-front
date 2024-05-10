@@ -1,71 +1,123 @@
 
 
 <section class="content">
-    <!-- Default box -->
-    <div class="row mb-2">
-        <div class="col-sm-6">
-            <h1>Pedido de Venda</h1>
-        </div>
-    </div>
     <!-- 
         # TODO
         # Fazer directiva para colapsed
         # Fazer componente generico par busca
         # Fazer componente de busca de cliente
      -->
+     <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Pedido de Venda</h1>
+                </div>
+            </div>
+        </div>
+    </section>
     <div class="container-fluid"> 
         <div class="card card-primary">
             <div class="card-header">
-                <h3 class="card-title"><b>Busca</b></h3>
+                <h3 class="card-title"><b>Identificação</b></h3>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <app-busines-partner-search></app-busines-partner-search>
+                            <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
+                        </div>
+                    </div>
+                    <div class="col-sm-2" *ngIf="branchId">
+                        <div class="form-group">
+                            <app-busines-partner-search (selected)="selectBp($event)" ></app-busines-partner-search>
+                        </div>
+                    </div>
+                    <div class="col-sm-2" *ngIf="branchId">
+                        <div class="form-group">
+                            <app-select 
+                            [options]="tipoOperacaoOptions" 
+                            (selectedOut)="changeTipoOperacao($event)" 
+                            [label]="'Operação'"></app-select>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <card-itens (changeItens)="changeItens($event)" *ngIf="branchId" [branchId]="branchId"></card-itens>
+        
+        <div *ngIf="branchId && businesPartner" class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><b>Entrega</b></h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <div class="form-group">
+                            <label for="dataEntrega">Tipo Envio</label>
+                            <app-radio [opcoes]="tipoEnvioRadio" (change)="tipoEnvioChange($event)"></app-radio>
+                            <app-select *ngIf="tipoEnvio == 'ent'" 
+                                [label]="'Seleciona Endereço'" 
+                                [options]="businesPartner.getAddressOptions('bo_ShipTo')">
+                            </app-select>
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="dataEntrega">Data Entrega</label>
+                            <input type="date" class="form-control" name="dataEntrega" [(ngModel)]="dtEntrega" >
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <app-forma-pagamento-select (selectedOut)="changeFormaPagamento($event)">
+                            </app-forma-pagamento-select>
+                        </div>
+                    </div>
+                    <div *ngIf="isMutiplasTabelas()" class="col-sm-2">
+                        <div class="form-group">
+                            <app-condicao-pagamento-select (selectedOut)="changeCondicaoPagamento($event)">
+                            </app-condicao-pagamento-select>
+                        </div>
+                    </div>
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label for="obs">Observacao</label>
+                                <textarea class="form-control" id="obs" rows="2" [(ngModel)]="observacao"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="isMutiplasTabelas()" class="card card-primary">
+            <div class="card-header">
+                Este pedido contém múltiplas tabelas de venda; condições de pagamento distintas serão necessárias
+            </div>
+            <div *ngFor="let tabela of tabelas()" class="card-body">
+                <div *ngFor="let item of itensBy(tabela); index as i" class="border-left border-primary pl-2">
+                    <div *ngIf="i == 0">
+                        <h5>{{item.ListName}} - Para os Itens </h5>
+                        <app-condicao-pagamento-select (selectedOut)="changeCondicaoPagamento($event)">
+                        </app-condicao-pagamento-select>
+                    </div>
+                    <ul class="mt-2">
+                        <li>
+                            {{item.ItemDescription}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div>{{isMutiplasTabelas()}}</div>
+
+        <div class="card">
+            <button [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit" >Enviar Pedido</button>
+        </div>
+
     </div>
-
-    <div class="container-fluid">
-        <app-itens></app-itens>
-    </div>
-    
-    <!-- 
-        ### Carrinho de compra ###
-            Produto
-            Quantidade
-            Tabela de preco, Somente se for vendedor!
-            desconto? Somente se for vendedor!
-    -->
-
-
-                        <!-- 
-                            ### Identificacao ### do cliente e tipo venda (tipo venda somente vendedor)
-                                Buscar cliente - Cliente
-                                Utilizacao
-                                
-                                Filial - oculto? Se estou logado (vendedor) a filial vem do contexto. 
-                                    Se sou o cliente a filial vem do endereco/regial
-                        -->
-
-
-                        
-                        
-                        
-                        
-                        <!-- 
-                            ### Checkout ### 
-                                Data entrega
-                                Forma de pagamento - Geralmente boleto
-                                Condicao de pagamento
-                                Frete? Entregar ou buscar
-                                    Selecionar endereco de entrega e de cobranca?
-                                Observacao
-                        -->
-
-    
 </section>

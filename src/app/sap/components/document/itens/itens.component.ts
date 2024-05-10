@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Item } from '../../../model/item';
 
 @Component({
-  selector: 'app-itens',
+  selector: 'card-itens',
   templateUrl: './itens.component.html',
   styleUrls: ['./itens.component.scss'],
 })
@@ -9,24 +10,28 @@ export class ItensComponent implements OnInit {
   
   itens = new Array<Item>()
   showThumbnail = false
+  
+  @Input()
+  branchId = undefined
+
+  @Output()
+  changeItens = new EventEmitter<Array<Item>>();
 
   ngOnInit(): void {
-    let item1 = new Item()
-    item1.descricao = "Produto 1"
-    item1.quantidade = 1
-    item1.preco = 50.5
-    this.itens.push(item1)
+
   }
 
+  addItem(item){
+    item.quantidade = 1
+    this.itens.push(item)
+    this.changeItens.emit(this.itens)
+  }
 
-
-}
-
-export class Item{
-  descricao : string
-  quantidade : number
-  unidade : string
-  preco : number
-  urlImagem : string
-  desconto : number = 0
+  remover(item){
+    var index = this.itens.indexOf(item);
+    if (index !== -1) {
+      this.itens.splice(index, 1);
+      this.changeItens.emit(this.itens)
+    }
+  }
 }
