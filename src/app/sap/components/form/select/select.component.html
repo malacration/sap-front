@@ -8,7 +8,7 @@
     <option value="" disabled [selected]="!initialSelect || initialSelect==''">Selecione</option>
     <option *ngFor="let it of options"
             [selected]="initialSelect==it.value" 
-            value="{{ it.value }}">
+            [ngValue]="it.value">
         {{it.description}}
     </option>
 </select>

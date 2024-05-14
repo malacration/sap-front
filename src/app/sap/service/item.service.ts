@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { Page } from '../model/page.model';
-import { SearchService } from './search.service';
 import { Item } from '../model/item';
 
 @Injectable({
@@ -18,7 +17,6 @@ export class ItemService{
   }
 
   search(keyWord, branchId) : Observable<Page<Item>>{
-    console.log(this.url+"/search/branch/"+branchId,keyWord)
     return this.hppCliente
       .post<Page<Item>>(this.url+"/search/branch/"+branchId,keyWord)
       .pipe(map((page) => {

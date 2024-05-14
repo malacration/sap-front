@@ -14,7 +14,8 @@ export class Item{
     urlImagem : string
     desconto : number = 0
     PriceList : string
-    ListName :string
+    ListName : string
+    GroupNum : string
 
 
     getDefinition() {

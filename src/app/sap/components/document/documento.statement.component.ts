@@ -6,6 +6,7 @@ import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
 import { OrderSalesService } from '../../service/order-sales.service';
 import { AlertSerice } from '../../service/alert.service';
+import { CondicaoPagamento } from '../../service/condicao-pagamento.service';
 
 @Component({
   selector: 'app-document-statement',
@@ -18,7 +19,6 @@ export class DocumentStatementComponent implements OnInit {
   tipoEnvio
   businesPartner
   formaPagamento
-  condicaoPagamento
   observacao
   itens : Array<Item>
   tipoOperacao
@@ -44,9 +44,18 @@ export class DocumentStatementComponent implements OnInit {
     this.formaPagamento = $event
   }
 
-  changeCondicaoPagamento($event){
-    this.condicaoPagamento = $event
-    this.itens.filter(it => it.PriceList == '11')
+  changeCondicaoPagamento($event : any){
+    if($event instanceof CondicaoPagamento)
+      this.itens.filter(it => it.PriceList == $event.listNum).forEach(it => it.GroupNum = $event.groupNum)
+  }
+
+  changeAllCondicao($event : any){
+    if($event instanceof CondicaoPagamento){
+      console.log("change all")
+      this.itens.forEach(it => it.GroupNum = $event.groupNum)
+    }
+    console.log("no change"+JSON.stringify($event))
+    console.log($event.groupNum)
   }
 
   changeItens($event){
@@ -57,11 +66,17 @@ export class DocumentStatementComponent implements OnInit {
     this.tipoOperacao = $event
   }
 
-  tabelas(){
+  tabelas() : Array<string>{
     return Object.keys(this.itens.reduce((result:any, currentValue:any) => { 
       (result[currentValue['PriceList']] = result[currentValue['PriceList']] || []).push(currentValue);
       return result;
     }, {}));
+  }
+
+  getTabela() : string{
+    let tabelas = this.tabelas()
+    if(tabelas && tabelas.length > 0)
+      return tabelas[0]
   }
 
   itensBy(priceList){
@@ -70,7 +85,6 @@ export class DocumentStatementComponent implements OnInit {
 
   isMutiplasTabelas(){
     if(this.itens){
-      console.log(this.tabelas())
       return this.tabelas().length > 1
     }
     return false
@@ -84,7 +98,6 @@ export class DocumentStatementComponent implements OnInit {
     this.businesPartner = $event
     this.businesPartnerService.get(this.businesPartner.CardCode).subscribe(it =>{
         this.businesPartner = it
-        console.log(it)
     })
   }
 
@@ -93,19 +106,24 @@ export class DocumentStatementComponent implements OnInit {
       this.tipoEnvio = $event.content
   }
 
+  temFormaPagamento(){
+    console.log(this.itens)
+    return this.itens
+  }
+
   sendOrder(){
-    let order = new OrderSales()
-    order.CardCode = this.businesPartner.CardCode
-    order.BPL_IDAssignedToInvoice = this.branchId
-    order.DocumentLines = this.itens.map(it => it.getDocumentsLines(this.tipoOperacao))
-    order.PaymentMethod = this.formaPagamento
-    order.PaymentGroupCode = this.condicaoPagamento
-    order.comments = this.observacao
-    order.DocDueDate = this.dtEntrega
-    this.orderService.save(order).subscribe(it =>{
-      console.log(it)
-      this.alertService.info("Seu pedido foi Enviado")
-      
+    this.tabelas().forEach(tabela => {
+      let order = new OrderSales()
+      order.CardCode = this.businesPartner.CardCode
+      order.BPL_IDAssignedToInvoice = this.branchId
+      order.DocumentLines = this.itens.filter(it => it.PriceList == tabela).map(it => it.getDocumentsLines(this.tipoOperacao))
+      order.PaymentMethod = this.formaPagamento
+      order.PaymentGroupCode = this.itens.filter(it => it.PriceList == tabela).map(it => it.GroupNum)[0]
+      order.comments = this.observacao
+      order.DocDueDate = this.dtEntrega
+      this.orderService.save(order).subscribe(it =>{
+        this.alertService.info("Seu pedido foi Enviado")
+      })
     })
   }
 
@@ -114,10 +132,9 @@ export class DocumentStatementComponent implements OnInit {
       && this.branchId 
       && this.dtEntrega
       && this.formaPagamento 
-      && this.condicaoPagamento 
       && this.itens 
       && this.tipoEnvio
-      && this.itens.length > 0
+      && this.itens?.length > 0
   }
 }
 

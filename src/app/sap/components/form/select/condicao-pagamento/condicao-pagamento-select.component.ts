@@ -1,30 +1,44 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Option } from '../../../../model/form/option';
-import { CityService } from '../../../../service/addresses/city.service';
+import { CondicaoPagamento, CondicaoPagamentoService } from '../../../../service/condicao-pagamento.service';
 
 
 @Component({
   selector: 'app-condicao-pagamento-select',
   templateUrl: './condicao-pagamento-select.component.html'
 })
-export class CondicaoPagamentoSelectComponent implements OnInit {
+export class CondicaoPagamentoSelectComponent implements OnInit, OnChanges {
 
-  constructor(private service : CityService){
+  constructor(private service : CondicaoPagamentoService){
       
   }
 
   @Input()
-  selected : string = null
+  selected : CondicaoPagamento = null
 
-  opcoes : Array<Option> = [new Option("10 dias","10 dias")]
+  @Input()
+  tabela : string = null
+
+  opcoes : Array<Option> = []
 
   loading = false
 
   @Output()
-  selectedOut = new EventEmitter<string>();
+  selectedOut = new EventEmitter<CondicaoPagamento>();
 
-  onChange($event){
+  onChange($event : CondicaoPagamento){
+    console.log(JSON.stringify($event));
     this.selectedOut.emit($event)
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(changes.tabela && changes.tabela.currentValue != changes.tabela.previousValue){
+      this.loading = true;
+      this.service.getByTabela(changes.tabela.currentValue).subscribe( data =>{
+        this.opcoes = data.map(it => new Option(it,it.pymntGroup))
+        this.loading = false;
+      })
+    }
   }
 
   ngOnInit(): void {

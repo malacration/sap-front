@@ -47,7 +47,7 @@
 
         <card-itens (changeItens)="changeItens($event)" *ngIf="branchId" [branchId]="branchId"></card-itens>
         
-        <div *ngIf="branchId && businesPartner" class="card card-primary">
+        <div *ngIf="branchId && businesPartner && itens?.length > 0" class="card card-primary">
             <div class="card-header">
                 <h3 class="card-title"><b>Entrega</b></h3>
             </div>
@@ -75,9 +75,9 @@
                             </app-forma-pagamento-select>
                         </div>
                     </div>
-                    <div *ngIf="isMutiplasTabelas()" class="col-sm-2">
+                    <div *ngIf="!isMutiplasTabelas()" class="col-sm-2">
                         <div class="form-group">
-                            <app-condicao-pagamento-select (selectedOut)="changeCondicaoPagamento($event)">
+                            <app-condicao-pagamento-select [tabela]="getTabela()" (selectedOut)="changeAllCondicao($event)">
                             </app-condicao-pagamento-select>
                         </div>
                     </div>
@@ -101,7 +101,7 @@
                 <div *ngFor="let item of itensBy(tabela); index as i" class="border-left border-primary pl-2">
                     <div *ngIf="i == 0">
                         <h5>{{item.ListName}} - Para os Itens </h5>
-                        <app-condicao-pagamento-select (selectedOut)="changeCondicaoPagamento($event)">
+                        <app-condicao-pagamento-select [tabela]="item.PriceList" (selectedOut)="changeCondicaoPagamento($event)">
                         </app-condicao-pagamento-select>
                     </div>
                     <ul class="mt-2">
@@ -113,8 +113,8 @@
             </div>
         </div>
 
-        <div>{{isMutiplasTabelas()}}</div>
-
+        <div>{{temFormaPagamento()}}</div>
+        {{branchId}}
         <div class="card">
             <button [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit" >Enviar Pedido</button>
         </div>

@@ -77,6 +77,7 @@ import { StateSelectComponent } from './sap/components/form/select/state/state-s
 import { FormaPagamentoSelectComponent } from './sap/components/form/select/forma-pagamento/forma-pagamento-select.component';
 import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
 import { OrderSalesService } from './sap/service/order-sales.service';
+import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
 
 
 
@@ -168,6 +169,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ItemService,
     BranchService,
     OrderSalesService,
+    CondicaoPagamentoService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ],
