@@ -3,13 +3,12 @@ import { FaturasService } from '../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { Fatura, FaturaDefinition } from '../../model/fatura/fatura.model';
 import { BusinessPartnerService } from '../../service/business-partners.service';
-import { BusinessPartner } from '../../model/business-partner';
 import { Page } from '../../model/page.model';
 import { AlertSerice } from '../../service/alert.service';
 import { RadioItem } from '../form/radio/radio.model';
 import { OneTimePasswordService } from '../../service/one-time-password.service';
 import { ConfigService } from '../../../core/services/config.service';
-import { TaxService } from '../../service/fatura/tax.service';
+import { BusinessPartner } from '../../model/business-partner/business-partner';
 
 
 

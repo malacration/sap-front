@@ -1,0 +1,41 @@
+
+<div *ngIf="!isSelected()">
+    <label for="id">Selecionar {{name}}</label>
+    <div class="input-group">
+        <input type="text" class="form-control" name="id" (keydown.enter)="disableSearch() ? {} : searchFunction()" [(ngModel)]="keyWord" placeholder="Buscar" />
+        <span class="input-group-append">
+            <button class="btn btn-primary" [disabled]="disableSearch()" (click)="searchFunction()">
+                <i class="fas fa-search"></i> 
+            </button>
+        </span>
+    </div>
+</div>
+
+
+<div *ngIf="isSelected()">
+    <label for="id">{{name}} Selecionado</label>
+    <div class="input-group">
+        <input type="text" class="form-control" name="id" disabled="true" value="{{content.toString()}}" />
+        <span class="input-group-append">
+            <button class="btn btn-danger" (click)="clear()">
+                <i class="far fa-times-circle"></i>
+            </button>
+        </span>
+    </div>
+</div>
+
+<app-modal #busca>
+    <app-table [content]="resultadoBusca.content" [definition]="definition" (actionOutput)="action($event)"></app-table>
+    <div *ngIf="loading" class="text-center">
+        <i class="fas fa-2x fa-sync fa-spin"></i>
+    </div>
+    <div class="row">
+        <div *ngIf="!loading && resultadoBusca.nextLink" class="col text-center">
+            <button class="btn btn-primary" (click)="changePageFunction(resultadoBusca.nextLink)">
+                Carregar Mais
+                <i class="far fa-plus-square"></i>
+            </button>
+            <app-paginacao *ngIf="!loading && !resultadoBusca.nextLink" #paginacao (pageChange)="changePageFunction($event)" [totalItens]="50" [pageSize]="2" [hardCodeWidth]="350"></app-paginacao>
+        </div>        
+    </div>
+</app-modal>

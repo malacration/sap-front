@@ -1,18 +1,26 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { BusinessPartner } from '../model/business-partner';
 import { ConfigService } from '../../core/services/config.service';
+import { BusinessPartner } from '../model/business-partner/business-partner';
+import { Page } from '../model/page.model';
+import { SearchService } from './search.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class BusinessPartnerService {
+export class BusinessPartnerService implements SearchService<BusinessPartner> {
 
   url = "http://localhost:8080/business-partners"
   
   constructor(private config : ConfigService, private hppCliente : HttpClient) {
     this.url = config.getHost()+"/business-partners"
+  }
+
+  get(cardCode){
+    return this.hppCliente
+      .get<BusinessPartner>(this.url+"/"+cardCode)
+      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
   }
 
   getByUpdate(hashCode : string) : Observable<BusinessPartner>{
@@ -48,5 +56,14 @@ export class BusinessPartnerService {
     cpfCnpj = cpfCnpj.replace(/\D/g, '');
     return this.hppCliente
       .get<Array<any>>(this.url+"/cpf-cnpj/"+cpfCnpj+"/otp?otp="+otp)
+  }
+
+  search(keyWord) : Observable<Page<BusinessPartner>>{
+    return this.hppCliente
+      .post<Page<BusinessPartner>>(this.url+"/search",keyWord)
+      .pipe(map((page) => {
+        page.content = page.content.map((ff) => Object.assign(new BusinessPartner(),ff) )
+        return page
+      }))
   }
 }

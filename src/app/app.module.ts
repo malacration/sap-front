@@ -41,9 +41,8 @@ import { CadastroComponent } from './sap/components/cadastro/cadastro.component'
 import { EnderecoComponent } from './sap/components/cadastro/endereco/endereco.component';
 import { ReferenciaComponent } from './sap/components/cadastro/referencia-comercial/referencia.component';
 import { SelectComponent } from './sap/components/form/select/select.component';
-import { StateSelectComponent } from './sap/components/form/state/state-select.component';
 import { StateService } from './sap/service/addresses/state.service';
-import { CitySelectComponent } from './sap/components/form/city/city-select.component';
+import { CitySelectComponent } from './sap/components/form/select/city/city-select.component';
 import { CityService } from './sap/service/addresses/city.service';
 import { BusinessPartnerService } from './sap/service/business-partners.service';
 import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
@@ -63,6 +62,22 @@ import { RadioComponent } from './sap/components/form/radio/radio.component';
 import { OneTimePasswordService } from './sap/service/one-time-password.service';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { DatasComponent } from './sap/components/filters/datas/datas.component';
+import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
+import { ItensComponent } from './sap/components/document/itens/itens.component';
+import { ModalComponent } from './shared/components/modal/modal.component';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { BusinesPartnerSearchComponent } from './sap/components/search/busines-partner-search/busines-partner-search.component';
+import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
+import { SearchComponent } from './shared/components/search/search.component';
+import { ModalSelectComponent } from './shared/components/modal/select/modal.select.component';
+import { ItemService } from './sap/service/item.service';
+import { BranchSelectComponent } from './sap/components/form/branch/branch-select.component';
+import { BranchService } from './sap/service/branch.service';
+import { StateSelectComponent } from './sap/components/form/select/state/state-select.component';
+import { FormaPagamentoSelectComponent } from './sap/components/form/select/forma-pagamento/forma-pagamento-select.component';
+import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
+import { OrderSalesService } from './sap/service/order-sales.service';
+import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
 
 
 
@@ -105,12 +120,21 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     TableComponent,
     ActionComponent,
     DatasComponent,
+    DocumentStatementComponent,
+    ItensComponent,
+    ModalComponent,
+    ModalSelectComponent,
+    BusinesPartnerSearchComponent,
+    SearchComponent,
+    ItemSearchComponent,
+    BranchSelectComponent,
+    FormaPagamentoSelectComponent,
+    CondicaoPagamentoSelectComponent
   ],
   imports: [
     NgxPaginationModule,
     BrowserModule,
     FormsModule,
-    HttpClientModule,
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
@@ -123,13 +147,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     }),
     // ProfabricComponentsModule,
     StoreModule.forRoot({ui: uiReducer}),
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: httpLoaderFactory,
-        deps: [HttpClient]
-      }
-    })
   ],
   providers: [
     RomaneioFazendaInsumoService,
@@ -140,6 +157,11 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CityService,
     BusinessPartnerService,
     OneTimePasswordService,
+    BsModalService,
+    ItemService,
+    BranchService,
+    OrderSalesService,
+    CondicaoPagamentoService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ],

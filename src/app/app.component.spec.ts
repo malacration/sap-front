@@ -1,15 +1,18 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
-import { TranslateModule } from '@ngx-translate/core';
 import { ElectronService } from './core/services';
+import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
+import { CoreModule } from './core/core.module';
+import { StoreModule } from '@ngrx/store';
+import { AppModule } from './app.module';
 
 describe('AppComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AppComponent],
       providers: [ElectronService],
-      imports: [RouterTestingModule, TranslateModule.forRoot()]
+      imports: [AppModule]
     }).compileComponents();
   }));
 

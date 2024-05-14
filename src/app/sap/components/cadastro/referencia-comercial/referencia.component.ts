@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Referencia, ReferenciaComercial } from '../../../model/business-partner';
+import { Referencia } from '../../../model/business-partner/business-partner';
 
 @Component({
   selector: 'app-referencia-comercial',

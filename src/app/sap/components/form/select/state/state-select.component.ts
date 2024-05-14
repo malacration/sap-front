@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { StateService } from '../../../service/addresses/state.service';
-import { Option } from '../../../model/form/option';
+import { StateService } from '../../../../service/addresses/state.service';
+import { Option } from '../../../../model/form/option';
 
 
 

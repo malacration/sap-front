@@ -1,7 +1,9 @@
-import { Option } from "./form/option"
+import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
+import { City } from "../adressess/city"
+import { Option } from "../form/option"
 
 
-export class BusinessPartner{
+export class BusinessPartner implements Actiable{
     CardCode : string
     CardName : string
     Phone1 : Number
@@ -13,9 +15,23 @@ export class BusinessPartner{
     ContactEmployees : Array<Person> = new Array()
     RemoveContacts : Array<number> = new Array()
     Referencias : ReferenciaComercial
+    
+    CpfCnpjStr() {
+        get : { return this.TaxId0 ? this.TaxId0 : this.TaxId4}
+    }
+    
+    TaxId0 : String
+    TaxId4 : String
 
-    getAddressOptions() : Array<Option>{
-        return this.BPAddresses.map(it => new Option(it.AddressName , it.AddressName))
+    constructor(){
+
+    }
+
+    getAddressOptions(tipo = null) : Array<Option>{
+        return this.BPAddresses
+            .map(it => Object.assign(new BPAddress(null),it))
+            .filter(it => tipo == null || it.AddressType == tipo)
+            .map(it => new Option(it , it.toString()))
     }
 
     getReferenciaOptions() : Array<Option>{
@@ -32,6 +48,16 @@ export class BusinessPartner{
 
     getConjugue() : Person{
         return this.ContactEmployees.find(it => it.U_tipoPessoa == 'conjuge')
+    }
+
+    getActions(): Action[] {
+        return [
+            new Action("", new ActionReturn("selected",this), "far fa-check-circle")
+        ]
+    }
+
+    toString(){
+        return this.CardName
     }
     
 }
@@ -87,5 +113,9 @@ export class BPAddress{
 
     constructor(addressName : string){
         this.AddressName = addressName
+    }
+
+    toString() : string{
+        return this.Street+" | "+this.StreetNo+" | "+this.ZipCode
     }
 }

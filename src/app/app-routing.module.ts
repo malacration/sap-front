@@ -6,6 +6,7 @@ import { RomaneioComponent } from './sap/components/romaneio/romaneio.component'
 import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
+import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 
  let routes: Routes = [
   {
@@ -34,6 +35,11 @@ import { FaturasComponent } from './sap/components/faturas/faturas.component';
     path: 'faturas',
     title: 'Faturas',
     component: FaturasComponent
+  },
+  {
+    path: 'document',
+    title: 'Pedido de Venda',
+    component: DocumentStatementComponent
   },
   {
     path: 'cadastro/:id',

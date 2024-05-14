@@ -3,12 +3,12 @@
 <div *ngIf="loading" class="overlay">
     <i class="fas fa-2x fa-sync-alt fa-spin"></i>
 </div>
-<select *ngIf="!loading" class="form-control"
+<select [(ngModel)]="selected" *ngIf="!loading" class="form-control"
         (change)="onChange($event)">
-    <option value="" disabled [selected]="!initialSelect || initialSelect==''">Selecione</option>
+    <option value="inicial" disabled [selected]="!initialSelect || initialSelect==''">Selecione</option>
     <option *ngFor="let it of options"
             [selected]="initialSelect==it.value" 
-            value="{{ it.value }}">
-        {{it.description}}
+            [ngValue]="it.value">
+        {{it.description }}
     </option>
 </select>

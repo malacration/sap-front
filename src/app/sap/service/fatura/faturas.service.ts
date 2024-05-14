@@ -14,13 +14,11 @@ export class FaturasService {
     url = "http://localhost:8080/invoice"
 
     constructor(private config : ConfigService, private hppCliente : HttpClient) {
-    this.url = config.getHost()+"/invoice"
+        this.url = config.getHost()+"/invoice"
     }
 
     getFaturas(cardCode : string, page = 0, filter : any = undefined) : Observable<Page<Fatura>>{
-        console.log(filter)
         filter = Object.fromEntries(Object.entries(filter).filter(([_, v]) => v != null && v != ''))
-        console.log(filter)
         return this.hppCliente
             .get<Page<Fatura>>(this.url+"/cardcode/"+cardCode+"/payment?page="+page+"&size=10",{
                 params : filter

@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { BPAddress } from '../../../model/business-partner';
 import { Option } from '../../../model/form/option';
+import { BPAddress } from '../../../model/business-partner/business-partner';
 
 @Component({
   selector: 'app-endereco',

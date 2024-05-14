@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Option } from '../../../model/form/option';
-import { CityService } from '../../../service/addresses/city.service';
+import { Option } from '../../../../model/form/option';
+import { CityService } from '../../../../service/addresses/city.service';
 
 
 @Component({
