@@ -45,14 +45,14 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   changeCondicaoPagamento($event : any){
-    if($event instanceof CondicaoPagamento)
-      this.itens.filter(it => it.PriceList == $event.listNum).forEach(it => it.GroupNum = $event.groupNum)
+    if($event.GroupNum)
+      this.itens.filter(it => it.PriceList == $event.ListNum).forEach(it => it.GroupNum = $event.GroupNum)
   }
 
   changeAllCondicao($event : any){
-    if($event instanceof CondicaoPagamento){
+    if($event.GroupNum){
       console.log("change all")
-      this.itens.forEach(it => it.GroupNum = $event.groupNum)
+      this.itens.forEach(it => it.GroupNum = $event.GroupNum)
     }
     console.log("no change"+JSON.stringify($event))
     console.log($event.groupNum)
@@ -107,7 +107,6 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   temFormaPagamento(){
-    console.log(this.itens)
     return this.itens
   }
 
@@ -124,6 +123,7 @@ export class DocumentStatementComponent implements OnInit {
       this.orderService.save(order).subscribe(it =>{
         this.alertService.info("Seu pedido foi Enviado")
       })
+      console.log(order)
     })
   }
 
@@ -134,7 +134,9 @@ export class DocumentStatementComponent implements OnInit {
       && this.formaPagamento 
       && this.itens 
       && this.tipoEnvio
+      && this.tipoOperacao
       && this.itens?.length > 0
+      && this.itens.filter(it => !it.GroupNum).length == 0
   }
 }
 

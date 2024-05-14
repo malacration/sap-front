@@ -31,8 +31,10 @@ export class BranchSelectComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     this.service.get().subscribe( data =>{
+      console.log(data)
       this.opcoes = data.map(it => new Option(it.bplid,it.bplname))
       this.loading = false;
+      console.log(this.opcoes)
     })
   }  
 }

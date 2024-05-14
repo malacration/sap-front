@@ -27,7 +27,6 @@ export class CondicaoPagamentoSelectComponent implements OnInit, OnChanges {
   selectedOut = new EventEmitter<CondicaoPagamento>();
 
   onChange($event : CondicaoPagamento){
-    console.log(JSON.stringify($event));
     this.selectedOut.emit($event)
   }
 
@@ -35,7 +34,7 @@ export class CondicaoPagamentoSelectComponent implements OnInit, OnChanges {
     if(changes.tabela && changes.tabela.currentValue != changes.tabela.previousValue){
       this.loading = true;
       this.service.getByTabela(changes.tabela.currentValue).subscribe( data =>{
-        this.opcoes = data.map(it => new Option(it,it.pymntGroup))
+        this.opcoes = data.map(it => new Option(it,it.PymntGroup))
         this.loading = false;
       })
     }

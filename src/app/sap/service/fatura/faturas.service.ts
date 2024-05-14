@@ -14,7 +14,7 @@ export class FaturasService {
     url = "http://localhost:8080/invoice"
 
     constructor(private config : ConfigService, private hppCliente : HttpClient) {
-    this.url = config.getHost()+"/invoice"
+        this.url = config.getHost()+"/invoice"
     }
 
     getFaturas(cardCode : string, page = 0, filter : any = undefined) : Observable<Page<Fatura>>{

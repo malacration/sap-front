@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { RomaneioFazendaInsumo } from '../model/romaneio-fazenda-insumo.model';
 import { BusinessPlace } from '../model/business-place';
+import { ConfigService } from '../../core/services/config.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +11,9 @@ import { BusinessPlace } from '../model/business-place';
 export class CondicaoPagamentoService {
 
   url = "http://localhost:8080/prazo"
-  
-  constructor(private hppCliente : HttpClient) { 
-    let host = localStorage.getItem("host")
-    if(host)
-      this.url = host+"/prazo"
+
+  constructor(private config : ConfigService, private hppCliente : HttpClient) {
+      this.url = config.getHost()+"/prazo"
   }
 
   getByTabela(tabela : number) : Observable<Array<CondicaoPagamento>>{
@@ -24,8 +23,8 @@ export class CondicaoPagamentoService {
 
 
 export class CondicaoPagamento{
-  groupNum : string
-  pymntGroup
-  listNum : string
-  code : string
+  GroupNum : string
+  PymntGroup
+  ListNum : string
+  Code : string
 }
