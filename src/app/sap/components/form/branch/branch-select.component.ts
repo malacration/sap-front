@@ -15,14 +15,14 @@ export class BranchSelectComponent implements OnInit {
   }
 
   @Input()
-  selected : Branch = null
+  selected : string = null
 
   opcoes : Array<Option>
 
   loading = false
 
   @Output()
-  selectedOut = new EventEmitter<Branch>();
+  selectedOut = new EventEmitter<string>();
 
   onChange($event){
     this.selectedOut.emit($event)

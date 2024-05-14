@@ -135,7 +135,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     NgxPaginationModule,
     BrowserModule,
     FormsModule,
-    HttpClientModule,
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
@@ -148,13 +147,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     }),
     // ProfabricComponentsModule,
     StoreModule.forRoot({ui: uiReducer}),
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: httpLoaderFactory,
-        deps: [HttpClient]
-      }
-    })
   ],
   providers: [
     RomaneioFazendaInsumoService,

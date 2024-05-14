@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RomaneioComponent } from './romaneio.component';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
+import { CoreModule } from '../../../core/core.module';
 
 describe('RomaneioComponent', () => {
   let component: RomaneioComponent;
@@ -8,7 +11,8 @@ describe('RomaneioComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RomaneioComponent ]
+      declarations: [ RomaneioComponent ],
+      imports: [RouterTestingModule,BrowserDynamicTestingModule,CoreModule]
     })
     .compileComponents();
 
