@@ -35,5 +35,5 @@ export class SelectComponent implements OnInit {
 
   ngOnInit(): void {
     
-    }
+  }
 }

@@ -5,6 +5,8 @@ import {Observable} from 'rxjs';
 import { AppState } from '../../store/state';
 import { ToggleControlSidebar, ToggleDarkMode, ToggleSidebarMenu } from '../../store/ui/actions';
 import { UiState } from '../../store/ui/state';
+import { config } from 'process';
+import { ConfigService } from '../../core/services/config.service';
 
 //main-header navbar navbar-expand navbar-light navbar-white
 
@@ -21,9 +23,11 @@ export class HeaderComponent implements OnInit {
     public searchForm: UntypedFormGroup;
     public sidebarHeaderButton : boolean = true;
     public headerMenu : boolean = true;
+    homologacao : boolean = false
     
     constructor(
-        private store: Store<AppState>
+        private store: Store<AppState>,
+        private config : ConfigService
     ) {}
 
     ngOnInit() {
@@ -37,6 +41,7 @@ export class HeaderComponent implements OnInit {
         this.searchForm = new UntypedFormGroup({
             search: new UntypedFormControl(null)
         });
+        this.homologacao = this.config.hmg
     }
 
     logout() {

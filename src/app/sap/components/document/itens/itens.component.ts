@@ -14,6 +14,9 @@ export class ItensComponent implements OnInit {
   @Input()
   branchId = undefined
 
+  @Input()
+  geralLoading = false
+
   @Output()
   changeItens = new EventEmitter<Array<Item>>();
 

@@ -7,6 +7,7 @@ export class ConfigService {
   public title: string = 'SAP - A R Soluções';
   public commercial_phone : string = '69 9 9999 6666'
   private modoOperacao : string = "external"
+  hmg = false
 
   getHost(){
     if(this.host)
