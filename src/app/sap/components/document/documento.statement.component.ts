@@ -9,6 +9,7 @@ import { AlertSerice } from '../../service/alert.service';
 import { CondicaoPagamento } from '../../service/condicao-pagamento.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
+import { Observable, concatAll, delay, forkJoin, from, of, subscribeOn } from 'rxjs';
 
 @Component({
   selector: 'app-document-statement',
@@ -118,6 +119,8 @@ export class DocumentStatementComponent implements OnInit {
 
   sendOrder(){
     this.loading = true
+    let subiscribers = Array<Observable<any>>();
+
     this.tabelas().forEach(tabela => {
       let order = new OrderSales()
       order.CardCode = this.businesPartner.CardCode
@@ -127,10 +130,11 @@ export class DocumentStatementComponent implements OnInit {
       order.PaymentGroupCode = this.itens.filter(it => it.PriceList == tabela).map(it => it.GroupNum)[0]
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
-      this.orderService.save(order).subscribe(it =>{
-        this.concluirEnvio()
-      })
+      subiscribers.push(this.orderService.save(order))
     })
+    forkJoin(subiscribers).subscribe(results => {
+      this.concluirEnvio();
+    });
   }
 
   concluirEnvio(){
