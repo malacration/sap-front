@@ -25,7 +25,7 @@
                 <div class="row">
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
+                            <app-branch-select #branch (selectedOut)="selectBranch($event)"></app-branch-select>
                         </div>
                     </div>
                     <div class="col-sm-2" *ngIf="branchId">
@@ -43,9 +43,17 @@
                     </div>
                 </div>
             </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
         </div>
 
-        <card-itens (changeItens)="changeItens($event)" *ngIf="branchId" [branchId]="branchId"></card-itens>
+        <card-itens
+            (changeItens)="changeItens($event)"
+            *ngIf="branchId" 
+            [geralLoading]="loading"
+            [branchId]="branchId">
+        </card-itens>
         
         <div *ngIf="branchId && businesPartner && itens?.length > 0" class="card card-primary">
             <div class="card-header">
@@ -91,6 +99,9 @@
                     </div>
                 </div>
             </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
         </div>
 
         <div *ngIf="isMutiplasTabelas()" class="card card-primary">
@@ -111,9 +122,14 @@
                     </ul>
                 </div>
             </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
         </div>
+
         <div class="card">
-            <button [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit" >Enviar Pedido</button>
+            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit" >Enviar Pedido</button>
+            <button *ngIf="loading" [disabled]="true" class="btn btn-success" type="submit" >Enviando...</button>
         </div>
     </div>
 </section>

@@ -7,6 +7,8 @@ import { Item } from '../../model/item';
 import { OrderSalesService } from '../../service/order-sales.service';
 import { AlertSerice } from '../../service/alert.service';
 import { CondicaoPagamento } from '../../service/condicao-pagamento.service';
+import { BranchSelectComponent } from '../form/branch/branch-select.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-document-statement',
@@ -23,12 +25,16 @@ export class DocumentStatementComponent implements OnInit {
   itens : Array<Item>
   tipoOperacao
   dtEntrega
+  loading = false
+
+  @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
   tipoEnvioRadio : Array<RadioItem> = [new RadioItem("Retirada","ret"), new RadioItem("Entrega","ent")]
   tipoOperacaoOptions: Array<Option> = [new Option(9,"venda"), new Option(16,"venda com entrega futura")]
 
   constructor(private businesPartnerService : BusinessPartnerService,
     private orderService : OrderSalesService,
+    private router : Router,
     private alertService : AlertSerice){
   }
   
@@ -111,6 +117,7 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   sendOrder(){
+    this.loading = true
     this.tabelas().forEach(tabela => {
       let order = new OrderSales()
       order.CardCode = this.businesPartner.CardCode
@@ -121,10 +128,22 @@ export class DocumentStatementComponent implements OnInit {
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       this.orderService.save(order).subscribe(it =>{
-        this.alertService.info("Seu pedido foi Enviado")
+        this.concluirEnvio()
       })
-      console.log(order)
     })
+  }
+
+  concluirEnvio(){
+    this.alertService.info("Seu pedido foi Enviado").then(() => {
+      this.loading = false
+      this.limparFormulario()
+    })
+  }
+
+  limparFormulario(){
+    this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['document']);
+    });
   }
 
   isFormValid() : boolean{
