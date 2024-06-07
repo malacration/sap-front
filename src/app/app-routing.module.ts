@@ -7,6 +7,8 @@ import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazend
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
+import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
+
 
  let routes: Routes = [
   {
@@ -40,6 +42,12 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
     path: 'document',
     title: 'Pedido de Venda',
     component: DocumentStatementComponent
+  },
+  {
+    path: 'gestao-vendedores',
+    title: 'Gestao Vendedores',
+    data: ["internal"],
+    component: GestaoVendedoresComponent
   },
   {
     path: 'cadastro/:id',

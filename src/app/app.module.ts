@@ -28,6 +28,8 @@ import { HomeComponent } from './home/home.component';
 import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
 import { RomaneioFazendaInsumoService } from './sap/service/romaneio-fazenda-insumo.service';
+import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
+
 
 
 import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
@@ -78,6 +80,8 @@ import { FormaPagamentoSelectComponent } from './sap/components/form/select/form
 import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
 import { OrderSalesService } from './sap/service/order-sales.service';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
+import { SalesPersonSearchComponent } from './sap/components/search/sales-person-search/sales-person-search.component';
+
 
 
 
@@ -102,6 +106,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     HomeComponent,
     RomaneioComponent,
     RomaneioFazendaInsumoComponent,
+    GestaoVendedoresComponent,
     PaginacaoComponent,
     FilterNumeroNfComponent,
     FilterBusinessPlaceComponent,
@@ -156,6 +161,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FaturasService,
     CityService,
     BusinessPartnerService,
+    SalesPersonSearchComponent,
     OneTimePasswordService,
     BsModalService,
     ItemService,
