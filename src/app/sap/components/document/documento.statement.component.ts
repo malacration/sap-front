@@ -1,15 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { BusinessPartnerDefinition } from '../../model/business-partner/business-partner-definition';
 import { BusinessPartnerService } from '../../service/business-partners.service';
 import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
 import { OrderSalesService } from '../../service/order-sales.service';
 import { AlertSerice } from '../../service/alert.service';
-import { CondicaoPagamento } from '../../service/condicao-pagamento.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
-import { Observable, concatAll, delay, forkJoin, from, of, subscribeOn } from 'rxjs';
+import { Observable, forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-document-statement',
@@ -27,6 +25,7 @@ export class DocumentStatementComponent implements OnInit {
   tipoOperacao
   dtEntrega
   loading = false
+  frete : number = 0
 
   @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
@@ -116,6 +115,9 @@ export class DocumentStatementComponent implements OnInit {
   temFormaPagamento(){
     return this.itens
   }
+  total() : number{
+    return this.itens.reduce((acc,it) => acc+it.unitPriceLiquid()*it.quantidade,0)+this.frete
+  }
 
   sendOrder(){
     this.loading = true
@@ -130,6 +132,7 @@ export class DocumentStatementComponent implements OnInit {
       order.PaymentGroupCode = this.itens.filter(it => it.PriceList == tabela).map(it => it.GroupNum)[0]
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
+      order.Frete = this.frete
       subiscribers.push(this.orderService.save(order))
     })
     forkJoin(subiscribers).subscribe(results => {
@@ -174,6 +177,7 @@ export class OrderSales{
   //condicao pagamento
   PaymentGroupCode : string
   comments : string
+  Frete : number
 }
 
 export class DocumentLines{

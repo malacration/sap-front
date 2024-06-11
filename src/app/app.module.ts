@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CoreModule } from './core/core.module';
@@ -55,7 +55,7 @@ import { ActionComponent } from './shared/components/action/action.component';
 import { CpfCnpjPipe } from './shared/directives/pipes/cpf-cnpj-pipe';
 import { MomentPipe } from './shared/directives/pipes/moment-pipe';
 import localeBr from '@angular/common/locales/pt';
-import { registerLocaleData } from '@angular/common';
+import { CurrencyPipe, registerLocaleData } from '@angular/common';
 import { ListaFaturaComponent } from './sap/components/faturas/lista-fatura/lista-fatura.component';
 import { AutenticacaoFaturaComponent } from './sap/components/faturas/autenticacao-fatura/autenticacao-fatura.component';
 import { RadioComponent } from './sap/components/form/radio/radio.component';
@@ -78,10 +78,11 @@ import { FormaPagamentoSelectComponent } from './sap/components/form/select/form
 import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
 import { OrderSalesService } from './sap/service/order-sales.service';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
+import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
 
 
 
-registerLocaleData(localeBr, 'pt');
+registerLocaleData(localeBr);
 
  
 // AoT requires an exported function for factories
@@ -129,7 +130,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ItemSearchComponent,
     BranchSelectComponent,
     FormaPagamentoSelectComponent,
-    CondicaoPagamentoSelectComponent
+    CondicaoPagamentoSelectComponent,
+    CurrencyInputComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -149,6 +151,14 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     StoreModule.forRoot({ui: uiReducer}),
   ],
   providers: [
+    {
+      provide: LOCALE_ID,
+      useValue: "pt-BR"
+    },
+    {
+      provide:  DEFAULT_CURRENCY_CODE,
+      useValue: 'BRL'
+    },
     RomaneioFazendaInsumoService,
     BusinessPlacesService,
     StateService,
@@ -162,6 +172,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BranchService,
     OrderSalesService,
     CondicaoPagamentoService,
+    CurrencyPipe,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
   ],

@@ -24,6 +24,10 @@ export class ItensComponent implements OnInit {
 
   }
 
+  total() : number{
+    return this.itens.reduce((acc, it) => acc+it.unitPriceLiquid()*it.quantidade,0)
+  }
+
   addItem(item){
     item.quantidade = 1
     this.itens.push(item)

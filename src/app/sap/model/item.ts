@@ -41,8 +41,12 @@ export class Item{
         return formatCurrency(this.UnitPrice,'pt','R$')
     }
 
+    unitPriceLiquid() : number{
+        return (this.UnitPrice*(1-this.desconto/100))
+    }
+
     total(){
-        return formatCurrency(this.quantidade*(this.UnitPrice*(1-this.desconto/100)),'pt','R$')
+        return formatCurrency(this.quantidade*this.unitPriceLiquid(),'pt','R$')
     }
 
     getDocumentsLines(usage) : DocumentLines{
@@ -52,7 +56,7 @@ export class Item{
         doc.PriceList = this.PriceList
         doc.Usage = usage
         doc.DiscountPercent = this.desconto
-        doc.U_preco_negociado = this.UnitPrice
+        doc.U_preco_negociado = this.unitPriceLiquid()
         return doc
     }
 }
