@@ -56,6 +56,9 @@
       </div>
     </div>
   </div>
+  <div class="card-footer">
+    <b>Total:</b> {{total() | currency}}
+  </div>
   <div *ngIf="geralLoading" class="overlay">
     <i class="fas fa-2x fa-sync-alt fa-spin"></i>
 </div>
