@@ -25,9 +25,8 @@ jobs:
 
     - name: Archive build artifacts
       run: |
-        mkdir -p build
-        mv dist/* build/
-        zip -r build.zip build/
+        cd dist
+        zip -r ../build.zip .
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
