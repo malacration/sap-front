@@ -1,11 +1,9 @@
 import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
-import { City } from "../adressess/city"
-import { Option } from "../form/option"
 
 
 export class SalesPerson implements Actiable{
-    SlpCode : Number
-    SlpName : string
+    SalesEmployeeCode : Number
+    SalesEmployeeName : String
 
     constructor(){
 
@@ -18,7 +16,7 @@ export class SalesPerson implements Actiable{
     }
 
     toString(){
-        return this.SlpName
+        return this.SalesEmployeeName
     }
         
 }

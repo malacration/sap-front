@@ -6,8 +6,8 @@ export class SalesPersonDefinition{
 
     getDefinition() {
         return [
-            new Column('Id', 'SlpCode'),
-            new Column('Nome', 'SlpName'),
+            new Column('Id', 'SalesEmployeeCode'),
+            new Column('Nome', 'SalesEmployeeName'),
         ]   
     }
 }

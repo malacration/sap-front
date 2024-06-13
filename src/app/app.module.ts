@@ -134,7 +134,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ItemSearchComponent,
     BranchSelectComponent,
     FormaPagamentoSelectComponent,
-    CondicaoPagamentoSelectComponent
+    CondicaoPagamentoSelectComponent,
+    SalesPersonSearchComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -161,7 +162,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FaturasService,
     CityService,
     BusinessPartnerService,
-    SalesPersonSearchComponent,
     OneTimePasswordService,
     BsModalService,
     ItemService,
