@@ -1,9 +1,8 @@
 name: Deploy Angular App
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'  # Executar ação em tags de versão
+  release:
+    types: [ created ]
 
 jobs:
   build:
