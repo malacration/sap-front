@@ -9,6 +9,7 @@ import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { authGuard } from './core/auth.guard';
+import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
 
  let routes: Routes = [
   {
@@ -49,6 +50,12 @@ import { authGuard } from './core/auth.guard';
     title: 'Pedido de Venda',
     canActivate: [authGuard],
     component: DocumentStatementComponent
+  },
+  {
+    path: 'gestao-vendedores',
+    title: 'Gestao Vendedores',
+    data: ["internal"],
+    component: GestaoVendedoresComponent
   },
   {
     path: 'cadastro/:id',
