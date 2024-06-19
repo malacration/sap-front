@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { EMPTY, Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AlertSerice } from '../sap/service/alert.service';
 
@@ -25,23 +25,25 @@ export class ErrorInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         if(error.status != 200 && error.error){
           console.log(error)
-          if(error.error instanceof Blob) {
-            error.error.text().then(text => {
-              if(JSON.parse(text).mensagem)
-                this.alertService.error(JSON.parse(text).mensagem);
-            })
-          }
-          
-          let msg = undefined;
-          if(error.error.mensagem)
-            msg = error.error.mensagem;
-            
-          if(error.error.mensagem == undefined || error.error.mensagem == null)
-            msg = error.message;
-          this. alertService.error(msg);
-          return throwError(error);
+          this.getMsgError(error).then(it => this.alertService.error(it));
         }
+        return throwError(error);
       })
     );
+  }
+
+
+  getMsgError(error: HttpErrorResponse) : Promise<string>{
+    if(typeof error.error === 'string')
+      return firstValueFrom(of(error.error.toString()))
+    if(error.error instanceof Blob)
+      return error.error.text()
+    if(error.error.mensagem && typeof error.error.mensagem === 'string')
+      return firstValueFrom(of(error.error.mensagem))
+    if(error.error.mensagem)
+      return firstValueFrom(of(error.error.mensagem))
+    if(error.message)
+      return firstValueFrom(of(error.message))
+
   }
 }

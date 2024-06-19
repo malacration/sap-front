@@ -55,7 +55,6 @@ export class RomaneioFazendaInsumoComponent {
         });
 
         this.tipo = params.get('tipo');
-        console.log('ButtonType:', this.tipo);
     });
   }
 

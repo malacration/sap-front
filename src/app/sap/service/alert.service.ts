@@ -10,19 +10,17 @@ import Swal from 'sweetalert2';
 })
 export class AlertSerice {
     
-    warning(){
-        Swal.fire({
+    warning(): Promise<any> {
+        return Swal.fire({
             title: 'Error!',
             text: 'Do you want to continue',
             icon: 'error',
             confirmButtonText: 'Ok'
           })
-          
-        alert("Warning");
     }
 
-    error(text : string){
-        Swal.fire({
+    error(text : string) : Promise<any> {
+        return Swal.fire({
             title: 'Error!',
             text: text,
             icon: 'error',

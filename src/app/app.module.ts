@@ -79,6 +79,8 @@ import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/c
 import { OrderSalesService } from './sap/service/order-sales.service';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
+import { LoginComponent } from './shared/components/login/login.component';
+import { AuthService } from './shared/service/auth.service';
 
 
 
@@ -131,7 +133,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BranchSelectComponent,
     FormaPagamentoSelectComponent,
     CondicaoPagamentoSelectComponent,
-    CurrencyInputComponent
+    CurrencyInputComponent,
+    LoginComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -172,9 +175,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BranchService,
     OrderSalesService,
     CondicaoPagamentoService,
+    AuthService,
     CurrencyPipe,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],
 })

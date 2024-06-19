@@ -1,11 +1,12 @@
-import {Component, HostBinding, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, HostBinding, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
+import {Observable, debounce, debounceTime} from 'rxjs';
 import { AppState } from '../../store/state';
 import { UiState } from '../../store/ui/state';
 import { ConfigService } from '../../core/services/config.service';
 import { Route, Router } from '@angular/router';
 import { MenuItem } from './menu-item.model';
+import { AuthService } from '../../shared/service/auth.service';
 
 const BASE_CLASSES = 'main-sidebar elevation-4';
 @Component({
@@ -24,7 +25,9 @@ export class MenuSidebarComponent implements OnInit {
     constructor(
         private config : ConfigService,
         private store: Store<AppState>,
-        private router: Router
+        private router: Router,
+        private authService : AuthService,
+        private ref: ChangeDetectorRef
     ) {}
 
     ngOnInit() {
@@ -35,13 +38,28 @@ export class MenuSidebarComponent implements OnInit {
             this.classes = `${BASE_CLASSES} ${state.sidebarSkin}`;
         });
         this.menu = this.createMenu(this.router.config);
+        this.authService.loginChange$.subscribe(() => {
+            this.menu = this.createMenu(this.router.config);
+        })
     }
 
+    logout() {
+        this.authService.logout()
+    }
+
+    isLoggedIn() : boolean {
+        return this.authService.isLoggedIn()
+    }
+
+    userName() {
+        return this.authService.getUser()
+    }
+
+
     createMenu(routes: Route[]) : Array<MenuItem> {
-        // internal or external
         let menu : Array<MenuItem> = new Array<MenuItem>()
         routes.filter(it =>
-            this.isTemTitulo(it) && !this.isHidden(it)
+            this.isTemTitulo(it) && !this.isHidden(it) && this.isShowGuard(it)
             && (
                 (this.modoOperacao == "internal" && this.isRouteInternal(it))
                 ||
@@ -56,7 +74,14 @@ export class MenuSidebarComponent implements OnInit {
             menu.push(item)
             item
         })
+        this.menu = menu
         return menu
+    }
+
+    isShowGuard(route : Route) : boolean{
+        if(route.canActivate)
+            return this.authService.isLoggedIn()
+        return true
     }
 
     isHidden(it){

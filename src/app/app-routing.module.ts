@@ -7,6 +7,8 @@ import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazend
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
+import { LoginComponent } from './shared/components/login/login.component';
+import { authGuard } from './core/auth.guard';
 
  let routes: Routes = [
   {
@@ -18,6 +20,12 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
     path: 'home',
     title: 'Inicio',
     component: HomeComponent
+  },
+  {
+    path: 'login',
+    title: 'Login',
+    data: ["hidden"],
+    component: LoginComponent
   },
   {
     path: 'romaneio',
@@ -39,6 +47,7 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
   {
     path: 'document',
     title: 'Pedido de Venda',
+    canActivate: [authGuard],
     component: DocumentStatementComponent
   },
   {
@@ -57,7 +66,7 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, {})
+    RouterModule.forRoot(routes)
   ],
   exports: [RouterModule]
 })
