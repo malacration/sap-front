@@ -40,7 +40,6 @@ export class AutenticacaoFaturaComponent {
 
   next(){
     this.otpService.generateOtpByContact(this.cpf,this.selecionado.label).subscribe(it =>{
-      console.log(it)
     })
     this.alertService.info("Foi enviado uma mensagem").then(
       it => {

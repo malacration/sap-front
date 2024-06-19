@@ -15,13 +15,30 @@
 <!-- Sidebar -->
 <div class="sidebar">
     <!-- Sidebar user (optional) -->
-    <div *ngIf="false"  class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="info">
-            <a [routerLink]="['/profile']" class="d-block">
-                Bem vindo {{ user?.name }}
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex flex-column align-items-start">
+        <div *ngIf="isLoggedIn()">
+            <div class="info">
+                <a>
+                    Bem vindo
+                </a>
+                <button title="Clique para sair" (click)="logout()" class="btn btn-logout" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+            <div class="info">
+                <a>
+                    {{ userName() }}   
+                </a>
+            </div>
+        </div>
+    
+        <div *ngIf="!isLoggedIn()" class="info w-100">
+            <a [routerLink]="['/login']" class="d-block">
+                Fazer o Login 
             </a>
         </div>
     </div>
+    
 
     <div *ngIf="false" class="form-inline">
         search

@@ -18,3 +18,23 @@
 .form-inline {
     justify-content: center;
 }
+
+.info {
+    display: flex;
+    align-items: center;
+}
+  
+.btn-logout {
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.btn-logout:hover {
+    color: gray;
+}
+
+.mr-2 {
+    margin-right: 8px;
+}

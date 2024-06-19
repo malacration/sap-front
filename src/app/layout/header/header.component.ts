@@ -7,6 +7,7 @@ import { ToggleControlSidebar, ToggleDarkMode, ToggleSidebarMenu } from '../../s
 import { UiState } from '../../store/ui/state';
 import { config } from 'process';
 import { ConfigService } from '../../core/services/config.service';
+import { AuthService } from '../../shared/service/auth.service';
 
 //main-header navbar navbar-expand navbar-light navbar-white
 
@@ -23,7 +24,6 @@ export class HeaderComponent implements OnInit {
     public searchForm: UntypedFormGroup;
     public sidebarHeaderButton : boolean = true;
     public headerMenu : boolean = true;
-    homologacao : boolean = false
     
     constructor(
         private store: Store<AppState>,
@@ -41,11 +41,6 @@ export class HeaderComponent implements OnInit {
         this.searchForm = new UntypedFormGroup({
             search: new UntypedFormControl(null)
         });
-        this.homologacao = this.config.hmg
-    }
-
-    logout() {
-        
     }
 
     onToggleMenuSidebar() {

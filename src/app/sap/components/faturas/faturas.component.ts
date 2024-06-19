@@ -9,6 +9,7 @@ import { RadioItem } from '../form/radio/radio.model';
 import { OneTimePasswordService } from '../../service/one-time-password.service';
 import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
+import { AuthService } from '../../../shared/service/auth.service';
 
 
 
@@ -36,12 +37,13 @@ export class FaturasComponent implements OnInit {
     private otpService : OneTimePasswordService,
     private configService :  ConfigService,
     private alertService : AlertSerice,
+    private authService : AuthService,
     private bpService : BusinessPartnerService){
       
   }
 
   ngOnInit(){
-    if(localStorage.getItem("token")){
+    if(localStorage.getItem("token") && this.authService.getId().length > 6){
       this.getCurrentBp()
     }
   }
@@ -56,7 +58,6 @@ export class FaturasComponent implements OnInit {
         this.contatosOpcoes = it.map( c => new RadioItem(c.contato,i++))
       }, error: (err) => {
         this.disableAvancar=false
-        console.log(err)
       }
     });
   }

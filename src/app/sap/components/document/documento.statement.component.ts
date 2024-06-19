@@ -43,7 +43,7 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   changePageBusinesPartner(){
-    alert("change page Bp")
+    
   }
   
   changeFormaPagamento($event){
@@ -57,11 +57,8 @@ export class DocumentStatementComponent implements OnInit {
 
   changeAllCondicao($event : any){
     if($event.GroupNum){
-      console.log("change all")
       this.itens.forEach(it => it.GroupNum = $event.GroupNum)
     }
-    console.log("no change"+JSON.stringify($event))
-    console.log($event.groupNum)
   }
 
   changeItens($event){
@@ -135,8 +132,13 @@ export class DocumentStatementComponent implements OnInit {
       order.Frete = this.frete
       subiscribers.push(this.orderService.save(order))
     })
-    forkJoin(subiscribers).subscribe(results => {
-      this.concluirEnvio();
+    forkJoin(subiscribers).subscribe({ 
+      next:result => {
+        this.concluirEnvio();
+      },
+      error : result => {
+        this.loading = false
+      },
     });
   }
 

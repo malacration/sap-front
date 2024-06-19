@@ -82,6 +82,8 @@ import { OrderSalesService } from './sap/service/order-sales.service';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
 import { SalesPersonSearchComponent } from './sap/components/search/sales-person-search/sales-person-search.component';
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
+import { LoginComponent } from './shared/components/login/login.component';
+import { AuthService } from './shared/service/auth.service';
 
 
 
@@ -135,6 +137,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BranchSelectComponent,
     FormaPagamentoSelectComponent,
     CondicaoPagamentoSelectComponent,
+    CurrencyInputComponent,
+    LoginComponent,
     SalesPersonSearchComponent,
     CurrencyInputComponent
   ],
@@ -177,9 +181,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BranchService,
     OrderSalesService,
     CondicaoPagamentoService,
+    AuthService,
     CurrencyPipe,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],
 })
