@@ -5,30 +5,67 @@
         <h3 class="card-title"><b>Gestão de Vendedor</b></h3>
       </div>
       <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-6">
+            <app-sales-person-search (selected)="selectOriginSalesPerson($event)" [name]="'Vendedor Origem'"></app-sales-person-search>
+          </div>
+          <div class="col-sm-6">
+            <app-sales-person-search (selected)="selectDestinationSalesPerson($event)" [name]="'Vendedor Destino'"></app-sales-person-search>
+          </div>
+        </div>
         <div class="row">
-          <div class="col-sm-5">
-            <div class="form-group">
-              <app-sales-person-search (selected)="selectOriginSalesPerson($event)" [name]="'Vendedor Origem'"></app-sales-person-search>
+          <div class="col-sm-6">
+            <div class="form-group dual-list">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Pesquisar Origem" [(ngModel)]="searchOrigin">
+                <div class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>
+              </div>
+              <ul class="list-group list-container mb-2">
+                <li *ngFor="let item of getOriginList()" class="list-group-item" (click)="moveToDestination(item)">
+                  {{ item.name }}
+                </li>
+              </ul>
+              <app-paginacao (pageChange)="loadPage($event)" [totalItens]="totalOriginItems" [pageSize]="size" [hardCodeWidth]="250"></app-paginacao>
+              <div class="mt-2 text-center">
+                <button class="btn btn-primary btn-sm mr-2 btn-custom" (click)="selectAllFromAllPages()">Selecionar Todos</button>
+                <button class="btn btn-secondary btn-sm mr-2 btn-custom" (click)="selectPageItensOnly()">Selecionar Página</button>
+                <button class="btn btn-secondary btn-sm btn-custom" (click)="deselectAllFromAllPages()">Nenhum</button>
+              </div>
             </div>
           </div>
-          <div class="col-sm-5">
-            <div class="form-group">
-              <app-sales-person-search (selected)="selectDestinationSalesPerson($event)" [name]="'Vendedor Destino'"></app-sales-person-search>
+          <div class="col-sm-6">
+            <div class="form-group dual-list">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Pesquisar Destino" [(ngModel)]="searchDestination">
+                <div class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>
+              </div>
+              <ul class="list-group list-container">
+                <li *ngFor="let item of getDestinationList()" class="list-group-item" (click)="moveToOrigin(item)">
+                  {{ item.name }}
+                </li>
+              </ul>
+              <div class="text-center mt-2">
+                <br>
+                <br>
+                <button class="btn btn-primary btn-sm btn-custom" (click)="deselectAllFromAllPages()">Voltar Todos</button>
+              </div>
             </div>
           </div>
-          <div class="col-sm-2" style="margin-top: 32px;">
-            <div class="form-group">
-              <div class="card">
-                <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit" >Enviar Pedido</button>
-                <button *ngIf="loading" [disabled]="true" class="btn btn-success" type="submit" >Enviando...</button>
-            </div>
-            </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Enviar Pedido</button>
+            <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Enviando...</button>
           </div>
         </div>
       </div>
       <div *ngIf="loading" class="overlay">
         <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-    </div>
+      </div>
     </div>
   </div>
 </section>
