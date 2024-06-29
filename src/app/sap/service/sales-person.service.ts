@@ -25,7 +25,7 @@ export class SalesPersonService {
   }
 
   replaceSalesPerson(origin: number, destination: number, selectedClientIds: number[]): Observable<boolean> {
-    const params = new HttpParams().set('clientes', selectedClientIds.join(',')); // Convertendo a lista de IDs em uma string separada por vírgula
+    const params = new HttpParams().set('clientes', selectedClientIds.join(',')); 
   
     return this.httpClient
       .get<boolean>(`${this.url}/replace/${origin}/por/${destination}`, { params })
@@ -55,8 +55,8 @@ export class SalesPersonService {
       }));
   }
 
-  save(idGestaoVendedores: string): Observable<any> {
-    return this.httpClient.get(`${this.url}/salvar/${idGestaoVendedores}`);
+  save(idTransferenciaClientes: string): Observable<any> {
+    return this.httpClient.get(`${this.url}/salvar/${idTransferenciaClientes}`);
   }
 
 }

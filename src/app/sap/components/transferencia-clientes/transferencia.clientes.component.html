@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="card card-primary">
       <div class="card-header">
-        <h3 class="card-title"><b>Gestão de Vendedor</b></h3>
+        <h3 class="card-title"><b>Transferência de Clientes</b></h3>
       </div>
       <div class="card-body">
         <div class="row mb-3">
@@ -24,14 +24,14 @@
               </div>
               <ul class="list-group list-container mb-2">
                 <li *ngFor="let item of getOriginList()" class="list-group-item" (click)="moveToDestination(item)">
-                  {{ item.name }}
+                  {{ item.CardName }}
                 </li>
               </ul>
-              <app-paginacao (pageChange)="loadPage($event)" [totalItens]="totalOriginItems" [pageSize]="size" [hardCodeWidth]="250"></app-paginacao>
+              <app-paginacao (pageChange)="loadClientesVendedor($event)" [totalItens]="totalOriginItems" [pageSize]="size" [hardCodeWidth]="250"></app-paginacao>
               <div class="mt-2 text-center">
-                <button class="btn btn-primary btn-sm mr-2 btn-custom" (click)="selectAllFromAllPages()">Selecionar Todos</button>
+                <button class="btn btn-primary btn-sm mr-2 btn-custom" (click)="loadAllClients()">Selecionar Todos</button>
                 <button class="btn btn-secondary btn-sm mr-2 btn-custom" (click)="selectPageItensOnly()">Selecionar Página</button>
-                <button class="btn btn-secondary btn-sm btn-custom" (click)="deselectAllFromAllPages()">Nenhum</button>
+                <button class="btn btn-secondary btn-sm btn-custom" (click)="unselectALL()">Nenhum</button>
               </div>
             </div>
           </div>
@@ -45,21 +45,21 @@
               </div>
               <ul class="list-group list-container">
                 <li *ngFor="let item of getDestinationList()" class="list-group-item" (click)="moveToOrigin(item)">
-                  {{ item.name }}
+                  {{ item.CardName }}
                 </li>
               </ul>
               <div class="text-center mt-2">
                 <br>
                 <br>
-                <button class="btn btn-primary btn-sm btn-custom" (click)="deselectAllFromAllPages()">Voltar Todos</button>
+                <button class="btn btn-primary btn-sm btn-custom" (click)="unselectALL()">Voltar Todos</button>
               </div>
             </div>
           </div>
         </div>
         <div class="row">
           <div class="col">
-            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Enviar Pedido</button>
-            <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Enviando...</button>
+            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Realizar Transferência</button>
+            <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Transferindo...</button>
           </div>
         </div>
       </div>

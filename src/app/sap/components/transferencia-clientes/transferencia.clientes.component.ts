@@ -1,15 +1,14 @@
-import { Component, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
 import { AlertSerice } from '../../service/alert.service';
 import { Router } from '@angular/router';
-import { debounce } from 'rxjs';
 
 @Component({
-  selector: 'app-gestao-vendedores',
-  templateUrl: './gestao.vendedores.component.html',
-  styleUrls: ['./gestao.vendedores.component.scss']
+  selector: 'app-transferencia-clientes',
+  templateUrl: './transferencia.clientes.component.html',
+  styleUrls: ['./transferencia.clientes.component.scss']
 })
-export class GestaoVendedoresComponent implements OnInit {
+export class TransferenciaClientesComponent implements OnInit {
   originSalesPerson: any;
   destinationSalesPerson: any;
   loading = false;
@@ -34,7 +33,7 @@ export class GestaoVendedoresComponent implements OnInit {
 
   selectOriginSalesPerson($event: any): void {
     this.originSalesPerson = $event;
-    this.loadPage(0);
+    this.loadClientesVendedor(0);
   }
 
   selectDestinationSalesPerson($event: any): void {
@@ -46,65 +45,63 @@ export class GestaoVendedoresComponent implements OnInit {
            !!this.destinationSalesPerson?.SalesEmployeeCode;
   }
 
-  loadPage(page: number): void {
+  loadClientesVendedor(page: number): void {
     this.currentPage = page;
     this.loading = true;
-    this.salesPersonService.getBusinessPartners(this.originSalesPerson.SalesEmployeeCode,this.currentPage).subscribe(
+    this.salesPersonService.getBusinessPartners(this.originSalesPerson.SalesEmployeeCode, this.currentPage).subscribe(
       (it) => {
         this.loading = false;
         this.totalOriginItems = it.totalElements;
-        const loadedItems = it.content.map((bp) => ({id: bp.CardCode,name: bp.CardName,selected: false}));
+        const loadedItems = it.content.map((bp) => ({ CardCode: bp.CardCode, CardName: bp.CardName, selected: false }));
         this.baseOriginList = loadedItems.filter(
-          (item) => !this.transferredItems.some((transferredItem) => transferredItem.id === item.id));
-        this.baseOriginList = this.filterList(this.baseOriginList, this.searchOrigin);
+          (item) => !this.transferredItems.some((transferredItem) => transferredItem.CardCode === item.CardCode));
+        this.originList = this.filterList(this.baseOriginList, this.searchOrigin);
       }
     );
   }
 
   filterList(list: any[], search: string): any[] {
-    let b : boolean = (search == undefined || search.length == 0)
-    console.log("fiilter list,",b)
-    if (b) {
+    if (!search) {
       return list;
     } else {
       return list.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.CardName.toLowerCase().includes(search.toLowerCase())
       );
     }
   }
 
-  getDestinationList(){
+  getDestinationList() {
     return this.filterList(this.baseDestinationList, this.searchDestination);
   }
 
-  getOriginList(){
+  getOriginList() {
     return this.filterList(this.baseOriginList, this.searchOrigin);
   }
 
   moveToDestination(item: any): void {
-    this.baseOriginList = this.baseOriginList.filter((i) => i.id !== item.id);
+    this.baseOriginList = this.baseOriginList.filter((i) => i.CardCode !== item.CardCode);
     this.baseDestinationList.push(item);
     this.transferredItems.push(item);
   }
 
   moveToOrigin(item: any): void {
-    this.baseDestinationList = this.baseDestinationList.filter((i) => i.id !== item.id);
+    this.baseDestinationList = this.baseDestinationList.filter((i) => i.CardCode !== item.CardCode);
     this.baseOriginList.push(item);
-    this.transferredItems = this.transferredItems.filter((i) => i.id !== item.id);
+    this.transferredItems = this.transferredItems.filter((i) => i.CardCode !== item.CardCode);
   }
-  
-  loadAllPagesAndMove(): void {
+
+  loadAllClients(): void {
     this.loading = true;
     const totalPages = Math.ceil(this.totalOriginItems / this.size);
     let loadedPages = 0;
     let allItems = [];
-  
+
     for (let page = 0; page < totalPages; page++) {
-      this.salesPersonService.getBusinessPartners(this.originSalesPerson.SalesEmployeeCode,page).subscribe(
+      this.salesPersonService.getBusinessPartners(this.originSalesPerson.SalesEmployeeCode, page).subscribe(
         (it) => {
           loadedPages++;
-          const loadedItems = it.content.map((bp) => ({id: bp.CardCode,name: bp.CardName,selected: false}));
-          allItems = allItems.concat(loadedItems.filter((item) => !this.transferredItems.some((transferredItem) => transferredItem.id === item.id)));
+          const loadedItems = it.content.map((bp) => ({ CardCode: bp.CardCode, CardName: bp.CardName, selected: false }));
+          allItems = allItems.concat(loadedItems.filter((item) => !this.transferredItems.some((transferredItem) => transferredItem.CardCode === item.CardCode)));
           if (loadedPages === totalPages) {
             this.loading = false;
             this.moveAllItemsToDestination(allItems);
@@ -121,17 +118,13 @@ export class GestaoVendedoresComponent implements OnInit {
     this.totalOriginItems = 0;
   }
 
-  selectAllFromAllPages(): void {
-    this.loadAllPagesAndMove();
-  }
-
   selectPageItensOnly(): void {
     const itemsToMove = this.baseOriginList.splice(0, this.size);
     this.transferredItems = this.transferredItems.concat(itemsToMove);
     this.baseDestinationList = this.baseDestinationList.concat(itemsToMove);
   }
 
-  deselectAllFromAllPages(): void {
+  unselectALL(): void {
     this.baseOriginList = this.baseOriginList.concat(this.baseDestinationList);
     this.transferredItems = [];
     this.baseDestinationList = [];
@@ -139,25 +132,26 @@ export class GestaoVendedoresComponent implements OnInit {
 
   sendOrder(): void {
     if (!this.isFormValid()) {
-      console.error('originSalesPerson ou destinationSalesPerson não estão definidos corretamente.');
+      this.alertService.error('Vendedor de Origem ou Vendedor de Destino não estão definidos corretamente.');
       return;
     }
-    
+  
     this.loading = true;
-    const selectedClientIds = this.baseDestinationList.map(item => item.id);
-    this.salesPersonService.replaceSalesPerson(
-      this.originSalesPerson.SalesEmployeeCode,
-      this.destinationSalesPerson.SalesEmployeeCode,
-      selectedClientIds 
-    ).subscribe(
-      () => this.concluirEnvio(),
-      (error) => {
-        console.error('Erro ao realizar a troca:', error);
-        this.loading = false;
-      }
-    );
+    const selectedClientIds = this.baseDestinationList.map(item => item.CardCode);
+  
+    try {
+      this.salesPersonService.replaceSalesPerson(
+        this.originSalesPerson.SalesEmployeeCode,
+        this.destinationSalesPerson.SalesEmployeeCode,
+        selectedClientIds
+      ).subscribe(
+        () => this.concluirEnvio(),
+      );
+    } finally {
+      this.loading = false;
+    }
   }
-
+  
   concluirEnvio(): void {
     this.alertService.info('Sua troca foi realizada com sucesso!').then(() => {
       this.loading = false;
@@ -167,7 +161,7 @@ export class GestaoVendedoresComponent implements OnInit {
 
   limparFormulario(): void {
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['gestao-vendedores']);
+      this.router.navigate(['transferencia-clientes']);
     });
   }
 }
