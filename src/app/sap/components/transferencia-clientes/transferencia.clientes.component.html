@@ -1,0 +1,71 @@
+<section>
+  <div class="container-fluid">
+    <div class="card card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><b>Transferência de Clientes</b></h3>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-sm-6">
+            <app-sales-person-search (selected)="selectOriginSalesPerson($event)" [name]="'Vendedor Origem'"></app-sales-person-search>
+          </div>
+          <div class="col-sm-6">
+            <app-sales-person-search (selected)="selectDestinationSalesPerson($event)" [name]="'Vendedor Destino'"></app-sales-person-search>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group dual-list">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Pesquisar Origem" [(ngModel)]="searchOrigin">
+                <div class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>
+              </div>
+              <ul class="list-group list-container mb-2">
+                <li *ngFor="let item of getOriginList()" class="list-group-item" (click)="moveToDestination(item)">
+                  {{ item.CardName }}
+                </li>
+              </ul>
+              <app-paginacao (pageChange)="loadClientesVendedor($event)" [totalItens]="totalOriginItems" [pageSize]="size" [hardCodeWidth]="250"></app-paginacao>
+              <div class="mt-2 text-center">
+                <button class="btn btn-primary btn-sm mr-2 btn-custom" (click)="loadAllClients()">Selecionar Todos</button>
+                <button class="btn btn-secondary btn-sm mr-2 btn-custom" (click)="selectPageItensOnly()">Selecionar Página</button>
+                <button class="btn btn-secondary btn-sm btn-custom" (click)="unselectALL()">Nenhum</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group dual-list">
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Pesquisar Destino" [(ngModel)]="searchDestination">
+                <div class="input-group-append">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>
+              </div>
+              <ul class="list-group list-container">
+                <li *ngFor="let item of getDestinationList()" class="list-group-item" (click)="moveToOrigin(item)">
+                  {{ item.CardName }}
+                </li>
+              </ul>
+              <div class="text-center mt-2">
+                <br>
+                <br>
+                <button class="btn btn-primary btn-sm btn-custom" (click)="unselectALL()">Voltar Todos</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Realizar Transferência</button>
+            <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Transferindo...</button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="loading" class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+      </div>
+    </div>
+  </div>
+</section>

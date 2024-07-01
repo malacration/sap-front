@@ -9,7 +9,7 @@ import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { authGuard } from './core/auth.guard';
-import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
+import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 
  let routes: Routes = [
   {
@@ -52,10 +52,10 @@ import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/ge
     component: DocumentStatementComponent
   },
   {
-    path: 'gestao-vendedores',
-    title: 'Gestao Vendedores',
+    path: 'transferencia-clientes',
+    title: 'Transferencia de Clientes',
     data: ["internal"],
-    component: GestaoVendedoresComponent
+    component: TransferenciaClientesComponent
   },
   {
     path: 'cadastro/:id',

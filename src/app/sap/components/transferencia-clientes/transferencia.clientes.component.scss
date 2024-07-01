@@ -1,0 +1,161 @@
+.container-fluid {
+  padding: 15px;
+}
+
+.custom-btn {
+  background-color: #28a745;
+  color: #ffffff;
+  border-color: #28a745;
+  font-size: 14px;
+  padding: 10px 20px;
+}
+
+.card-primary {
+  border: 1px solid #d2d6de;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #f3f8f2;
+}
+
+.card-header {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+.card-title {
+  margin-bottom: 0;
+}
+
+.card {
+  margin-top: 15px;
+  padding: 15px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.overlay .fa-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.dual-list {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  border: 1px solid #d2d6de;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #f3f8f2;
+  overflow: hidden;
+  position: relative;
+}
+
+.dual-list .input-group {
+  padding: 10px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #d2d6de;
+  display: flex;
+  justify-content: center;
+}
+
+.dual-list .input-group-append {
+  background-color: #ffffff;
+  border-left: 1px solid #d2d6de;
+}
+
+.dual-list .input-group-text {
+  background-color: #ffffff;
+  border: none;
+}
+
+.dual-list .list-container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  max-height: 250px;
+  padding: 10px;
+  position: relative;
+}
+
+.dual-list .list-group-item {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dual-list .list-group-item:hover {
+  background-color: #e9f2ec;
+}
+
+.dual-list .btn {
+  margin: 5px;
+  text-align: center;
+}
+
+.dual-list .btn-custom {
+  font-size: 12px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.dual-list .btn-primary.btn-custom {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.dual-list .btn-secondary.btn-custom {
+  background-color: #a4dcb4;
+  border-color: #a4dcb4;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .dual-list {
+    height: auto;
+  }
+
+  .dual-list .list-container {
+    max-height: 200px;
+  }
+
+  .dual-list .btn-custom {
+    font-size: 10px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .custom-btn {
+    font-size: 12px;
+    padding: 8px 15px;
+  }
+
+  .card-header {
+    padding: 5px;
+  }
+
+  .card-body {
+    padding: 10px;
+  }
+}

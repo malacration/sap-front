@@ -28,7 +28,7 @@ import { HomeComponent } from './home/home.component';
 import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
 import { RomaneioFazendaInsumoService } from './sap/service/romaneio-fazenda-insumo.service';
-import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
+import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 
 
 
@@ -108,7 +108,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     HomeComponent,
     RomaneioComponent,
     RomaneioFazendaInsumoComponent,
-    GestaoVendedoresComponent,
+    TransferenciaClientesComponent,
     PaginacaoComponent,
     FilterNumeroNfComponent,
     FilterBusinessPlaceComponent,
