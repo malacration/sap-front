@@ -15,6 +15,9 @@ export class BusinessPartner implements Actiable{
     ContactEmployees : Array<Person> = new Array()
     RemoveContacts : Array<number> = new Array()
     Referencias : ReferenciaComercial
+
+    private _addressOptions
+    private _referenceOptions
     
     CpfCnpjStr() {
         get : { return this.TaxId0 ? this.TaxId0 : this.TaxId4}
@@ -28,22 +31,37 @@ export class BusinessPartner implements Actiable{
     }
 
     getAddressOptions(tipo = null) : Array<Option>{
-        return this.BPAddresses
-            .map(it => Object.assign(new BPAddress(null),it))
-            .filter(it => tipo == null || it.AddressType == tipo)
-            .map(it => new Option(it , it.toString()))
+        if(this._addressOptions)
+            return this._addressOptions
+        if(this.BPAddresses && this.BPAddresses.length > 0){
+            this._addressOptions = this.BPAddresses
+                .map(it => Object.assign(new BPAddress(null),it))
+                .filter(it => tipo == null || it.AddressType == tipo)
+                .map(it => new Option(it , it.toString()))
+            return this._addressOptions
+        }
+        else
+            return new Array()                
     }
 
+
     getReferenciaOptions() : Array<Option>{
-        if(this.Referencias)
-            return this.Referencias.REFERENCIACollection
-            .map(it => new Option(it.LineId , "Ref Nº "+it.LineId))
-        else
+        if(this._referenceOptions)
+            return this._referenceOptions
+        
+        this.Referencias = Object.assign(new ReferenciaComercial(this.CardCode),this.Referencias)
+        if(this.Referencias && this.Referencias.REFERENCIACollection && this.BPAddresses.length > 0){
+            this._referenceOptions = this.Referencias.REFERENCIACollection
+                .map(it => new Option(it.LineId , "Ref Nº "+it.LineId))
+            return this._referenceOptions
+        }else
             return new Array()
     }
 
-    getAddressesByAddressName(addressName : string) : BPAddress{
-        return this.BPAddresses.find(it => it.AddressName == addressName)
+    getAddressesByAddressName(addressName : BPAddress) : BPAddress{
+        console.log("Busca: ", addressName.AddressName)
+        console.log(this.BPAddresses)
+        return this.BPAddresses.find(it => it.AddressName == addressName.AddressName)
     }
 
     getConjugue() : Person{
