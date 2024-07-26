@@ -26,6 +26,8 @@ export class AppComponent {
     private store: Store<AppState>) {}
 
   ngOnInit() {
+    this.changeColors()
+
     this.titleService.setTitle(this.config.title)
     this.ui = this.store.select('ui');
     this.renderer.removeClass(
@@ -91,6 +93,67 @@ export class AppComponent {
         }
     );
   }
+
+    changeColors() {
+        const primary = this.config.primaryColor;
+        const darkerPrimary = this.adjustColor(primary, -10);
+        const textColorPrimary = this.colorContrast(primary);
+        document.documentElement.style.setProperty('--bs-primary', primary);
+        document.documentElement.style.setProperty('--bs-primary-dark', darkerPrimary);
+        document.documentElement.style.setProperty('--bs-primary-text', textColorPrimary);
+
+        const success =  this.config.successColor;
+        const darkerSuccess = this.adjustColor(success, -10);
+        const textColorSuccess = this.colorContrast(success);
+        document.documentElement.style.setProperty('--bs-success', success);
+        document.documentElement.style.setProperty('--bs-success-dark', darkerSuccess);
+        document.documentElement.style.setProperty('--bs-success-text', textColorSuccess);
+    }
+
+
+  adjustColor(color: string, amount: number): string {
+    return '#' + color.replace(/^#/, '').replace(/../g, (color) =>
+      ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2)
+    );
+  }
+
+
+  luminance(r: number, g: number, b: number): number {
+    const a = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+  }
+  
+  contrast(l1: number, l2: number): number {
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+  
+  colorContrast(hexcolor: string): string {
+    if (hexcolor.startsWith('#')) {
+      hexcolor = hexcolor.slice(1);
+    }
+  
+    const r = parseInt(hexcolor.substr(0, 2), 16);
+    const g = parseInt(hexcolor.substr(2, 2), 16);
+    const b = parseInt(hexcolor.substr(4, 2), 16);
+  
+    const bgLuminance = this.luminance(r, g, b);
+    console.log("bgLuminance",bgLuminance)
+  
+    const whiteLuminance = this.luminance(255, 255, 255);
+    const blackLuminance = this.luminance(0, 0, 0);
+  
+    let blackPenality = 0.2
+    const contrastWithWhite = this.contrast(bgLuminance, whiteLuminance);
+    const contrastWithBlack = this.contrast(bgLuminance, blackLuminance)- blackPenality;
+
+    console.log("contrastWithWhite",contrastWithWhite)
+    console.log("contrastWithBlack",contrastWithBlack)
+    console.log("result",contrastWithWhite > contrastWithBlack ? '#ffffff' : '#000000')
+    return contrastWithWhite > contrastWithBlack ? '#ffffff' : '#000000';
+  }  
 
   onToggleMenuSidebar() {
       this.store.dispatch(new ToggleSidebarMenu());

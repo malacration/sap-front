@@ -10,6 +10,8 @@ export class ConfigService {
   private modoOperacao : string = "external"
   tipoOperacao : Array<TipoOperacao> = Array()
   hmg = false
+  primaryColor : string = '#0d6efd'
+  successColor : string = '#198754'
 
   getHost(){
     if(this.host)
