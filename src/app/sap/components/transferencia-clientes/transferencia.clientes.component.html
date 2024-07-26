@@ -21,17 +21,18 @@
                 <div class="input-group-append">
                   <span class="input-group-text"><i class="fas fa-search"></i></span>
                 </div>
+                <span class="contador"> Clientes: {{ getTotalOriginCount() }}</span>
               </div>
               <ul class="list-group list-container mb-2">
                 <li *ngFor="let item of getOriginList()" class="list-group-item" (click)="moveToDestination(item)">
-                  {{ item.CardName }}
+                   {{item.CardCode}} - {{ item.CardName }}
                 </li>
               </ul>
               <app-paginacao (pageChange)="loadClientesVendedor($event)" [totalItens]="totalOriginItems" [pageSize]="size" [hardCodeWidth]="250"></app-paginacao>
               <div class="mt-2 text-center">
-                <button class="btn btn-primary btn-sm mr-2 btn-custom" (click)="loadAllClients()">Selecionar Todos</button>
-                <button class="btn btn-secondary btn-sm mr-2 btn-custom" (click)="selectPageItensOnly()">Selecionar Página</button>
-                <button class="btn btn-secondary btn-sm btn-custom" (click)="unselectALL()">Nenhum</button>
+                <button class="btn btn-primary btn-sm mr-2 btn-custom" (click)="loadAllClients()" [disabled]="isButtonDisabled">Selecionar Todos</button>
+                <button class="btn btn-secondary btn-sm mr-2 btn-custom" (click)="selectPageItensOnly()" [disabled]="isButtonDisabled">Selecionar Página</button>
+                <button class="btn btn-secondary btn-sm btn-custom" (click)="unselectALL()" [disabled]="isButtonDisabled">Nenhum</button>
               </div>
             </div>
           </div>
@@ -42,16 +43,17 @@
                 <div class="input-group-append">
                   <span class="input-group-text"><i class="fas fa-search"></i></span>
                 </div>
+                <span class="contador">Clientes: {{ getTotalDestinationCount() }}</span>
               </div>
               <ul class="list-group list-container">
                 <li *ngFor="let item of getDestinationList()" class="list-group-item" (click)="moveToOrigin(item)">
-                  {{ item.CardName }}
+                  {{item.CardCode}} - {{ item.CardName }}
                 </li>
               </ul>
               <div class="text-center mt-2">
                 <br>
                 <br>
-                <button class="btn btn-primary btn-sm btn-custom" (click)="unselectALL()">Voltar Todos</button>
+                <button class="btn btn-primary btn-sm btn-custom" (click)="unselectALL()" [disabled]="isButtonDisabled">Voltar Todos</button>
               </div>
             </div>
           </div>

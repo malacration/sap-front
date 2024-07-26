@@ -22,6 +22,8 @@ export class TransferenciaClientesComponent implements OnInit {
   totalOriginItems = 0;
   size = 20;
   currentPage = 0;
+  initialTotalOriginItems = 0;
+  isButtonDisabled = false;
 
   constructor(
     private salesPersonService: SalesPersonService,
@@ -37,12 +39,23 @@ export class TransferenciaClientesComponent implements OnInit {
   }
 
   selectDestinationSalesPerson($event: any): void {
+    if (this.originSalesPerson == null) {
+      this.alertService.error('Você deve selecionar um vendedor de origem primeiro.');
+      this.limparFormulario();
+      return;
+    }
+
+    if ($event.SalesEmployeeCode === -1) {
+      this.alertService.error('O vendedor de destino não pode ser "- Nenhum vendedor -".');
+      this.limparFormulario();
+      return;
+    }
     this.destinationSalesPerson = $event;
   }
 
   isFormValid(): boolean {
     return !!this.originSalesPerson?.SalesEmployeeCode &&
-           !!this.destinationSalesPerson?.SalesEmployeeCode;
+      !!this.destinationSalesPerson?.SalesEmployeeCode;
   }
 
   loadClientesVendedor(page: number): void {
@@ -51,13 +64,23 @@ export class TransferenciaClientesComponent implements OnInit {
     this.salesPersonService.getBusinessPartners(this.originSalesPerson.SalesEmployeeCode, this.currentPage).subscribe(
       (it) => {
         this.loading = false;
-        this.totalOriginItems = it.totalElements;
+        if (this.baseDestinationList.length === 0) {
+          this.totalOriginItems = it.totalElements;
+        }
         const loadedItems = it.content.map((bp) => ({ CardCode: bp.CardCode, CardName: bp.CardName, selected: false }));
         this.baseOriginList = loadedItems.filter(
           (item) => !this.transferredItems.some((transferredItem) => transferredItem.CardCode === item.CardCode));
         this.originList = this.filterList(this.baseOriginList, this.searchOrigin);
       }
     );
+  }
+
+  getTotalOriginCount(): number {
+    return this.totalOriginItems;
+  }
+
+  getTotalDestinationCount(): number {
+    return this.baseDestinationList.length;
   }
 
   filterList(list: any[], search: string): any[] {
@@ -82,16 +105,20 @@ export class TransferenciaClientesComponent implements OnInit {
     this.baseOriginList = this.baseOriginList.filter((i) => i.CardCode !== item.CardCode);
     this.baseDestinationList.push(item);
     this.transferredItems.push(item);
+    this.size = 0;
+    this.totalOriginItems--; // Decrementa o contador ao mover para o destino
   }
 
   moveToOrigin(item: any): void {
     this.baseDestinationList = this.baseDestinationList.filter((i) => i.CardCode !== item.CardCode);
     this.baseOriginList.push(item);
     this.transferredItems = this.transferredItems.filter((i) => i.CardCode !== item.CardCode);
+    this.totalOriginItems++;
   }
 
   loadAllClients(): void {
     this.loading = true;
+    this.isButtonDisabled = true;
     const totalPages = Math.ceil(this.totalOriginItems / this.size);
     let loadedPages = 0;
     let allItems = [];
@@ -102,10 +129,21 @@ export class TransferenciaClientesComponent implements OnInit {
           loadedPages++;
           const loadedItems = it.content.map((bp) => ({ CardCode: bp.CardCode, CardName: bp.CardName, selected: false }));
           allItems = allItems.concat(loadedItems.filter((item) => !this.transferredItems.some((transferredItem) => transferredItem.CardCode === item.CardCode)));
+
+          if (this.baseDestinationList.length === 0) {
+            this.totalOriginItems = it.totalElements;
+          }
+
           if (loadedPages === totalPages) {
             this.loading = false;
+            this.isButtonDisabled = false;
             this.moveAllItemsToDestination(allItems);
           }
+        },
+        (error) => {
+          this.loading = false;
+          this.isButtonDisabled = false;
+          console.error('Erro ao carregar todos os clientes:', error);
         }
       );
     }
@@ -119,15 +157,22 @@ export class TransferenciaClientesComponent implements OnInit {
   }
 
   selectPageItensOnly(): void {
+    this.isButtonDisabled = true;
     const itemsToMove = this.baseOriginList.splice(0, this.size);
     this.transferredItems = this.transferredItems.concat(itemsToMove);
     this.baseDestinationList = this.baseDestinationList.concat(itemsToMove);
+    this.totalOriginItems -= itemsToMove.length;
+    this.isButtonDisabled = false;
   }
 
   unselectALL(): void {
-    this.baseOriginList = this.baseOriginList.concat(this.baseDestinationList);
+    this.isButtonDisabled = true;
+    const itemsToReturn = this.baseDestinationList;
+    this.baseOriginList = this.baseOriginList.concat(itemsToReturn);
     this.transferredItems = [];
     this.baseDestinationList = [];
+    this.totalOriginItems += itemsToReturn.length;
+    this.isButtonDisabled = false;
   }
 
   sendOrder(): void {
@@ -135,25 +180,29 @@ export class TransferenciaClientesComponent implements OnInit {
       this.alertService.error('Vendedor de Origem ou Vendedor de Destino não estão definidos corretamente.');
       return;
     }
-  
+
     this.loading = true;
+
     const selectedClientIds = this.baseDestinationList.map(item => item.CardCode);
-  
-    try {
-      this.salesPersonService.replaceSalesPerson(
-        this.originSalesPerson.SalesEmployeeCode,
-        this.destinationSalesPerson.SalesEmployeeCode,
-        selectedClientIds
-      ).subscribe(
-        () => this.concluirEnvio(),
-      );
-    } finally {
-      this.loading = false;
-    }
+
+    this.salesPersonService.replaceSalesPerson(
+      this.originSalesPerson.SalesEmployeeCode,
+      this.destinationSalesPerson.SalesEmployeeCode,
+      selectedClientIds
+    ).subscribe(
+      () => {
+        this.concluirEnvio();
+        this.loading = false;
+      },
+      (error) => {
+        console.error('Erro ao realizar transferência:', error);
+        this.loading = false;
+      }
+    );
   }
-  
+
   concluirEnvio(): void {
-    this.alertService.info('Sua troca foi realizada com sucesso!').then(() => {
+    this.alertService.info('Transferência de clientes para o vendedor de destino foi realizada com sucesso.').then(() => {
       this.loading = false;
       this.limparFormulario();
     });
