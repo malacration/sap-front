@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { TipoOperacao } from '../../sap/model/tipo-operacao';
 
 @Injectable()
 export class ConfigService {
@@ -7,6 +8,7 @@ export class ConfigService {
   public title: string = 'SAP - A R Soluções';
   public commercial_phone : string = '69 9 9999 6666'
   private modoOperacao : string = "external"
+  tipoOperacao : Array<TipoOperacao> = Array()
   hmg = false
 
   getHost(){

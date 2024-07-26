@@ -8,6 +8,7 @@ import { AlertSerice } from '../../service/alert.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
+import { ConfigService } from '../../../core/services/config.service';
 
 @Component({
   selector: 'app-document-statement',
@@ -34,12 +35,18 @@ export class DocumentStatementComponent implements OnInit {
 
   constructor(private businesPartnerService : BusinessPartnerService,
     private orderService : OrderSalesService,
+    private config : ConfigService,
     private router : Router,
     private alertService : AlertSerice){
   }
   
   ngOnInit(): void {
     
+  }
+
+  changeOperacao(){
+    if(this.config.tipoOperacao.length > 0 && this.branchId)
+      this.tipoOperacaoOptions = this.config.tipoOperacao.filter(it => it.filiais.includes(this.branchId) ).map(it => new Option(it.id,it.label))
   }
 
   changePageBusinesPartner(){
@@ -95,6 +102,7 @@ export class DocumentStatementComponent implements OnInit {
 
   selectBranch($event){
     this.branchId = $event
+    this.changeOperacao()
   }
 
   selectBp($event){
