@@ -54,7 +54,7 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
   {
     path: 'transferencia-clientes',
     title: 'Transferencia de Clientes',
-    data: ["internal"],
+    canActivate: [authGuard],
     component: TransferenciaClientesComponent
   },
   {
