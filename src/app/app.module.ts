@@ -84,6 +84,14 @@ import { SalesPersonSearchComponent } from './sap/components/search/sales-person
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { AuthService } from './shared/service/auth.service';
+import { ListComponent } from './sap/components/marketing-document/core/list/list.component';
+import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
+import { DocumentCoreComponent } from './sap/components/marketing-document/core/document-core.component';
+import { CotacaoService } from './sap/service/document/cotacao.service';
+import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
+import { VendaFuturaSingleComponent } from './sap/components/venda-futura/single/single.component';
+import { TabComponent } from './shared/components/tabs/tab/tab.component';
+import { TabsComponent } from './shared/components/tabs/tabs.component';
 
 
 
@@ -140,7 +148,14 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CurrencyInputComponent,
     LoginComponent,
     SalesPersonSearchComponent,
-    CurrencyInputComponent
+    CurrencyInputComponent,
+    ListComponent,
+    CotacoesStatementComponent,
+    DocumentCoreComponent,
+    VendaFuturaStatementComponent,
+    VendaFuturaSingleComponent,
+    TabsComponent,
+    TabComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -181,6 +196,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BranchService,
     OrderSalesService,
     CondicaoPagamentoService,
+    CotacaoService,
     AuthService,
     CurrencyPipe,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },

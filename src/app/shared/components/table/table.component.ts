@@ -64,7 +64,7 @@ export class TableComponent implements OnInit {
   }
 
   hasAction() : Boolean{
-    return this.content.filter(item => item.getActions).length > 0
+    return this.content?.filter(item => item.getActions).length > 0
   }
 
   trackByFn(index, response) {

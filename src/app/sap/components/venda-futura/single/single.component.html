@@ -1,0 +1,52 @@
+<br>
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Detalhes da Venda Futura</b></h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Número do Documento:</dt>
+                <dd class="col-sm-9">{{ selected.U_orderDocEntry }}</dd>
+
+                <dt class="col-sm-3">Código do Cliente:</dt>
+                <dd class="col-sm-9">{{ selected.U_cardCode }}</dd>
+
+                <dt class="col-sm-3">Nome do Cliente:</dt>
+                <dd class="col-sm-9">{{ selected.U_cardName }}</dd>
+
+                <dt class="col-sm-3">Vendedor:</dt>
+                <dd class="col-sm-9">{{ selected.U_vendedor }}</dd>
+
+                <dt class="col-sm-3">Valor do Frete:</dt>
+                <dd class="col-sm-9">{{ selected.frete }}</dd>
+
+                <dt class="col-sm-3">Data de Criação:</dt>
+                <dd class="col-sm-9">{{ selected.dataCriacao }}</dd>
+
+                <dd class="col-sm">
+                    <app-tabs>
+                        <app-tab tabTitle="Produtos" [active]="true">
+                            <app-table
+                                [content]="selected?.AR_CF_LINHACollection" 
+                                [definition]="definition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
+                        </app-tab>
+
+                        <app-tab tabTitle="Boletos">
+                            <p>Conteúdo da Aba 2</p>
+                        </app-tab>
+
+                        <app-tab tabTitle="Entregas">
+                            <p>Conteúdo da Aba 3</p>
+                        </app-tab>
+                    </app-tabs>
+                </dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
+        </div>
+    </div>
+</section>

@@ -10,6 +10,8 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
 import { LoginComponent } from './shared/components/login/login.component';
 import { authGuard } from './core/auth.guard';
 import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
+import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
+import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 
  let routes: Routes = [
   {
@@ -63,6 +65,32 @@ import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/ge
     data: ["internal","hidden"],
     component: CadastroComponent
   },
+  {
+    path: 'cotacao',
+    title: 'Cotação',
+    canActivate: [authGuard],
+    component: CotacoesStatementComponent
+  },
+  {
+    path: 'venda-futura/**',
+    title: 'Venda Futura',
+    canActivate: [authGuard],
+    component: VendaFuturaStatementComponent
+  },
+  {
+    title: 'Venda',
+    canActivate: [authGuard],
+    path: 'venda',
+    children: [ 
+      {
+        path: 'cotacao',
+        title: 'Cotação',
+        canActivate: [authGuard],
+        component: CotacoesStatementComponent
+      },
+    ]
+  },
+  
   {
     path: '**',
     title: 'Não encontrado',

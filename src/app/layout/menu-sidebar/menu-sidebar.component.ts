@@ -56,7 +56,7 @@ export class MenuSidebarComponent implements OnInit {
     }
 
 
-    createMenu(routes: Route[]) : Array<MenuItem> {
+    createMenu(routes: Route[], pai : string = '') : Array<MenuItem> {
         let menu : Array<MenuItem> = new Array<MenuItem>()
         routes.filter(it =>
             this.isTemTitulo(it) && !this.isHidden(it) && this.isShowGuard(it)
@@ -67,9 +67,10 @@ export class MenuSidebarComponent implements OnInit {
             )
         )
         .map(route =>{
-            let item = new MenuItem(route)
+            let item = new MenuItem(route,pai)
             if (route.children) {
-                item.children = this.createMenu(route.children)
+                pai = pai+"/"+route.path
+                item.children = this.createMenu(route.children,pai)
             }
             menu.push(item)
             item
