@@ -1,8 +1,3 @@
-/* You can add global styles to this file, and also import other style files */
-// @import '~bootstrap/scss/bootstrap';
-
-/* Importing Bootstrap SCSS file. */
-// @import '~bootstrap/scss/bootstrap';
 @import url('https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.3.0/css/flag-icon.min.css');
 
@@ -10,8 +5,6 @@
 
 @import 'admin-lte/node_modules/bootstrap/scss/functions';
 @import 'admin-lte/build/scss/bootstrap-variables';
-
-
 @import 'ngx-toastr/toastr';
 
 $custom-color: #25A246;
@@ -22,15 +15,15 @@ $theme-colors: (
   "success": #007bff
 );
 
-
-
 .my-custom-style {
     background-color: $custom-color;
     padding: .5rem 0;
 }
 
+
 @import 'admin-lte/node_modules/bootstrap/scss/bootstrap';
 
+@import 'ngx-toastr/toastr';
 @import 'admin-lte/build/scss/variables';
 @import 'admin-lte/build/scss/variables-alt';
 
@@ -53,16 +46,10 @@ $theme-colors: (
 
 
 
-.btn-color {
-    @include button-variant($custom-color, $custom-color);
-}
-
-
 body {
     width: 100vw;
     height: 100vh;
 }
-
 
 ::-webkit-scrollbar {
     width: 0px;
@@ -87,4 +74,67 @@ body {
 .nav-sidebar .menu-open > .nav-link i.right,
 .nav-sidebar .menu-open > .nav-link svg.right {
     transform: none;
+}
+
+
+:root {
+    --bs-primary: #0d6efd; /* Cor primária padrão do Bootstrap */
+    --bs-primary-dark: #0b5ed7; /* Cor escura personalizada para hover */
+    --bs-primary-text: white; /* Cor do texto padrão */
+    --bs-success: #198754; /* Cor de sucesso padrão do Bootstrap */
+    --bs-success-dark: #157347; /* Cor escura personalizada para hover */
+    --bs-success-text: white; /* Cor do texto padrão */
+  }
+
+.my-custom-style {
+    background-color: var(--bs-primary);
+    padding: .5rem 0;
+}
+
+.btn-primary {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary-text);
+}
+  
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--bs-primary-dark);
+  border-color: var(--bs-primary-dark);
+}
+
+.btn-success {
+  background-color: var(--bs-success);
+  border-color: var(--bs-success);
+  color: var(--bs-success-text);
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+  background-color: var(--bs-success-dark);
+  border-color: var(--bs-success-dark);
+}
+
+.card-primary.card-outline {
+  border-top-color: var(--bs-primary);
+}
+
+.card-primary:not(.card-outline) > .card-header {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary-text);
+}
+
+.card-success:not(.card-outline) > .card-header {
+  background-color: var(--bs-success);
+  border-color: var(--bs-success);
+  color: var(--bs-success-text);
+}
+
+blockquote.quote-info
+.quote-info {
+  border-color: var(--bs-primary);
+  color: var(--bs-primary-text);
 }

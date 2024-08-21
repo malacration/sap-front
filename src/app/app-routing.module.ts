@@ -9,9 +9,9 @@ import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { authGuard } from './core/auth.guard';
-import { GestaoVendedoresComponent } from './sap/components/gestao-vendedores/gestao.vendedores.component';
 import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
+import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 
  let routes: Routes = [
   {
@@ -48,16 +48,10 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
     component: FaturasComponent
   },
   {
-    path: 'document',
-    title: 'Pedido de Venda',
+    path: 'transferencia-clientes',
+    title: 'Transferencia de Clientes',
     canActivate: [authGuard],
-    component: DocumentStatementComponent
-  },
-  {
-    path: 'gestao-vendedores',
-    title: 'Gestao Vendedores',
-    data: ["internal"],
-    component: GestaoVendedoresComponent
+    component: TransferenciaClientesComponent
   },
   {
     path: 'cadastro/:id',
@@ -66,27 +60,34 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
     component: CadastroComponent
   },
   {
-    path: 'cotacao',
-    title: 'Cotação',
-    canActivate: [authGuard],
-    component: CotacoesStatementComponent
-  },
-  {
-    path: 'venda-futura/**',
-    title: 'Venda Futura',
-    canActivate: [authGuard],
-    component: VendaFuturaStatementComponent
-  },
-  {
     title: 'Venda',
     canActivate: [authGuard],
     path: 'venda',
     children: [ 
       {
+        path: 'document',
+        title: 'Vender',
+        canActivate: [authGuard],
+        data: ["internal","hidden","icon:far fa-shopping-cart"],
+        component: DocumentStatementComponent
+      },
+      {
         path: 'cotacao',
         title: 'Cotação',
         canActivate: [authGuard],
         component: CotacoesStatementComponent
+      },
+      {
+        path: 'pedidos',
+        title: 'Pedidos',
+        canActivate: [authGuard],
+        component: CotacoesStatementComponent
+      },
+      {
+        path: 'venda-futura',
+        title: 'Contratos',
+        canActivate: [authGuard],
+        component: VendaFuturaStatementComponent
       },
     ]
   },
