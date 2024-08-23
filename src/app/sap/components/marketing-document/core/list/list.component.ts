@@ -14,6 +14,7 @@ import { AuthService } from '../../../../../shared/service/auth.service';
   loading : boolean = false
   pageContent : Page<DocumentList>
   nomeUsuario : string
+  selectedDocumentList: DocumentList = null;
   
   @Input()
   title = ''
@@ -33,10 +34,15 @@ import { AuthService } from '../../../../../shared/service/auth.service';
 
   }
 
-  action(event : ActionReturn){
-    if(event.type == "ver-fatura"){
-      
+  action(event: ActionReturn) {
+    console.log(event);
+    if(event.type == "selectedDocumentList"){
+      this.selectedDocumentList = event.data;
     }
+  }
+  
+  close() {
+    this.selectedDocumentList = null;
   }
 
   ngOnChanges(changes: SimpleChanges) {
