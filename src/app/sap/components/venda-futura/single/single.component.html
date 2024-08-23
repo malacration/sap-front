@@ -35,7 +35,11 @@
                         </app-tab>
 
                         <app-tab tabTitle="Boletos">
-                            <p>Conteúdo da Aba 2</p>
+                            <app-table
+                                [content]="boletos" 
+                                [definition]="boletosDefinition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
                         </app-tab>
 
                         <app-tab tabTitle="Entregas">

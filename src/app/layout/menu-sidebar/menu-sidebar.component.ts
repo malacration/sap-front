@@ -69,8 +69,8 @@ export class MenuSidebarComponent implements OnInit {
         .map(route =>{
             let item = new MenuItem(route,pai)
             if (route.children) {
-                pai = pai+"/"+route.path
-                item.children = this.createMenu(route.children,pai)
+                let stackPai = pai+"/"+route.path
+                item.children = this.createMenu(route.children,stackPai)
             }
             menu.push(item)
             item

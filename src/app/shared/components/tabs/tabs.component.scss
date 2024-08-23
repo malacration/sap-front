@@ -24,7 +24,7 @@
 
 .tab-titles li.active {
   background-color: #fff;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid var(--bs-primary);
   font-weight: bold;
 }
 
@@ -58,7 +58,7 @@
   }
 
   .tab-titles li.active {
-    border-right: 1px solid #007bff;
+    border-right: 1px solid var(--bs-primary);
   }
 
   .tab-content {

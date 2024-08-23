@@ -9,11 +9,12 @@ export class MenuItem{
 
     constructor(route : Route,pai){
         this.name = route.title.toString()
-        // this.componente = route.component
         this.path = [pai,route.path]
-        console.log(route.data)
-        let icon = route?.data?.filter(item => item.startswith("icon:")).string.split(':')[0]
-        if(icon)
-            icon = this.iconClasses
+        let icon = route?.data
+        ?.filter(item => item.startsWith("icon:"))
+            ?.toString()?.split(':')
+        if(icon != null && icon != undefined){
+            this.iconClasses = icon[1]
+        }
     }
 }

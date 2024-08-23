@@ -8,6 +8,7 @@ export class DocumentList{
     CardName : string
     DocNum  : string
     DocDate  : string
+    DocDueDate : string
     DocTotal : number
     tipo : string
     DocumentAdditionalExpenses : Array<DespesaAdiciona>
@@ -43,6 +44,10 @@ export class DocumentList{
 
     get situacao(){
         return "indefinida"
+    }
+
+    get vencimento(){
+        return moment(this.DocDueDate).format('DD/MM/YYYY'); 
     }
 }
 

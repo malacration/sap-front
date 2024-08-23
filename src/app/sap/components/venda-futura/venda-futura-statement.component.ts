@@ -53,7 +53,6 @@ export class VendaFuturaStatementComponent implements OnInit {
   }
 
   action(event : ActionReturn){
-    console.log(event)
     if(event.type == "selected"){
       this.selected = event.data
     }

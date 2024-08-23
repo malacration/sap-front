@@ -92,6 +92,7 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
 import { VendaFuturaSingleComponent } from './sap/components/venda-futura/single/single.component';
 import { TabComponent } from './shared/components/tabs/tab/tab.component';
 import { TabsComponent } from './shared/components/tabs/tabs.component';
+import { DownPaymentService } from './sap/service/DownPaymentService';
 
 
 
@@ -191,6 +192,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CityService,
     BusinessPartnerService,
     OneTimePasswordService,
+    DownPaymentService,
     BsModalService,
     ItemService,
     BranchService,
