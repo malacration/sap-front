@@ -95,6 +95,10 @@ import { TabsComponent } from './shared/components/tabs/tabs.component';
 import { PedidosVendaService } from './sap/service/document/pedidos-venda.service';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
 import { DocumentListSingleComponent } from './sap/components/marketing-document/core/single-document-list/single-document-list.component';
+import { DownPaymentService } from './sap/service/DownPaymentService';
+import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.service';
+
+
 
 registerLocaleData(localeBr);
 
@@ -195,6 +199,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CityService,
     BusinessPartnerService,
     OneTimePasswordService,
+    DownPaymentService,
     BsModalService,
     ItemService,
     BranchService,
@@ -204,6 +209,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     PedidosVendaService,
     AuthService,
     CurrencyPipe,
+    FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],

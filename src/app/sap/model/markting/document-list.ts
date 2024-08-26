@@ -8,6 +8,7 @@ export class DocumentList{
     CardName : string
     DocNum  : string
     DocDate  : string
+    DocDueDate : string
     DocTotal : number
     tipo : string
     DocumentStatus : string
@@ -54,6 +55,10 @@ export class DocumentList{
 
     get totalCurrency(){
         return formatCurrency(this.DocTotal-this.frete,'pt','R$')
+    }
+
+    get vencimento(){
+        return moment(this.DocDueDate).format('DD/MM/YYYY'); 
     }
 }
 

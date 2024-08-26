@@ -141,7 +141,6 @@ export class AppComponent {
     const b = parseInt(hexcolor.substr(4, 2), 16);
   
     const bgLuminance = this.luminance(r, g, b);
-    console.log("bgLuminance",bgLuminance)
   
     const whiteLuminance = this.luminance(255, 255, 255);
     const blackLuminance = this.luminance(0, 0, 0);
@@ -150,9 +149,6 @@ export class AppComponent {
     const contrastWithWhite = this.contrast(bgLuminance, whiteLuminance);
     const contrastWithBlack = this.contrast(bgLuminance, blackLuminance)- blackPenality;
 
-    console.log("contrastWithWhite",contrastWithWhite)
-    console.log("contrastWithBlack",contrastWithBlack)
-    console.log("result",contrastWithWhite > contrastWithBlack ? '#ffffff' : '#000000')
     return contrastWithWhite > contrastWithBlack ? '#ffffff' : '#000000';
   }  
 

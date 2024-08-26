@@ -21,6 +21,9 @@
                 <dt class="col-sm-3">Valor do Frete:</dt>
                 <dd class="col-sm-9">{{ selected.frete }}</dd>
 
+                <dt class="col-sm-3">Valor Total:</dt>
+                <dd class="col-sm-9">{{ selected.totalCurrency }}</dd>
+
                 <dt class="col-sm-3">Data de Criação:</dt>
                 <dd class="col-sm-9">{{ selected.dataCriacao }}</dd>
 
@@ -35,12 +38,21 @@
                         </app-tab>
 
                         <app-tab tabTitle="Boletos">
-                            <p>Conteúdo da Aba 2</p>
+                            <app-table
+                                [content]="boletos" 
+                                [definition]="boletosDefinition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
+                        </app-tab>
+                        
+                        <app-tab tabTitle="Entregas">
+                            <app-table
+                                [content]="entregas" 
+                                [definition]="entregasDefinition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
                         </app-tab>
 
-                        <app-tab tabTitle="Entregas">
-                            <p>Conteúdo da Aba 3</p>
-                        </app-tab>
                     </app-tabs>
                 </dd>
             </dl>

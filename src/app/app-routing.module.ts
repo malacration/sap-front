@@ -23,6 +23,7 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
   {
     path: 'home',
     title: 'Inicio',
+    data: ["icon:fas fa-home"],
     component: HomeComponent
   },
   {
@@ -46,13 +47,8 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
   {
     path: 'faturas',
     title: 'Faturas',
+    data: ["icon:fas fa-file-invoice"],
     component: FaturasComponent
-  },
-  {
-    path: 'transferencia-clientes',
-    title: 'Transferencia de Clientes',
-    canActivate: [authGuard],
-    component: TransferenciaClientesComponent
   },
   {
     path: 'cadastro/:id',
@@ -61,32 +57,51 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
     component: CadastroComponent
   },
   {
+    path: 'clientes',
+    title: 'Clientes',
+    data: ["icon:fas fa-users"],
+    canActivate: [authGuard],
+    children: [ 
+      {
+        path: 'transferencia',
+        title: 'Transferências',
+        data: ["icon:fas fa-exchange-alt"],
+        canActivate: [authGuard],
+        component: TransferenciaClientesComponent
+      },
+    ]
+  },
+  {
     title: 'Venda',
     canActivate: [authGuard],
+    data: ["icon:fas fa-shopping-bag"],
     path: 'venda',
     children: [ 
       {
         path: 'document',
         title: 'Vender',
         canActivate: [authGuard],
-        data: ["internal","hidden","icon:far fa-shopping-cart"],
+        data: ["icon:fas fa-shopping-cart"],
         component: DocumentStatementComponent
       },
       {
         path: 'cotacao',
         title: 'Cotação',
         canActivate: [authGuard],
+        data: ["icon:fas fa-file-alt"],
         component: CotacoesStatementComponent
       },
       {
         path: 'pedidos-venda',
         title: 'Pedidos',
         canActivate: [authGuard],
-        component: PedidosVendaStatementComponent
+        component: PedidosVendaStatementComponent,
+        data: ["icon:fas fa-file-signature"],
       },
       {
         path: 'venda-futura',
         title: 'Contratos',
+        data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
         component: VendaFuturaStatementComponent
       },
