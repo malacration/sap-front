@@ -36,7 +36,4 @@ export class VendaFuturaService{
       return this.http.post<any>(this.url+"/pedido-retirada",body)
     }
 
-
-    
-
 }

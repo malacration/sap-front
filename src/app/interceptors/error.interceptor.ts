@@ -23,15 +23,15 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        if(error.status != 200 && error.error){
-          console.log(error)
+        if (error.status === 403) {
+          this.alertService.error('Acesso negado');
+        } else if (error.status != 200 && error.error) {
           this.getMsgError(error).then(it => this.alertService.error(it));
         }
         return throwError(error);
       })
     );
   }
-
 
   getMsgError(error: HttpErrorResponse) : Promise<string>{
     if(typeof error.error === 'string')

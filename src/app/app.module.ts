@@ -92,8 +92,12 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
 import { VendaFuturaSingleComponent } from './sap/components/venda-futura/single/single.component';
 import { TabComponent } from './shared/components/tabs/tab/tab.component';
 import { TabsComponent } from './shared/components/tabs/tabs.component';
+import { PedidosVendaService } from './sap/service/document/pedidos-venda.service';
+import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
+import { DocumentListSingleComponent } from './sap/components/marketing-document/core/single-document-list/single-document-list.component';
 import { DownPaymentService } from './sap/service/DownPaymentService';
 import { RetiradaComponent } from './sap/components/venda-futura/retirada/retirada.component';
+import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.service';
 
 
 
@@ -153,10 +157,13 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CurrencyInputComponent,
     ListComponent,
     CotacoesStatementComponent,
+    PedidosVendaStatementComponent,
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
     RetiradaComponent,
+    DocumentListSingleComponent,
+    PedidosVendaStatementComponent,
     TabsComponent,
     TabComponent
   ],
@@ -201,8 +208,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     OrderSalesService,
     CondicaoPagamentoService,
     CotacaoService,
+    PedidosVendaService,
     AuthService,
     CurrencyPipe,
+    FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
