@@ -12,6 +12,7 @@ import { authGuard } from './core/auth.guard';
 import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
+import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
 
  let routes: Routes = [
   {
@@ -91,11 +92,11 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
         component: CotacoesStatementComponent
       },
       {
-        path: 'pedidos',
+        path: 'pedidos-venda',
         title: 'Pedidos',
         canActivate: [authGuard],
+        component: PedidosVendaStatementComponent,
         data: ["icon:fas fa-file-signature"],
-        component: CotacoesStatementComponent
       },
       {
         path: 'venda-futura',

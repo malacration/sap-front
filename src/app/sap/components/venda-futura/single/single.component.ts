@@ -1,8 +1,9 @@
 
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { VendaFutura } from '../../../model/venda-futura';
+import { notaFiscalSaida, VendaFutura } from '../../../model/venda-futura';
 import { Column } from '../../../../shared/components/table/column.model';
 import { DownPaymentService } from '../../../service/DownPaymentService';
+import { FutureDeliverySalesService } from '../../../service/FutureDeliverySales.service';
 
 
 
@@ -14,7 +15,7 @@ import { DownPaymentService } from '../../../service/DownPaymentService';
 export class VendaFuturaSingleComponent implements OnInit {
 
 
-  constructor(private downPaymentService : DownPaymentService){
+  constructor(private downPaymentService : DownPaymentService, private futureDeliverySalesService : FutureDeliverySalesService ){
 
   }
 
@@ -26,15 +27,19 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   boletos = Array()
 
+  entregas = Array()
+
   @Output()
   close = new EventEmitter();
 
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
-      this.boletos = it
-    })
-  }
-
+        this.boletos = it;
+    });
+    this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(it => {
+      this.entregas = it.map(entrega => Object.assign(new notaFiscalSaida(), entrega));
+    });
+}
   voltar(){
     this.close.emit()
   }
@@ -46,9 +51,9 @@ export class VendaFuturaSingleComponent implements OnInit {
   definition = [
     new Column('Código do Item', 'U_itemCode'),
     new Column('Descrição', 'U_description'),
-    new Column('Preço Negociado', 'U_precoNegociado'),
+    new Column('Preço Negociado', 'precoNegociadoCurrency'),
     new Column('Quantidade', 'U_quantity'),
-    new Column('Total', 'total')
+    new Column('Total', 'totalCurrency')
   ];
 
   boletosDefinition = [
@@ -57,4 +62,10 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Total', 'totalCurrency')
   ];
 
+  entregasDefinition = [
+    new Column('ID', 'DocNum'),
+    new Column('Número da Nota', 'SequenceSerial'),
+    new Column('Data de Emissão', 'formattedDocDate'),
+    new Column('Total da Nota', 'totalCurrency'),
+  ];
 }

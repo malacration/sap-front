@@ -10,17 +10,17 @@ import { ConfigService } from "../../../core/services/config.service";
 @Injectable({
     providedIn: 'root'
   })
-export class CotacaoService implements DocumentService{
+export class PedidosVendaService implements DocumentService{
 
-    url = "http://localhost:8080/quotation"
+    url = "http://localhost:8080/pedido-venda"
 
     constructor(private config : ConfigService, private hppCliente : HttpClient){
-        this.url = config.getHost()+"/quotation"
+        this.url = config.getHost()+"/pedido-venda"
     }
     
     getDefinition(): Column[] {
         return [
-            new Column('Código do Cliente', 'CardCode'),
+            new Column('Código Cliente', 'CardCode'),
             new Column('Nome', 'CardName'),
             new Column('Produtos', 'produtosCurrency'),
             new Column('Frete', 'freteCurrency'),
@@ -33,19 +33,13 @@ export class CotacaoService implements DocumentService{
     
     get(pagina : number): Observable<Page<DocumentList>> {
         return this.hppCliente
-            .get<Page<DocumentList>>(this.url+"?page="+pagina+"&size=20")
+            .get<Page<DocumentList>>(this.url+"/listar"+"?page="+pagina+"&size=20")
             .pipe(map((f) => { 
                 f.content = f.content.map((ff) => {
                     return Object.assign(new DocumentList(),ff)
                 })
                 return f
             }))
-        // let documento = new DocumentList("Cotacao Service mock");
-        // let page = new Page<DocumentList>();
-        // page.totalElements = 1
-        // page.size = 20
-        // page.content = [documento]
-        // return of(page)
     }
 
     

@@ -37,10 +37,12 @@ export class VendaFuturaStatementComponent implements OnInit {
     this.nomeUsuario = auth.getUser()
   }
 
-  ngOnInit(){
+  ngOnInit(): void {
     this.pageChange(0)
+    this.selected.NotaFiscalSaida = this.selected.NotaFiscalSaida.map(it =>
+      Object.assign(new VendaFutura(), it)
+    )
   }
-
 
   pageChange($event){
     this.loading = true
