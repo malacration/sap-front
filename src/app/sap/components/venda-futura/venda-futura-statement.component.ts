@@ -6,7 +6,7 @@ import { CotacaoService } from '../../service/document/cotacao.service';
 import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { VendaFuturaService } from '../../service/venda-futura.service';
-import { VendaFutura } from '../../model/venda-futura';
+import { VendaFutura } from '../../model/venda/venda-futura';
 
 
 

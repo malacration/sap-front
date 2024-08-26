@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { EMPTY, Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AlertSerice } from '../sap/service/alert.service';
+import { AlertService } from '../sap/service/alert.service';
 
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private alertService : AlertSerice) {}
+  constructor(private alertService : AlertService) {}
 
   blobToString(b) {
     var u, x;

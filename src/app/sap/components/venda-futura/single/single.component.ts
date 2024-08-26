@@ -1,8 +1,9 @@
 
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { VendaFutura } from '../../../model/venda-futura';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { VendaFutura } from '../../../model/venda/venda-futura';
 import { Column } from '../../../../shared/components/table/column.model';
 import { DownPaymentService } from '../../../service/DownPaymentService';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
 
 
@@ -29,6 +30,8 @@ export class VendaFuturaSingleComponent implements OnInit {
   @Output()
   close = new EventEmitter();
 
+  @ViewChild('retirada', {static: true}) buscaModal: ModalComponent;
+
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it
@@ -41,6 +44,16 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   action($event){
 
+  }
+
+  openModal(){
+    this.buscaModal.classeModal = "modal-xl"
+    this.buscaModal.openModal()
+  }
+
+
+  closeModal($event){
+    this.buscaModal.closeModal()
   }
 
   definition = [

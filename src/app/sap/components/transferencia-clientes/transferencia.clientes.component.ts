@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
-import { AlertSerice } from '../../service/alert.service';
+import { AlertService } from '../../service/alert.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -27,7 +27,7 @@ export class TransferenciaClientesComponent implements OnInit {
 
   constructor(
     private salesPersonService: SalesPersonService,
-    private alertService: AlertSerice,
+    private alertService: AlertService,
     private router: Router
   ) {}
 

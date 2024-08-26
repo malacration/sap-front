@@ -22,7 +22,9 @@ export class ModalComponent {
 
   }
 
+  @Input()
   title = "Titulo"
+
   @ViewChild('template') template;
  
   openModal() {

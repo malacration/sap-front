@@ -3,7 +3,8 @@ import { ConfigService } from "../../core/services/config.service";
 import { HttpClient } from "@angular/common/http";
 import { Page } from "../model/page.model";
 import { Observable, map } from "rxjs";
-import {LinhaItem, VendaFutura} from "../model/venda-futura"
+import {LinhaItem, VendaFutura} from "../model/venda/venda-futura"
+import { PedidoRetirada } from "../model/venda/pedido-retirada";
 
 @Injectable({
     providedIn: 'root'
@@ -29,6 +30,10 @@ export class VendaFuturaService{
           return page;
         })
       );
+    }
+
+    retirar(body : PedidoRetirada) : Observable<any>{
+      return this.http.post<any>(this.url+"/pedido-retirada",body)
     }
 
 

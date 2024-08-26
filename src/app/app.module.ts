@@ -34,7 +34,7 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
 
 import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { AlertSerice } from './sap/service/alert.service';
+import { AlertService } from './sap/service/alert.service';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
@@ -93,6 +93,7 @@ import { VendaFuturaSingleComponent } from './sap/components/venda-futura/single
 import { TabComponent } from './shared/components/tabs/tab/tab.component';
 import { TabsComponent } from './shared/components/tabs/tabs.component';
 import { DownPaymentService } from './sap/service/DownPaymentService';
+import { RetiradaComponent } from './sap/components/venda-futura/retirada/retirada.component';
 
 
 
@@ -155,6 +156,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
+    RetiradaComponent,
     TabsComponent,
     TabComponent
   ],
@@ -187,7 +189,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RomaneioFazendaInsumoService,
     BusinessPlacesService,
     StateService,
-    AlertSerice,
+    AlertService,
     FaturasService,
     CityService,
     BusinessPartnerService,

@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 @Injectable({
   providedIn: 'root'
 })
-export class AlertSerice {
+export class AlertService {
     
     warning(): Promise<any> {
         return Swal.fire({

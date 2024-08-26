@@ -1,6 +1,8 @@
 import { formatCurrency } from "@angular/common";
 import * as moment from "moment";
-import { Action, ActionReturn } from "../../shared/components/action/action.model";
+import { Action, ActionReturn } from "../../../shared/components/action/action.model";
+import { OrderSales } from "../../components/document/documento.statement.component";
+import { ItemRetirada, PedidoRetirada } from "./pedido-retirada";
 
 
 
@@ -38,6 +40,10 @@ export class VendaFutura {
 
     get totalProdutos() {
         return this.AR_CF_LINHACollection.reduce((acc, it) => acc + it.total, 0);
+    }
+
+    getPedidoRetirada(itens : Array<ItemRetirada>,dataEntrega : Date){
+        return new PedidoRetirada(this.DocEntry,itens,dataEntrega)
     }
 }
 

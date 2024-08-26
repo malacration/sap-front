@@ -5,7 +5,7 @@ import { InstallmentService } from '../../../service/fatura/installment.service 
 import { Paga } from '../../../model/fatura/paga.model';
 import { FaturasService } from '../../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
-import { AlertSerice } from '../../../service/alert.service';
+import { AlertService } from '../../../service/alert.service';
 
 
 

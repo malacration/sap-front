@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RadioItem } from '../../form/radio/radio.model';
-import { AlertSerice } from '../../../service/alert.service';
+import { AlertService } from '../../../service/alert.service';
 import { CowntDown } from '../../../../core/cowntdown.module';
 import { OneTimePasswordService } from '../../../service/one-time-password.service';
 
@@ -12,7 +12,7 @@ import { OneTimePasswordService } from '../../../service/one-time-password.servi
 })
 export class AutenticacaoFaturaComponent {
 
-  constructor(private alertService : AlertSerice,
+  constructor(private alertService : AlertService,
     private otpService : OneTimePasswordService){
 
   }

@@ -4,7 +4,7 @@ import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
 import { OrderSalesService } from '../../service/order-sales.service';
-import { AlertSerice } from '../../service/alert.service';
+import { AlertService } from '../../service/alert.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
@@ -37,7 +37,7 @@ export class DocumentStatementComponent implements OnInit {
     private orderService : OrderSalesService,
     private config : ConfigService,
     private router : Router,
-    private alertService : AlertSerice){
+    private alertService : AlertService){
   }
   
   ngOnInit(): void {
@@ -120,6 +120,7 @@ export class DocumentStatementComponent implements OnInit {
   temFormaPagamento(){
     return this.itens
   }
+
   total() : number{
     return this.itens.reduce((acc,it) => acc+it.unitPriceLiquid()*it.quantidade,0)+this.frete
   }

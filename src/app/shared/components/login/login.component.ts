@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AlertSerice } from '../../../sap/service/alert.service';
+import { AlertService } from '../../../sap/service/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { error } from 'console';
@@ -19,7 +19,7 @@ export class LoginComponent {
     private router : Router,
     private route: ActivatedRoute,
     private authService : AuthService,
-    private alertService : AlertSerice){
+    private alertService : AlertService){
 
   }
 

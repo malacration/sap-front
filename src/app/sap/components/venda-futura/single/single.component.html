@@ -3,6 +3,11 @@
     <div class="card card-primary">
         <div class="card-header">
             <h3 class="card-title"><b>Detalhes da Venda Futura</b></h3>
+            <div class="card-tools">
+                <button (click)="openModal()" type="button" class="btn btn-warning btn-sm">
+                    Retirar
+                </button>
+            </div>
         </div>
         <div class="card-body">
             <dl class="row">
@@ -54,3 +59,10 @@
         </div>
     </div>
 </section>
+
+<app-modal #retirada [title]="'Retirada de Materiais'">
+    <app-venda-futura-retirada 
+        [vendaFutura]="selected" 
+        (retirados)="closeModal($event)">
+    </app-venda-futura-retirada>
+</app-modal>
