@@ -15,7 +15,7 @@ export class VendaFutura {
     U_valorFrete: number;
     DocEntry: number;
     U_dataCriacao: string;
-    notaFiscalSaida: NotaFiscalSaida[];
+    DocNum: number;
 
 
     getActions(): Action[] {
@@ -73,19 +73,3 @@ export class LinhaItem {
         return formatCurrency(this.U_precoNegociado, 'pt', 'R$');
     }
 }
-
-export class NotaFiscalSaida {
-    DocNum: number
-    SequenceSerial: number
-    DocDate: string;
-    DocTotal: number;
-
-    get formattedDocDate() {
-        return moment(this.DocDate).format('DD/MM/YYYY');
-    }
-
-    get totalCurrency() {
-        return formatCurrency(this.DocTotal, 'pt', 'R$');
-    }
-}
-
