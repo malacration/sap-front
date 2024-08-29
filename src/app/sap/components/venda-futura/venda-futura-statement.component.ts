@@ -39,9 +39,6 @@ export class VendaFuturaStatementComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageChange(0)
-    this.selected.notaFiscalSaida = this.selected.notaFiscalSaida.map(it =>
-      Object.assign(new VendaFutura(), it)
-    )
   }
 
   pageChange($event){

@@ -11,7 +11,10 @@
         </div>
         <div class="card-body">
             <dl class="row">
-                <dt class="col-sm-3">Número do Documento:</dt>
+                <dt class="col-sm-3">Número do Contrato:</dt>
+                <dd class="col-sm-9">{{ selected.DocEntry }}</dd>
+
+                <dt class="col-sm-3">Número do Pedido:</dt>
                 <dd class="col-sm-9">{{ selected.U_orderDocEntry }}</dd>
 
                 <dt class="col-sm-3">Código do Cliente:</dt>
@@ -19,9 +22,6 @@
 
                 <dt class="col-sm-3">Nome do Cliente:</dt>
                 <dd class="col-sm-9">{{ selected.U_cardName }}</dd>
-
-                <dt class="col-sm-3">Vendedor:</dt>
-                <dd class="col-sm-9">{{ selected.U_vendedor }}</dd>
 
                 <dt class="col-sm-3">Valor do Frete:</dt>
                 <dd class="col-sm-9">{{ selected.frete }}</dd>

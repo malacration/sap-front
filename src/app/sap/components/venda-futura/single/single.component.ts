@@ -3,7 +3,8 @@ import { DownPaymentService } from '../../../service/DownPaymentService';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
 import { FutureDeliverySalesService } from '../../../service/FutureDeliverySales.service';
-import { NotaFiscalSaida, VendaFutura } from '../../../model/venda/venda-futura';
+import {VendaFutura } from '../../../model/venda/venda-futura';
+import { DocumentLines, FutureDeliverySales } from '../../../model/markting/future-delivery-sales';
 
 
 
@@ -36,12 +37,29 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
-        this.boletos = it;
+      this.boletos = it;
     });
-    this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(it => {
-      this.entregas = it.map(entrega => Object.assign(new NotaFiscalSaida(), entrega));
+  
+    this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(response => {
+      this.entregas = response.flatMap(entrega => 
+        entrega.DocumentLines.map(line => {
+          const documentLine = Object.assign(new DocumentLines(), line);
+          return {
+            DocDueDate: entrega.DocDate,
+            DocNum: entrega.DocNum,
+            SequenceSerial: entrega.SequenceSerial,
+            ItemDescription: documentLine.ItemDescription,
+            ItemCode: documentLine.ItemCode,
+            U_preco_negociado: documentLine.precoNegociadoCurrency,
+            Quantity: documentLine.quantityCurrency,
+            totalLinhaCurrency: documentLine.totalLinhaCurrency,
+          };
+        })
+      );
+      this.entregas = this.entregas.map(entrega => Object.assign(new FutureDeliverySales(), entrega));
     });
-}
+  }
+  
   voltar(){
     this.close.emit()
   }
@@ -78,6 +96,10 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('ID', 'DocNum'),
     new Column('Número da Nota', 'SequenceSerial'),
     new Column('Data de Emissão', 'formattedDocDate'),
-    new Column('Total da Nota', 'totalCurrency'),
+    new Column('Código do Item', 'ItemCode'),
+    new Column('Descrição do Item', 'ItemDescription'),
+    new Column('Preço Negociado', 'U_preco_negociado'),
+    new Column('Quantidade Total', 'Quantity'),
+    new Column('Total da Linha', 'totalLinhaCurrency'),
   ];
 }
