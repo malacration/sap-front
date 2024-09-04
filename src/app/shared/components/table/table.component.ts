@@ -1,6 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
+import { LinkLable } from '../../../sap/model/markting/document-list';
 
 
 @Component({
@@ -51,11 +52,23 @@ export class TableComponent implements OnInit {
     }
   }
 
-  renderContent(item: any, def: any): string {
-    if (def.property === 'CardCode') {
-      return `<a href="/venda/parceiro-negocio/${item[def.property]}">${item[def.property]}</a>`;
+  renderContent(item: any, definition: Column): string {
+    const value = typeof item[definition.property] === 'function' ? item[definition.property]() : item[definition.property];
+    
+    if (definition.isLink && this.isLinkable(item[definition.property])) {
+      const linkableItem = item[definition.property] as LinkLable;
+      return `<a href="${linkableItem.url}">${linkableItem.linkLable}</a>`;
     }
-    return item[def.property];
+  
+    if (definition.html) {
+      return Handlebars.compile(definition.html)({ 'value': value });
+    }
+  
+    return value;
+  }
+  
+  isLinkable(value: any): value is LinkLable {
+    return value && typeof value.url == 'string' && typeof value.linkLable == 'string';
   }
   
   evento(retorno : any){

@@ -20,17 +20,16 @@ export class PedidosVendaService implements DocumentService{
     
     getDefinition(): Column[] {
         return [
-            new Column('ID', 'DocNum'),
-            new Column('Código Cliente', 'CardCode'),
-            new Column('Nome', 'CardName'),
-            new Column('Produtos', 'produtosCurrency'),
-            new Column('Frete', 'freteCurrency'),
-            new Column('Valor Total', 'totalCurrency'),
-            new Column('Criado em', 'dataCriacao'),
-            new Column('Status', 'situacao'),
+          new Column('ID', 'DocNum'),
+          new Column('Código Cliente', 'linkCardCode', null, true),
+          new Column('Nome', 'CardName'),
+          new Column('Produtos', 'produtosCurrency'),
+          new Column('Frete', 'freteCurrency'),
+          new Column('Valor Total', 'totalCurrency'),
+          new Column('Criado em', 'dataCriacao'),
+          new Column('Status', 'situacao'),
         ];
     }
-    
     
     get(pagina : number): Observable<Page<DocumentList>> {
         return this.hppCliente

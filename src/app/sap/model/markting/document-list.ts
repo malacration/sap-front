@@ -21,8 +21,8 @@ export class DocumentList{
         ]
     }
 
-    get x(){
-        return formatCurrency(this.DocTotal,'pt','R$')
+    get linkCardCode(){
+        return `/venda/parceiro-negocio/${this.CardCode}`;
     }
     
     get frete(){
@@ -89,3 +89,8 @@ export class DocumentLines {
     }
     
 }
+
+export interface LinkLable {
+    url: string;
+    linkLable: string;
+  }

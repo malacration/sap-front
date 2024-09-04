@@ -10,11 +10,11 @@
       <tbody>
         <tr *ngFor="let item of content">
           <td *ngFor="let def of definition" scope="col">
-            <div *ngIf="def.property === 'CardCode'; else otherContent">
-              <a [routerLink]="['/venda/parceiro-negocio', item[def.property]]">{{ item[def.property] }}</a>
-            </div>
-            <ng-template #otherContent>
-              <div [innerHTML]="renderContent(item, def) | appSafeHtml"></div>
+            <ng-container *ngIf="def.isLink; else defaultContent">
+              <a [routerLink]="renderContent(item, def)">{{item.CardCode}}</a>
+            </ng-container>
+            <ng-template #defaultContent>
+              <div [innerHTML]="renderContent(item, def)"></div>
             </ng-template>
           </td>
           <td *ngIf="item.getActions">

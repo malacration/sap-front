@@ -7,11 +7,10 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./parceiro-negocio.component.scss']
 })
 export class ParceiroNegocioComponent implements OnInit {
-  cardCode: string;
+  CardCode: string;
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
-    this.cardCode = this.route.snapshot.paramMap.get('cardCode');
   }
 }
