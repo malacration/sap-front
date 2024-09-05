@@ -8,6 +8,7 @@ export class BusinessPartner implements Actiable{
     CardName : string
     Phone1 : Number
     Phone2 : Number
+    Series : number
     U_Rov_Data_Nascimento : Date
     EmailAddress : String
     U_Rov_Nome_Mae : string
@@ -28,8 +29,8 @@ export class BusinessPartner implements Actiable{
 
     constructor(){
 
-    }
-
+    }    
+    
     getAddressOptions(tipo = null) : Array<Option>{
         if(this._addressOptions)
             return this._addressOptions
