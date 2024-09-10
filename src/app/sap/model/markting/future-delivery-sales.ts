@@ -29,6 +29,7 @@ export class DocumentLines {
   ItemDescription: string;
   U_preco_negociado: number;
   Quantity: number; 
+  DocDate: string;
 
   get quantityCurrency() {
     return formatCurrency(this.Quantity, 'pt', '');
@@ -41,4 +42,9 @@ export class DocumentLines {
   get totalLinhaCurrency() {
     return formatCurrency(this.U_preco_negociado* this.Quantity, 'pt', 'R$');
   }
+
+  get formattedDocDate() {
+    return moment(this.DocDate).format('DD/MM/YYYY');
+  }
+
 }

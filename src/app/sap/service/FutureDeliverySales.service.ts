@@ -15,7 +15,12 @@ export class FutureDeliverySalesService {
       this.url = config.getHost()+"/future-sales"
   }
 
-  getByNotaFiscalSaida(docEntry: number): Observable<Array<FutureDeliverySales>> {
-    return this.hppCliente.get<Array<FutureDeliverySales>>(this.url + "/contrato-venda-futura/", { params: { docEntry } });
-  }
+getByNotaFiscalSaida(docEntry: number): Observable<Array<FutureDeliverySales>> {
+  return this.hppCliente.get<Array<FutureDeliverySales>>(this.url + "/contrato-venda-futura/", { params: { docEntry } })
+    .pipe(
+      map((it) => {
+        return it.map(i => Object.assign(new FutureDeliverySales(), i));
+      })
+    );
+}
 }
