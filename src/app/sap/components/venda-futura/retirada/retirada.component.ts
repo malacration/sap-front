@@ -88,6 +88,7 @@ export class RetiradaComponent implements OnInit {
           this.clearForm()
         })
       },
+      error : () => {this.loadingSalvar = false},
       complete : () => {this.loadingSalvar = false}
     })
   }

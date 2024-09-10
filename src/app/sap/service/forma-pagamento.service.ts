@@ -16,14 +16,14 @@ export class FormaPagamentoService{
     this.url = config.getHost()+"/forma-pagamento"
   }
 
-  getCondicoes(idFilial : number) : Observable<Array<FormaPagamento>>{
-    return this.hppCliente.get<Array<FormaPagamento>>(this.url+"/"+idFilial)
+  getCondicoes(idFilial : number, cardCode : string) : Observable<Array<FormaPagamento>>{
+    return this.hppCliente.get<Array<FormaPagamento>>(this.url+`/filial/${idFilial}/cardcode/${cardCode}`)
   }
 }
 
 
 export class FormaPagamento{
-  payMethCod: number
+  PayMethCod: number
   Description: string
   branch: number
   BPLID: number

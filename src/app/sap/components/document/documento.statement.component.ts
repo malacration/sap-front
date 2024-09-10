@@ -9,6 +9,7 @@ import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
+import { BusinessPartner } from '../../model/business-partner/business-partner';
 
 @Component({
   selector: 'app-document-statement',
@@ -19,7 +20,7 @@ export class DocumentStatementComponent implements OnInit {
 
   branchId = undefined
   tipoEnvio
-  businesPartner
+  businesPartner : BusinessPartner = null;
   formaPagamento
   observacao
   itens : Array<Item>
@@ -54,6 +55,7 @@ export class DocumentStatementComponent implements OnInit {
   }
   
   changeFormaPagamento($event){
+    console.log($event)
     this.formaPagamento = $event
   }
 
@@ -168,7 +170,7 @@ export class DocumentStatementComponent implements OnInit {
     return this.businesPartner 
       && this.branchId 
       && this.dtEntrega
-      // && this.formaPagamento
+      && this.formaPagamento
       && this.itens 
       && this.tipoEnvio
       && this.tipoOperacao

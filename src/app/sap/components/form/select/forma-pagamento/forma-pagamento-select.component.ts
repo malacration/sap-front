@@ -21,6 +21,9 @@ export class FormaPagamentoSelectComponent implements OnInit, OnChanges {
   @Input()
   idFilial : number = null
 
+  @Input()
+  cardCode : string = null
+
   @ViewChild('selectComponent', {static: true}) selectComponent: SelectComponent;
   
   opcoes : Array<Option> = [
@@ -47,9 +50,9 @@ export class FormaPagamentoSelectComponent implements OnInit, OnChanges {
 
   getCondicoes(){
     this.loading = true
-    this.service.getCondicoes(this.idFilial).subscribe(it => {
+    this.service.getCondicoes(this.idFilial,this.cardCode).subscribe(it => {
       this.selectComponent.unselect()
-      this.opcoes = it.map(it => new Option(it.payMethCod,it.Description))
+      this.opcoes = it.map(it => new Option(it.PayMethCod,it.Description))
       this.loading = false
     })
   }
