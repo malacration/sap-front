@@ -39,25 +39,14 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
     });
-  
+    
     this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(response => {
       this.entregas = response.flatMap(entrega => 
         entrega.DocumentLines.map(line => {
-          const documentLine = Object.assign(new DocumentLines(), line);
-          return {
-            DocDueDate: entrega.DocDate,
-            DocNum: entrega.DocNum,
-            SequenceSerial: entrega.SequenceSerial,
-            ItemDescription: documentLine.ItemDescription,
-            ItemCode: documentLine.ItemCode,
-            U_preco_negociado: documentLine.precoNegociadoCurrency,
-            Quantity: documentLine.quantityCurrency,
-            totalLinhaCurrency: documentLine.totalLinhaCurrency,
-          };
+          return Object.assign(new DocumentLines(), line, entrega)
         })
-      );
-      this.entregas = this.entregas.map(entrega => Object.assign(new FutureDeliverySales(), entrega));
-    });
+      )
+    })
   }
   
   voltar(){
