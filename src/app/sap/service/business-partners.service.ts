@@ -5,6 +5,7 @@ import { ConfigService } from '../../core/services/config.service';
 import { BusinessPartner } from '../model/business-partner/business-partner';
 import { Page } from '../model/page.model';
 import { SearchService } from './search.service';
+import { OrderSales } from '../components/document/documento.statement.component';
 
 @Injectable({
   providedIn: 'root'
@@ -65,5 +66,21 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
         page.content = page.content.map((ff) => Object.assign(new BusinessPartner(),ff) )
         return page
       }))
+  }
+
+  getParceiro(page: number): Observable<Page<BusinessPartner>> {
+    return this.hppCliente.get<Page<BusinessPartner>>(this.url + "/pedido?page=" + page).pipe(
+      map((page) => {
+        page.content = page.content.map((ff) => {
+          const parceiroNegocio = Object.assign(new BusinessPartner(), ff);
+          return parceiroNegocio;
+        });
+        return page;
+      })
+    );
+  }
+
+  getPedidodeVendaBP(CardCode: string): Observable<Array<OrderSales>> {
+    return this.hppCliente.get<Array<OrderSales>>(this.url + "/pedido-venda-parceiro/", { params: { CardCode } });
   }
 }

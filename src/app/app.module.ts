@@ -99,6 +99,8 @@ import { DownPaymentService } from './sap/service/DownPaymentService';
 import { RetiradaComponent } from './sap/components/venda-futura/retirada/retirada.component';
 import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.service';
 import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
+import { ParceiroNegocioComponent } from './sap/components/marketing-document/parceiro-negocio/parceiro-negocio.component';
+import { ParceiroNegocioSingleComponent } from './sap/components/marketing-document/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 
 
 
@@ -162,6 +164,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
+    ParceiroNegocioComponent,
+    ParceiroNegocioSingleComponent,
     RetiradaComponent,
     DocumentListSingleComponent,
     PedidosVendaStatementComponent,

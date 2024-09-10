@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
+import { formatCurrency } from "@angular/common"
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-document-statement',
@@ -181,6 +183,10 @@ export class DocumentStatementComponent implements OnInit {
 
 export class OrderSales{
   CardCode: string
+  DocNum: number
+  DocDate: string
+  DocTotal: number
+  ItemCode
   DocumentLines : Array<DocumentLines>
   BPL_IDAssignedToInvoice : string
   DocDueDate : string = '2024-08-05'
@@ -191,7 +197,15 @@ export class OrderSales{
   PaymentGroupCode : string
   comments : string
   Frete : number
-}
+
+  get totalCurrency() {
+    return formatCurrency(this.DocTotal, 'pt', 'R$');
+  } 
+
+  get dataCriacao(){
+    return moment(this.DocDate).format('DD/MM/YYYY'); 
+  }
+} 
 
 export class DocumentLines{
   ItemCode

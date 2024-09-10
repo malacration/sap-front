@@ -10,15 +10,20 @@
       <tbody>
         <tr *ngFor="let item of content">
           <td *ngFor="let def of definition" scope="col">
-            <div [innerHTML]="renderContent(item,def) | appSafeHtml"></div>
+            <div *ngIf="def.property === 'CardCode'; else otherContent">
+              <a [routerLink]="['/venda/parceiro-negocio', item[def.property]]">{{ item[def.property] }}</a>
+            </div>
+            <ng-template #otherContent>
+              <div [innerHTML]="renderContent(item, def) | appSafeHtml"></div>
+            </ng-template>
           </td>
           <td *ngIf="item.getActions">
             <div>
-                <app-action class="app-action"
-                  *ngFor="let action of item.getActions(); trackBy: trackByFn"
-                  [action]="action"
-                  (actionOutput)="evento($event)">
-                </app-action>
+              <app-action class="app-action"
+                *ngFor="let action of item.getActions(); trackBy: trackByFn"
+                [action]="action"
+                (actionOutput)="evento($event)">
+              </app-action>
             </div>
           </td>
         </tr>
@@ -26,4 +31,3 @@
     </table>
   </div>
 </div>
-

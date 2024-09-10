@@ -20,6 +20,7 @@ export class PedidosVendaService implements DocumentService{
     
     getDefinition(): Column[] {
         return [
+            new Column('ID', 'DocNum'),
             new Column('Código Cliente', 'CardCode'),
             new Column('Nome', 'CardName'),
             new Column('Produtos', 'produtosCurrency'),
