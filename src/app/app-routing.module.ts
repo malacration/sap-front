@@ -13,6 +13,7 @@ import { CotacoesStatementComponent } from './sap/components/marketing-document/
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
+import { ParceiroNegocioComponent } from './sap/components/marketing-document/parceiro-negocio/parceiro-negocio.component';
 
  let routes: Routes = [
   {
@@ -105,6 +106,13 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
         canActivate: [authGuard],
         component: VendaFuturaStatementComponent
       },
+      {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      }
     ]
   },
   
