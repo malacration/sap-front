@@ -107,7 +107,7 @@ import { ParceiroNegocioComponent } from './sap/components/marketing-document/pa
         component: VendaFuturaStatementComponent
       },
       {
-        path: 'parceiro-negocio/:cardCode',
+        path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
         data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
