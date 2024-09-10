@@ -98,6 +98,7 @@ import { DocumentListSingleComponent } from './sap/components/marketing-document
 import { DownPaymentService } from './sap/service/DownPaymentService';
 import { RetiradaComponent } from './sap/components/venda-futura/retirada/retirada.component';
 import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.service';
+import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
 
 
 
@@ -194,6 +195,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
       useValue: 'BRL'
     },
     RomaneioFazendaInsumoService,
+    FormaPagamentoService,
     BusinessPlacesService,
     StateService,
     AlertService,

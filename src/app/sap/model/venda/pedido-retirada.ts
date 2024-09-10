@@ -3,6 +3,7 @@ export class PedidoRetirada{
     docEntryVendaFutura : number
     itensRetirada : Array<ItemRetirada>
     dataEntrega : Date
+    
 
     constructor(
         docEntryVendaFutura : number, 

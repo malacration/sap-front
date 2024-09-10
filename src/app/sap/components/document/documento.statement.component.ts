@@ -160,7 +160,7 @@ export class DocumentStatementComponent implements OnInit {
 
   limparFormulario(){
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['document']);
+      this.router.navigate(['venda/cotacao']);
     });
   }
 
@@ -168,7 +168,7 @@ export class DocumentStatementComponent implements OnInit {
     return this.businesPartner 
       && this.branchId 
       && this.dtEntrega
-      && this.formaPagamento 
+      // && this.formaPagamento
       && this.itens 
       && this.tipoEnvio
       && this.tipoOperacao

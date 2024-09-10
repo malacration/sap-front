@@ -1,5 +1,5 @@
 
-import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
 import { LinhaItem, VendaFutura } from '../../../model/venda/venda-futura';
 import { Column } from '../../../../shared/components/table/column.model';
 import { DownPaymentService } from '../../../service/DownPaymentService';
@@ -29,6 +29,7 @@ export class RetiradaComponent implements OnInit {
   @Output()
   retirados = new EventEmitter<Array<any>>();
 
+  loadingSalvar = false
   selectedItem: LinhaItem | null = null;
   quantity: number | null = null;
   itensRetirados: Array<ItemRetirada> = new Array();
@@ -78,14 +79,17 @@ export class RetiradaComponent implements OnInit {
   }
 
   salvarPedido(){
+    this.loadingSalvar = true
     let pedidoRetireada = this.vendaFutura.getPedidoRetirada(this.itensRetirados,this.dtEntrega)
-    this.service.retirar(pedidoRetireada).subscribe(it =>
-        this.alertService.info("FAKE").then(it => {
+    this.service.retirar(pedidoRetireada).subscribe({
+      next : documento => {
+        this.alertService.info("Cotação de venda gerada com sucesso.").then(it => {
           this.retirados.emit(this.itensRetirados)
           this.clearForm()
         })
-    )
-    
+      },
+      complete : () => {this.loadingSalvar = false}
+    })
   }
 
   clearForm(){
