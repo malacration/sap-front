@@ -78,7 +78,8 @@ export class VendaFuturaSingleComponent implements OnInit {
   boletosDefinition = [
     new Column('Código', 'DocNum'),
     new Column('Vencimento', 'vencimento'),
-    new Column('Total', 'totalCurrency')
+    new Column('Total', 'totalCurrency'),
+    new Column('Status', 'situacao'),
   ];
 
   entregasDefinition = [
