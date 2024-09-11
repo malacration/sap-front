@@ -83,7 +83,10 @@
                     </div>
                     <div class="col-sm-2">
                         <div class="form-group">
-                            <app-forma-pagamento-select (selectedOut)="changeFormaPagamento($event)">
+                            <app-forma-pagamento-select 
+                                (selectedOut)="changeFormaPagamento($event)" 
+                                [idFilial]="branchId"
+                                [cardCode]="businesPartner.CardCode">
                             </app-forma-pagamento-select>
                         </div>
                     </div>

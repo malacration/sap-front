@@ -57,6 +57,7 @@ export class Item{
         doc.Usage = usage
         doc.DiscountPercent = this.desconto
         doc.U_preco_negociado = this.unitPriceLiquid()
+        doc.UnitPrice = this.unitPriceLiquid()
         return doc
     }
 }

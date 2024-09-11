@@ -1,0 +1,49 @@
+<br>
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Detalhes do Parceiro de Négocios</b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Número do Parceiro:</dt>
+                <dd class="col-sm-9">{{ selected.CardCode }}</dd>
+
+                <dt class="col-sm-3">Nome do Parceiro:</dt>
+                <dd class="col-sm-9">{{ selected.CardName }}</dd>
+
+                <dt class="col-sm-3">Telefone:</dt>
+                <dd class="col-sm-9">{{ selected.Phone1 }}</dd>
+
+                <dt class="col-sm-3">Email:</dt>
+                <dd class="col-sm-9">{{ selected.EmailAddress }}</dd>
+
+                <dd class="col-sm">
+                    <app-tabs>
+                        <app-tab tabTitle="Endereço" [active]="true">
+                            <app-table
+                                [content]="selected?.BPAddresses" 
+                                [definition]="definition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
+                        </app-tab>
+
+                        <app-tab tabTitle="Pedido de Venda" [active]="false">
+                            <app-table
+                                [content]="pedidoVenda" 
+                                [definition]="pedidoVendaDefinition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
+                        </app-tab>
+
+                    </app-tabs>
+                </dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,44 @@
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>{{ title }}</b></h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Número {{title}}:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.DocNum }}</dd>
+
+                <dt class="col-sm-3">Código do Cliente:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.CardCode }}</dd>
+
+                <dt class="col-sm-3">Nome do Cliente:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.CardName }}</dd>
+
+                <dt class="col-sm-3">Valor do Frete:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.freteCurrency }}</dd>
+
+                <dt class="col-sm-3">Valor Total:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.totalCurrency }}</dd>
+
+                <dt class="col-sm-3">Data de Criação:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.dataCriacao }}</dd>
+
+                <dd class="col-sm">
+                    <app-tabs>
+                        <app-tab tabTitle="Produtos" [active]="true">
+                            <app-table
+                                [content]="selectedDocumentList?.DocumentLines" 
+                                [definition]="definition" 
+                                (actionOutput)="action($event)">
+                            </app-table>
+                        </app-tab>
+                    </app-tabs>
+                </dd>
+
+            </dl>
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
+        </div>
+    </div>
+</section>

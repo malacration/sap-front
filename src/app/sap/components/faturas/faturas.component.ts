@@ -4,7 +4,7 @@ import { ActionReturn } from '../../../shared/components/action/action.model';
 import { Fatura, FaturaDefinition } from '../../model/fatura/fatura.model';
 import { BusinessPartnerService } from '../../service/business-partners.service';
 import { Page } from '../../model/page.model';
-import { AlertSerice } from '../../service/alert.service';
+import { AlertService } from '../../service/alert.service';
 import { RadioItem } from '../form/radio/radio.model';
 import { OneTimePasswordService } from '../../service/one-time-password.service';
 import { ConfigService } from '../../../core/services/config.service';
@@ -36,7 +36,7 @@ export class FaturasComponent implements OnInit {
   constructor(private faturaService : FaturasService,
     private otpService : OneTimePasswordService,
     private configService :  ConfigService,
-    private alertService : AlertSerice,
+    private alertService : AlertService,
     private authService : AuthService,
     private bpService : BusinessPartnerService){
       

@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { EMPTY, Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AlertSerice } from '../sap/service/alert.service';
+import { AlertService } from '../sap/service/alert.service';
 
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private alertService : AlertSerice) {}
+  constructor(private alertService : AlertService) {}
 
   blobToString(b) {
     var u, x;
@@ -23,15 +23,15 @@ export class ErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        if(error.status != 200 && error.error){
-          console.log(error)
+        if (error.status === 403) {
+          this.alertService.error('Acesso negado');
+        } else if (error.status != 200 && error.error) {
           this.getMsgError(error).then(it => this.alertService.error(it));
         }
         return throwError(error);
       })
     );
   }
-
 
   getMsgError(error: HttpErrorResponse) : Promise<string>{
     if(typeof error.error === 'string')

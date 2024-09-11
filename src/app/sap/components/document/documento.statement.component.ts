@@ -4,11 +4,14 @@ import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
 import { OrderSalesService } from '../../service/order-sales.service';
-import { AlertSerice } from '../../service/alert.service';
+import { AlertService } from '../../service/alert.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
+import { BusinessPartner } from '../../model/business-partner/business-partner';
+import { formatCurrency } from "@angular/common"
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-document-statement',
@@ -19,7 +22,7 @@ export class DocumentStatementComponent implements OnInit {
 
   branchId = undefined
   tipoEnvio
-  businesPartner
+  businesPartner : BusinessPartner = null;
   formaPagamento
   observacao
   itens : Array<Item>
@@ -37,7 +40,7 @@ export class DocumentStatementComponent implements OnInit {
     private orderService : OrderSalesService,
     private config : ConfigService,
     private router : Router,
-    private alertService : AlertSerice){
+    private alertService : AlertService){
   }
   
   ngOnInit(): void {
@@ -54,6 +57,7 @@ export class DocumentStatementComponent implements OnInit {
   }
   
   changeFormaPagamento($event){
+    console.log($event)
     this.formaPagamento = $event
   }
 
@@ -120,6 +124,7 @@ export class DocumentStatementComponent implements OnInit {
   temFormaPagamento(){
     return this.itens
   }
+
   total() : number{
     return this.itens.reduce((acc,it) => acc+it.unitPriceLiquid()*it.quantidade,0)+this.frete
   }
@@ -159,7 +164,7 @@ export class DocumentStatementComponent implements OnInit {
 
   limparFormulario(){
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['document']);
+      this.router.navigate(['venda/cotacao']);
     });
   }
 
@@ -167,7 +172,7 @@ export class DocumentStatementComponent implements OnInit {
     return this.businesPartner 
       && this.branchId 
       && this.dtEntrega
-      && this.formaPagamento 
+      && this.formaPagamento
       && this.itens 
       && this.tipoEnvio
       && this.tipoOperacao
@@ -178,6 +183,10 @@ export class DocumentStatementComponent implements OnInit {
 
 export class OrderSales{
   CardCode: string
+  DocNum: number
+  DocDate: string
+  DocTotal: number
+  ItemCode
   DocumentLines : Array<DocumentLines>
   BPL_IDAssignedToInvoice : string
   DocDueDate : string = '2024-08-05'
@@ -188,7 +197,15 @@ export class OrderSales{
   PaymentGroupCode : string
   comments : string
   Frete : number
-}
+
+  get totalCurrency() {
+    return formatCurrency(this.DocTotal, 'pt', 'R$');
+  } 
+
+  get dataCriacao(){
+    return moment(this.DocDate).format('DD/MM/YYYY'); 
+  }
+} 
 
 export class DocumentLines{
   ItemCode
@@ -197,4 +214,5 @@ export class DocumentLines{
   Usage
   DiscountPercent
   U_preco_negociado
+  UnitPrice
 }

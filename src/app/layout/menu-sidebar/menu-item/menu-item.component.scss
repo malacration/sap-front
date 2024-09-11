@@ -1,3 +1,22 @@
-:host {
-    cursor: pointer;
+// :host {
+//     cursor: pointer;
+// }
+
+
+
+
+.nav-link:hover,
+.nav-link.active:focus,
+.nav-link.active {
+  background-color: var(--bs-primary-dark) !important;
+  border-color: var(--bs-primary-dark) !important;
+  color: var(--bs-primary-text) !important;
+}
+
+.nav-item.menu-open > a:not(.active){
+  background-color: transparent !important;
+  border-top-color: var(--bs-primary);
+  outline: 0.18rem solid var(--bs-primary);
+  outline-offset: -1px;
+  border-radius: 0.25rem;
 }

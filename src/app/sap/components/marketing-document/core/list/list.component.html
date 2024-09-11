@@ -1,0 +1,31 @@
+<section class="content">
+    <div *ngIf="!selectedDocumentList || selectedDocumentList == null" class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>{{title}} - {{nomeUsuario}}</b></h3>
+        </div>
+        <div class="card-body">                
+            <app-table
+                [content]="pageContent?.content" 
+                [definition]="definition" 
+                (actionOutput)="action($event)">
+            </app-table>
+        </div>
+        <div class="card-footer clearfix">
+            <app-paginacao
+                (pageChange)="pageChange($event)" 
+                [totalItens]="pageContent?.totalElements" 
+                [pageSize]="pageContent?.size">
+            </app-paginacao>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+    <div *ngIf="selectedDocumentList">
+        <app-document-list-single 
+            [title]="title"
+            [selectedDocumentList]="selectedDocumentList"
+            (close)="close()">
+        </app-document-list-single >
+    </div>
+</section>

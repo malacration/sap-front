@@ -9,7 +9,11 @@ import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { authGuard } from './core/auth.guard';
+import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
+import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
+import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
+import { ParceiroNegocioComponent } from './sap/components/marketing-document/parceiro-negocio/parceiro-negocio.component';
 
  let routes: Routes = [
   {
@@ -20,6 +24,7 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
   {
     path: 'home',
     title: 'Inicio',
+    data: ["icon:fas fa-home"],
     component: HomeComponent
   },
   {
@@ -43,19 +48,8 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
   {
     path: 'faturas',
     title: 'Faturas',
+    data: ["icon:fas fa-file-invoice"],
     component: FaturasComponent
-  },
-  {
-    path: 'document',
-    title: 'Pedido de Venda',
-    canActivate: [authGuard],
-    component: DocumentStatementComponent
-  },
-  {
-    path: 'transferencia-clientes',
-    title: 'Transferencia de Clientes',
-    canActivate: [authGuard],
-    component: TransferenciaClientesComponent
   },
   {
     path: 'cadastro/:id',
@@ -63,6 +57,65 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
     data: ["internal","hidden"],
     component: CadastroComponent
   },
+  {
+    path: 'clientes',
+    title: 'Clientes',
+    data: ["icon:fas fa-users"],
+    canActivate: [authGuard],
+    children: [ 
+      {
+        path: 'transferencia',
+        title: 'Transferências',
+        data: ["icon:fas fa-exchange-alt"],
+        canActivate: [authGuard],
+        component: TransferenciaClientesComponent
+      },
+    ]
+  },
+  {
+    title: 'Venda',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-shopping-bag"],
+    path: 'venda',
+    children: [ 
+      {
+        path: 'document',
+        title: 'Vender',
+        canActivate: [authGuard],
+        data: ["icon:fas fa-shopping-cart"],
+        component: DocumentStatementComponent
+      },
+      {
+        path: 'cotacao',
+        title: 'Cotação',
+        canActivate: [authGuard],
+        data: ["icon:fas fa-file-alt"],
+        component: CotacoesStatementComponent
+      },
+      {
+        path: 'pedidos-venda',
+        title: 'Pedidos',
+        canActivate: [authGuard],
+        component: PedidosVendaStatementComponent,
+        data: ["icon:fas fa-file-signature"],
+      },
+      {
+        path: 'venda-futura',
+        title: 'Contratos',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: VendaFuturaStatementComponent
+      },
+      {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      }
+    ]
+  },
+  
   {
     path: '**',
     title: 'Não encontrado',

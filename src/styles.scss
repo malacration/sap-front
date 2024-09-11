@@ -5,6 +5,21 @@
 
 @import 'admin-lte/node_modules/bootstrap/scss/functions';
 @import 'admin-lte/build/scss/bootstrap-variables';
+@import 'ngx-toastr/toastr';
+
+$custom-color: #25A246;
+
+
+$theme-colors: (
+  "primary": #25A246,
+  "success": #007bff
+);
+
+.my-custom-style {
+    background-color: $custom-color;
+    padding: .5rem 0;
+}
+
 
 @import 'admin-lte/node_modules/bootstrap/scss/bootstrap';
 
@@ -36,14 +51,13 @@ body {
     height: 100vh;
 }
 
-
 ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
 }
 
 .content {
-    padding: 0 0.5rem;
+    padding: 0 0.3rem;
 }
 
 // Sidebar menu animation
@@ -63,12 +77,9 @@ body {
 }
 
 
-
-
-
 :root {
-    --bs-primary: #0d6efd; /* Cor primária padrão do Bootstrap */
-    --bs-primary-dark: #0b5ed7; /* Cor escura personalizada para hover */
+    --bs-primary: #25A246; /* Cor primária padrão do Bootstrap */
+    --bs-primary-dark: #25A246; /* Cor escura personalizada para hover */
     --bs-primary-text: white; /* Cor do texto padrão */
     --bs-success: #198754; /* Cor de sucesso padrão do Bootstrap */
     --bs-success-dark: #157347; /* Cor escura personalizada para hover */

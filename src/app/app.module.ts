@@ -34,7 +34,7 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
 
 import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { AlertSerice } from './sap/service/alert.service';
+import { AlertService } from './sap/service/alert.service';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
@@ -84,6 +84,23 @@ import { SalesPersonSearchComponent } from './sap/components/search/sales-person
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { AuthService } from './shared/service/auth.service';
+import { ListComponent } from './sap/components/marketing-document/core/list/list.component';
+import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
+import { DocumentCoreComponent } from './sap/components/marketing-document/core/document-core.component';
+import { CotacaoService } from './sap/service/document/cotacao.service';
+import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
+import { VendaFuturaSingleComponent } from './sap/components/venda-futura/single/single.component';
+import { TabComponent } from './shared/components/tabs/tab/tab.component';
+import { TabsComponent } from './shared/components/tabs/tabs.component';
+import { PedidosVendaService } from './sap/service/document/pedidos-venda.service';
+import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
+import { DocumentListSingleComponent } from './sap/components/marketing-document/core/single-document-list/single-document-list.component';
+import { DownPaymentService } from './sap/service/DownPaymentService';
+import { RetiradaComponent } from './sap/components/venda-futura/retirada/retirada.component';
+import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.service';
+import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
+import { ParceiroNegocioComponent } from './sap/components/marketing-document/parceiro-negocio/parceiro-negocio.component';
+import { ParceiroNegocioSingleComponent } from './sap/components/marketing-document/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 
 
 
@@ -140,7 +157,20 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CurrencyInputComponent,
     LoginComponent,
     SalesPersonSearchComponent,
-    CurrencyInputComponent
+    CurrencyInputComponent,
+    ListComponent,
+    CotacoesStatementComponent,
+    PedidosVendaStatementComponent,
+    DocumentCoreComponent,
+    VendaFuturaStatementComponent,
+    VendaFuturaSingleComponent,
+    ParceiroNegocioComponent,
+    ParceiroNegocioSingleComponent,
+    RetiradaComponent,
+    DocumentListSingleComponent,
+    PedidosVendaStatementComponent,
+    TabsComponent,
+    TabComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -169,20 +199,25 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
       useValue: 'BRL'
     },
     RomaneioFazendaInsumoService,
+    FormaPagamentoService,
     BusinessPlacesService,
     StateService,
-    AlertSerice,
+    AlertService,
     FaturasService,
     CityService,
     BusinessPartnerService,
     OneTimePasswordService,
+    DownPaymentService,
     BsModalService,
     ItemService,
     BranchService,
     OrderSalesService,
     CondicaoPagamentoService,
+    CotacaoService,
+    PedidosVendaService,
     AuthService,
     CurrencyPipe,
+    FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],

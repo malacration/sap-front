@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BusinessPartnerService } from '../../service/business-partners.service';
-import { AlertSerice } from '../../service/alert.service';
+import { AlertService } from '../../service/alert.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../store/state';
@@ -110,7 +110,7 @@ export class CadastroComponent implements OnInit {
   }
 
   constructor(private pnService: BusinessPartnerService,
-    private alert: AlertSerice,
+    private alert: AlertService,
     private store: Store<AppState>,
     private route: ActivatedRoute) {
   }

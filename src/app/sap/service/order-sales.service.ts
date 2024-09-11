@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { OrderSales } from '../components/document/documento.statement.component';
 import { ConfigService } from '../../core/services/config.service';
+import { PedidoRetirada } from '../model/venda/pedido-retirada';
 
 @Injectable({
   providedIn: 'root'

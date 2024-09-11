@@ -11,7 +11,7 @@ import { Column } from './column.model';
 export class TableComponent implements OnInit {
 
   @Input()
-  content : Array<any>
+  content : Array<any> = new Array()
 
   @Input()
   definition : Array<Column> = new Array()
@@ -59,12 +59,13 @@ export class TableComponent implements OnInit {
     return value
   }
 
+  
   evento(retorno : any){
     this.actionOutput.emit(retorno)
   }
 
   hasAction() : Boolean{
-    return this.content.filter(item => item.getActions).length > 0
+    return this.content instanceof Array && this?.content?.filter(item => item.getActions).length > 0
   }
 
   trackByFn(index, response) {
