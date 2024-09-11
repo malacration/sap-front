@@ -51,12 +51,14 @@ export class TableComponent implements OnInit {
     }
   }
 
-  renderContent(item: any, def: any): string {
-    if (def.property === 'CardCode') {
-      return `<a href="/venda/parceiro-negocio/${item[def.property]}">${item[def.property]}</a>`;
+  renderContent(item : any, definition : Column){
+    let value = typeof item[definition.property] === 'function' ? item[definition.property]() : item[definition.property]
+    if(definition.html){
+      return Handlebars.compile(definition.html)({ 'value' : value})
     }
-    return item[def.property];
+    return value
   }
+
   
   evento(retorno : any){
     this.actionOutput.emit(retorno)

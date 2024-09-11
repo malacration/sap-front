@@ -214,4 +214,5 @@ export class DocumentLines{
   Usage
   DiscountPercent
   U_preco_negociado
+  UnitPrice
 }
