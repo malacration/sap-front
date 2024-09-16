@@ -2,6 +2,7 @@ import { formatCurrency } from "@angular/common";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import * as moment from "moment";
 import { Input } from "@angular/core";
+import { RouteLink } from "../route-link";
 
 export class DocumentList{
     CardCode : string
@@ -19,6 +20,10 @@ export class DocumentList{
         return [
             new Action("", new ActionReturn("selectedDocumentList",this), "far fa-check-circle")
         ]
+    }
+
+    routerLink() : RouteLink{
+        return new RouteLink(this.CardCode,"/clientes/parceiro-negocio/"+this.CardCode)
     }
 
     get x(){

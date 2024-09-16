@@ -21,7 +21,7 @@ export class CotacaoService implements DocumentService{
     getDefinition(): Column[] {
         return [
             new Column('ID', 'DocNum'),
-            new Column('Código do Cliente', 'CardCode'),
+            new Column('Código do Cliente', 'routerLink'),
             new Column('Nome', 'CardName'),
             new Column('Produtos', 'produtosCurrency'),
             new Column('Frete', 'freteCurrency'),

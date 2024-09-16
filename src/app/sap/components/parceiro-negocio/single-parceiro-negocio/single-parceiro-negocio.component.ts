@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { BusinessPartnerService } from '../../../../service/business-partners.service';
-import { BusinessPartner } from '../../../../model/business-partner/business-partner';
-import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
-import { Column } from '../../../../../shared/components/table/column.model';
-import { OrderSalesService } from '../../../../service/order-sales.service';
-import { OrderSales } from '../../../document/documento.statement.component';
+import { BusinessPartnerService } from '../../../service/business-partners.service';
+import { BusinessPartner } from '../../../model/business-partner/business-partner';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { Column } from '../../../../shared/components/table/column.model';
+import { OrderSalesService } from '../../../service/order-sales.service';
+import { OrderSales } from '../../document/documento.statement.component';
 
 
 
@@ -31,9 +31,6 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   @ViewChild('retirada', {static: true}) buscaModal: ModalComponent;
 
   ngOnInit(): void {
-    this.businessPartnerService.getParceiro(this.selected.Series).subscribe(it => {
-    });
-
     this.businessPartnerService.getPedidodeVendaBP(this.selected.CardCode).subscribe(response => {
       this.pedidoVenda = response.map(pedidoVenda => {
         return {

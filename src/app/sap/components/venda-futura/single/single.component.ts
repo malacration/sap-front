@@ -88,7 +88,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Código do Item', 'ItemCode'),
     new Column('Descrição do Item', 'ItemDescription'),
     new Column('Preço Negociado', 'U_preco_negociado'),
-    new Column('Quantidade Total', 'Quantity'),
+    new Column('Quantidade Entregue', 'Quantity'),
     new Column('Total da Linha', 'totalLinhaCurrency'),
   ];
 }
