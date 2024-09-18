@@ -3,6 +3,7 @@ import { Action, ActionReturn } from "../../shared/components/action/action.mode
 import { formatCurrency } from "@angular/common"
 import { DocumentLines } from "../components/document/documento.statement.component"
 import { disconnect } from "process"
+import Big from 'big.js';
 
 
 export class Item{
@@ -16,6 +17,8 @@ export class Item{
     PriceList : string
     ListName : string
     GroupNum : string
+    descontoCondicaoPagamento : number 
+    jurosCondicaoPagamento : number 
 
 
     getDefinition() {
@@ -37,16 +40,40 @@ export class Item{
         return this.ItemDescription
     }
 
+    formula(): number {
+        let price = new Big(this.UnitPrice);
+        let discount = new Big(this.descontoCondicaoPagamento || 0).div(100);
+        let interest = new Big(this.jurosCondicaoPagamento || 0).div(100);
+
+        let discountFactor = new Big(1).minus(discount);
+        let interestFactor = new Big(1).plus(interest);
+
+        let result = price
+            .times(discountFactor)
+            .times(interestFactor);
+
+        return result.toFixed(2, Big.roundHalfUp);
+    }
+
     unitPriceBrl(){
-        return formatCurrency(this.UnitPrice,'pt','R$')
+        return formatCurrency(this.formula(), 'pt', 'R$');
     }
 
     unitPriceLiquid() : number{
-        return (this.UnitPrice*(1-this.desconto/100))
+        return this.formula();
+    }
+
+    totalSemFormatacao(): number {
+        let quantidade = new Big(this.quantidade);
+        let unitPriceLiquid = new Big(this.unitPriceLiquid());
+    
+        let total = quantidade.times(unitPriceLiquid); 
+    
+        return total.toNumber().toFixed(2, Big.roundHalfUp); 
     }
 
     total(){
-        return formatCurrency(this.quantidade*this.unitPriceLiquid(),'pt','R$')
+        return formatCurrency(this.totalSemFormatacao(),'pt','R$')
     }
 
     getDocumentsLines(usage) : DocumentLines{
