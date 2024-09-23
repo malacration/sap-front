@@ -13,7 +13,7 @@ import { CotacoesStatementComponent } from './sap/components/marketing-document/
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
-import { ParceiroNegocioComponent } from './sap/components/marketing-document/parceiro-negocio/parceiro-negocio.component';
+import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 
  let routes: Routes = [
   {
@@ -64,6 +64,20 @@ import { ParceiroNegocioComponent } from './sap/components/marketing-document/pa
     canActivate: [authGuard],
     children: [ 
       {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'parceiro-negocio/:cardCode',
+        title: 'Parceiro Negocio',
+        data: ["hidden"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
         path: 'transferencia',
         title: 'Transferências',
         data: ["icon:fas fa-exchange-alt"],
@@ -106,16 +120,8 @@ import { ParceiroNegocioComponent } from './sap/components/marketing-document/pa
         canActivate: [authGuard],
         component: VendaFuturaStatementComponent
       },
-      {
-        path: 'parceiro-negocio',
-        title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract"],
-        canActivate: [authGuard],
-        component: ParceiroNegocioComponent
-      }
     ]
   },
-  
   {
     path: '**',
     title: 'Não encontrado',

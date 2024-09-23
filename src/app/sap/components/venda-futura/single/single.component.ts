@@ -72,13 +72,17 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Descrição', 'U_description'),
     new Column('Preço Negociado', 'precoNegociadoCurrency'),
     new Column('Quantidade', 'U_quantity'),
+// TODO Adicionar colunas    
+//    new Column('Qtd Retirado', ''),
+//   new Column('Qtd Disponivel', ''),
     new Column('Total', 'totalCurrency')
   ];
 
   boletosDefinition = [
     new Column('Código', 'DocNum'),
     new Column('Vencimento', 'vencimento'),
-    new Column('Total', 'totalCurrency')
+    new Column('Total', 'totalCurrency'),
+    new Column('Status', 'situacao'),
   ];
 
   entregasDefinition = [
@@ -88,7 +92,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Código do Item', 'ItemCode'),
     new Column('Descrição do Item', 'ItemDescription'),
     new Column('Preço Negociado', 'U_preco_negociado'),
-    new Column('Quantidade Total', 'Quantity'),
+    new Column('Quantidade Entregue', 'Quantity'),
     new Column('Total da Linha', 'totalLinhaCurrency'),
   ];
 }

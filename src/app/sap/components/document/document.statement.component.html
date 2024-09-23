@@ -92,7 +92,7 @@
                     </div>
                     <div *ngIf="!isMutiplasTabelas()" class="col-sm-2">
                         <div class="form-group">
-                            <app-condicao-pagamento-select [tabela]="getTabela()" (selectedOut)="changeAllCondicao($event)">
+                            <app-condicao-pagamento-select [tabela]="getTabela()" (selectedOut)="changeCondicaoPagamento($event)">
                             </app-condicao-pagamento-select>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
+import { RouteLink } from '../../../sap/model/route-link';
 
 
 @Component({
@@ -57,6 +58,10 @@ export class TableComponent implements OnInit {
       return Handlebars.compile(definition.html)({ 'value' : value})
     }
     return value
+  }
+
+  isRouterLink(item : any, definition : Column) : boolean{
+    return this.renderContent(item,definition) instanceof RouteLink
   }
 
   

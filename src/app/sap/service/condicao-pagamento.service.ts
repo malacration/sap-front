@@ -27,4 +27,6 @@ export class CondicaoPagamento{
   PymntGroup
   ListNum : string
   Code : string
+  U_desconto : number
+  U_juros : number
 }

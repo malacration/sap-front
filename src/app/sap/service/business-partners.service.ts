@@ -68,8 +68,8 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
       }))
   }
 
-  getParceiro(page: number): Observable<Page<BusinessPartner>> {
-    return this.hppCliente.get<Page<BusinessPartner>>(this.url + "/pedido?page=" + page).pipe(
+  getClientes(page: number): Observable<Page<BusinessPartner>> {
+    return this.hppCliente.get<Page<BusinessPartner>>(this.url + "/cientes?page=" + page).pipe(
       map((page) => {
         page.content = page.content.map((ff) => {
           const parceiroNegocio = Object.assign(new BusinessPartner(), ff);

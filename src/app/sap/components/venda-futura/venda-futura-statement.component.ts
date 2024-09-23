@@ -24,7 +24,7 @@ export class VendaFuturaStatementComponent implements OnInit {
 
   definition = [
     new Column('ID', 'DocEntry'),
-    new Column('Nome', 'U_cardName'),
+    new Column('Nome', 'routerLinkPn'),
     new Column('Produtos', 'produtosCurrency'),
     new Column('Frete', 'frete'),
     new Column('Valor Total', 'totalCurrency'),

@@ -61,15 +61,14 @@ export class DocumentStatementComponent implements OnInit {
     this.formaPagamento = $event
   }
 
-  changeCondicaoPagamento($event : any){
+  changeCondicaoPagamento($event){
     if($event.GroupNum)
-      this.itens.filter(it => it.PriceList == $event.ListNum).forEach(it => it.GroupNum = $event.GroupNum)
-  }
-
-  changeAllCondicao($event : any){
-    if($event.GroupNum){
-      this.itens.forEach(it => it.GroupNum = $event.GroupNum)
-    }
+      this.itens.filter(it => it.PriceList == $event.ListNum)
+      .forEach(it => {
+        it.GroupNum = $event.GroupNum
+        it.descontoCondicaoPagamento = $event.U_desconto
+        it.jurosCondicaoPagamento = $event.U_juros
+      })
   }
 
   changeItens($event){

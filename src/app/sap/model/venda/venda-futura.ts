@@ -3,6 +3,7 @@ import * as moment from "moment";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import { OrderSales } from "../../components/document/documento.statement.component";
 import { ItemRetirada, PedidoRetirada } from "./pedido-retirada";
+import { RouteLink } from "../route-link";
 
 
 
@@ -17,6 +18,10 @@ export class VendaFutura {
     U_dataCriacao: string;
     DocNum: number;
 
+
+    routerLinkPn() : RouteLink{
+        return new RouteLink(this.U_cardName,"/clientes/parceiro-negocio/"+this.U_cardCode) 
+    }
 
     getActions(): Action[] {
         return [

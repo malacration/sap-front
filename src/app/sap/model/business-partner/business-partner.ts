@@ -1,6 +1,7 @@
 import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
 import { City } from "../adressess/city"
 import { Option } from "../form/option"
+import { RouteLink } from "../route-link"
 
 
 export class BusinessPartner implements Actiable{
@@ -29,6 +30,10 @@ export class BusinessPartner implements Actiable{
 
     constructor(){
 
+    }
+
+    routerLink() : RouteLink{
+        return new RouteLink(this.CardCode,"/clientes/parceiro-negocio/"+this.CardCode)
     }
 
     getAddressOptions(tipo = null) : Array<Option>{

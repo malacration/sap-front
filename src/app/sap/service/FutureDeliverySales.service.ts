@@ -16,7 +16,7 @@ export class FutureDeliverySalesService {
   }
 
 getByNotaFiscalSaida(docEntry: number): Observable<Array<FutureDeliverySales>> {
-  return this.hppCliente.get<Array<FutureDeliverySales>>(this.url + "/contrato-venda-futura/", { params: { docEntry } })
+  return this.hppCliente.get<Array<FutureDeliverySales>>(this.url + "/contrato-venda-futura/"+docEntry)
     .pipe(
       map((it) => {
         return it.map(i => Object.assign(new FutureDeliverySales(), i));
