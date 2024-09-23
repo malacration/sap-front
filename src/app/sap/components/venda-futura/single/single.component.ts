@@ -72,8 +72,9 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Descrição', 'U_description'),
     new Column('Preço Negociado', 'precoNegociadoCurrency'),
     new Column('Quantidade', 'U_quantity'),
-    new Column('Qtd Retirado', ''),
-    new Column('Qtd Disponivel', ''),
+// TODO Adicionar colunas    
+//    new Column('Qtd Retirado', ''),
+//   new Column('Qtd Disponivel', ''),
     new Column('Total', 'totalCurrency')
   ];
 
