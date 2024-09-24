@@ -21,7 +21,7 @@ jobs:
       run: npm install
 
     - name: Build Angular app
-      run: npm run build --prod --output-hashing=all -- --configuration production --deploy-url /
+      run: npm run build --prod --output-hashing=all -- --configuration production --deploy-url ./
 
     - name: Archive build artifacts
       run: |
