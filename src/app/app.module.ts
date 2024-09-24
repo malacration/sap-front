@@ -100,6 +100,10 @@ import { RetiradaComponent } from './sap/components/venda-futura/retirada/retira
 import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.service';
 import { ParceiroNegocioComponent } from './sap/components/marketing-document/parceiro-negocio/parceiro-negocio.component';
 import { ParceiroNegocioSingleComponent } from './sap/components/marketing-document/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
+import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
+import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
+import { RoleService } from './sap/service/role.service';
+import { UserService } from './sap/service/user.service';
 
 
 
@@ -160,6 +164,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListComponent,
     CotacoesStatementComponent,
     PedidosVendaStatementComponent,
+    ManageRolesComponent,
+    AssignRoleComponent,
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
@@ -216,6 +222,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     AuthService,
     CurrencyPipe,
     FutureDeliverySalesService,
+    RoleService,
+    UserService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
