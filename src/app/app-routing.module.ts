@@ -14,6 +14,8 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
+import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
+import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 
  let routes: Routes = [
   {
@@ -119,6 +121,28 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
         data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
         component: VendaFuturaStatementComponent
+      },
+    ]
+  },
+  {
+    title: 'Administrador',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-cog"],
+    path: 'roles',
+    children: [ 
+      {
+        path: 'manage-roles',
+        title: 'Roles',
+        data: ["icon:fas fa-users"],
+        canActivate: [authGuard],
+        component: ManageRolesComponent
+      },
+      {
+        path: 'assign-role',
+        title: 'Atribuicao',
+        data: ["icon:fas fa-user-check"],
+        canActivate: [authGuard],
+        component: AssignRoleComponent
       },
     ]
   },

@@ -1,0 +1,76 @@
+<br>
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Gerenciar Permissões de Usuário</b></h3>
+      <div class="card-tools">
+        <button (click)="openCreateRoleModal()" type="button" class="btn btn-warning btn-sm">
+          Criar Permissão
+        </button>
+        <button (click)="openRemoveRoleModal()" type="button" class="btn btn-danger btn-sm ml-2">
+          Remover Permissão
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label for="roleSelect">Selecionar Permissão:</label>
+        <select id="roleSelect" [(ngModel)]="selectedRole" class="form-control">
+          <option *ngFor="let role of (roles | keyvalue)" [value]="role.key">{{ role.key }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-primary mt-4">
+    <div class="card-header">
+      <h3 class="card-title"><b>Adicionar Permissão</b></h3>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="url">URL:</label>
+            <input id="url" [(ngModel)]="permissions.url" class="form-control" />
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="actions">Ações (separadas por vírgula):</label>
+            <input id="actions" [(ngModel)]="permissions.actions" class="form-control" placeholder="get, post, *" />
+          </div>
+        </div>
+      </div>
+      <button (click)="addPermission()" class="btn btn-primary">Adicionar Permissão</button>
+      <br>
+      <h3 class="mt-4">Permissões atuais para {{ selectedRole }}</h3>
+      <ul *ngIf="roles[selectedRole]" class="list-group">
+        <li *ngFor="let permission of roles[selectedRole]" class="list-group-item">
+          {{ permission.url }}: {{ permission.actions.join(', ') }}
+          <div class="float-right">
+            <button (click)="removePermission(permission)" type="button" class="btn btn-sm ml-1 small" title="Remover item">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+  <app-modal #createRoleModal [title]="'Criar Nova Permissão'">
+    <div class="form-group">
+      <label for="roleName">Nome da Permissão:</label>
+      <input id="roleName" [(ngModel)]="newRoleName" class="form-control" placeholder="Digite o nome da Permissão" />
+    </div>
+    <button (click)="createRole()" class="btn btn-primary">Salvar</button>
+  </app-modal>
+  <app-modal #removeRoleModal [title]="'Remover Permissão'">
+    <div class="form-group">
+      <label for="roleToRemove">Selecionar permissão para remover:</label>
+      <select id="roleToRemove" [(ngModel)]="roleToRemove" class="form-control">
+        <option *ngFor="let role of (roles | keyvalue)" [value]="role.key">{{ role.key }}</option>
+      </select>
+    </div>
+    <button (click)="confirmRemoveRole()" class="btn btn-danger">Excluir</button>
+  </app-modal>

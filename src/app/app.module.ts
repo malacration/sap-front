@@ -101,6 +101,8 @@ import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.se
 import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
+import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
+import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 
 
 
@@ -161,6 +163,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListComponent,
     CotacoesStatementComponent,
     PedidosVendaStatementComponent,
+    ManageRolesComponent,
+    AssignRoleComponent,
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
