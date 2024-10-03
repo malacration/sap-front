@@ -43,21 +43,29 @@
                         </app-tab>
 
                         <app-tab tabTitle="Boletos">
+                            <div *ngIf="loadingBoletos" class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
                             <app-table
+                                *ngIf="!loadingBoletos"
                                 [content]="boletos" 
                                 [definition]="boletosDefinition" 
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
-                        
+
                         <app-tab tabTitle="Entregas">
+                            <div *ngIf="loadingEntregas" class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
                             <app-table
+                                *ngIf="!loadingEntregas"
                                 [content]="entregas" 
                                 [definition]="entregasDefinition" 
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
-
+                        
                     </app-tabs>
                 </dd>
             </dl>

@@ -28,7 +28,11 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   boletos = Array()
 
-  entregas = Array()
+  entregas = Array<DocumentLines>()
+
+  loadingBoletos: boolean = true; 
+  loadingEntregas: boolean = true; 
+  loading: boolean = true;
 
   @Output()
   close = new EventEmitter();
@@ -38,15 +42,37 @@ export class VendaFuturaSingleComponent implements OnInit {
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
+      this.loadingBoletos = false; 
+      this.checkLoadingComplete();
     });
     
     this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(response => {
       this.entregas = response.flatMap(entrega => 
         entrega.DocumentLines.map(line => {
           return Object.assign(new DocumentLines(), line, entrega)
-        })
-      )
+        }));
+
+        this.selected.AR_CF_LINHACollection.forEach(it => {
+          it.entregue = 0
+          it.produtoEntregueLoading = true;
+        });
+        
+        this.entregas.forEach(item => {
+          let produto = this.selected.AR_CF_LINHACollection.find(it => it.U_itemCode == item.ItemCode.toString());
+          if(produto) {
+            produto.entregue += item.Quantity | 0;
+            produto.produtoEntregueLoading = false; 
+          }
+        });
+        this.loadingEntregas = false; 
+        this.checkLoadingComplete();
     })
+  }
+
+  checkLoadingComplete() {
+    if (!this.loadingBoletos && !this.loadingEntregas) {
+      this.loading = false; 
+    }
   }
   
   voltar(){
@@ -72,9 +98,8 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Descrição', 'U_description'),
     new Column('Preço Negociado', 'precoNegociadoCurrency'),
     new Column('Quantidade', 'U_quantity'),
-// TODO Adicionar colunas    
-//    new Column('Qtd Retirado', ''),
-//   new Column('Qtd Disponivel', ''),
+    new Column('Qtd. Retirado', 'loadingText'),
+    new Column('Qtd. Disponível', 'qtdDisponivel'),
     new Column('Total', 'totalCurrency')
   ];
 

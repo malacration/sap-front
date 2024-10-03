@@ -64,9 +64,15 @@ export class LinhaItem {
     U_MeasureUnit: string;
     LineId: number;
     VisOrder: number;
+    entregue: number = 0;
+    produtoEntregueLoading: boolean = true;
 
     get total() {
         return this.U_precoNegociado * this.U_quantity;
+    }
+
+    get qtdDisponivel() {
+        return this. U_quantity - this.entregue;
     }
 
     get totalCurrency() {
@@ -75,5 +81,9 @@ export class LinhaItem {
 
     get precoNegociadoCurrency() {
         return formatCurrency(this.U_precoNegociado, 'pt', 'R$');
+    }
+
+    get loadingText() {
+        return this.produtoEntregueLoading ? "Carregando..." : this.entregue.toString();
     }
 }
