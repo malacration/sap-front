@@ -3,7 +3,6 @@ import { BusinessPartnerService } from '../../service/business-partners.service'
 import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
-import { OrderSalesService } from '../../service/order-sales.service';
 import { AlertService } from '../../service/alert.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
@@ -12,6 +11,9 @@ import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { formatCurrency } from "@angular/common"
 import * as moment from 'moment';
+import { OrderSalesService } from '../../service/document/order-sales.service';
+import { DocumentAngularSave } from '../../service/document/document-angular-save';
+import { QuotationService } from '../../service/document/quotation.service';
 
 @Component({
   selector: 'app-document-statement',
@@ -37,11 +39,13 @@ export class DocumentStatementComponent implements OnInit {
   tipoOperacaoOptions: Array<Option> = [new Option(9,"venda"), new Option(16,"venda com entrega futura")]
 
   constructor(private businesPartnerService : BusinessPartnerService,
+    private quotationService : QuotationService,
     private orderService : OrderSalesService,
     private config : ConfigService,
     private router : Router,
     private alertService : AlertService){
-  }
+
+    }
   
   ngOnInit(): void {
     
@@ -132,8 +136,13 @@ export class DocumentStatementComponent implements OnInit {
     this.loading = true
     let subiscribers = Array<Observable<any>>();
 
+    let service : DocumentAngularSave = this.quotationService
+    
+    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales')
+      service = this.orderService
+
     this.tabelas().forEach(tabela => {
-      let order = new OrderSales()
+      let order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
       order.BPL_IDAssignedToInvoice = this.branchId
       order.DocumentLines = this.itens.filter(it => it.PriceList == tabela).map(it => it.getDocumentsLines(this.tipoOperacao))
@@ -142,7 +151,7 @@ export class DocumentStatementComponent implements OnInit {
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
-      subiscribers.push(this.orderService.save(order))
+      subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({ 
       next:result => {
@@ -180,13 +189,13 @@ export class DocumentStatementComponent implements OnInit {
   }
 }
 
-export class OrderSales{
+export class PedidoVenda{
   CardCode: string
   DocNum: number
   DocDate: string
   DocTotal: number
   ItemCode
-  DocumentLines : Array<DocumentLines>
+  DocumentLines : Array<LinhasPedido>
   BPL_IDAssignedToInvoice : string
   DocDueDate : string = '2024-08-05'
   shipToCode : string
@@ -206,7 +215,7 @@ export class OrderSales{
   }
 } 
 
-export class DocumentLines{
+export class LinhasPedido{
   ItemCode
   Quantity
   PriceList

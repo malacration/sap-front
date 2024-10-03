@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { OrderSales } from '../components/document/documento.statement.component';
-import { ConfigService } from '../../core/services/config.service';
-import { PedidoRetirada } from '../model/venda/pedido-retirada';
+import { ConfigService } from '../../../core/services/config.service';
+import { DocumentAngularSave } from './document-angular-save';
+import { PedidoVenda } from '../../components/document/documento.statement.component';
 
 @Injectable({
   providedIn: 'root'
 })
-export class OrderSalesService {
+export class QuotationService implements DocumentAngularSave {
 
   url = "http://localhost:8080/quotation"
 
@@ -16,7 +16,7 @@ export class OrderSalesService {
       this.url = config.getHost()+"/quotation"
   }
 
-  save(body : OrderSales) : Observable<any>{
+  save(body : PedidoVenda) : Observable<any>{
     return this.hppCliente.post<any>(this.url+"/angular",body)
   }
 }
