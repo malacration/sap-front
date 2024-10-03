@@ -1,9 +1,8 @@
 import { Column } from "../../shared/components/table/column.model"
 import { Action, ActionReturn } from "../../shared/components/action/action.model"
 import { formatCurrency } from "@angular/common"
-import { DocumentLines } from "../components/document/documento.statement.component"
-import { disconnect } from "process"
 import Big from 'big.js';
+import { LinhasPedido } from "../components/document/documento.statement.component";
 
 
 export class Item{
@@ -76,8 +75,8 @@ export class Item{
         return formatCurrency(this.totalSemFormatacao(),'pt','R$')
     }
 
-    getDocumentsLines(usage) : DocumentLines{
-        let doc = new DocumentLines()
+    getDocumentsLines(usage) : LinhasPedido{
+        let doc = new LinhasPedido()
         doc.ItemCode = this.ItemCode
         doc.Quantity = this.quantidade
         doc.PriceList = this.PriceList

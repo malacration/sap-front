@@ -5,7 +5,7 @@ import { ConfigService } from '../../core/services/config.service';
 import { BusinessPartner } from '../model/business-partner/business-partner';
 import { Page } from '../model/page.model';
 import { SearchService } from './search.service';
-import { OrderSales } from '../components/document/documento.statement.component';
+import { PedidoVenda } from '../components/document/documento.statement.component';
 
 @Injectable({
   providedIn: 'root'
@@ -80,7 +80,7 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     );
   }
 
-  getPedidodeVendaBP(CardCode: string): Observable<Array<OrderSales>> {
-    return this.hppCliente.get<Array<OrderSales>>(this.url + "/pedido-venda-parceiro/", { params: { CardCode } });
+  getPedidodeVendaBP(CardCode: string): Observable<Array<PedidoVenda>> {
+    return this.hppCliente.get<Array<PedidoVenda>>(this.url + "/pedido-venda-parceiro/", { params: { CardCode } });
   }
 }

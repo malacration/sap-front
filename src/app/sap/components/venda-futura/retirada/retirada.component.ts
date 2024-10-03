@@ -8,8 +8,6 @@ import * as $ from 'jquery';
 import { AlertService } from '../../../service/alert.service';
 import { Option } from '../../../model/form/option';
 import { SelectComponent } from '../../form/select/select.component';
-import { OrderSalesService } from '../../../service/order-sales.service';
-import { OrderSales } from '../../document/documento.statement.component';
 import { ItemRetirada, PedidoRetirada } from '../../../model/venda/pedido-retirada';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 

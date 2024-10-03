@@ -78,7 +78,6 @@ import { BranchService } from './sap/service/branch.service';
 import { StateSelectComponent } from './sap/components/form/select/state/state-select.component';
 import { FormaPagamentoSelectComponent } from './sap/components/form/select/forma-pagamento/forma-pagamento-select.component';
 import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
-import { OrderSalesService } from './sap/service/order-sales.service';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
 import { SalesPersonSearchComponent } from './sap/components/search/sales-person-search/sales-person-search.component';
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
@@ -101,6 +100,8 @@ import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.se
 import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
+import { OrderSalesService } from './sap/service/document/order-sales.service';
+import { QuotationService } from './sap/service/document/quotation.service';
 
 
 
@@ -211,6 +212,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BsModalService,
     ItemService,
     BranchService,
+    QuotationService,
     OrderSalesService,
     CondicaoPagamentoService,
     CotacaoService,
