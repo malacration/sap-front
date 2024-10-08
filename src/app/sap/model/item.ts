@@ -19,6 +19,7 @@ export class Item{
     GroupNum : string
     descontoCondicaoPagamento : number 
     jurosCondicaoPagamento : number 
+    OnHand: number 
 
 
     getDefinition() {
@@ -26,7 +27,8 @@ export class Item{
             new Column('Id', 'ItemCode'),
             new Column('Nome', 'ItemDescription'),
             new Column('Preço', 'unitPriceBrl'),
-            new Column('Tabela', 'ListName')
+            new Column('Tabela', 'ListName'),
+            new Column('Estoque', 'OnHand')
         ]   
     }
 
