@@ -45,8 +45,9 @@ export class Item{
         let price = new Big(this.UnitPrice);
         let discount = new Big(this.descontoCondicaoPagamento || 0).div(100);
         let interest = new Big(this.jurosCondicaoPagamento || 0).div(100);
+        let descontoAdicional = new Big(this.desconto || 0).div(100);
 
-        let discountFactor = new Big(1).minus(discount);
+        let discountFactor = new Big(1).minus(discount).minus(descontoAdicional);
         let interestFactor = new Big(1).plus(interest);
 
         let result = price
