@@ -47,11 +47,13 @@ export class Item{
         let interest = new Big(this.jurosCondicaoPagamento || 0).div(100);
         let descontoAdicional = new Big(this.desconto || 0).div(100);
 
-        let discountFactor = new Big(1).minus(discount).minus(descontoAdicional);
+        let discountCondicaoPagamento = new Big(1).minus(discount)
+        let discountSaler = new Big(1).minus(descontoAdicional)
         let interestFactor = new Big(1).plus(interest);
 
         let result = price
-            .times(discountFactor)
+            .times(discountCondicaoPagamento)
+            .times(discountSaler)
             .times(interestFactor);
 
         return result.toFixed(2, Big.roundHalfUp);
