@@ -34,7 +34,7 @@ export class ModalComponent {
   }
 
   closeModal() {
-    this.modalService.hide();
+    this.modalRef.hide()
   }
 
 }

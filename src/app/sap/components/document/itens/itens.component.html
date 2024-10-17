@@ -1,13 +1,13 @@
 <div class="card card-primary">
   <div class="card-header">
-    <b>Produtos</b>
+    <b>{{title}}</b>
     <div class="card-tools" *ngIf="itens && itens.length > 0">
       {{itens.length}} item{{itens.length > 1 ? "s" : ""}}
     </div>
   </div>
   <div class="card-body py-3 px-1">
     <div class="col mb-4">
-      <app-item-search (contentSelected)="addItem($event)" [branchId]="branchId"></app-item-search>
+      <app-item-search (contentSelected)="addItem($event)" [title]="'Selecione um produto'" [branchId]="branchId"></app-item-search>
     </div>
     <div class="row m-0 p-0">
       <div *ngIf="showThumbnail" class="col p-0"></div>

@@ -22,6 +22,10 @@ export class ItemSearchComponent implements OnInit {
   definition = new Item().getDefinition()  
   @Input()
   branchId
+  
+  @Input()
+  title
+  
   service : ItemServiceBanch
   @Output() 
   contentSelected = new EventEmitter();

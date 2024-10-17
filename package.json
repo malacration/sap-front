@@ -51,6 +51,8 @@
     "big.js": "6.2.2",
     "core-js": "3.25.0",
     "handlebars": "4.7.8",
+    "html2canvas": "1.4.1",
+    "jspdf": "2.5.2",
     "luxon": "3.4.4",
     "ngx-bootstrap": "10.3.0",
     "ngx-dropzone-wrapper": "15.0.0",
