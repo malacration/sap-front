@@ -102,6 +102,7 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 import { OrderSalesService } from './sap/service/document/order-sales.service';
 import { QuotationService } from './sap/service/document/quotation.service';
+import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 
 
 
@@ -170,6 +171,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RetiradaComponent,
     DocumentListSingleComponent,
     PedidosVendaStatementComponent,
+    DescontoComponent,
     TabsComponent,
     TabComponent
   ],

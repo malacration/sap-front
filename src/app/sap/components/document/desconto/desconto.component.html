@@ -1,0 +1,52 @@
+
+<button *ngIf="porcentagemDesconto <= 0" class="btn btn-secondary" (click)="openModal()">Editar Desconto</button>
+
+<button *ngIf="porcentagemDesconto > 0"  class="btn btn-primary" (click)="openModal()">Desc. {{porcentagemDesconto}} %</button>
+
+<app-modal #digitacao [title]="'Desconto Vendedor'">
+  <div class="card card-primary">
+    <div class="card-header">
+      <p>Aplicando desconto sobre o valor: {{valorCurrency}} </p>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label for="valor_desconto" class="form-label">Escolha uma forma de atribuir o desconto</label>
+        <div class="d-flex align-items-center mb-2">
+            <div class="form-check me-3">
+              <input class="form-check-input" type="radio"
+                id="desconto_percentual"
+                name="tipo_desconto"
+                value="percentual"
+                (change)="onTipoDescontoChange('percentual')"
+                [checked]="tipoDesconto=='percentual'"
+              />
+                <label class="form-check-label" for="desconto_percentual">Percentual (%)</label>
+            </div>
+            <div class="form-check ml-2">
+              <input class="form-check-input" type="radio"
+                id="desconto_absoluto"
+                name="tipo_desconto"
+                value="absoluto"
+                [checked]="tipoDesconto=='absoluto'"
+                (change)="onTipoDescontoChange('absoluto')"
+              />
+                <label class="form-check-label" for="desconto_absoluto">Absoluto (R$)</label>
+            </div>
+        </div>
+        <input [ngClass]="tipoDesconto" type="number" 
+            class="form-control" [(ngModel)]="desconto" placeholder="{{placeHolderDesconto}}">
+      </div>
+      <div class="form-group right">
+        <button class="btn btn-primary mr-2" (click)="confirmarDesconto()">
+          Confirmar Desconto
+        </button>
+        <button class="btn btn-danger" (click)="cancelar()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+    <div class="card-footer">
+      Valor apos o desconto: {{resultadoCurrency}} {{tipoDesconto == "absoluto" ? 'Em percentual '+porcentagemDesconto : ''}}
+    </div>
+  </div>
+</app-modal>
