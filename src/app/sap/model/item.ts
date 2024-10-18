@@ -20,6 +20,7 @@ export class Item{
     jurosCondicaoPagamento : number 
     OnHand: number 
 
+    descontoVendedorPorcentagem : number = 0
 
     getDefinition() {
         return [
@@ -42,21 +43,28 @@ export class Item{
     }
 
     formula(): number {
+        return this.antesDescontoFinanceiro()
+            .times(Big(100).minus(this.descontoVendedorPorcentagem).div(100))
+            .toFixed(2, Big.roundHalfUp);
+    }
+
+    antesDescontoFinanceiro() : Big{
         let price = new Big(this.UnitPrice);
         let discount = new Big(this.descontoCondicaoPagamento || 0).div(100);
         let interest = new Big(this.jurosCondicaoPagamento || 0).div(100);
-        let descontoAdicional = new Big(this.desconto || 0).div(100);
 
         let discountCondicaoPagamento = new Big(1).minus(discount)
-        let discountSaler = new Big(1).minus(descontoAdicional)
         let interestFactor = new Big(1).plus(interest);
 
         let result = price
             .times(discountCondicaoPagamento)
-            .times(discountSaler)
             .times(interestFactor);
 
-        return result.toFixed(2, Big.roundHalfUp);
+        return result
+    }
+
+    antesDescontoFinanceiroNumber() : number{
+        return this.antesDescontoFinanceiro().toFixed(4, Big.roundHalfUp);
     }
 
     unitPriceBrl(){
@@ -86,9 +94,14 @@ export class Item{
         doc.Quantity = this.quantidade
         doc.PriceList = this.PriceList
         doc.Usage = usage
-        doc.DiscountPercent = this.desconto
+        doc.DiscountPercent = this.descontoVendedorPorcentagem
         doc.U_preco_negociado = this.unitPriceLiquid()
         doc.UnitPrice = this.unitPriceLiquid()
+
         return doc
+    }
+
+    aplicaDesconto($event){
+        this.descontoVendedorPorcentagem = $event
     }
 }
