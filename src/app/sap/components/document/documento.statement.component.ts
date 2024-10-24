@@ -14,6 +14,7 @@ import * as moment from 'moment';
 import { OrderSalesService } from '../../service/document/order-sales.service';
 import { DocumentAngularSave } from '../../service/document/document-angular-save';
 import { QuotationService } from '../../service/document/quotation.service';
+import { Branch } from '../../model/branch';
 
 @Component({
   selector: 'app-document-statement',
@@ -32,6 +33,7 @@ export class DocumentStatementComponent implements OnInit {
   dtEntrega
   loading = false
   frete : number = 0
+  selectedBranch: Branch = null;
 
   @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
@@ -107,9 +109,10 @@ export class DocumentStatementComponent implements OnInit {
     return false
   }
 
-  selectBranch($event){
-    this.branchId = $event
-    this.changeOperacao()
+  selectBranch(branch: Branch){
+    this.branchId = branch.bplid;
+    this.selectedBranch = branch; 
+    this.changeOperacao();
   }
 
   selectBp($event){
@@ -122,6 +125,12 @@ export class DocumentStatementComponent implements OnInit {
   tipoEnvioChange($event){
     if($event instanceof RadioItem)
       this.tipoEnvio = $event.content
+
+    if(this.tipoEnvio == 'ret'){
+      this.dtEntrega = moment().format('YYYY-MM-DD');
+    } else {
+      this.dtEntrega = null;
+    }
   }
 
   temFormaPagamento(){
@@ -151,6 +160,11 @@ export class DocumentStatementComponent implements OnInit {
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
+      if(this.tipoEnvio == 'ret'){
+      order.VehicleState = this.selectedBranch?.prefState || '';
+      } else {
+        order.VehicleState = null;
+      }
       subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({ 
@@ -205,6 +219,7 @@ export class PedidoVenda{
   PaymentGroupCode : string
   comments : string
   Frete : number
+  VehicleState: string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

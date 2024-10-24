@@ -17,21 +17,24 @@ export class BranchSelectComponent implements OnInit {
   @Input()
   selected : string = null
 
-  opcoes : Array<Option>
+  branches: Array<Branch> = [];
+  opcoes: Array<Option> = [];
 
   loading = false
 
   @Output()
-  selectedOut = new EventEmitter<string>();
+  selectedOut = new EventEmitter<Branch>();
 
   onChange($event){
-    this.selectedOut.emit($event)
+    const selectedBranch = this.branches.find(branch => branch.bplid === $event);
+    this.selectedOut.emit(selectedBranch);
   }
 
   ngOnInit(): void {
     this.loading = true;
-    this.service.get().subscribe( data =>{
-      this.opcoes = data.map(it => new Option(it.bplid,it.bplname))
+    this.service.get().subscribe(data => {
+      this.branches = data;
+      this.opcoes = data.map(it => new Option(it.bplid, it.bplname));
       this.loading = false;
     })
   }  
