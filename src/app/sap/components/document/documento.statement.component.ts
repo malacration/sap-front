@@ -122,15 +122,21 @@ export class DocumentStatementComponent implements OnInit {
     })
   }
 
+  setVehicleState() { 
+    if (this.tipoEnvio == 'ret') {
+      this.dtEntrega = moment().format('YYYY-MM-DD');
+      return this.selectedBranch?.prefState || '';
+    } else {
+      this.dtEntrega = null;
+      return null;
+    }
+  }
+  
   tipoEnvioChange($event){
     if($event instanceof RadioItem)
       this.tipoEnvio = $event.content
 
-    if(this.tipoEnvio == 'ret'){
-      this.dtEntrega = moment().format('YYYY-MM-DD');
-    } else {
-      this.dtEntrega = null;
-    }
+    this.setVehicleState();
   }
 
   temFormaPagamento(){
@@ -160,11 +166,7 @@ export class DocumentStatementComponent implements OnInit {
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
-      if(this.tipoEnvio == 'ret'){
-      order.VehicleState = this.selectedBranch?.prefState || '';
-      } else {
-        order.VehicleState = null;
-      }
+      order.VehicleState = this.setVehicleState();
       subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({ 
