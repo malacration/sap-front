@@ -1,3 +1,4 @@
+import { formatCurrency } from "@angular/common"
 import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
 import { City } from "../adressess/city"
 import { Option } from "../form/option"
@@ -17,6 +18,8 @@ export class BusinessPartner implements Actiable{
     ContactEmployees : Array<Person> = new Array()
     RemoveContacts : Array<number> = new Array()
     Referencias : ReferenciaComercial
+    CreditLine : number = 0
+    Balance : number = 0
 
     private _addressOptions
     private _referenceOptions
@@ -30,6 +33,18 @@ export class BusinessPartner implements Actiable{
 
     constructor(){
 
+    }
+    
+    get limiteDisponivel() : number{
+        return this.CreditLine-this.Balance
+    }
+
+    limiteAutorizadoCurrency() {
+        return formatCurrency(this.CreditLine, 'pt', 'R$');
+    }
+
+    limiteDisponivelCurrency(){
+        return formatCurrency(this.limiteDisponivel, 'pt', 'R$');
     }
 
     routerLink() : RouteLink{

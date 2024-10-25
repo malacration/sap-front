@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
+import { Branch } from '../model/branch';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class BranchService {
     this.url = config.getHost()+"/branch"
   }
 
-  get() : Observable<Array<any>>{
-    return this.hppCliente.get<Array<any>>(this.url)
+  get() : Observable<Array<Branch>>{
+    return this.hppCliente.get<Array<Branch>>(this.url)
   }
 }
