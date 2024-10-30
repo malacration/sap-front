@@ -152,22 +152,23 @@ export class DocumentStatementComponent implements OnInit {
     let subiscribers = Array<Observable<any>>();
 
     let service : DocumentAngularSave = this.quotationService
-  
-    if(this.config.tipoOperacao.find(it => it.id == this.tipoOperacao)?.document == 'ordersales') {
+    
+    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales')
       service = this.orderService
-    }
 
-    const isSinglePaymentCondition = this.isSinglePaymentCondition()
-  
-    if (isSinglePaymentCondition) {
-      let order = this.createConsolidatedPedidoVenda();
-      subiscribers.push(service.save(order));
-    } else {
-      this.tabelas().forEach(tabela => {
-        let order = this.createPedidoVenda(tabela)
-        subiscribers.push(service.save(order))})}
-  
-    forkJoin(subiscribers).subscribe({
+    this.agruparPorGroupNum().forEach((itens,groupNum) => {
+      let order = new PedidoVenda()
+      order.CardCode = this.businesPartner.CardCode
+      order.BPL_IDAssignedToInvoice = this.branchId
+      order.DocumentLines = itens.map(it => it.getDocumentsLines(this.tipoOperacao))
+      order.PaymentMethod = this.formaPagamento
+      order.PaymentGroupCode = groupNum
+      order.comments = this.observacao
+      order.DocDueDate = this.dtEntrega
+      order.Frete = this.frete
+      subiscribers.push(service.save(order))
+    })
+    forkJoin(subiscribers).subscribe({ 
       next:result => {
         this.concluirEnvio();
       },
@@ -175,39 +176,6 @@ export class DocumentStatementComponent implements OnInit {
         this.loading = false
       },
     });
-  }
-  
-  createConsolidatedPedidoVenda(): PedidoVenda {
-    const order = new PedidoVenda();
-    order.CardCode = this.businesPartner.CardCode;
-    order.BPL_IDAssignedToInvoice = this.branchId;
-    order.DocumentLines = this.itens.map(it => it.getDocumentsLines(this.tipoOperacao));
-    order.PaymentMethod = this.formaPagamento;
-    order.PaymentGroupCode = this.itens[0]?.GroupNum; 
-    order.comments = this.observacao;
-    order.DocDueDate = this.dtEntrega;
-    order.Frete = this.frete;
-    order.VehicleState = this.setVehicleState();
-    return order;
-  }
-
-  createPedidoVenda(tabela: string): PedidoVenda {
-    const order = new PedidoVenda();
-    order.CardCode = this.businesPartner.CardCode;
-    order.BPL_IDAssignedToInvoice = this.branchId;
-    order.DocumentLines = this.itensBy(tabela).map(it => it.getDocumentsLines(this.tipoOperacao));
-    order.PaymentMethod = this.formaPagamento;
-    order.PaymentGroupCode = this.itensBy(tabela)[0].GroupNum;
-    order.comments = this.observacao;
-    order.DocDueDate = this.dtEntrega;
-    order.Frete = this.frete;
-    order.VehicleState = this.setVehicleState();
-    return order;
-  }
-  
-  isSinglePaymentCondition(): boolean {
-    const firstPaymentGroupCode = this.itens[0]?.GroupNum;
-    return this.itens.every(it => it.GroupNum === firstPaymentGroupCode);
   }
 
   concluirEnvio(){
@@ -233,6 +201,17 @@ export class DocumentStatementComponent implements OnInit {
       && this.tipoOperacao
       && this.itens?.length > 0
       && this.itens.filter(it => !it.GroupNum).length == 0
+  }
+
+  agruparPorGroupNum(): Map<string, Item[]> {
+    return this.itens.reduce((map, item) => {
+        const group = item.GroupNum;
+        if (!map.has(group)) {
+            map.set(group, []);
+        }
+        map.get(group)?.push(item);
+        return map;
+    }, new Map<string, Item[]>());
   }
 }
 
