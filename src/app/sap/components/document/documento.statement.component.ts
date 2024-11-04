@@ -153,20 +153,19 @@ export class DocumentStatementComponent implements OnInit {
 
     let service : DocumentAngularSave = this.quotationService
     
-    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales')
+    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales' && this.tipoEnvio == 'ret')
       service = this.orderService
 
-    this.tabelas().forEach(tabela => {
+    this.agruparPorGroupNum().forEach((itens,groupNum) => {
       let order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
       order.BPL_IDAssignedToInvoice = this.branchId
-      order.DocumentLines = this.itens.filter(it => it.PriceList == tabela).map(it => it.getDocumentsLines(this.tipoOperacao))
+      order.DocumentLines = itens.map(it => it.getDocumentsLines(this.tipoOperacao))
       order.PaymentMethod = this.formaPagamento
-      order.PaymentGroupCode = this.itens.filter(it => it.PriceList == tabela).map(it => it.GroupNum)[0]
+      order.PaymentGroupCode = groupNum
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
-      order.VehicleState = this.setVehicleState();
       subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({ 
@@ -202,6 +201,17 @@ export class DocumentStatementComponent implements OnInit {
       && this.tipoOperacao
       && this.itens?.length > 0
       && this.itens.filter(it => !it.GroupNum).length == 0
+  }
+
+  agruparPorGroupNum(): Map<string, Item[]> {
+    return this.itens.reduce((map, item) => {
+        const group = item.GroupNum;
+        if (!map.has(group)) {
+            map.set(group, []);
+        }
+        map.get(group)?.push(item);
+        return map;
+    }, new Map<string, Item[]>());
   }
 }
 
