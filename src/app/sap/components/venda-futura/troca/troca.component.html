@@ -65,7 +65,7 @@
         </div>
     </div>
     <div class="card-footer"> 
-        <b>Total:</b> TODO
+        <b>Total:</b> {{totalItensRetirada() | currency}}
     </div>
     <div *ngIf="loadingSalvar" class="overlay">
         <i class="fas fa-2x fa-sync-alt fa-spin"></i>
@@ -76,8 +76,9 @@
     <div class="col">
         <div class="form-group">
             <card-itens
+                [geralLoading]="loadingSalvar"
                 [title]="'Novos Produtos'"
-                (changeItens)="novoProduto($event)"
+                (changeItens)="changeItensNovos($event)"
                 [branchId]="branchId">
             </card-itens>
         </div>
@@ -85,15 +86,17 @@
 </div>
 
 
-<div class="row">
+<div *ngIf="totalBalanco() != 0" class="row">
     <div class="col">
         <h4>Resultado financeiro</h4>
-        {{totalBalanco()}}
+        <p *ngIf="totalBalanco() > 0"> O contrato sera acrescido no valor de: {{totalBalanco() | currency}}</p>
+        <p *ngIf="totalBalanco() < 0"> O contrato sera reduzido no valor de: {{totalBalanco() | currency}}</p>
+        <p></p>
     </div>
 </div>
 
 
-<div class="row" *ngIf="itensRetirados?.length > 0">
+<div class="row" *ngIf="itensRetirados?.length > 0 && !loadingSalvar">
     <div class="col">
         <button (click)="salvarPedido()" class="btn btn-primary">Confirmar troca dos produtos</button>
     </div>

@@ -5,6 +5,7 @@ import { Page } from "../model/page.model";
 import { Observable, map } from "rxjs";
 import {LinhaItem, VendaFutura} from "../model/venda/venda-futura"
 import { PedidoRetirada } from "../model/venda/pedido-retirada";
+import { PedidoTroca } from "../model/venda/pedido-troca";
 
 @Injectable({
     providedIn: 'root'
@@ -30,6 +31,10 @@ export class VendaFuturaService{
           return page;
         })
       );
+    }
+
+    trocar(pedido : PedidoTroca) : Observable<any> {
+      return this.http.post<any>(this.url+"/troca",pedido)
     }
 
     retirar(body : PedidoRetirada) : Observable<any>{

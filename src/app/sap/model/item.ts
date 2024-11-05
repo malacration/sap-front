@@ -19,8 +19,12 @@ export class Item{
     descontoCondicaoPagamento : number 
     jurosCondicaoPagamento : number 
     OnHand: number 
-
     descontoVendedorPorcentagem : number = 0
+    PriceUnit
+
+    get idProduto(){
+        return this.ItemCode
+    }
 
     getDefinition() {
         return [
@@ -97,7 +101,8 @@ export class Item{
         doc.DiscountPercent = this.descontoVendedorPorcentagem
         doc.U_preco_negociado = this.unitPriceLiquid()
         doc.UnitPrice = this.unitPriceLiquid()
-
+        doc.ItemDescription = this.ItemDescription
+        doc.MeasureUnit = this.PriceUnit
         return doc
     }
 

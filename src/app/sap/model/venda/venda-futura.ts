@@ -1,8 +1,9 @@
 import { formatCurrency } from "@angular/common";
 import * as moment from "moment";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
-import { ItemRetirada, PedidoRetirada } from "./pedido-retirada";
+import { PedidoRetirada } from "./pedido-retirada";
 import { RouteLink } from "../route-link";
+import { ItemRetirada } from "./item-retirada";
 
 
 

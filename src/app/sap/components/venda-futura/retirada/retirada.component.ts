@@ -8,8 +8,8 @@ import * as $ from 'jquery';
 import { AlertService } from '../../../service/alert.service';
 import { Option } from '../../../model/form/option';
 import { SelectComponent } from '../../form/select/select.component';
-import { ItemRetirada, PedidoRetirada } from '../../../model/venda/pedido-retirada';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
+import { ItemRetirada } from '../../../model/venda/item-retirada';
 
 @Component({
   selector: 'app-venda-futura-retirada',

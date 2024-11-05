@@ -223,4 +223,6 @@ export class LinhasPedido{
   DiscountPercent
   U_preco_negociado
   UnitPrice
+  ItemDescription
+  MeasureUnit
 }

@@ -93,7 +93,6 @@ export class VendaFuturaSingleComponent implements OnInit {
   closeModal($event){
     this.retiradaModal.closeModal()
     this.trocaModal.closeModal()
-    
   }
 
   definition = [

@@ -89,6 +89,6 @@
 <app-modal #troca [title]="'Troca de Produtos'">
     <app-venda-futura-troca 
         [vendaFutura]="selected" 
-        (retirados)="closeModal($event)">
+        (closeModal)="closeModal($event)">
     </app-venda-futura-troca>
 </app-modal>
