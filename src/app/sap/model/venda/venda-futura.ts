@@ -17,6 +17,7 @@ export class VendaFutura {
     DocEntry: number;
     U_dataCriacao: string;
     DocNum: number;
+    U_filial
 
 
     routerLinkPn() : RouteLink{

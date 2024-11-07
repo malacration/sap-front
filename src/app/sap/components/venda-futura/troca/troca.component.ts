@@ -38,12 +38,10 @@ export class TrocaComponent implements OnInit {
   constructor(
     private alertService: AlertService,
     private service : VendaFuturaService){
-    
   }
 
   ngOnInit(): void {
-    //TODO ajustar filial
-    this.branchId = 2
+    this.branchId = this.vendaFutura.U_filial
   }
 
   get filteredItems(): Array<Option> {

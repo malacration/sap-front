@@ -57,7 +57,7 @@
                 <ul class="list-group mt-3">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
                         *ngFor="let item of itensRetirados; let i = index">
-                        {{ item.descricao }} - Quantidade: {{ item.quantity }}
+                        {{ item.descricao }} - Quantidade: {{ item.quantidade }}
                         <button class="btn btn-danger btn-sm" (click)="removerItem(i)">Remover</button>
                     </li>
                 </ul>
