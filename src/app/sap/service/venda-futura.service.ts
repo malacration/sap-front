@@ -18,8 +18,9 @@ export class VendaFuturaService{
         this.url = config.getHost()+"/contrato-venda-futura"
     }
     
-    get($event): Observable<Page<VendaFutura>> {
-      return this.http.get<Page<VendaFutura>>(this.url).pipe(
+    get($event, allVendedores : boolean = false): Observable<Page<VendaFutura>> {
+      let url = allVendedores ? this.url+"/all" : this.url
+      return this.http.get<Page<VendaFutura>>(url).pipe(
         map((page) => {
           page.content = page.content.map((ff) => {
             const vendaFutura = Object.assign(new VendaFutura(), ff);

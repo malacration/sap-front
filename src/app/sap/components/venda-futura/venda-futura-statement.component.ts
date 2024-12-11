@@ -21,6 +21,7 @@ export class VendaFuturaStatementComponent implements OnInit {
   loading = false
   pageContent : Page<VendaFutura> = new Page()
   selected : VendaFutura = null
+  all = false
 
   definition = [
     new Column('ID', 'DocEntry'),
@@ -43,7 +44,7 @@ export class VendaFuturaStatementComponent implements OnInit {
 
   pageChange($event){
     this.loading = true
-    this.service.get($event).subscribe({
+    this.service.get($event,this.all).subscribe({
       next : (it: Page<any>) => {
         this.pageContent = it
       },
@@ -59,6 +60,11 @@ export class VendaFuturaStatementComponent implements OnInit {
 
   close(){
     this.selected = null
+  }
+
+  onToggleAll(){
+    this.all = !this.all
+    this.pageChange(0)
   }
 
 }

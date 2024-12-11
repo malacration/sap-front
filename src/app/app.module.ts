@@ -51,8 +51,7 @@ import { FileUploadComponent } from './shared/components/file-upload/file-upload
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
 import { FaturasService } from './sap/service/fatura/faturas.service';
-import { TableComponent } from './shared/components/table/table.component';
-import { SafeHtmlDirective } from './shared/directives/safe-html/safe-html.directive';
+
 import { ActionComponent } from './shared/components/action/action.component';
 import { CpfCnpjPipe } from './shared/directives/pipes/cpf-cnpj-pipe';
 import { MomentPipe } from './shared/directives/pipes/moment-pipe';
@@ -104,6 +103,7 @@ import { OrderSalesService } from './sap/service/document/order-sales.service';
 import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
+import { CalculadoraModule } from './calculadora-preco-venda/calculadora.module';
 
 
 
@@ -117,7 +117,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   declarations: [
     CpfCnpjPipe,
     MomentPipe,
-    SafeHtmlDirective,
     AppComponent,
     HeaderComponent,
     MenuSidebarComponent,
@@ -135,7 +134,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CadastroComponent,
     EnderecoComponent,
     ReferenciaComponent,
-    SelectComponent,
     StateSelectComponent,
     CitySelectComponent,
     FileUploadComponent,
@@ -144,8 +142,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListaFaturaComponent,
     AutenticacaoFaturaComponent,
     RadioComponent,
-    TableComponent,
-    ActionComponent,
     DatasComponent,
     DocumentStatementComponent,
     ItensComponent,
@@ -179,12 +175,15 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   ],
   imports: [
     NgxPaginationModule,
+    CalculadoraModule,
     BrowserModule,
+    BrowserAnimationsModule,
+
     FormsModule,
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
-    BrowserAnimationsModule,
+    
     AppRoutingModule,
     ToastrModule.forRoot({
       timeOut: 3000,

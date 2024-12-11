@@ -2,14 +2,32 @@
     display: block;
 }
 
-.content-wrapper > *:first-child {
+
+.hmg {
+    position: relative;
+}
+
+.rb-mp {
+    position: fixed; /* Deixa o ribbon fixo */
+    top: 10px;       /* Ajusta a posição no topo */
+    right: 10px;     /* Ajusta a posição à direita */
+    z-index: 9000;   /* Define um z-index alto para flutuar acima do conteúdo */
+    pointer-events: none; /* Evita que o ribbon interfira nas interações do usuário */
+}
+
+.ribbon-wrapper {
+    display: inline-block;
+}
+
+.ribbon {
     display: block;
+    position: relative;
+    padding: 5px 10px;
+    font-size: 1rem;
+    color: #fff;
+    text-align: center;
+    background-color: #dc3545; /* Cor de fundo do ribbon */
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-.hmg{
-    height: 100px;
-}
-
-.rb-mp{
-    padding-top: 45px;
-}

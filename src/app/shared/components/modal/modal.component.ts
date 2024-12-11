@@ -34,7 +34,7 @@ export class ModalComponent {
   }
 
   closeModal() {
-    this.modalRef.hide()
+    this.modalRef?.hide()
   }
 
   ngAfterViewChecked(): void {

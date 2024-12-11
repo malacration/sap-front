@@ -2,6 +2,8 @@ import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Outpu
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
 import { RouteLink } from '../../../sap/model/route-link';
+import { formatCurrency } from '@angular/common';
+import { FormControl } from '@angular/forms';
 
 
 @Component({
@@ -53,17 +55,50 @@ export class TableComponent implements OnInit {
   }
 
   renderContent(item : any, definition : Column){
-    let value = typeof item[definition.property] === 'function' ? item[definition.property]() : item[definition.property]
+    if (this.isEditable(definition) || this.isRouterLink(item, definition)) {
+      return undefined
+    }
+    
+    const value = this.getValue(item,definition)
+
     if(definition.html){
       return Handlebars.compile(definition.html)({ 'value' : value})
+    }else if (definition.property.endsWith("Currency") && typeof value === 'number') {
+      return formatCurrency(value, 'pt', 'R$');
     }
     return value
   }
 
   isRouterLink(item : any, definition : Column) : boolean{
-    return this.renderContent(item,definition) instanceof RouteLink
+    return this.getValue(item,definition) instanceof RouteLink
   }
 
+  isEditable(definition : Column){
+    return definition.property.endsWith("Editable")
+  }
+
+  getValue(item : any, definition : Column) : any{
+    return typeof item[definition.property] === 'function' ? item[definition.property]() : item[definition.property]
+  }
+
+  
+  formControlFactory(item : any, definition : Column) : FormControl{
+    let formControl = new FormControl(this.getValue(item,definition))
+    formControl.valueChanges.subscribe(value => {
+      this.processInputChange(item,definition,value);
+    });
+
+    return formControl
+  }
+
+  onInputBlur(item : any, definition : Column){
+    if(item[definition.property+"Blur"])
+      item[definition.property+"Blur"]()
+  }
+
+  processInputChange(item : any, definition : Column, value: string): void {
+    typeof item[definition.property] === 'function' ? item[definition.property](value) : item[definition.property] = value
+  }
   
   evento(retorno : any){
     this.actionOutput.emit(retorno)

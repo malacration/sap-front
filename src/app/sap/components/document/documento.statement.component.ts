@@ -225,4 +225,5 @@ export class LinhasPedido{
   UnitPrice
   ItemDescription
   MeasureUnit
+  SalUnitMsr
 }
