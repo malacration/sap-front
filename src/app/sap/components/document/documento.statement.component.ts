@@ -14,6 +14,7 @@ import * as moment from 'moment';
 import { OrderSalesService } from '../../service/document/order-sales.service';
 import { DocumentAngularSave } from '../../service/document/document-angular-save';
 import { QuotationService } from '../../service/document/quotation.service';
+import { Branch } from '../../model/branch';
 
 @Component({
   selector: 'app-document-statement',
@@ -32,6 +33,7 @@ export class DocumentStatementComponent implements OnInit {
   dtEntrega
   loading = false
   frete : number = 0
+  selectedBranch: Branch = null;
 
   @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
@@ -107,9 +109,10 @@ export class DocumentStatementComponent implements OnInit {
     return false
   }
 
-  selectBranch($event){
-    this.branchId = $event
-    this.changeOperacao()
+  selectBranch(branch: Branch){
+    this.branchId = branch.bplid;
+    this.selectedBranch = branch; 
+    this.changeOperacao();
   }
 
   selectBp($event){
@@ -119,9 +122,21 @@ export class DocumentStatementComponent implements OnInit {
     })
   }
 
+  setVehicleState() { 
+    if (this.tipoEnvio == 'ret') {
+      this.dtEntrega = moment().format('YYYY-MM-DD');
+      return this.selectedBranch?.prefState || '';
+    } else {
+      this.dtEntrega = null;
+      return null;
+    }
+  }
+  
   tipoEnvioChange($event){
     if($event instanceof RadioItem)
       this.tipoEnvio = $event.content
+
+    this.setVehicleState();
   }
 
   temFormaPagamento(){
@@ -138,16 +153,16 @@ export class DocumentStatementComponent implements OnInit {
 
     let service : DocumentAngularSave = this.quotationService
     
-    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales')
+    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales' && this.tipoEnvio == 'ret')
       service = this.orderService
 
-    this.tabelas().forEach(tabela => {
+    this.agruparPorGroupNum().forEach((itens,groupNum) => {
       let order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
       order.BPL_IDAssignedToInvoice = this.branchId
-      order.DocumentLines = this.itens.filter(it => it.PriceList == tabela).map(it => it.getDocumentsLines(this.tipoOperacao))
+      order.DocumentLines = itens.map(it => it.getDocumentsLines(this.tipoOperacao))
       order.PaymentMethod = this.formaPagamento
-      order.PaymentGroupCode = this.itens.filter(it => it.PriceList == tabela).map(it => it.GroupNum)[0]
+      order.PaymentGroupCode = groupNum
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
@@ -187,6 +202,17 @@ export class DocumentStatementComponent implements OnInit {
       && this.itens?.length > 0
       && this.itens.filter(it => !it.GroupNum).length == 0
   }
+
+  agruparPorGroupNum(): Map<string, Item[]> {
+    return this.itens.reduce((map, item) => {
+        const group = item.GroupNum;
+        if (!map.has(group)) {
+            map.set(group, []);
+        }
+        map.get(group)?.push(item);
+        return map;
+    }, new Map<string, Item[]>());
+  }
 }
 
 export class PedidoVenda{
@@ -205,6 +231,7 @@ export class PedidoVenda{
   PaymentGroupCode : string
   comments : string
   Frete : number
+  VehicleState: string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

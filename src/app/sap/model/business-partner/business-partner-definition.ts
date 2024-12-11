@@ -6,7 +6,9 @@ export class BusinessPartnerDefinition{
         return [
             new Column('Id', 'CardCode'),
             new Column('Nome', 'CardName'),
-            new Column('Doc.', 'CpfCnpjStr')
+            new Column('Doc.', 'CpfCnpjStr'),
+            new Column('Limite Autorizado', 'limiteAutorizadoCurrency'),
+            new Column('Limite Disponível', 'limiteDisponivelCurrency')
         ]   
     }
 }
