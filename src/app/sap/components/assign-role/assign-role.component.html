@@ -1,0 +1,44 @@
+<br>
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Atribuir Permissão a Usuário</b></h3>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label for="userSelect">Selecionar Usuário:</label>
+        <select id="userSelect" [(ngModel)]="selectedUser" class="form-control">
+          <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="roleSelect">Selecionar Função:</label>
+        <select id="roleSelect" [(ngModel)]="selectedRole" class="form-control">
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+      <button (click)="assignRole()" class="btn btn-primary">Atribuir Função</button>
+    </div>
+  </div>
+  <div class="card card-primary mt-4">
+    <div class="card-header">
+      <h3 class="card-title"><b>Usuários e Permissões Atribuídas</b></h3>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Permissão Atribuída</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.name }}</td>
+            <td>{{ user.role || 'Nenhuma' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
