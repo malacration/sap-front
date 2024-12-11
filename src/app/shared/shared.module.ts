@@ -5,17 +5,41 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { PageNotFoundComponent } from './components/';
 import { WebviewDirective } from './directives/';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { TabComponent } from './components/tabs/tab/tab.component';
-import { TabsComponent } from './components/tabs/tabs.component';
+import { TableComponent } from './components/table/table.component';
+import { ActionComponent } from './components/action/action.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
+import { SafeHtmlDirective } from './directives/safe-html/safe-html.directive';
+import { SelectComponent } from '../sap/components/form/select/select.component';
 
 @NgModule({
   declarations: [
     PageNotFoundComponent, 
-    WebviewDirective
+    WebviewDirective,
+    TableComponent,
+    ActionComponent,
+    SafeHtmlDirective,
+    SelectComponent,
   ],
-  imports: [CommonModule, TranslateModule, FormsModule,BrowserModule],
-  exports: [TranslateModule, WebviewDirective, FormsModule]
+  imports: [
+    CommonModule, 
+    BrowserModule,
+    RouterModule,
+    BrowserAnimationsModule,
+    TranslateModule,
+    FormsModule,
+    BrowserModule,
+    ReactiveFormsModule
+  ],
+  exports: [
+    TranslateModule, 
+    WebviewDirective, 
+    FormsModule,
+    TableComponent,
+    CommonModule,
+    SelectComponent,
+  ]
 })
 export class SharedModule {}

@@ -1,8 +1,15 @@
 <br>
 <section class="content">
     <div *ngIf="!selected || selected == null" class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title"><b>Venda Futura - {{nomeUsuario}}</b></h3>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <b>Venda Futura - {{nomeUsuario}}</b>
+            </h5>
+            <!-- TODO adicionar condicional que ocuta o botao -->
+            <div class="custom-switch ml-auto">
+                <input class="custom-control-input" type="checkbox" id="all" [checked]="all" (change)="onToggleAll()">
+                <label class="custom-control-label" for="all">Ver todos os vendedores</label>
+            </div>
         </div>
         <div class="card-body">                
             <app-table

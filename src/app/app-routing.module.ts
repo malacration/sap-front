@@ -16,6 +16,8 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
+import { CustoMecadoriaStatementComponent } from './calculadora-preco-venda/custo-mercadoria/custo-mercadoria.component';
+import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/formacao/formacao.component';
 
  let routes: Routes = [
   {
@@ -146,12 +148,23 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
       },
     ]
   },
+  { 
+    path: 'calculadora',
+    title: 'Calculadora',
+    data: ["hidden"],
+    component: CustoMecadoriaStatementComponent
+   }
+  {
+    path: 'formacao-preco',
+    title: 'Formação de preço',
+    data: ["hidden"],
+  },
   {
     path: '**',
     title: 'Não encontrado',
     data: ["hidden"],
     component: PageNotFoundComponent
-  }
+  },
 ];
 
 @NgModule({

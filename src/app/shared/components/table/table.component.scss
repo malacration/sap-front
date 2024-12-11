@@ -1,21 +1,19 @@
-// // .card-body table {
-// //     overflow-y: scroll;
-// // }
+/* Remover a transparência das linhas zebradas */
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: #f2f2f2 !important; /* Cor sólida para faixas ímpares */
+}
 
-// body {
-//     --table-width: 100%; /* Or any value, this will change dinamically */
-//   }
-//   tbody {
-//     display:block;
-//     max-height:500px;
-//     overflow-y:auto;
-//   }
-//   thead, tbody tr {
-//     display:table;
-//     width: var(--table-width);
-//     table-layout:fixed;
-//   }
+.table-striped > tbody > tr:nth-of-type(even) {
+  background-color: #ffffff !important; /* Cor sólida para faixas pares */
+}
 
+.sticky-column {
+  position: sticky;
+  left: 0;
+  background-color: inherit;
+  z-index: 1020; /* Evita sobreposição de outras células */
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1); /* Adiciona uma sombra sutil */
+}
 
 .app-action{
     margin-right: 5px;

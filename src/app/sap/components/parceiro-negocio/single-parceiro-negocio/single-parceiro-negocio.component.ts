@@ -3,8 +3,8 @@ import { BusinessPartnerService } from '../../../service/business-partners.servi
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
-import { OrderSalesService } from '../../../service/order-sales.service';
-import { OrderSales } from '../../document/documento.statement.component';
+import { OrderSalesService } from '../../../service/document/order-sales.service';
+import { PedidoVenda } from '../../document/documento.statement.component';
 
 
 
@@ -16,7 +16,9 @@ import { OrderSales } from '../../document/documento.statement.component';
 export class ParceiroNegocioSingleComponent implements OnInit {
 
 
-  constructor(private businessPartnerService : BusinessPartnerService, private orderSales : OrderSalesService ){
+  constructor(
+    private businessPartnerService : BusinessPartnerService, 
+    private orderSales : OrderSalesService ){
 
   }
 
@@ -39,7 +41,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
           DocTotal: pedidoVenda.DocTotal
         }; 
       });
-      this.pedidoVenda = this.pedidoVenda.map(pedidoVenda => Object.assign(new OrderSales(), pedidoVenda));
+      this.pedidoVenda = this.pedidoVenda.map(pedidoVenda => Object.assign(new PedidoVenda(), pedidoVenda));
     });
   }
 

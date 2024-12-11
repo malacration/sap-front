@@ -1,9 +1,8 @@
 import { Column } from "../../shared/components/table/column.model"
 import { Action, ActionReturn } from "../../shared/components/action/action.model"
 import { formatCurrency } from "@angular/common"
-import { DocumentLines } from "../components/document/documento.statement.component"
-import { disconnect } from "process"
 import Big from 'big.js';
+import { LinhasPedido } from "../components/document/documento.statement.component";
 
 
 export class Item{
@@ -19,14 +18,22 @@ export class Item{
     GroupNum : string
     descontoCondicaoPagamento : number 
     jurosCondicaoPagamento : number 
+    OnHand: number 
+    descontoVendedorPorcentagem : number = 0
+    PriceUnit
+    MeasureUnit
 
+    get idProduto(){
+        return this.ItemCode
+    }
 
     getDefinition() {
         return [
             new Column('Id', 'ItemCode'),
             new Column('Nome', 'ItemDescription'),
             new Column('Preço', 'unitPriceBrl'),
-            new Column('Tabela', 'ListName')
+            new Column('Tabela', 'ListName'),
+            new Column('Estoque', 'OnHand')
         ]   
     }
 
@@ -41,18 +48,28 @@ export class Item{
     }
 
     formula(): number {
+        return this.antesDescontoFinanceiro()
+            .times(Big(100).minus(this.descontoVendedorPorcentagem).div(100))
+            .toFixed(2, Big.roundHalfUp);
+    }
+
+    antesDescontoFinanceiro() : Big{
         let price = new Big(this.UnitPrice);
         let discount = new Big(this.descontoCondicaoPagamento || 0).div(100);
         let interest = new Big(this.jurosCondicaoPagamento || 0).div(100);
 
-        let discountFactor = new Big(1).minus(discount);
+        let discountCondicaoPagamento = new Big(1).minus(discount)
         let interestFactor = new Big(1).plus(interest);
 
         let result = price
-            .times(discountFactor)
+            .times(discountCondicaoPagamento)
             .times(interestFactor);
 
-        return result.toFixed(2, Big.roundHalfUp);
+        return result
+    }
+
+    antesDescontoFinanceiroNumber() : number{
+        return this.antesDescontoFinanceiro().toFixed(4, Big.roundHalfUp);
     }
 
     unitPriceBrl(){
@@ -76,15 +93,21 @@ export class Item{
         return formatCurrency(this.totalSemFormatacao(),'pt','R$')
     }
 
-    getDocumentsLines(usage) : DocumentLines{
-        let doc = new DocumentLines()
+    getDocumentsLines(usage) : LinhasPedido{
+        let doc = new LinhasPedido()
         doc.ItemCode = this.ItemCode
         doc.Quantity = this.quantidade
         doc.PriceList = this.PriceList
         doc.Usage = usage
-        doc.DiscountPercent = this.desconto
+        doc.DiscountPercent = this.descontoVendedorPorcentagem
         doc.U_preco_negociado = this.unitPriceLiquid()
         doc.UnitPrice = this.unitPriceLiquid()
+        doc.ItemDescription = this.ItemDescription
+        doc.MeasureUnit = this.MeasureUnit == undefined ? this.SalUnitMsr : this.MeasureUnit
         return doc
+    }
+
+    aplicaDesconto($event){
+        this.descontoVendedorPorcentagem = $event
     }
 }

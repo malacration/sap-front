@@ -28,27 +28,49 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   boletos = Array()
 
-  entregas = Array()
+  entregas = Array<DocumentLines>()
+
+  loadingBoletos: boolean = true; 
+  loadingEntregas: boolean = true; 
 
   @Output()
   close = new EventEmitter();
 
-  @ViewChild('retirada', {static: true}) buscaModal: ModalComponent;
+  @ViewChild('retirada', {static: true}) retiradaModal: ModalComponent;
+
+  @ViewChild('troca', {static: true}) trocaModal: ModalComponent;
 
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
+      this.loadingBoletos = false; 
+    });
+
+
+    this.selected.AR_CF_LINHACollection.forEach(it => {
+      it.entregue = 0
+      it.produtoEntregueLoading = true;
     });
     
     this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(response => {
       this.entregas = response.flatMap(entrega => 
         entrega.DocumentLines.map(line => {
           return Object.assign(new DocumentLines(), line, entrega)
-        })
-      )
+        }));
+        
+        this.entregas.forEach(item => {
+          let produto = this.selected.AR_CF_LINHACollection.find(it => it.U_itemCode == item.ItemCode.toString());
+          produto.entregue += item.Quantity | 0
+        });
+
+        this.loadingEntregas = false; 
+        
+        this.selected.AR_CF_LINHACollection.forEach(it => {
+          it.produtoEntregueLoading = false;
+        });
     })
   }
-  
+
   voltar(){
     this.close.emit()
   }
@@ -57,14 +79,20 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   }
 
-  openModal(){
-    this.buscaModal.classeModal = "modal-xl"
-    this.buscaModal.openModal()
+  openModalRetirada(){
+    this.retiradaModal.classeModal = "modal-xl"
+    this.retiradaModal.openModal()
+  }
+
+  openModalTroca(){
+    this.trocaModal.classeModal = "modal-xl"
+    this.trocaModal.openModal()
   }
 
 
   closeModal($event){
-    this.buscaModal.closeModal()
+    this.retiradaModal.closeModal()
+    this.trocaModal.closeModal()
   }
 
   definition = [
@@ -72,9 +100,8 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Descrição', 'U_description'),
     new Column('Preço Negociado', 'precoNegociadoCurrency'),
     new Column('Quantidade', 'U_quantity'),
-// TODO Adicionar colunas    
-//    new Column('Qtd Retirado', ''),
-//   new Column('Qtd Disponivel', ''),
+    new Column('Qtd. Retirado', 'quantidadeEntregue'),
+    new Column('Qtd. Disponível', 'qtdDisponivel'),
     new Column('Total', 'totalCurrency')
   ];
 

@@ -1,9 +1,9 @@
 import { formatCurrency } from "@angular/common";
 import * as moment from "moment";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
-import { OrderSales } from "../../components/document/documento.statement.component";
-import { ItemRetirada, PedidoRetirada } from "./pedido-retirada";
+import { PedidoRetirada } from "./pedido-retirada";
 import { RouteLink } from "../route-link";
+import { ItemRetirada } from "./item-retirada";
 
 
 
@@ -17,6 +17,7 @@ export class VendaFutura {
     DocEntry: number;
     U_dataCriacao: string;
     DocNum: number;
+    U_filial
 
 
     routerLinkPn() : RouteLink{
@@ -34,7 +35,7 @@ export class VendaFutura {
     }
 
     get totalCurrency() {
-        return formatCurrency(this.U_valorFrete + this.totalProdutos, 'pt', 'R$');
+        return this.U_valorFrete + this.totalProdutos
     }
 
     get frete() {
@@ -42,7 +43,7 @@ export class VendaFutura {
     }
 
     get produtosCurrency() {
-        return formatCurrency(this.totalProdutos, 'pt', 'R$');
+        return this.totalProdutos;
     }
 
     get totalProdutos() {
@@ -65,9 +66,15 @@ export class LinhaItem {
     U_MeasureUnit: string;
     LineId: number;
     VisOrder: number;
+    entregue: number = 0;
+    produtoEntregueLoading: boolean = false;
 
     get total() {
         return this.U_precoNegociado * this.U_quantity;
+    }
+
+    get qtdDisponivel() : number {
+        return this.U_quantity - this.entregue;
     }
 
     get totalCurrency() {
@@ -76,5 +83,9 @@ export class LinhaItem {
 
     get precoNegociadoCurrency() {
         return formatCurrency(this.U_precoNegociado, 'pt', 'R$');
+    }
+
+    get quantidadeEntregue() {
+        return this.produtoEntregueLoading ? "Carregando..." : this.entregue.toString();
     }
 }

@@ -3,7 +3,6 @@ import { BusinessPartnerService } from '../../service/business-partners.service'
 import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
-import { OrderSalesService } from '../../service/order-sales.service';
 import { AlertService } from '../../service/alert.service';
 import { BranchSelectComponent } from '../form/branch/branch-select.component';
 import { Router } from '@angular/router';
@@ -12,6 +11,10 @@ import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { formatCurrency } from "@angular/common"
 import * as moment from 'moment';
+import { OrderSalesService } from '../../service/document/order-sales.service';
+import { DocumentAngularSave } from '../../service/document/document-angular-save';
+import { QuotationService } from '../../service/document/quotation.service';
+import { Branch } from '../../model/branch';
 
 @Component({
   selector: 'app-document-statement',
@@ -30,6 +33,7 @@ export class DocumentStatementComponent implements OnInit {
   dtEntrega
   loading = false
   frete : number = 0
+  selectedBranch: Branch = null;
 
   @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
@@ -37,11 +41,13 @@ export class DocumentStatementComponent implements OnInit {
   tipoOperacaoOptions: Array<Option> = [new Option(9,"venda"), new Option(16,"venda com entrega futura")]
 
   constructor(private businesPartnerService : BusinessPartnerService,
+    private quotationService : QuotationService,
     private orderService : OrderSalesService,
     private config : ConfigService,
     private router : Router,
     private alertService : AlertService){
-  }
+
+    }
   
   ngOnInit(): void {
     
@@ -103,9 +109,10 @@ export class DocumentStatementComponent implements OnInit {
     return false
   }
 
-  selectBranch($event){
-    this.branchId = $event
-    this.changeOperacao()
+  selectBranch(branch: Branch){
+    this.branchId = branch.bplid;
+    this.selectedBranch = branch; 
+    this.changeOperacao();
   }
 
   selectBp($event){
@@ -115,9 +122,21 @@ export class DocumentStatementComponent implements OnInit {
     })
   }
 
+  setVehicleState() { 
+    if (this.tipoEnvio == 'ret') {
+      this.dtEntrega = moment().format('YYYY-MM-DD');
+      return this.selectedBranch?.prefState || '';
+    } else {
+      this.dtEntrega = null;
+      return null;
+    }
+  }
+  
   tipoEnvioChange($event){
     if($event instanceof RadioItem)
       this.tipoEnvio = $event.content
+
+    this.setVehicleState();
   }
 
   temFormaPagamento(){
@@ -132,17 +151,22 @@ export class DocumentStatementComponent implements OnInit {
     this.loading = true
     let subiscribers = Array<Observable<any>>();
 
-    this.tabelas().forEach(tabela => {
-      let order = new OrderSales()
+    let service : DocumentAngularSave = this.quotationService
+    
+    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales' && this.tipoEnvio == 'ret')
+      service = this.orderService
+
+    this.agruparPorGroupNum().forEach((itens,groupNum) => {
+      let order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
       order.BPL_IDAssignedToInvoice = this.branchId
-      order.DocumentLines = this.itens.filter(it => it.PriceList == tabela).map(it => it.getDocumentsLines(this.tipoOperacao))
+      order.DocumentLines = itens.map(it => it.getDocumentsLines(this.tipoOperacao))
       order.PaymentMethod = this.formaPagamento
-      order.PaymentGroupCode = this.itens.filter(it => it.PriceList == tabela).map(it => it.GroupNum)[0]
+      order.PaymentGroupCode = groupNum
       order.comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
-      subiscribers.push(this.orderService.save(order))
+      subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({ 
       next:result => {
@@ -178,15 +202,26 @@ export class DocumentStatementComponent implements OnInit {
       && this.itens?.length > 0
       && this.itens.filter(it => !it.GroupNum).length == 0
   }
+
+  agruparPorGroupNum(): Map<string, Item[]> {
+    return this.itens.reduce((map, item) => {
+        const group = item.GroupNum;
+        if (!map.has(group)) {
+            map.set(group, []);
+        }
+        map.get(group)?.push(item);
+        return map;
+    }, new Map<string, Item[]>());
+  }
 }
 
-export class OrderSales{
+export class PedidoVenda{
   CardCode: string
   DocNum: number
   DocDate: string
   DocTotal: number
   ItemCode
-  DocumentLines : Array<DocumentLines>
+  DocumentLines : Array<LinhasPedido>
   BPL_IDAssignedToInvoice : string
   DocDueDate : string = '2024-08-05'
   shipToCode : string
@@ -196,6 +231,7 @@ export class OrderSales{
   PaymentGroupCode : string
   comments : string
   Frete : number
+  VehicleState: string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
@@ -206,7 +242,7 @@ export class OrderSales{
   }
 } 
 
-export class DocumentLines{
+export class LinhasPedido{
   ItemCode
   Quantity
   PriceList
@@ -214,4 +250,7 @@ export class DocumentLines{
   DiscountPercent
   U_preco_negociado
   UnitPrice
+  ItemDescription
+  MeasureUnit
+  SalUnitMsr
 }

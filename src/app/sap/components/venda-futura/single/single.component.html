@@ -3,9 +3,12 @@
     <div class="card card-primary">
         <div class="card-header">
             <h3 class="card-title"><b>Detalhes da Venda Futura</b></h3>
-            <div class="card-tools">
-                <button (click)="openModal()" type="button" class="btn btn-warning btn-sm">
+            <div *ngIf="!loadingEntregas" class="card-tools float-right">
+                <button (click)="openModalRetirada()" type="button" class="btn btn-warning btn-sm mr-2">
                     Retirar
+                </button>
+                <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
+                    Troca
                 </button>
             </div>
         </div>
@@ -43,21 +46,29 @@
                         </app-tab>
 
                         <app-tab tabTitle="Boletos">
+                            <div *ngIf="loadingBoletos" class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
                             <app-table
+                                *ngIf="!loadingBoletos"
                                 [content]="boletos" 
                                 [definition]="boletosDefinition" 
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
-                        
+
                         <app-tab tabTitle="Entregas">
+                            <div *ngIf="loadingEntregas" class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
                             <app-table
+                                *ngIf="!loadingEntregas"
                                 [content]="entregas" 
                                 [definition]="entregasDefinition" 
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
-
+                        
                     </app-tabs>
                 </dd>
             </dl>
@@ -68,9 +79,16 @@
     </div>
 </section>
 
-<app-modal #retirada [title]="'Retirada de Materiais'">
+<app-modal #retirada [title]="'Retirada de Produtos'">
     <app-venda-futura-retirada 
         [vendaFutura]="selected" 
         (retirados)="closeModal($event)">
     </app-venda-futura-retirada>
+</app-modal>
+
+<app-modal #troca [title]="'Troca de Produtos'">
+    <app-venda-futura-troca 
+        [vendaFutura]="selected" 
+        (closeModal)="closeModal($event)">
+    </app-venda-futura-troca>
 </app-modal>

@@ -1,3 +1,4 @@
+import { ItemRetirada } from "./item-retirada"
 
 export class PedidoRetirada{
     docEntryVendaFutura : number
@@ -13,18 +14,5 @@ export class PedidoRetirada{
         this.docEntryVendaFutura = docEntryVendaFutura
         this.itensRetirada = itensRetirada
     
-    }
-}
-
-
-export class ItemRetirada{ 
-    itemCode: string; 
-    quantity: number
-    descricao : string
-
-    constructor(itemCode, quantity, descricao){
-        this.itemCode = itemCode
-        this.quantity = quantity
-        this.descricao = descricao
     }
 }

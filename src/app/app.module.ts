@@ -51,8 +51,7 @@ import { FileUploadComponent } from './shared/components/file-upload/file-upload
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
 import { FaturasService } from './sap/service/fatura/faturas.service';
-import { TableComponent } from './shared/components/table/table.component';
-import { SafeHtmlDirective } from './shared/directives/safe-html/safe-html.directive';
+
 import { ActionComponent } from './shared/components/action/action.component';
 import { CpfCnpjPipe } from './shared/directives/pipes/cpf-cnpj-pipe';
 import { MomentPipe } from './shared/directives/pipes/moment-pipe';
@@ -78,7 +77,6 @@ import { BranchService } from './sap/service/branch.service';
 import { StateSelectComponent } from './sap/components/form/select/state/state-select.component';
 import { FormaPagamentoSelectComponent } from './sap/components/form/select/forma-pagamento/forma-pagamento-select.component';
 import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
-import { OrderSalesService } from './sap/service/order-sales.service';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
 import { SalesPersonSearchComponent } from './sap/components/search/sales-person-search/sales-person-search.component';
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
@@ -103,7 +101,11 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
-
+import { OrderSalesService } from './sap/service/document/order-sales.service';
+import { QuotationService } from './sap/service/document/quotation.service';
+import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
+import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
+import { CalculadoraModule } from './calculadora-preco-venda/calculadora.module';
 
 
 registerLocaleData(localeBr);
@@ -116,7 +118,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   declarations: [
     CpfCnpjPipe,
     MomentPipe,
-    SafeHtmlDirective,
     AppComponent,
     HeaderComponent,
     MenuSidebarComponent,
@@ -134,7 +135,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CadastroComponent,
     EnderecoComponent,
     ReferenciaComponent,
-    SelectComponent,
     StateSelectComponent,
     CitySelectComponent,
     FileUploadComponent,
@@ -143,8 +143,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListaFaturaComponent,
     AutenticacaoFaturaComponent,
     RadioComponent,
-    TableComponent,
-    ActionComponent,
     DatasComponent,
     DocumentStatementComponent,
     ItensComponent,
@@ -173,17 +171,22 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RetiradaComponent,
     DocumentListSingleComponent,
     PedidosVendaStatementComponent,
+    DescontoComponent,
     TabsComponent,
-    TabComponent
+    TabComponent,
+    TrocaComponent
   ],
   imports: [
     NgxPaginationModule,
+    CalculadoraModule,
     BrowserModule,
+    BrowserAnimationsModule,
+
     FormsModule,
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
-    BrowserAnimationsModule,
+    
     AppRoutingModule,
     ToastrModule.forRoot({
       timeOut: 3000,
@@ -215,6 +218,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     BsModalService,
     ItemService,
     BranchService,
+    QuotationService,
     OrderSalesService,
     CondicaoPagamentoService,
     CotacaoService,

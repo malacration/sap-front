@@ -17,6 +17,9 @@ export class ItensComponent implements OnInit {
   @Input()
   geralLoading = false
 
+  @Input()
+  title = "Produtos"
+
   @Output()
   changeItens = new EventEmitter<Array<Item>>();
 
