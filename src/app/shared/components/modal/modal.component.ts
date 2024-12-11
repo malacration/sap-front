@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 
 @Component({
@@ -18,7 +18,7 @@ export class ModalComponent {
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
-  constructor(private modalService: BsModalService){
+  constructor(private modalService: BsModalService, private cdr: ChangeDetectorRef){
 
   }
 
@@ -34,7 +34,16 @@ export class ModalComponent {
   }
 
   closeModal() {
-    this.modalService.hide();
+    this.modalRef?.hide()
   }
+
+  ngAfterViewChecked(): void {
+    this.cdr.detectChanges();
+    const modalContent = document.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.scrollTop = modalContent.scrollHeight;
+    }
+  }
+  
 
 }

@@ -74,7 +74,6 @@ export class FaturaDefinition{
             {{value}} Complete
           </span>
     `
-    actionHtml = `<a class="btn btn-primary" (click)="selecionaFatura()"><i class="fas fa-eye"></i> Ver</a>`
 
     getFaturaDefinition() {
         return [

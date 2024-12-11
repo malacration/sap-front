@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ConfigService } from '../core/services/config.service';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-home',

@@ -53,8 +53,10 @@ export class DescontoComponent {
 
   get resultado() : number{
     let aux : number  = 0
-    if(this.tipoDesconto == 'percentual')
+    if(this.tipoDesconto == 'percentual'){
+      //TODO arrumar depois
       aux = this.valor*(1-(this.desconto/100))
+    }
     else
       aux = this.valor - this.desconto
       return Big(aux).toFixed(2, Big.roundHalfUp);

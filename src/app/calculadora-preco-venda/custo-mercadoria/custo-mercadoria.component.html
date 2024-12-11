@@ -1,0 +1,46 @@
+
+<br>
+<div class="card card-primary">
+    <div class="card-header">
+        <h3 class="card-title"><b>Calculadora</b> - <small>PAC00011 OX LEITE - SACO 40KG</small></h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="qtdPlanejada">Quantidade planejada</label>
+                    <input class="form-control" id="qtdPlanejada" (input)="changeQtdPlanejuada($event)" type="number" [(ngModel)]="qtdPlanejada">
+                </div>
+            </div>
+    
+            <div class="col">
+                <div class="form-group">
+                    <app-select 
+                        [options]="optionsReceitas"
+                        [label]="'Receita'"
+                        [initialSelect]="receitaSelected"
+                        (selectedOut)="selectReceita($event)">
+                    </app-select>
+                </div>
+            </div>
+        </div>
+        
+        
+            <div class="form-group">
+                <app-table 
+                    [content]="receitaSelected?.formula" 
+                    [definition]="definition" 
+                    (actionOutput)="action($event)">
+                </app-table>
+            </div>
+
+        <div>
+            <h5>Resumo</h5>
+            
+            <p><b>Valor total da receita: {{ resumo() }}</b></p>
+        </div>
+    </div>
+    <div *ngIf="false" class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+</div>
