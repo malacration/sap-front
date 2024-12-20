@@ -15,6 +15,13 @@ export class GerarPdfComponent {
   constructor(private pdfService: PdfService) {}
 
   gerarPdf() {
-    this.pdfService.gerarPdfDoElemento(this.pdfContent.nativeElement, 'venda-futura.pdf');
+    const pdfElement = this.pdfContent.nativeElement;
+  
+    const originalTransform = pdfElement.style.transform;
+    pdfElement.style.transform = 'none';
+  
+    this.pdfService.gerarPdfDoElemento(pdfElement, 'venda-futura.pdf');
+  
+    pdfElement.style.transform = originalTransform;
   }
 }

@@ -26,31 +26,19 @@
 
 .pdf-preview {
     border: 1px solid #ccc;
-    width: 794px; 
-    height: 1122px; 
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%; 
+    height: 80vh; 
+    overflow-y: auto;
     background: white;
-}
-
-.pdf-preview-content {
-    transform: scale(0.98); 
-    transform-origin: top left;
-    width: 100%;
-    height: 100%;
-}
-
-@media (max-width: 768px) {
-    .pdf-preview {
-        width: 100%;
-        height: auto;
-        overflow-y: auto;
-    }
-
+  }
+  
+  .pdf-preview-content {
+    width: 794px; 
+    margin: 0 auto; 
+  }
+  
+  @media (max-width: 768px) {
     .pdf-preview-content {
-        transform: scale(0.9); 
-        transform-origin: center top;
+      transform: scale(0.6); 
     }
-}
+  }

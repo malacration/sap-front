@@ -1,21 +1,26 @@
 import { Injectable } from '@angular/core';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PdfService {
-  constructor() {}
-
   gerarPdfDoElemento(element: HTMLElement, fileName: string) {
-    html2canvas(element, { scale: 2 }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = (canvas.height * pageWidth) / canvas.width;
+    const a4Width = 794; 
+    const a4Height = 1122; 
 
-      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+    const options = {
+      scale: 3, 
+      useCORS: true, 
+    };
+
+    html2canvas(element, options).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'px', [a4Width, a4Height]);
+
+      const margin = 20; 
+      pdf.addImage(imgData, 'PNG', margin, margin, a4Width - 2 * margin, a4Height - 2 * margin);
       pdf.save(fileName);
     });
   }
