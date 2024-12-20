@@ -1,88 +1,86 @@
 .pdf-container {
-  width: 794px;  
-  height: 1123px; 
-  background: #fff;
-  padding: 50px;
-  box-sizing: border-box;
   font-family: Arial, sans-serif;
-  font-size: 20px; 
+  color: #333;
+  width: 794px;
+  height: 1123px;
+  background: #fff;
+  padding: 30px;
+  box-sizing: border-box;
+  font-size: 16px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; 
+  align-items: center;
 }
 
 .header {
+  width: 100%;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 
   .logo {
-    max-height: 50px;
+    width: 250px;
+    height: auto;
   }
 }
 
 .title-container {
+  width: 100%;
   text-align: center;
-  margin: 20px 0;
+  margin-bottom: 20px;
 
   h1 {
-    background-color: #1ba13f; 
+    font-size: 32px;
+    background-color: #1ba13f;
     color: #fff;
-    display: inline-block;
-    padding: 5px 20px;
+    padding: 10px 20px;
     border-radius: 5px;
-    font-size: 18px;
-    text-transform: uppercase;
+    display: inline-block;
     margin: 0;
   }
 }
 
 .info-section {
+  width: 100%;
   margin-bottom: 20px;
 
   p {
-    margin: 2px 0;
-    font-size: 14px;
-
-    strong {
-      font-weight: bold;
-    }
+    margin: 4px 0;
+    font-size: 18px;
   }
 }
 
-.table-container {
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
   margin-bottom: 20px;
 
-  .product-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    font-size: 16px;
+    text-align: left;
+  }
 
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      font-size: 14px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f2f2f2;
-      font-weight: bold;
-    }
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
   }
 }
 
 .conditions {
-  margin-top: 20px;
+  width: 100%;
   background-color: #f9f9f9;
   border: 1px solid #ccd;
-  padding: 10px;
+  padding: 15px;
   border-radius: 5px;
+  font-size: 16px;
+  margin-bottom: 20px;
 
   h3 {
-    color: #008000; 
+    color: #008000;
     margin-top: 0;
-    margin-bottom: 5px;
-    font-size: 16px;
+    margin-bottom: 8px;
+    font-size: 18px;
   }
 
   ol {
@@ -91,33 +89,27 @@
 
     li {
       margin-bottom: 10px;
-      font-size: 14px;
       line-height: 1.4em;
     }
   }
 }
 
 .footer {
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  margin-top: 30px;
-  font-size: 14px;
+  font-size: 16px;
 
-  .footer-left {
-    p {
-      margin: 2px 0;
-    }
+  .footer-left, .footer-right {
+    width: 45%;
   }
 
   .footer-right {
     text-align: right;
 
-    p {
-      margin: 2px 0;
-    }
-
     .footer-logo {
-      max-height: 30px;
+      width: 120px;
+      height: auto;
       margin-top: 10px;
     }
   }
