@@ -85,7 +85,9 @@ export class VendaFuturaSingleComponent implements OnInit {
   }
   
   gerarPDF() {
-    this.gerarPdfComponent.gerarPdf();
+    const headContent = document.head.innerHTML;
+
+    this.gerarPdfComponent.gerarPdf(headContent);
   }
 
   action($event){
