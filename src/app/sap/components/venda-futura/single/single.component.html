@@ -10,6 +10,9 @@
                 <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
                     Troca
                 </button>
+                <button (click)="gerarPDF()" type="button" class="btn btn-primary btn-sm">
+                    Gerar PDF
+                </button>
             </div>
         </div>
         <div class="card-body">
@@ -92,3 +95,5 @@
         (closeModal)="closeModal($event)">
     </app-venda-futura-troca>
 </app-modal>
+
+<app-gerar-pdf [vendaFutura]="selected"></app-gerar-pdf>

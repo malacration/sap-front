@@ -104,6 +104,7 @@ import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 import { CalculadoraModule } from './calculadora-preco-venda/calculadora.module';
+import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 
 
 
@@ -166,6 +167,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ParceiroNegocioComponent,
     ParceiroNegocioSingleComponent,
     RetiradaComponent,
+    GerarPdfComponent,
     DocumentListSingleComponent,
     PedidosVendaStatementComponent,
     DescontoComponent,
