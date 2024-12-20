@@ -10,9 +10,9 @@
                 <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
                     Troca
                 </button>
-                <button (click)="gerarPDF()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
-                    Gerar PDF
-                </button>
+                <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
+                    Visualizar PDF
+                  </button>
             </div>
         </div>
         <div class="card-body">
@@ -96,4 +96,16 @@
     </app-venda-futura-troca>
 </app-modal>
 
-<app-gerar-pdf [vendaFutura]="selected"></app-gerar-pdf>
+<app-modal #previewModal [title]="'Preview do PDF'" style="width: 80%; max-width: 1200px;">
+    <div class="pdf-preview-container" style="height: 80vh;">
+      <div class="pdf-toolbar">
+        <button (click)="gerarPDF()" class="btn btn-success btn-sm">Gerar PDF</button>
+      </div>
+      <div class="pdf-preview" style="overflow: auto; border: 1px solid #ccc; height: calc(100% - 50px);">
+        <div class="pdf-preview-content" style="padding: 20px;">
+          <app-gerar-pdf [vendaFutura]="selected"></app-gerar-pdf>
+        </div>
+      </div>
+    </div>
+  </app-modal>
+  

@@ -43,6 +43,8 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   @ViewChild(GerarPdfComponent) gerarPdfComponent: GerarPdfComponent;
 
+  @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
+
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
@@ -78,6 +80,10 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.close.emit()
   }
 
+  abrirModalPreview() {
+    this.previewModal.openModal();
+  }
+  
   gerarPDF() {
     this.gerarPdfComponent.gerarPdf();
   }
