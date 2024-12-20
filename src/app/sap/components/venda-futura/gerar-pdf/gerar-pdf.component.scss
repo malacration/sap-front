@@ -1,116 +1,96 @@
 .pdf-container {
   font-family: Arial, sans-serif;
-  color: #333;
-  width: 794px;
-  height: 1123px;
-  background: #fff;
-  padding: 30px;
+  max-width: 794px; /* Largura de uma página A4 */
+  background-color: #fff;
+  padding: 20px;
   box-sizing: border-box;
-  font-size: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-}
+  margin: 0 auto;
 
-.header {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 20px;
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
 
-  .logo {
-    width: 250px;
-    height: auto;
-  }
-}
-
-.title-container {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 20px;
-
-  h1 {
-    font-size: 32px;
-    background-color: #1ba13f;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 5px;
-    display: inline-block;
-    margin: 0;
-  }
-}
-
-.info-section {
-  width: 100%;
-  margin-bottom: 20px;
-
-  p {
-    margin: 4px 0;
-    font-size: 18px;
-  }
-}
-
-.product-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-
-  th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    font-size: 16px;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
-}
-
-.conditions {
-  width: 100%;
-  background-color: #f9f9f9;
-  border: 1px solid #ccd;
-  padding: 15px;
-  border-radius: 5px;
-  font-size: 16px;
-  margin-bottom: 20px;
-
-  h3 {
-    color: #008000;
-    margin-top: 0;
-    margin-bottom: 8px;
-    font-size: 18px;
-  }
-
-  ol {
-    margin: 0;
-    padding-left: 20px;
-
-    li {
-      margin-bottom: 10px;
-      line-height: 1.4em;
+    .logo {
+      max-width: 150px;
+      height: auto;
     }
   }
-}
 
-.footer {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
+  .title-container {
+    text-align: center;
+    margin-bottom: 20px;
 
-  .footer-left, .footer-right {
-    width: 45%;
+    h1 {
+      font-size: 1.8rem;
+      color: #1ba13f;
+      margin: 0;
+    }
   }
 
-  .footer-right {
-    text-align: right;
+  .info-section {
+    margin-bottom: 20px;
+
+    p {
+      margin: 5px 0;
+      font-size: 1rem;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+      }
+
+      th {
+        background: #f2f2f2;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .conditions {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+
+    h3 {
+      color: #1ba13f;
+      margin-bottom: 10px;
+    }
+
+    ol {
+      padding-left: 20px;
+
+      li {
+        margin-bottom: 15px;
+      }
+    }
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .footer-left, .footer-right {
+      flex: 1;
+    }
 
     .footer-logo {
-      width: 120px;
+      max-width: 100px;
       height: auto;
-      margin-top: 10px;
     }
   }
 }
