@@ -38,6 +38,10 @@ export class VendaFutura {
         return this.U_valorFrete + this.totalProdutos
     }
 
+    get totalCurrencyContratoVenda() {
+        return formatCurrency(this.totalCurrency, 'pt', 'R$');
+    }
+
     get frete() {
         return formatCurrency(this.U_valorFrete, 'pt', 'R$');
     }

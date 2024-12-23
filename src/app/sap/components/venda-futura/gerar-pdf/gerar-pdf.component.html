@@ -12,7 +12,7 @@
   <div class="info-section">
     <p><strong>Nome:</strong> {{ vendaFutura?.U_cardName }}</p>
     <p><strong>Data:</strong> {{ vendaFutura?.dataCriacao }}</p>
-    <p><strong>Pagamento:</strong> {{ vendaFutura?.totalCurrency }}</p>
+    <p><strong>Pagamento:</strong> {{ vendaFutura?.totalCurrencyContratoVenda }}</p>
   </div>
 
   <div class="table-container">
@@ -68,10 +68,9 @@
 
   <div class="footer">
     <div class="footer-left">
-      <p>CNPJ/CPF: 028.384.856-88</p>
+      <p>CNPJ/CPF: {{ businessPartner?.CpfCnpjStr() }}</p>
     </div>
     <div class="footer-right">
       <p>ASSINATURA: __________________________</p>
     </div>
   </div>
-</div>

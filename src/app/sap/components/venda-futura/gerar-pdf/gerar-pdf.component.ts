@@ -1,6 +1,7 @@
 import { Component, Input, ElementRef, ViewChild } from '@angular/core';
 import { PdfService } from '../../../service/pdf.service';
 import { VendaFutura } from '../../../model/venda/venda-futura';
+import { BusinessPartner } from '../../../model/business-partner/business-partner';
 
 @Component({
   selector: 'app-gerar-pdf',
@@ -10,42 +11,37 @@ import { VendaFutura } from '../../../model/venda/venda-futura';
 export class GerarPdfComponent {
 
   @Input() vendaFutura: VendaFutura;
+  @Input() businessPartner: BusinessPartner;
   @ViewChild('pdfContent', { static: false }) pdfContent: ElementRef;
 
   constructor(private pdfService: PdfService) {}
 
-  gerarPdf(header) {
+  gerarPdf(header: string): void {
+    if (!this.pdfContent?.nativeElement) {
+      console.error('Elemento PDF content não encontrado.');
+      return;
+    }
 
-     // Pega o HTML do elemento referenciado pelo ViewChild
-     const contentHtml = this.pdfContent.nativeElement.outerHTML;
+    const contentHtml = this.pdfContent.nativeElement.outerHTML;
 
-     
-     // Abre uma nova aba/janela
-     const newWindow = window.open('', '_blank', 'width=600,height=400');
- 
-     // Escreve o conteúdo na nova aba/janela
-     newWindow.document.write(`
-       <!DOCTYPE html>
-       <html>
-         <head>
-           ${header}
-         </head>
-         <body>
-           ${contentHtml}
-         </body>
-       </html>
-     `);
- 
-     // Fecha o documento após a escrita
-     newWindow.document.close();
+    const newWindow = window.open('', '_blank', 'width=600,height=400');
+    if (!newWindow) {
+      console.error('Não foi possível abrir uma nova janela para exibir o PDF.');
+      return;
+    }
 
-    // const pdfElement = this.pdfContent.nativeElement;
-  
-    // const originalTransform = pdfElement.style.transform;
-    // pdfElement.style.transform = 'none';
-  
-    // this.pdfService.gerarPdfDoElemento(pdfElement, 'venda-futura.pdf');
-  
-    // pdfElement.style.transform = originalTransform;
+    newWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          ${header}
+        </head>
+        <body>
+          ${contentHtml}
+        </body>
+      </html>
+    `);
+
+    newWindow.document.close();
   }
 }
