@@ -99,12 +99,13 @@ import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.se
 import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
+import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
+import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { OrderSalesService } from './sap/service/document/order-sales.service';
 import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 import { CalculadoraModule } from './calculadora-preco-venda/calculadora.module';
-
 
 
 registerLocaleData(localeBr);
@@ -160,6 +161,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListComponent,
     CotacoesStatementComponent,
     PedidosVendaStatementComponent,
+    ManageRolesComponent,
+    AssignRoleComponent,
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,

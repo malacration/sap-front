@@ -14,6 +14,8 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
+import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
+import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CustoMecadoriaStatementComponent } from './calculadora-preco-venda/custo-mercadoria/custo-mercadoria.component';
 import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/formacao/formacao.component';
 
@@ -125,6 +127,28 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/forma
     ]
   },
   {
+    title: 'Administrador',
+    canActivate: [authGuard],
+    data: ["hidden","icon:fas fa-cog"],
+    path: 'roles',
+    children: [ 
+      {
+        path: 'manage-roles',
+        title: 'Roles',
+        data: ["icon:fas fa-users"],
+        canActivate: [authGuard],
+        component: ManageRolesComponent
+      },
+      {
+        path: 'assign-role',
+        title: 'Atribuicao',
+        data: ["icon:fas fa-user-check"],
+        canActivate: [authGuard],
+        component: AssignRoleComponent
+      },
+    ]
+  },
+  { 
     path: 'calculadora',
     title: 'Calculadora',
     data: ["hidden"],
@@ -134,7 +158,7 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/forma
     path: 'formacao-preco',
     title: 'Formação de preço',
     data: ["hidden"],
-    component: FormacaoPrecoStatementComponent
+    component : FormacaoPrecoStatementComponent
   },
   {
     path: '**',
