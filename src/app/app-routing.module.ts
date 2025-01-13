@@ -129,7 +129,7 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/forma
   {
     title: 'Administrador',
     canActivate: [authGuard],
-    data: ["icon:fas fa-cog"],
+    data: ["hidden","icon:fas fa-cog"],
     path: 'roles',
     children: [ 
       {
@@ -153,11 +153,12 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/forma
     title: 'Calculadora',
     data: ["hidden"],
     component: CustoMecadoriaStatementComponent
-   }
+  },
   {
     path: 'formacao-preco',
     title: 'Formação de preço',
     data: ["hidden"],
+    component : FormacaoPrecoStatementComponent
   },
   {
     path: '**',
