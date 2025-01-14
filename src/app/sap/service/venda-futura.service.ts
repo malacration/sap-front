@@ -17,21 +17,35 @@ export class VendaFuturaService{
     constructor(private config : ConfigService, private http : HttpClient){
         this.url = config.getHost()+"/contrato-venda-futura"
     }
+
+    get(id : string): Observable<VendaFutura> {
+      let url = this.url+"/"+id
+      return this.http.get<VendaFutura>(url).pipe(
+        map((venda) => {
+          return this.vendaFuturaAssing(venda);
+        })
+      );
+    }
     
-    get($event, allVendedores : boolean = false): Observable<Page<VendaFutura>> {
+    getAll(page, allVendedores : boolean = false): Observable<Page<VendaFutura>> {
       let url = allVendedores ? this.url+"/all" : this.url
+      url = url+"?page="+page
       return this.http.get<Page<VendaFutura>>(url).pipe(
         map((page) => {
-          page.content = page.content.map((ff) => {
-            const vendaFutura = Object.assign(new VendaFutura(), ff);
-            vendaFutura.AR_CF_LINHACollection = vendaFutura.AR_CF_LINHACollection.map(item => 
-              Object.assign(new LinhaItem(), item)
-            );
-            return vendaFutura;
+          page.content = page.content.map((venda) => {
+            return this.vendaFuturaAssing(venda);
           });
           return page;
         })
       );
+    }
+
+    private vendaFuturaAssing(it) : VendaFutura{
+      const vendaFutura = Object.assign(new VendaFutura(), it);
+      vendaFutura.AR_CF_LINHACollection = vendaFutura.AR_CF_LINHACollection.map(item => 
+        Object.assign(new LinhaItem(), item)
+      );
+      return vendaFutura
     }
 
     trocar(pedido : PedidoTroca) : Observable<any> {
