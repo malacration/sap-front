@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { Item } from '../../../model/item';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { formatCurrency } from '@angular/common';
 import Big from 'big.js';
@@ -51,23 +50,26 @@ export class DescontoComponent {
     return formatCurrency(this.resultado, 'pt', 'R$');
   }
 
-  get resultado() : number{
-    let aux : number  = 0
+  get resultado() : Big{
+    let aux : Big = Big(1)
     if(this.tipoDesconto == 'percentual'){
       //TODO arrumar depois
-      aux = this.valor*(1-(this.desconto/100))
+      aux = Big(this.valor).times((1-(this.desconto/100)))
     }
-    else
+    else{
       aux = this.valor - this.desconto
-      return Big(aux).toFixed(2, Big.roundHalfUp);
+    }  
+    return Big(aux).toFixed(4, Big.roundHalfUp);
   }
 
   //Esse valor e o percentual que deve ser atribuido ao preco
-  get percentual(){
-    return Big(this.resultado).div(this.valor).toFixed(4, Big.roundHalfUp)
+  get percentual() : Big{
+    console.log(this.resultado,"resultado")
+    return Big(this.resultado).div(Big(this.valor).toFixed(6, Big.roundHalfUp))
   }
 
-  get porcentagemDesconto(){
+  get porcentagemDesconto() : Big{
+    console.log(this.percentual,"percentual")
     return Big(1).minus(this.percentual).times(100).toFixed(4, Big.roundHalfUp)
   }
 

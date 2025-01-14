@@ -4,6 +4,7 @@ import { Action, ActionReturn } from "../../../shared/components/action/action.m
 import { PedidoRetirada } from "./pedido-retirada";
 import { RouteLink } from "../route-link";
 import { ItemRetirada } from "./item-retirada";
+import { deprecate } from "util";
 
 
 
@@ -35,11 +36,14 @@ export class VendaFutura {
     }
 
     get totalCurrency() {
-        return this.U_valorFrete + this.totalProdutos
+        return formatCurrency(this.U_valorFrete + this.totalProdutos, 'pt', 'R$');
     }
 
+    /**
+    * @deprecated The method should not be used use totalCurrency em vez disso
+    */
     get totalCurrencyContratoVenda() {
-        return formatCurrency(this.totalCurrency, 'pt', 'R$');
+        return this.totalCurrency
     }
 
     get frete() {
