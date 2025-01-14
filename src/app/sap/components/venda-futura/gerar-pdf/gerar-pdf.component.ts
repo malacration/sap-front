@@ -14,8 +14,6 @@ export class GerarPdfComponent {
   @Input() businessPartner: BusinessPartner;
   @ViewChild('pdfContent', { static: false }) pdfContent: ElementRef;
 
-  constructor(private pdfService: PdfService) {}
-
   gerarPdf(header: string): void {
     if (!this.pdfContent?.nativeElement) {
       console.error('Elemento PDF content não encontrado.');
