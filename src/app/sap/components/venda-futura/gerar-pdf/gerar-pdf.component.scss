@@ -1,0 +1,115 @@
+.pdf-container {
+  font-family: Arial, sans-serif;
+  width: 794px; 
+  height: auto; 
+  background-color: #fff;
+  padding: 20px 40px; 
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  line-height: 1.5; 
+}
+
+.pdf-container .info-section p,
+.pdf-container .table-container th,
+.pdf-container .table-container td,
+.pdf-container .conditions ol li {
+  margin-bottom: 10px; 
+}
+
+.pdf-container .table-container th,
+.pdf-container .table-container td {
+  padding: 12px; 
+  font-size: 0.9rem; 
+}
+
+.pdf-container .conditions ol li {
+  margin-bottom: 20px; 
+}
+
+  .header {
+    text-align: center;
+    margin-bottom: 20px;
+
+    .logo {
+      max-width: 150px;
+      height: auto;
+    }
+  }
+
+  .title-container {
+    text-align: center;
+    margin-bottom: 20px;
+
+    h1 {
+      font-size: 1.8rem;
+      color: #1ba13f;
+      margin: 0;
+    }
+  }
+
+  .info-section {
+    margin-bottom: 20px;
+
+    p {
+      margin: 5px 0;
+      font-size: 1rem;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+      }
+
+      th {
+        background: #f2f2f2;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .conditions {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+
+    h3 {
+      color: #1ba13f;
+      margin-bottom: 10px;
+    }
+
+    ol {
+      padding-left: 20px;
+
+      li {
+        margin-bottom: 15px;
+      }
+    }
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+
+    .footer-left, .footer-right {
+      flex: 1;
+    }
+
+    .footer-logo {
+      max-width: 100px;
+      height: auto;
+    }
+  }

@@ -5,6 +5,7 @@ import { Column } from '../../../../shared/components/table/column.model';
 import { FutureDeliverySalesService } from '../../../service/FutureDeliverySales.service';
 import {VendaFutura } from '../../../model/venda/venda-futura';
 import { DocumentLines, FutureDeliverySales } from '../../../model/markting/future-delivery-sales';
+import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
 
 
 
@@ -40,6 +41,10 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   @ViewChild('troca', {static: true}) trocaModal: ModalComponent;
 
+  @ViewChild(GerarPdfComponent) gerarPdfComponent: GerarPdfComponent;
+
+  @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
+
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
@@ -73,6 +78,15 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   voltar(){
     this.close.emit()
+  }
+
+  abrirModalPreview() {
+    this.previewModal.openModal();
+  }
+  
+  gerarPDF() {
+    const headContent = document.head.innerHTML;
+    this.gerarPdfComponent.gerarPdf(headContent);
   }
 
   action($event){
