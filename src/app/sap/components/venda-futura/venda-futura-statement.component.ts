@@ -1,8 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthService } from '../../../shared/service/auth.service';
 import { Page } from '../../model/page.model';
-import { DocumentService } from '../marketing-document/core/documento.service';
-import { CotacaoService } from '../../service/document/cotacao.service';
 import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { VendaFuturaService } from '../../service/venda-futura.service';
@@ -47,6 +45,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.pageChange(0)
+
     this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, "id", id => {
       if(id) {
         this.service.get(id).subscribe(it => {

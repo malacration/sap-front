@@ -1,0 +1,76 @@
+<div class="pdf-container" #pdfContent>
+  <div class="header">
+    <a href="/" class="navbar-brand">
+      <img src="logo.png" alt="Logo" class="logo">
+    </a>
+  </div>
+
+  <div class="title-container">
+    <h1>CONTROLE DE PEDIDO</h1>
+  </div>
+
+  <div class="info-section">
+    <p><strong>Nome:</strong> {{ vendaFutura?.U_cardName }}</p>
+    <p><strong>Data:</strong> {{ vendaFutura?.dataCriacao }}</p>
+    <p><strong>Pagamento:</strong> {{ vendaFutura?.totalCurrencyContratoVenda }}</p>
+  </div>
+
+  <div class="table-container">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Descrição</th>
+          <th>Quantidade</th>
+          <th>Preço Negociado</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let prod of vendaFutura?.AR_CF_LINHACollection">
+          <td>{{ prod.U_description }}</td>
+          <td>{{ prod.U_quantity }}</td>
+          <td>{{ prod.precoNegociadoCurrency }}</td>
+          <td>{{ prod.totalCurrency }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="conditions">
+    <h3>Cláusulas e condições:</h3>
+    <ol>
+      <li>
+        Este Pedido tem por objeto a venda de nutrição animal, na modalidade futura,
+        conforme as especificações acima, pelo qual o VENDEDOR (Sustennutri Nutrição
+        Animal Ltda CNPJ 09.054.087/0001-54) realiza ao COMPRADOR a venda antecipada
+        do Produto, para posterior entrega, que será realizada no seguinte:
+        <br><br>
+        Endereço: __________________________________ Nº: ____________<br>
+        Bairro: ______________________, Cidade: _____________________
+      </li>
+      <li>
+        O prazo máximo de entrega do Produto será de 180 (cento e oitenta) dias, a
+        partir da data de assinatura deste Pedido, limitado ao ano vigente da assinatura
+        deste instrumento. 2.O COMPRADOR formalizará o pedido de entrega do Produto, e a entrega será
+        realizada no prazo de até 10 (dez) dias da data da solicitação de entrega. 3. Caso o COMPRADOR manifeste interesse de alterar o Produto adquirido, terá
+        o prazo de 30 (trinta) dias para informar ao VENDEDOR qual o Produto a ser
+        entregue, sempre observando que o prazo de 180 (cento e oitenta) dias para
+        entrega do Produto, previsto na Cláusula 2, não poderá ser prorrogado sob
+        hipótese alguma. 4.O inadimplemento, total ou parcial, quanto ao pagamento do preço do Produto,
+        sujeitará o COMPRADOR, independentemente de notificação ou interpelação, à
+        multa de 2% (dois por cento) sobre o valor inadimplido, correção monetária e
+        juros moratórios de 1% (um por cento) ao mês, calculados pro rata die, até o
+        efetivo pagamento. 5. Será observada a legislação quanto às retenções e/ou descontos tributários.
+        6.Este Pedido é firmado em caráter irrevogável e irretratável.
+      </li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">
+      <p>CNPJ/CPF: {{ businessPartner?.CpfCnpjStr() }}</p>
+    </div>
+    <div class="footer-right">
+      <p>ASSINATURA: __________________________</p>
+    </div>
+  </div>

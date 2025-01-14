@@ -10,6 +10,9 @@
                 <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
                     Troca
                 </button>
+                <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
+                    Visualizar PDF
+                  </button>
             </div>
         </div>
         <div class="card-body">
@@ -91,4 +94,20 @@
         [vendaFutura]="selected" 
         (closeModal)="closeModal($event)">
     </app-venda-futura-troca>
+</app-modal>
+
+<app-modal 
+  #previewModal 
+  [title]="'Preview do PDF'" 
+  style="width: 90%; max-width: 1400px;">
+  <div class="pdf-preview-container" style="height: 80vh; padding: 10px;">
+    <div class="pdf-toolbar">
+      <button (click)="gerarPDF()" class="btn btn-success btn-sm">Gerar PDF</button>
+    </div>
+    <div class="pdf-preview" style="overflow-y: auto; height: calc(100% - 50px);">
+      <div class="pdf-preview-content">
+        <app-gerar-pdf [vendaFutura]="selected"></app-gerar-pdf>
+      </div>
+    </div>
+  </div>
 </app-modal>
