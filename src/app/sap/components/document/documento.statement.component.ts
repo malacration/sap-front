@@ -163,9 +163,12 @@ export class DocumentStatementComponent implements OnInit {
       order.DocumentLines = itens.map(it => it.getDocumentsLines(this.tipoOperacao))
       order.PaymentMethod = this.formaPagamento
       order.PaymentGroupCode = groupNum
-      order.comments = this.observacao
+      order.Comments = this.observacao
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
+      order.TaxExtension = {
+        Incoterms: this.tipoEnvio == 'ret' ? 0 : 1
+    };
       subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({ 
@@ -222,6 +225,7 @@ export class PedidoVenda{
   DocTotal: number
   ItemCode
   DocumentLines : Array<LinhasPedido>
+  TaxExtension : TaxExtension
   BPL_IDAssignedToInvoice : string
   DocDueDate : string = '2024-08-05'
   shipToCode : string
@@ -229,7 +233,7 @@ export class PedidoVenda{
   PaymentMethod : string
   //condicao pagamento
   PaymentGroupCode : string
-  comments : string
+  Comments : string
   Frete : number
   VehicleState: string
 
@@ -253,4 +257,8 @@ export class LinhasPedido{
   ItemDescription
   MeasureUnit
   SalUnitMsr
+}
+
+export class TaxExtension{
+  Incoterms: number
 }
