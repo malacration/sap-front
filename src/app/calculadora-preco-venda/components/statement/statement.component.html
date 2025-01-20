@@ -1,0 +1,28 @@
+
+<br>
+<div class="card card-primary" *ngIf="analiseSelected == null">
+    <div class="card-header">
+        <h3 class="card-title">Análises</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            lista de análises salvas
+        </div>
+        <div class="row">
+            <div class="form-group">
+                <button (click)="criarAnalise()" class="btn btn-primary">Criar Análise</button>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="false" class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+</div>
+
+
+<selecao-produto-calc *ngIf="isSelectProduto()" (selecaoProdutos)="selecaoProdutos($event)">
+    
+</selecao-produto-calc>
+
+
+<formacao-preco *ngIf="!isSelectProduto() && analiseSelected" [produtos]="analiseSelected?.produtos"></formacao-preco>

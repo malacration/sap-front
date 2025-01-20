@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Column } from '../../shared/components/table/column.model';
-import { Option } from '../../sap/model/form/option';
+import { Column } from '../../../shared/components/table/column.model';
+import { Option } from '../../../sap/model/form/option';
 import { formatCurrency } from '@angular/common';
 
 @Component({

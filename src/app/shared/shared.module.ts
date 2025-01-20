@@ -13,8 +13,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { SafeHtmlDirective } from './directives/safe-html/safe-html.directive';
 import { SelectComponent } from '../sap/components/form/select/select.component';
+import { ParameterService } from './service/parameter.service';
+import { AuthService } from './service/auth.service';
 
 @NgModule({
+  providers: [
+    ParameterService,
+    AuthService,
+  ],
   declarations: [
     PageNotFoundComponent, 
     WebviewDirective,

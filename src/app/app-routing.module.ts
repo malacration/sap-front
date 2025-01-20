@@ -16,8 +16,10 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
-import { CustoMecadoriaStatementComponent } from './calculadora-preco-venda/custo-mercadoria/custo-mercadoria.component';
-import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/formacao/formacao.component';
+import { CustoMecadoriaStatementComponent } from './calculadora-preco-venda/components/custo-mercadoria/custo-mercadoria.component';
+import { CalculadoraStatementComponent } from './calculadora-preco-venda/components/statement/statement.component';
+import { SelecaoProdutoComponent } from './calculadora-preco-venda/components/selecao-produto/selecao-produto.component';
+import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/components/formacao/formacao.component';
 
  let routes: Routes = [
   {
@@ -148,24 +150,41 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/forma
       },
     ]
   },
-  { 
-    path: 'calculadora',
-    title: 'Calculadora',
-    data: ["hidden"],
-    component: CustoMecadoriaStatementComponent
-  },
   {
-    path: 'formacao-preco',
-    title: 'Formação de preço',
-    data: ["hidden"],
-    component : FormacaoPrecoStatementComponent
+    title: 'Calculadora',
+    path: 'calculadora-module',
+    // data: ["hidden"],
+    children: [ 
+
+      {
+        path: 'statment-calc',
+        title: 'Statment',
+        component: CalculadoraStatementComponent,
+      },
+
+      {
+        path: 'selecao-produto-calc',
+        title: 'Selecao Produto',
+        component : SelecaoProdutoComponent
+      },
+      { 
+        path: 'calculadora',
+        title: 'Custo Mercadoria',
+        component: CustoMecadoriaStatementComponent
+      },
+      {
+        path: 'formacao-preco',
+        title: 'Formação de preço',
+        component : FormacaoPrecoStatementComponent
+      },
+    ]
   },
   {
     path: '**',
     title: 'Não encontrado',
     data: ["hidden"],
     component: PageNotFoundComponent
-  },
+  }
 ];
 
 @NgModule({
