@@ -168,7 +168,7 @@ export class DocumentStatementComponent implements OnInit {
       order.Frete = this.frete
       order.TaxExtension = {
         VehicleState: this.setVehicleState(),
-        Incoterms: this.tipoEnvio == 'ret' ? 0 : 1
+        Incoterms: this.tipoEnvio == 'ret' ? 9 : 1
       };
       subiscribers.push(service.save(order))
     })
