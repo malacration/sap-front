@@ -32,7 +32,6 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
 
 
 
-import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertService } from './sap/service/alert.service';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
@@ -81,7 +80,6 @@ import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.servi
 import { SalesPersonSearchComponent } from './sap/components/search/sales-person-search/sales-person-search.component';
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
 import { LoginComponent } from './shared/components/login/login.component';
-import { AuthService } from './shared/service/auth.service';
 import { ListComponent } from './sap/components/marketing-document/core/list/list.component';
 import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
 import { DocumentCoreComponent } from './sap/components/marketing-document/core/document-core.component';
@@ -106,7 +104,6 @@ import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 import { CalculadoraModule } from './calculadora-preco-venda/calculadora.module';
-import { ParameterService } from './sap/service/parameter.service';
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 
 
@@ -131,7 +128,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RomaneioComponent,
     RomaneioFazendaInsumoComponent,
     TransferenciaClientesComponent,
-    PaginacaoComponent,
     FilterNumeroNfComponent,
     FilterBusinessPlaceComponent,
     CadastroComponent,
@@ -148,7 +144,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DatasComponent,
     DocumentStatementComponent,
     ItensComponent,
-    ModalComponent,
     ModalSelectComponent,
     BusinesPartnerSearchComponent,
     SearchComponent,
@@ -217,7 +212,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CityService,
     BusinessPartnerService,
     OneTimePasswordService,
-    ParameterService,
     DownPaymentService,
     BsModalService,
     ItemService,
@@ -227,7 +221,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CondicaoPagamentoService,
     CotacaoService,
     PedidosVendaService,
-    AuthService,
     CurrencyPipe,
     FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },

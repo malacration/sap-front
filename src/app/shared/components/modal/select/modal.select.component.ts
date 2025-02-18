@@ -2,7 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild }
 import { ModalComponent } from '../../modal/modal.component';
 import { ActionReturn } from '../../action/action.model';
 import { Column } from '../../table/column.model';
-import { PaginacaoComponent } from '../../../../sap/components/paginacao/paginacao.component';
+import { PaginacaoComponent } from '../../paginacao/paginacao.component';
 import { Page } from '../../../../sap/model/page.model';
 
 

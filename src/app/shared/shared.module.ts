@@ -13,8 +13,18 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { SafeHtmlDirective } from './directives/safe-html/safe-html.directive';
 import { SelectComponent } from '../sap/components/form/select/select.component';
+import { ParameterService } from './service/parameter.service';
+import { AuthService } from './service/auth.service';
+import { PercentageDirective } from './directives/percentage.directive';
+import { CurrencyDirective } from './directives/curency.directive copy';
+import { PaginacaoComponent } from './components/paginacao/paginacao.component';
+import { ModalComponent } from './components/modal/modal.component';
 
 @NgModule({
+  providers: [
+    ParameterService,
+    AuthService,
+  ],
   declarations: [
     PageNotFoundComponent, 
     WebviewDirective,
@@ -22,6 +32,10 @@ import { SelectComponent } from '../sap/components/form/select/select.component'
     ActionComponent,
     SafeHtmlDirective,
     SelectComponent,
+    PercentageDirective,
+    CurrencyDirective,
+    PaginacaoComponent,
+    ModalComponent
   ],
   imports: [
     CommonModule, 
@@ -40,6 +54,10 @@ import { SelectComponent } from '../sap/components/form/select/select.component'
     TableComponent,
     CommonModule,
     SelectComponent,
+    PercentageDirective,
+    CurrencyDirective,
+    PaginacaoComponent,
+    ModalComponent
   ]
 })
 export class SharedModule {}
