@@ -152,32 +152,8 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/compo
   },
   {
     title: 'Calculadora',
-    path: 'calculadora-module',
-    // data: ["hidden"],
-    children: [ 
-
-      {
-        path: 'statment-calc',
-        title: 'Statment',
-        component: CalculadoraStatementComponent,
-      },
-
-      {
-        path: 'selecao-produto-calc',
-        title: 'Selecao Produto',
-        component : SelecaoProdutoComponent
-      },
-      { 
-        path: 'calculadora',
-        title: 'Custo Mercadoria',
-        component: CustoMecadoriaStatementComponent
-      },
-      {
-        path: 'formacao-preco',
-        title: 'Formação de preço',
-        component : FormacaoPrecoStatementComponent
-      },
-    ]
+    path: 'statment-calc',
+    component: CalculadoraStatementComponent,
   },
   {
     path: '**',

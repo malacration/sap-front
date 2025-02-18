@@ -1,5 +1,5 @@
 <div id="tableCard">
-  <div class="table-responsive tableCard">
+  <div class="table-responsive tableCard scrolls">
     <table class="table table-striped table-bordered">
       <thead class="thead-light">
         <tr>
@@ -12,10 +12,28 @@
           <td *ngFor="let def of definition" scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
             <div *ngIf="renderContent(item, def)" [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
             <div *ngIf="isRouterLink(item,def)">
-              <a [routerLink]="getValue(item, def)?.path">{{getValue(item, def)?.label}}</a>
+              <a [routerLink]="getValue(item, def)?.path" [queryParams]="getValue(item, def)?.params">
+                {{getValue(item, def)?.label}}</a>
             </div>
             <div *ngIf="isEditable(def)">
-              <input type="text" [formControl]="formControlFactory(item,def)" (blur)="onInputBlur(item,def)">
+              <input *ngIf="isPercent(def)"
+                [attr.size]="getInputSize(item, def)" 
+                class="table-input"
+                app-percentage
+                type="text"
+                [formControl]="formControlFactory(item,def)"/>
+              <input *ngIf="isCurrency(def)"
+                [attr.size]="getInputSize(item, def)"
+                class="table-input"
+                app-currency
+                type="text"
+                [formControl]="formControlFactory(item,def)"/>
+              <input *ngIf="isNormalEditable(def)"
+                [attr.size]="getInputSize(item, def)"
+                class="table-input"
+                type="text"
+                [formControl]="formControlFactory(item,def)" 
+                (blur)="onInputBlur(item,def)" />
             </div>
           </td>
           <td *ngIf="item.getActions">

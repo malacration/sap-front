@@ -15,6 +15,10 @@ import { SafeHtmlDirective } from './directives/safe-html/safe-html.directive';
 import { SelectComponent } from '../sap/components/form/select/select.component';
 import { ParameterService } from './service/parameter.service';
 import { AuthService } from './service/auth.service';
+import { PercentageDirective } from './directives/percentage.directive';
+import { CurrencyDirective } from './directives/curency.directive copy';
+import { PaginacaoComponent } from './components/paginacao/paginacao.component';
+import { ModalComponent } from './components/modal/modal.component';
 
 @NgModule({
   providers: [
@@ -28,6 +32,10 @@ import { AuthService } from './service/auth.service';
     ActionComponent,
     SafeHtmlDirective,
     SelectComponent,
+    PercentageDirective,
+    CurrencyDirective,
+    PaginacaoComponent,
+    ModalComponent
   ],
   imports: [
     CommonModule, 
@@ -46,6 +54,10 @@ import { AuthService } from './service/auth.service';
     TableComponent,
     CommonModule,
     SelectComponent,
+    PercentageDirective,
+    CurrencyDirective,
+    PaginacaoComponent,
+    ModalComponent
   ]
 })
 export class SharedModule {}

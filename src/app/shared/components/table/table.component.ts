@@ -19,10 +19,18 @@ export class TableComponent implements OnInit {
   @Input()
   definition : Array<Column> = new Array()
 
+
+  @Input()
+  editableDynamic : boolean = false
+
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
+  formControlList : Map<String,FormControl> = new Map()
+
   tableColumns : any
+
+
 
   constructor(private elementRef: ElementRef) {}
 
@@ -49,8 +57,6 @@ export class TableComponent implements OnInit {
         // We set tableWidth to pageWidth - scrollbarWidth (10 in my project)
         tableWidth = pageWidth - 10;
       }
-      // Then we update the --table-width variable:
-      document.querySelector('body').style.cssText = '--table-width: ' + tableWidth + 'px';
     }
   }
 
@@ -63,7 +69,7 @@ export class TableComponent implements OnInit {
 
     if(definition.html){
       return Handlebars.compile(definition.html)({ 'value' : value})
-    }else if (definition.property.endsWith("Currency") && typeof value === 'number') {
+    }else if (definition.property.endsWith("Currency") && (typeof value == 'number')) {
       return formatCurrency(value, 'pt', 'R$');
     }
     return value
@@ -77,18 +83,39 @@ export class TableComponent implements OnInit {
     return definition.property.endsWith("Editable")
   }
 
+  isPercent(definition : Column) : boolean{
+    return definition.property.endsWith("PercentEditable")
+  }
+
+  isCurrency(definition : Column) : boolean{
+    return definition.property.endsWith("CurrencyEditable")
+  }
+
+  isNormalEditable(def) : boolean{
+    return !this.isPercent(def) && !this.isCurrency(def)
+  }
+
   getValue(item : any, definition : Column) : any{
     return typeof item[definition.property] === 'function' ? item[definition.property]() : item[definition.property]
   }
 
+  getInputSize(item: any, def: any): number {
+    if(!this.editableDynamic)
+      return null
+    const value = this.formControlFactory(item, def).value?.toString() || "";
+    return Math.max(value.length, 4)+2; // Pelo menos 4 caracteres
+  }
+
   
   formControlFactory(item : any, definition : Column) : FormControl{
-    let formControl = new FormControl(this.getValue(item,definition))
-    formControl.valueChanges.subscribe(value => {
-      this.processInputChange(item,definition,value);
-    });
-
-    return formControl
+    let key = "formControlFactory"+definition.property
+    if(item[key] == null || item[key] == undefined) {
+      item[key] = new FormControl(this.getValue(item,definition))
+      item[key].valueChanges.subscribe(value => {
+        this.processInputChange(item,definition,value);
+      });
+    }
+    return item[key]
   }
 
   onInputBlur(item : any, definition : Column){
@@ -96,7 +123,7 @@ export class TableComponent implements OnInit {
       item[definition.property+"Blur"]()
   }
 
-  processInputChange(item : any, definition : Column, value: string): void {
+  processInputChange(item : any, definition : Column, value: any): void {
     typeof item[definition.property] === 'function' ? item[definition.property](value) : item[definition.property] = value
   }
   

@@ -1,23 +1,30 @@
-
-<br>
 <div class="card card-primary">
     <div class="card-header">
         <h3 class="card-title">Selecione</h3>
     </div>
     <div class="card-body">
-        <div class="row">
-            Botao para buscar produtos
-        </div>
-        <div class="row">
-            lista de produtos selecionados
-        </div>
-        <div class="row">
-            <div class="form-group">
-                <button (click)="selecionaTodosProdutos()" class="btn btn-primary">Selecionar Todos Produtos</button>
+        <div class="form-group">
+            <div class="row">
+                <label class="col-auto col-form-label">De</label>
+                <div class="col-1">
+                    <input class="form-control" [(ngModel)]="start">
+                </div>
+                <label class="col-auto col-form-label">Ate</label>
+                <div class="col-1">
+                    <input class="form-control" [(ngModel)]="end">
+                </div>
+                <div>
+                    <button (click)="selecionaTodosProdutos()" class="btn btn-primary">Selecionar</button>
+                </div>
             </div>
         </div>
     </div>
-    <div *ngIf="false" class="overlay">
-        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    <div *ngIf="loading" class="overlay d-flex flex-column align-items-center justify-content-center">
+        <div>
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+        <div class="mt-2">
+            Essa operação pode levar vários minutos | Tempo: {{ formatTime() }}
+        </div>
     </div>
 </div>

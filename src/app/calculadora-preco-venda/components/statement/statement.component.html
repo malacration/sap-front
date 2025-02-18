@@ -1,13 +1,16 @@
-
-<br>
 <div class="card card-primary" *ngIf="analiseSelected == null">
     <div class="card-header">
         <h3 class="card-title">Análises</h3>
     </div>
     <div class="card-body">
-        <div class="row">
-            lista de análises salvas
+        <h5>Relatorios Salvos</h5>
+        <div *ngFor="let it of relatoriosSalvos">
+            <div class="form-group">
+                <button (click)="carregaAnalise(it)" class="btn btn-primary">{{it}} || Carregar</button>
+                <button (click)="excluirAnalise(it)" class="btn btn-danger">Excluir</button>
+            </div>
         </div>
+        <hr>
         <div class="row">
             <div class="form-group">
                 <button (click)="criarAnalise()" class="btn btn-primary">Criar Análise</button>
@@ -20,9 +23,11 @@
 </div>
 
 
-<selecao-produto-calc *ngIf="isSelectProduto()" (selecaoProdutos)="selecaoProdutos($event)">
-    
-</selecao-produto-calc>
+<selecao-produto-calc *ngIf="isSelectProduto()" (selecaoProdutos)="selecaoProdutos($event)"></selecao-produto-calc>
 
+<formacao-preco *ngIf="isFormacaoPreco()" [analise]="analiseSelected"></formacao-preco>
 
-<formacao-preco *ngIf="!isSelectProduto() && analiseSelected" [produtos]="analiseSelected?.produtos"></formacao-preco>
+<custo-mercadoria *ngIf="isCustoMercadoria()" 
+    (voltarEvnt)="custoMercadoriaVoltar()" 
+    [receita]="produtoSelecionado">
+</custo-mercadoria>

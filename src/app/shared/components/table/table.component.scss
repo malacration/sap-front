@@ -18,4 +18,16 @@
 .app-action{
     margin-right: 5px;
 }
-  
+
+.scrolls{
+  max-height: 80vh;
+  overflow-x: scroll;
+}
+
+.table-input {
+  text-align: right;
+}
+
+td{
+  padding: 0.4rem;
+}

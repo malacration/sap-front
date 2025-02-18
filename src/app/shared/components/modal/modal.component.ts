@@ -10,16 +10,18 @@ export class ModalComponent {
   
   @Input()
   show = false
+  
   @Input()
   classeModal : string = undefined
 
   modalRef?: BsModalRef;
+
+  @Input() modalSize: 'sm' | 'lg' | 'xl' = 'xl';
   
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
   constructor(private modalService: BsModalService, private cdr: ChangeDetectorRef){
-
   }
 
   @Input()
@@ -28,8 +30,8 @@ export class ModalComponent {
   @ViewChild('template') template;
  
   openModal() {
-    this.modalRef = this.modalService.show(this.template,{
-      class: this.classeModal
+    this.modalRef = this.modalService.show(this.template, {
+      class: `modal-dialog modal-${this.modalSize}`
     });
   }
 
@@ -44,6 +46,4 @@ export class ModalComponent {
       modalContent.scrollTop = modalContent.scrollHeight;
     }
   }
-  
-
 }

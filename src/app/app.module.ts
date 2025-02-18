@@ -32,7 +32,6 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
 
 
 
-import { PaginacaoComponent } from './sap/components/paginacao/paginacao.component';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertService } from './sap/service/alert.service';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
@@ -129,7 +128,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RomaneioComponent,
     RomaneioFazendaInsumoComponent,
     TransferenciaClientesComponent,
-    PaginacaoComponent,
     FilterNumeroNfComponent,
     FilterBusinessPlaceComponent,
     CadastroComponent,
@@ -146,7 +144,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DatasComponent,
     DocumentStatementComponent,
     ItensComponent,
-    ModalComponent,
     ModalSelectComponent,
     BusinesPartnerSearchComponent,
     SearchComponent,
