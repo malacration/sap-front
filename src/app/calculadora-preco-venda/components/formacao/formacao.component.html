@@ -14,6 +14,9 @@
                 <div class="col-sm">
                     <button class="btn btn-primary" (click)="modalChangeCustos($event)">Modificar Custos Materia Prima</button>
                 </div>
+                <div class="col-sm">
+                    <button class="btn btn-primary" (click)="modelAdicioanrItem($event)">Adicionar Itens</button>
+                </div>
                 <label for="pageSize" class="col-auto col-form-label">Itens por pagina</label>
                 <div class="col-1">
                     <input class="form-control" type="number" id="pageSize" [(ngModel)]="pageSize">
@@ -50,4 +53,9 @@
     <div class="row">
         <button (click)="changeCustoAllProdutos()" class="btn btn-primary">Confrimar</button>
     </div>
+</app-modal>
+
+<app-modal #modalAdicionarItem 
+    [title]="'Adicionar Item'"> 
+    <selecao-produto-calc (selecaoProdutos)="adicionarItem($event)"></selecao-produto-calc>
 </app-modal>

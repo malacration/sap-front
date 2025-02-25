@@ -3,6 +3,7 @@ import { Column } from '../../../shared/components/table/column.model';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
+import { ActionReturn } from '../../../shared/components/action/action.model';
 
 @Component({
   selector: 'formacao-preco',
@@ -15,6 +16,8 @@ export class FormacaoPrecoStatementComponent implements OnInit {
   }
 
   @ViewChild('custoMercadoria', {static: true}) custoModal: ModalComponent;
+  @ViewChild('modalAdicionarItem', {static: true}) adicionarItemModal: ModalComponent;
+  
 
   @Input()
   analise : Analise
@@ -45,6 +48,10 @@ export class FormacaoPrecoStatementComponent implements OnInit {
     this.custoModal.openModal()
   }
 
+  modelAdicioanrItem($event){
+    this.adicionarItemModal.openModal()
+  }
+  
   changePage($event){
     this.page = $event
   }
@@ -77,17 +84,16 @@ export class FormacaoPrecoStatementComponent implements OnInit {
   changeCustoAllProdutos(){
     this.analise.produtos.forEach(produto => {
       produto.Ingredientes.forEach(it => {
-        
         it.custoMateriaPrimaCurrencyEditable = this.uniqueIngredients.get(it.ItemCode).custoMateriaPrimaCurrencyEditable
-
-        if(it.ItemCode == "INS0000104" && produto.ItemCode == "PAC0000259"){
-          console.log(produto)
-          console.log(it)
-          console.log(this.uniqueIngredients.get(it.ItemCode))
-        }
       })
     });
     this.cdRef.detectChanges();
+  }
+
+  adicionarItem(itens : Array<Produto>){
+    this.analise.produtos.push(...itens)
+    this.groupUniqueIngredients()
+    this.adicionarItemModal.closeModal()
   }
 
   salvar($event){
@@ -187,8 +193,11 @@ export class FormacaoPrecoStatementComponent implements OnInit {
     new Column('Resultado por Ton', 'getResultadoCurrency'),
   ]
 
-  action($event){
-    alert("windson")
+  action(action : ActionReturn){
+    if(action.type == "delete"){
+      const index = this.analise.produtos.findIndex(obj => obj.ItemCode == action.data.ItemCode)
+      this.analise.produtos.splice(index, 1);
+    }
   }
 
 }
