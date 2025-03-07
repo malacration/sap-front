@@ -6,6 +6,9 @@ import { FutureDeliverySalesService } from '../../../service/FutureDeliverySales
 import {VendaFutura } from '../../../model/venda/venda-futura';
 import { DocumentLines, FutureDeliverySales } from '../../../model/markting/future-delivery-sales';
 import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
+import { AlertService } from '../../../service/alert.service';
+import { VendaFuturaService } from '../../../service/venda-futura.service';
+import { ActionReturn } from '../../../../shared/components/action/action.model';
 
 
 
@@ -17,7 +20,10 @@ import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
 export class VendaFuturaSingleComponent implements OnInit {
 
 
-  constructor(private downPaymentService : DownPaymentService, private futureDeliverySalesService : FutureDeliverySalesService ){
+  constructor(private downPaymentService : DownPaymentService,
+    private alertService : AlertService,
+    private vendaFuturaService : VendaFuturaService,
+    private futureDeliverySalesService : FutureDeliverySalesService ){
 
   }
 
@@ -89,8 +95,18 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.gerarPdfComponent.gerarPdf(headContent);
   }
 
-  action($event){
+  desfazerConcilicao(docEntry){
+    this.alertService.confirm("Tem certeza que deseja cancelar o documento? Entry ["+docEntry+"]").then(it => {
+      if(it.isConfirmed){
+        this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then()
+      }
+    })
+  }
 
+  action(event : ActionReturn){
+    if(event.type == "devolver"){
+      this.desfazerConcilicao(event.data.DocEntry)
+    }
   }
 
   openModalRetirada(){

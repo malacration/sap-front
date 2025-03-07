@@ -1,3 +1,4 @@
+import { Action, ActionReturn } from "../../../shared/components/action/action.model"
 import { ItemRetirada } from "./item-retirada"
 
 export class PedidoRetirada{
@@ -13,6 +14,5 @@ export class PedidoRetirada{
         this.dataEntrega = dataEntrega
         this.docEntryVendaFutura = docEntryVendaFutura
         this.itensRetirada = itensRetirada
-    
     }
 }
