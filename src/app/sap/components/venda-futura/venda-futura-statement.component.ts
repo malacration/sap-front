@@ -8,6 +8,7 @@ import { VendaFutura } from '../../model/venda/venda-futura';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ParameterService } from '../../../shared/service/parameter.service';
+import { AlertService } from '../../service/alert.service';
 
 
 
@@ -38,6 +39,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   constructor(
     private auth : AuthService,
     private route: ActivatedRoute,
+    private alertService : AlertService,
     private parameterService : ParameterService,
     private service :  VendaFuturaService){
     this.nomeUsuario = auth.getUser()
@@ -64,7 +66,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
       complete : () => {this.loading = false}
     })
   }
-
+  
   action(event : ActionReturn){
     if(event.type == "selected"){
       this.parameterService.setParam(this.route,"id",event.data.DocEntry)

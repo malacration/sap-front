@@ -40,6 +40,11 @@ export class VendaFuturaService{
       );
     }
 
+    cancelarConciliacao(docEntry) : Observable<string>{
+      let url = this.url+"/devolver/"+docEntry
+      return this.http.get<string>(url)
+    }
+
     private vendaFuturaAssing(it) : VendaFutura{
       const vendaFutura = Object.assign(new VendaFutura(), it);
       vendaFutura.AR_CF_LINHACollection = vendaFutura.AR_CF_LINHACollection.map(item => 

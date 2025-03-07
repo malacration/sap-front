@@ -1,3 +1,5 @@
+import { Action, ActionReturn } from "../../../shared/components/action/action.model";
+
 export class ItemRetirada{ 
     itemCode: string; 
     quantidade: number

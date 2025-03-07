@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, lastValueFrom } from 'rxjs';
 import { info } from 'console';
-import Swal from 'sweetalert2';
+import Swal, { SweetAlertResult } from 'sweetalert2';
 
 
 @Injectable({
@@ -17,6 +17,36 @@ export class AlertService {
             icon: 'error',
             confirmButtonText: 'Ok'
           })
+    }
+
+    confirm(text : string = "Tem certeza que deseja continuar?"): Promise<SweetAlertResult> {
+        return Swal.fire({
+            title: 'Atenção',
+            text: text,
+            icon: 'question',
+            confirmButtonText: 'Ok',
+            showCancelButton : true,
+          })
+    }
+
+    loading<T>(task: Promise<T> | Observable<T>) : Promise<T>{
+        const swalInstance = Swal.fire({
+            title: 'Carregando...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading(null);
+            }
+        });
+
+        const taskPromise = task instanceof Promise ? task : lastValueFrom(task);
+
+        return taskPromise.finally(() => {
+            // Verifica se ainda é a instância ativa antes de fechar
+            if (Swal.isVisible() && Swal.getTitle()?.textContent === 'Carregando...') {
+                Swal.close();
+            }
+        });
     }
 
     error(text : string) : Promise<any> {

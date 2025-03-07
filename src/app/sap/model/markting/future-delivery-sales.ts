@@ -1,5 +1,5 @@
 import * as moment from "moment";
-import { Action } from "../../../shared/components/action/action.model";
+import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import { formatCurrency } from "@angular/common";
 
 export class FutureDeliverySales {
@@ -47,4 +47,9 @@ export class DocumentLines {
     return moment(this.DocDate).format('DD/MM/YYYY');
   }
 
+  getActions(): Action[] {
+    return [
+        new Action("Devolver", new ActionReturn("devolver",this), "far fa-times-circle",'danger')
+    ]
+  }
 }
