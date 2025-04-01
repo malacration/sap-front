@@ -26,6 +26,7 @@ export class FutureDeliverySales {
 
 export class DocumentLines {
   ItemCode: number;
+  DocObjectCode:String
   ItemDescription: string;
   U_preco_negociado: number;
   Quantity: number; 
@@ -47,9 +48,20 @@ export class DocumentLines {
     return moment(this.DocDate).format('DD/MM/YYYY');
   }
 
+  get formattedTypeInvoice() {
+    const oCreditNotes = "oCreditNotes"; 
+    return this.DocObjectCode == oCreditNotes ? "Entrada" : "Devolução";
+  }
+
+  get formattedQuantityInvoice() {
+    const oCreditNotes = "oCreditNotes"; 
+    return this.DocObjectCode == oCreditNotes ? this.Quantity : this.Quantity * -1;
+  }
   getActions(): Action[] {
     return [
-        new Action("Devolver", new ActionReturn("devolver",this), "far fa-times-circle",'danger')
-    ]
+      this.DocObjectCode == "oCreditNotes"
+        ? new Action("Devolver", new ActionReturn("devolver", this), "far fa-times-circle", "danger")
+        : null,
+    ].filter(action => action !== null);
   }
 }
