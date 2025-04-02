@@ -71,7 +71,7 @@ export class VendaFuturaSingleComponent implements OnInit {
         
         this.entregas.forEach(item => {
           let produto = this.selected.AR_CF_LINHACollection.find(it => it.U_itemCode == item.ItemCode.toString());
-          produto.entregue += item.Quantity | 0
+          produto.entregue += item.formattedQuantityInvoice | 0
         });
 
         this.loadingEntregas = false; 
@@ -146,12 +146,13 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   entregasDefinition = [
     new Column('ID', 'DocNum'),
+    new Column('Tipo de Nota', 'formattedTypeInvoice'),
     new Column('Número da Nota', 'SequenceSerial'),
     new Column('Data de Emissão', 'formattedDocDate'),
     new Column('Código do Item', 'ItemCode'),
     new Column('Descrição do Item', 'ItemDescription'),
     new Column('Preço Negociado', 'U_preco_negociado'),
-    new Column('Quantidade Entregue', 'Quantity'),
+    new Column('Quantidade Entregue', 'formattedQuantityInvoice'),
     new Column('Total da Linha', 'totalLinhaCurrency'),
   ];
 }

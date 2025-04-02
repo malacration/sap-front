@@ -155,7 +155,7 @@ export class DocumentStatementComponent implements OnInit {
     
     if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales' && this.tipoEnvio == 'ret')
       service = this.orderService
-
+  
     this.agruparPorGroupNum().forEach((itens,groupNum) => {
       let order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
@@ -167,7 +167,8 @@ export class DocumentStatementComponent implements OnInit {
       order.DocDueDate = this.dtEntrega
       order.Frete = this.frete
       order.TaxExtension = {
-        Incoterms: this.tipoEnvio == 'ret' ? 0 : 1
+        VehicleState: this.setVehicleState(),
+        Incoterms: this.tipoEnvio == 'ret' ? 9 : 1
       };
       subiscribers.push(service.save(order))
     })
@@ -261,4 +262,5 @@ export class LinhasPedido{
 
 export class TaxExtension{
   Incoterms: number
+  VehicleState: string
 }
