@@ -98,7 +98,9 @@ export class VendaFuturaSingleComponent implements OnInit {
   desfazerConcilicao(docEntry){
     this.alertService.confirm("Tem certeza que deseja cancelar o documento? Entry ["+docEntry+"]").then(it => {
       if(it.isConfirmed){
-        this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then()
+        this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then( it =>
+          this.alertService.info("Documento liberado para cancelamento")
+        )
       }
     })
   }
