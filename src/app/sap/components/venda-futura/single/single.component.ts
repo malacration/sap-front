@@ -37,8 +37,11 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   entregas = Array<DocumentLines>()
 
+  pedidos = Array<DocumentLines>()
+
   loadingBoletos: boolean = true; 
   loadingEntregas: boolean = true; 
+  loadingPedidos: boolean = true;
 
   @Output()
   close = new EventEmitter();
@@ -71,7 +74,7 @@ export class VendaFuturaSingleComponent implements OnInit {
         
         this.entregas.forEach(item => {
           let produto = this.selected.AR_CF_LINHACollection.find(it => it.U_itemCode == item.ItemCode.toString());
-          produto.entregue += item.Quantity | 0
+          produto.entregue += item.formattedQuantityInvoice | 0
         });
 
         this.loadingEntregas = false; 
@@ -79,6 +82,15 @@ export class VendaFuturaSingleComponent implements OnInit {
         this.selected.AR_CF_LINHACollection.forEach(it => {
           it.produtoEntregueLoading = false;
         });
+    })
+
+    this.futureDeliverySalesService.getPedidosByContrato(this.selected.DocEntry).subscribe(response => {
+      this.pedidos = response.flatMap(entrega => 
+        entrega.DocumentLines.map(line => {
+          return Object.assign(new DocumentLines(), line, entrega)
+        }));
+        
+        this.loadingPedidos = false; 
     })
   }
 
@@ -98,7 +110,9 @@ export class VendaFuturaSingleComponent implements OnInit {
   desfazerConcilicao(docEntry){
     this.alertService.confirm("Tem certeza que deseja cancelar o documento? Entry ["+docEntry+"]").then(it => {
       if(it.isConfirmed){
-        this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then()
+        this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then( it =>
+          this.alertService.info("Documento liberado para cancelamento")
+        )
       }
     })
   }
@@ -142,14 +156,16 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Status', 'situacao'),
   ];
 
-  entregasDefinition = [
+  documentDefinition = [
     new Column('ID', 'DocNum'),
+    new Column('Tipo de Nota', 'labelDocumentType'),
+    new Column('Status', 'documentStatus'),
     new Column('Número da Nota', 'SequenceSerial'),
     new Column('Data de Emissão', 'formattedDocDate'),
     new Column('Código do Item', 'ItemCode'),
     new Column('Descrição do Item', 'ItemDescription'),
-    new Column('Preço Negociado', 'U_preco_negociado'),
-    new Column('Quantidade Entregue', 'Quantity'),
-    new Column('Total da Linha', 'totalLinhaCurrency'),
+    new Column('Preço', 'U_preco_negociado'),
+    new Column('Entregue', 'formattedQuantityInvoice'),
+    new Column('Total', 'totalLinhaCurrency'),
   ];
 }

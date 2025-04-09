@@ -1,6 +1,8 @@
 import * as moment from "moment";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import { formatCurrency } from "@angular/common";
+import { DocumentTypes } from "../labels/document-types";
+import { StatusTypes } from "../labels/status-types";
 
 export class FutureDeliverySales {
 
@@ -26,10 +28,20 @@ export class FutureDeliverySales {
 
 export class DocumentLines {
   ItemCode: number;
+  DocObjectCode: string
   ItemDescription: string;
   U_preco_negociado: number;
   Quantity: number; 
   DocDate: string;
+  DocumentStatus : string
+
+  get labelDocumentType(){
+    return DocumentTypes[this.DocObjectCode as keyof typeof DocumentTypes];
+  }
+
+  get documentStatus(){
+    return StatusTypes[this.DocumentStatus as keyof typeof StatusTypes];
+  }
 
   get quantityCurrency() {
     return formatCurrency(this.Quantity, 'pt', '');
@@ -47,9 +59,20 @@ export class DocumentLines {
     return moment(this.DocDate).format('DD/MM/YYYY');
   }
 
+  isVenda() : boolean{
+    return  this.DocObjectCode == "oInvoices"
+  }
+
+  get formattedQuantityInvoice() {
+    return this.isVenda() ? this.Quantity : this.Quantity * -1;
+  }
+
   getActions(): Action[] {
-    return [
-        new Action("Devolver", new ActionReturn("devolver",this), "far fa-times-circle",'danger')
-    ]
+    if(this.isVenda() && this.DocumentStatus == "bost_Close")
+      return [ 
+        new Action("Devolver", new ActionReturn("devolver", this), "far fa-times-circle", "danger")
+      ]
+    else
+      return []
   }
 }

@@ -99,7 +99,6 @@ export class Item{
         doc.Quantity = this.quantidade
         doc.PriceList = this.PriceList
         doc.Usage = usage
-        doc.DiscountPercent = this.descontoVendedorPorcentagem
         doc.U_preco_negociado = this.unitPriceLiquid()
         doc.UnitPrice = this.unitPriceLiquid()
         doc.ItemDescription = this.ItemDescription

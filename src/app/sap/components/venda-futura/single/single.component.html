@@ -48,6 +48,17 @@
                             </app-table>
                         </app-tab>
 
+                        <app-tab tabTitle="Pedidos">
+                            <div *ngIf="loadingPedidos" class="overlay">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <app-table
+                                *ngIf="!loadingPedidos"
+                                [content]="pedidos" 
+                                [definition]="documentDefinition">
+                            </app-table>
+                        </app-tab>
+
                         <app-tab tabTitle="Boletos">
                             <div *ngIf="loadingBoletos" class="overlay">
                                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
@@ -67,7 +78,7 @@
                             <app-table
                                 *ngIf="!loadingEntregas"
                                 [content]="entregas" 
-                                [definition]="entregasDefinition" 
+                                [definition]="documentDefinition" 
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
