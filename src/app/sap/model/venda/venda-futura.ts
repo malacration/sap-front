@@ -4,7 +4,6 @@ import { Action, ActionReturn } from "../../../shared/components/action/action.m
 import { PedidoRetirada } from "./pedido-retirada";
 import { RouteLink } from "../route-link";
 import { ItemRetirada } from "./item-retirada";
-import { deprecate } from "util";
 
 
 

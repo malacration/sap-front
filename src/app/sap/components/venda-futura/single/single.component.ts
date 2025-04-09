@@ -37,8 +37,11 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   entregas = Array<DocumentLines>()
 
+  pedidos = Array<DocumentLines>()
+
   loadingBoletos: boolean = true; 
   loadingEntregas: boolean = true; 
+  loadingPedidos: boolean = true;
 
   @Output()
   close = new EventEmitter();
@@ -79,6 +82,15 @@ export class VendaFuturaSingleComponent implements OnInit {
         this.selected.AR_CF_LINHACollection.forEach(it => {
           it.produtoEntregueLoading = false;
         });
+    })
+
+    this.futureDeliverySalesService.getPedidosByContrato(this.selected.DocEntry).subscribe(response => {
+      this.pedidos = response.flatMap(entrega => 
+        entrega.DocumentLines.map(line => {
+          return Object.assign(new DocumentLines(), line, entrega)
+        }));
+        
+        this.loadingPedidos = false; 
     })
   }
 
@@ -144,15 +156,16 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Status', 'situacao'),
   ];
 
-  entregasDefinition = [
+  documentDefinition = [
     new Column('ID', 'DocNum'),
-    new Column('Tipo de Nota', 'formattedTypeInvoice'),
+    new Column('Tipo de Nota', 'labelDocumentType'),
+    new Column('Status', 'documentStatus'),
     new Column('Número da Nota', 'SequenceSerial'),
     new Column('Data de Emissão', 'formattedDocDate'),
     new Column('Código do Item', 'ItemCode'),
     new Column('Descrição do Item', 'ItemDescription'),
-    new Column('Preço Negociado', 'U_preco_negociado'),
-    new Column('Quantidade Entregue', 'formattedQuantityInvoice'),
-    new Column('Total da Linha', 'totalLinhaCurrency'),
+    new Column('Preço', 'U_preco_negociado'),
+    new Column('Entregue', 'formattedQuantityInvoice'),
+    new Column('Total', 'totalLinhaCurrency'),
   ];
 }

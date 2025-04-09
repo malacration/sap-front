@@ -252,7 +252,6 @@ export class LinhasPedido{
   Quantity
   PriceList
   Usage
-  DiscountPercent
   U_preco_negociado
   UnitPrice
   ItemDescription
