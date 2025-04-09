@@ -49,9 +49,9 @@ export class AlertService {
         });
     }
 
-    error(text : string) : Promise<any> {
+    error(text : string, titulo : string = 'Erro!') : Promise<any> {
         return Swal.fire({
-            title: 'Error!',
+            title: 'Erro!',
             text: text,
             icon: 'error',
             confirmButtonText: 'Ok'
