@@ -83,4 +83,8 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
   getPedidodeVendaBP(CardCode: string): Observable<Array<PedidoVenda>> {
     return this.hppCliente.get<Array<PedidoVenda>>(this.url + "/pedido-venda-parceiro/", { params: { CardCode } });
   }
+
+  getSearchLocalidades() : Observable<Array<BusinessPartner>>{
+      return this.hppCliente.get<Array<BusinessPartner>>(this.url + "/search-localidade")
+  }
 }

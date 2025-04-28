@@ -5,12 +5,24 @@
       <div class="card-header">
         <h3 class="card-title"><b>Ordem de Carregamento</b></h3>
       </div>
-      <div class=".col-md-1">
-        <input type="date" [(ngModel)]="dataSelecionada">
-        <input type="text" [(ngModel)]="dataSelecionada">
-        <input type="date" [(ngModel)]="dataSelecionada">
-        <input type="date" [(ngModel)]="dataSelecionada">
+      <div class="">
+        <h3 class="card-title"><b>Nome da ordem de carregamento</b></h3>
+        <input type="text" [(ngModel)]="nomeOrdemCarregamento">
+        <button (click)="toggle()" [ngClass]="{ 'on': isOn, 'off': !isOn }">
+          {{ isOn ? 'On' : 'Off' }}
+        </button>
       </div>
+      <div class=".col-md-4">
+        <input type="date" [(ngModel)]="dataInicial">
+        <button (click)="limparDataInicial()">Limpar Data Inicial</button>
+        <input type="date" [(ngModel)]="dataFinal">
+        <button (click)="limparDataFinal()">Limpar Data Final</button>
+        <app-branch-susten-select #branch (selectedOut)="selectBranch($event)"></app-branch-susten-select>
+        <app-localidade-select #localidade (selectedOut)="selectLocalidade($event)"></app-localidade-select>
+      </div>
+    </div>
+    <div class="card card-primary">
+      teste
     </div>
   </div>
 </section>

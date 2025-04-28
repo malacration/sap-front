@@ -18,4 +18,8 @@ export class BranchService {
   get() : Observable<Array<Branch>>{
     return this.hppCliente.get<Array<Branch>>(this.url)
   }
+
+  getSearchBranch() : Observable<Array<Branch>>{
+    return this.hppCliente.get<Array<Branch>>(this.url + "/search-branch")
+  }
 }

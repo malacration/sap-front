@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { SalesPersonService } from '../../service/sales-person.service';
-import { AlertService } from '../../service/alert.service';
-import { Router } from '@angular/router';
+import { Branch } from '../../model/branch';
+import { BusinessPartner } from '../../model/business-partner/business-partner';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -13,5 +12,34 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  dataSelecionada: string = ''
+  nomeOrdemCarregamento: string = ''
+  dataInicial: Date
+  dataFinal: Date
+  isOn = false;
+  branchId
+  selectedBranch
+  localidadeId
+  selectedLocalidade
+  
+  limparDataInicial() {
+    this.dataInicial = null;
+  }
+
+  limparDataFinal() {
+    this.dataFinal = null;
+  }
+
+  toggle() {
+    this.isOn = !this.isOn;
+  }
+
+  selectBranch(branch: Branch){
+    this.branchId = branch.bplid;
+    this.selectedBranch = branch; 
+  }
+
+  selectLocalidade(bp: BusinessPartner){
+    this.localidadeId = bp.U_Localidade;
+    this.selectedLocalidade = bp; 
+  }
 }
