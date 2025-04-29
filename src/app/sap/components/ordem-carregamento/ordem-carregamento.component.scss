@@ -1,15 +1,165 @@
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+section {
+  padding: 20px 0;
+
+  .container-fluid {
+    max-width: 1400px;
+  }
+
+  .card-primary {
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .card-header {
+      padding: 15px 20px;
+      border-bottom: none;
+
+      .card-title {
+        font-size: 1.5rem;
+        font-weight: 500;
+      }
+    }
+
+    .card-body {
+      padding: 20px;
+
+      .input-group {
+        .form-control {
+          border-radius: 4px 0 0 4px;
+        }
+
+        .btn {
+          border-radius: 0 4px 4px 0;
+          transition: background-color 0.3s, color 0.3s;
+
+          &.btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+          }
+
+          &.btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+          }
+          // Estilização do botão de limpar (X vermelho)
+          &.btn-clear {
+            background-color: #dc3545;
+            color: rgb(17, 13, 13);
+            border: none;
+            border-radius: 0 4px 4px 0;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+
+            i.bi-x {
+              font-size: 1.5rem;
+            }
+
+            &:hover {
+              background-color: #c82333;
+            }
+          }
+        }
+      }
+
+      // Inputs de data
+      .form-control[type='date'] {
+        height: 38px;
+        border-radius: 4px 0 0 4px;
+      }
+
+      // Botões de ação
+      .btn-primary,
+      .btn-outline-secondary {
+        border-radius: 4px;
+        font-size: 0.9rem;
+        padding: 8px 15px;
+      }
+
+      .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+      }
+    }
+  }
+
+  // Card Origem/Destino
+  .card-primary {
+    .list-group {
+      border-radius: 4px;
+
+      .list-group-item {
+        border: none;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+
+        &.list-group-item-dark {
+          background-color: #f8f9fa;
+          color: #333;
+        }
+      }
+
+      h4 {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+    }
+  }
+
+  // Botão de transferência
+  .btn-block {
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: #218838;
+    }
+  }
 }
 
-.on {
-  background-color: green;
-  color: white;
-}
+// Responsividade
+@media (max-width: 768px) {
+  .card-body {
+    padding: 15px;
 
-.off {
-  background-color: red;
-  color: white;
+    .input-group {
+      flex-direction: row; // Mantém o botão de limpar ao lado em mobile
+
+      .form-control {
+        border-radius: 4px 0 0 4px;
+        margin-bottom: 0;
+      }
+
+      .btn {
+        border-radius: 0 4px 4px 0;
+      }
+
+      .btn-clear {
+        width: 38px;
+        height: 38px;
+      }
+    }
+
+    .btn-primary,
+    .btn-outline-secondary {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  }
+
+  .btn-block {
+    font-size: 1rem;
+    padding: 10px;
+  }
 }

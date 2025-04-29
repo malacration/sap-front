@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Branch } from '../../model/branch';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -20,6 +21,8 @@ export class OrdemCarregamentoComponent implements OnInit {
   selectedBranch
   localidadeId
   selectedLocalidade
+
+  @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
   
   limparDataInicial() {
     this.dataInicial = null;
@@ -27,6 +30,14 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   limparDataFinal() {
     this.dataFinal = null;
+  }
+  
+  filtrarPedidos() {
+    //TODO passar os parametros e ao clicar no filtrar via retornar pra lista
+  }
+
+  consultarEstoque() {
+    this.previewModal.openModal();
   }
 
   toggle() {
@@ -41,5 +52,9 @@ export class OrdemCarregamentoComponent implements OnInit {
   selectLocalidade(bp: BusinessPartner){
     this.localidadeId = bp.U_Localidade;
     this.selectedLocalidade = bp; 
+  }
+
+  sendOrder(){
+    // TODO relizar criacao de Ordem de Carregamento
   }
 }

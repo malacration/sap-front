@@ -1,28 +1,148 @@
-<br/>
 <section>
   <div class="container-fluid">
-    <div class="card card-primary">
-      <div class="card-header">
-        <h3 class="card-title"><b>Ordem de Carregamento</b></h3>
+    <!-- Card Principal -->
+    <div class="card card-primary shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h3 class="card-title mb-0">Ordem de Carregamento</h3>
       </div>
-      <div class="">
-        <h3 class="card-title"><b>Nome da ordem de carregamento</b></h3>
-        <input type="text" [(ngModel)]="nomeOrdemCarregamento">
-        <button (click)="toggle()" [ngClass]="{ 'on': isOn, 'off': !isOn }">
-          {{ isOn ? 'On' : 'Off' }}
-        </button>
-      </div>
-      <div class=".col-md-4">
-        <input type="date" [(ngModel)]="dataInicial">
-        <button (click)="limparDataInicial()">Limpar Data Inicial</button>
-        <input type="date" [(ngModel)]="dataFinal">
-        <button (click)="limparDataFinal()">Limpar Data Final</button>
-        <app-branch-susten-select #branch (selectedOut)="selectBranch($event)"></app-branch-susten-select>
-        <app-localidade-select #localidade (selectedOut)="selectLocalidade($event)"></app-localidade-select>
+      <div class="card-body">
+        <!-- Nome da Ordem e Toggle -->
+        <div class="mb-3">
+          <label for="nomeOrdem" class="form-label">Nome da Ordem de Carregamento</label>
+          <div class="input-group">
+            <input
+              id="nomeOrdem"
+              type="text"
+              class="form-control"
+              [(ngModel)]="nomeOrdemCarregamento"
+              placeholder="Digite o nome da ordem"
+            />
+            <button
+              (click)="toggle()"
+              class="btn"
+              [ngClass]="{ 'btn-success': isOn, 'btn-danger': !isOn }"
+            >
+              {{ isOn ? 'On' : 'Off' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="row g-3">
+          <div class="col-md-3 col-sm-6">
+            <label for="dataInicial" class="form-label">Data Inicial</label>
+            <div class="input-group position-relative">
+              <input
+                id="dataInicial"
+                type="date"
+                class="form-control"
+                [(ngModel)]="dataInicial"
+              />
+              <button
+                *ngIf="dataInicial"
+                class="btn btn-clear"
+                (click)="limparDataInicial()"
+                title="Limpar Data Inicial"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label for="dataFinal" class="form-label">Data Final</label>
+            <div class="input-group position-relative">
+              <input
+                id="dataFinal"
+                type="date"
+                class="form-control"
+                [(ngModel)]="dataFinal"
+              />
+              <button
+                *ngIf="dataFinal"
+                class="btn btn-clear"
+                (click)="limparDataFinal()"
+                title="Limpar Data Final"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="form-label">Filial</label>
+            <app-branch-susten-select
+              #branch
+              (selectedOut)="selectBranch($event)"
+            ></app-branch-susten-select>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label class="form-label">Localidade</label>
+            <app-localidade-select
+              #localidade
+              (selectedOut)="selectLocalidade($event)"
+            ></app-localidade-select>
+          </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="mt-3 d-flex gap-2">
+          <button class="btn btn-primary" (click)="filtrarPedidos()">
+            Filtrar Pedidos
+          </button>
+          <button class="btn btn-primary" (click)="consultarEstoque()" style="margin-left: 5px;">
+            Consultar Estoque
+          </button>
+        </div>
       </div>
     </div>
-    <div class="card card-primary">
-      teste
+
+    <!-- Card Origem/Destino -->
+    <div class="card card-primary shadow-sm mt-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h4 class="bg-success text-white p-2 rounded">Origem</h4>
+            <ul class="list-group">
+              <li class="list-group-item">Dapibus ac facilisis in</li>
+              <li class="list-group-item list-group-item-dark">
+                This is a dark list group item
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-6 mt-4 mt-md-0">
+            <h4 class="bg-success text-white p-2 rounded">Destino</h4>
+            <ul class="list-group">
+              <li class="list-group-item">Dapibus ac facilisis in</li>
+              <li class="list-group-item list-group-item-dark">
+                This is a dark list group item
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botão de Transferência -->
+    <div class="row mt-4">
+      <div class="col">
+        <button
+          (click)="sendOrder()"
+          class="btn btn-success btn-block w-100"
+          type="submit"
+        >
+          Realizar Transferência
+        </button>
+      </div>
     </div>
   </div>
 </section>
+
+<!-- Modal de Estoque -->
+<app-modal
+  #previewModal
+  [title]="'Consultar Estoque'"
+>
+  <div class="text-center">
+    <h1>Consulta de Estoque</h1>
+    <p>Conteúdo do modal de estoque aqui.</p>
+  </div>
+</app-modal>
