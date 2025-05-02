@@ -323,6 +323,9 @@ app-modal {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: $gray-600 $gray-100;
+  border: 2px solid $success ; // Adiciona uma borda ao redor da lista
+  border-radius: $border-radius; // Mantém o border-radius consistente
+  padding: $spacer * 0.5; // Adiciona um leve padding interno para melhor aparência
 
   &::-webkit-scrollbar {
     width: 8px;
