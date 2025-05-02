@@ -99,11 +99,21 @@
         <div class="row">
           <div class="col-md-6">
             <h4 class="bg-success text-white p-2 rounded">Origem</h4>
-            <ul class="list-group list-container mb-2">
-              <li *ngFor="let pedido of getOriginList()" class="list-group-item">
-                {{pedido.CardCode}} - {{ pedido.CardName }} - {{pedido.BuyUnitMsr}}
-              </li>
-            </ul>
+            <div class="list-container">
+              <div *ngFor="let group of getGroupedOriginList()" class="order-group">
+                <div class="order-header bg-warning text-dark p-2 rounded-top">
+                  Pedido {{ group.docNum }}
+                </div>
+                <ul class="list-group mb-2">
+                  <li *ngFor="let pedido of group.items" class="list-group-item">
+                    {{ pedido.CardCode }} - {{ pedido.CardName }} - {{ pedido.BuyUnitMsr }}
+                  </li>
+                </ul>
+              </div>
+              <div *ngIf="!getGroupedOriginList().length" class="text-center text-muted p-3">
+                Nenhum pedido encontrado.
+              </div>
+            </div>
           </div>
           <div class="col-md-6 mt-4 mt-md-0">
             <h4 class="bg-success text-white p-2 rounded">Destino</h4>

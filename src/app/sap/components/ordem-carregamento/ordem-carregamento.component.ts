@@ -79,6 +79,22 @@ export class OrdemCarregamentoComponent implements OnInit {
     }
   }
 
+  getGroupedOriginList(): { docNum: string, items: PedidoVenda[] }[] {
+    const grouped = this.originList.reduce((acc, pedido) => {
+      const key = pedido.DocNum || 'unknown';
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(pedido);
+      return acc;
+    }, {} as { [key: string]: PedidoVenda[] });
+  
+    return Object.keys(grouped).map(docNum => ({
+      docNum,
+      items: grouped[docNum]
+    }));
+  }
+
   consultarEstoque() {
     this.previewModal.openModal();
   }
