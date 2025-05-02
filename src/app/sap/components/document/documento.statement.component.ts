@@ -221,10 +221,12 @@ export class DocumentStatementComponent implements OnInit {
 
 export class PedidoVenda{
   CardCode: string
+  CardName : string
   DocNum: number
   DocDate: string
   DocTotal: number
   ItemCode
+  Dscription
   DocumentLines : Array<LinhasPedido>
   TaxExtension : TaxExtension
   BPL_IDAssignedToInvoice : string
@@ -237,6 +239,12 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
+  DocEntry : number
+  Quantity
+  BuyUnitMsr
+  U_Localidade
+  Weight1
+  Name
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

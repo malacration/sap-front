@@ -1,22 +1,21 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
-import { DocumentAngularSave } from './document-angular-save';
 import { PedidoVenda } from '../../components/document/documento.statement.component';
+import { NextLink } from '../../model/next-link';
 
 @Injectable({
   providedIn: 'root'
 })
-export class OrderSalesService  implements DocumentAngularSave{
+export class OrderSalesService {
+  url = "http://localhost:8080/pedido-venda";
 
-  url = "http://localhost:8080/pedido-venda"
-
-  constructor(private config : ConfigService, private hppCliente : HttpClient) {
-      this.url = config.getHost()+"/pedido-venda"
+  constructor(private config: ConfigService, private httpClient: HttpClient) {
+    this.url = config.getHost() + "/pedido-venda";
   }
 
-  save(body : PedidoVenda) : Observable<any>{
-    return this.hppCliente.post<any>(this.url+"/angular",body)
+  save(body: PedidoVenda): Observable<any> {
+    return this.httpClient.post<any>(`${this.url}/angular`, body);
   }
 }

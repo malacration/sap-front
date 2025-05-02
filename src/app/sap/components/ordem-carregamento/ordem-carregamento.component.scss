@@ -1,165 +1,293 @@
-section {
-  padding: 20px 0;
+// Color Variables
+$primary: #007bff;
+$success: #28a745;
+$danger: #dc3545;
+$white: #ffffff;
+$gray-100: #f8f9fa;
+$gray-200: #e9ecef;
+$gray-600: #6c757d;
+$gray-800: #343a40;
+$shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 
-  .container-fluid {
-    max-width: 1400px;
+// Spacing Variables
+$spacer: 1rem;
+$border-radius: 0.375rem;
+
+// Typography
+$font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-size-base: 1rem;
+
+// Container and Card Styles
+.container-fluid {
+  padding: $spacer * 2;
+  background-color: $gray-100;
+  min-height: 100vh;
+}
+
+.card-primary {
+  border: none;
+  border-radius: $border-radius;
+  background-color: $white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow;
   }
 
-  .card-primary {
-    border: none;
-    border-radius: 8px;
-    overflow: hidden;
-
-    .card-header {
-      padding: 15px 20px;
-      border-bottom: none;
-
-      .card-title {
-        font-size: 1.5rem;
-        font-weight: 500;
-      }
-    }
-
-    .card-body {
-      padding: 20px;
-
-      .input-group {
-        .form-control {
-          border-radius: 4px 0 0 4px;
-        }
-
-        .btn {
-          border-radius: 0 4px 4px 0;
-          transition: background-color 0.3s, color 0.3s;
-
-          &.btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-          }
-
-          &.btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-          }
-          // Estilização do botão de limpar (X vermelho)
-          &.btn-clear {
-            background-color: #dc3545;
-            color: rgb(17, 13, 13);
-            border: none;
-            border-radius: 0 4px 4px 0;
-            padding: 0 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 38px;
-            height: 38px;
-
-            i.bi-x {
-              font-size: 1.5rem;
-            }
-
-            &:hover {
-              background-color: #c82333;
-            }
-          }
-        }
-      }
-
-      // Inputs de data
-      .form-control[type='date'] {
-        height: 38px;
-        border-radius: 4px 0 0 4px;
-      }
-
-      // Botões de ação
-      .btn-primary,
-      .btn-outline-secondary {
-        border-radius: 4px;
-        font-size: 0.9rem;
-        padding: 8px 15px;
-      }
-
-      .btn-outline-secondary {
-        color: #6c757d;
-        border-color: #6c757d;
-
-        &:hover {
-          background-color: #f8f9fa;
-        }
-      }
-    }
-  }
-
-  // Card Origem/Destino
-  .card-primary {
-    .list-group {
-      border-radius: 4px;
-
-      .list-group-item {
-        border: none;
-        padding: 10px 15px;
-        font-size: 0.95rem;
-
-        &.list-group-item-dark {
-          background-color: #f8f9fa;
-          color: #333;
-        }
-      }
-
-      h4 {
-        font-size: 1.2rem;
-        font-weight: 500;
-        margin-bottom: 10px;
-      }
-    }
-  }
-
-  // Botão de transferência
-  .btn-block {
-    padding: 12px;
-    font-size: 1.1rem;
+  .card-header {
+    border-radius: $border-radius $border-radius 0 0;
+    padding: $spacer * 1.5;
+    font-size: 1.25rem;
     font-weight: 500;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+  }
+
+  .card-body {
+    padding: $spacer * 2;
+  }
+}
+
+// Form Elements
+.form-label {
+  font-weight: 500;
+  color: $gray-800;
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  .form-control {
+    border-radius: $border-radius;
+    border: 1px solid $gray-200;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: $gray-600;
+    }
+  }
+
+  .btn {
+    border-radius: $border-radius;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 
     &:hover {
-      background-color: #218838;
+      transform: translateY(-1px);
+    }
+  }
+
+  .btn-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $gray-600;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 10;
+
+    &:hover {
+      color: $danger;
     }
   }
 }
 
-// Responsividade
-@media (max-width: 768px) {
-  .card-body {
-    padding: 15px;
+// Toggle Button
+.btn {
+  &.btn-success {
+    background-color: $success;
+    border-color: $success;
 
-    .input-group {
-      flex-direction: row; // Mantém o botão de limpar ao lado em mobile
+    &:hover {
+      background-color: darken($success, 10%);
+      border-color: darken($success, 10%);
+    }
+  }
 
-      .form-control {
-        border-radius: 4px 0 0 4px;
-        margin-bottom: 0;
-      }
+  &.btn-danger {
+    background-color: $danger;
+    border-color: $danger;
 
-      .btn {
-        border-radius: 0 4px 4px 0;
-      }
+    &:hover {
+      background-color: darken($danger, 10%);
+      border-color: darken($danger, 10%);
+    }
+  }
 
-      .btn-clear {
-        width: 38px;
-        height: 38px;
+  &.btn-primary {
+    background-color: $primary;
+    border-color: $primary;
+
+    &:hover {
+      background-color: darken($primary, 10%);
+      border-color: darken($primary, 10%);
+    }
+
+    &[disabled] {
+      background-color: $gray-600;
+      border-color: $gray-600;
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+  }
+}
+
+// Origin/Destination Lists
+.list-group {
+  border-radius: $border-radius;
+  border: 2px solid $gray-200; // Thicker border
+  max-height: 336px; // Height for 7 items (7 * ~48px)
+  overflow-y: auto; // Enable vertical scrollbar
+  scrollbar-width: thin; // Firefox scrollbar
+  scrollbar-color: $gray-600 $gray-100; // Firefox scrollbar colors
+
+  &::-webkit-scrollbar {
+    width: 8px; // Chrome/Safari scrollbar width
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $gray-100; // Scrollbar track
+    border-radius: $border-radius;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-600; // Scrollbar thumb
+    border-radius: $border-radius;
+
+    &:hover {
+      background: darken($gray-600, 10%);
+    }
+  }
+
+  .list-group-item {
+    border: none;
+    padding: $spacer;
+    background-color: $white;
+    border-bottom: 1px solid $gray-200;
+    font-size: $font-size-base;
+    color: $gray-800;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: $gray-100;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.list-group-item-dark {
+      background-color: $gray-800;
+      color: $white;
+    }
+  }
+}
+
+.d-flex.gap-2 {
+  button {
+    flex: 1;
+    padding: $spacer * 0.75 $spacer;
+    font-size: $font-size-base;
+    font-weight: 500;
+    border-radius: $border-radius;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.btn-block {
+  padding: $spacer * 1;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-radius: $border-radius;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background-color: darken($success, 10%);
+    transform: translateY(-1px);
+  }
+}
+
+// Origin/Destination Headers
+h4.bg-success {
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  border-radius: $border-radius;
+  padding: $spacer * 0.75;
+}
+
+// Modal Styling
+app-modal {
+  .modal-content {
+    border-radius: $border-radius;
+    border: none;
+    box-shadow: $shadow;
+    font-family: $font-family;
+
+    .modal-header {
+      background-color: $primary;
+      color: $white;
+      border-radius: $border-radius $border-radius 0 0;
+      padding: $spacer * 1.5;
+
+      .modal-title {
+        font-size: 1.25rem;
+        font-weight: 500;
       }
     }
 
-    .btn-primary,
-    .btn-outline-secondary {
-      width: 100%;
-      margin-bottom: 10px;
+    .modal-body {
+      padding: $spacer * 2;
+      text-align: center;
+
+      h1 {
+        font-size: 1.5rem;
+        color: $gray-800;
+        margin-bottom: $spacer;
+      }
+
+      p {
+        font-size: $font-size-base;
+        color: $gray-600;
+      }
+    }
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: $spacer;
+  }
+
+  .card-body {
+    padding: $spacer;
+  }
+
+  .row.g-3 {
+    > div {
+      margin-bottom: $spacer;
     }
   }
 
   .btn-block {
     font-size: 1rem;
-    padding: 10px;
+    padding: $spacer * 0.75;
+  }
+
+  h4.bg-success {
+    font-size: 1rem;
   }
 }

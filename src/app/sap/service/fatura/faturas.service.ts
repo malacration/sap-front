@@ -5,6 +5,8 @@ import { ConfigService } from '../../../core/services/config.service';
 import { Fatura } from '../../model/fatura/fatura.model';
 import { Page } from '../../model/page.model';
 import { Parcela } from '../../model/fatura/parcela.model';
+import { NextLink } from '../../model/next-link';
+import { PedidoVenda } from '../../components/document/documento.statement.component';
 
 @Injectable({
   providedIn: 'root'
@@ -40,4 +42,20 @@ export class FaturasService {
                 { observe: 'body', responseType: 'blob' as 'json' }
             )
     }
+
+      getPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<PedidoVenda[]> {
+        const params = new HttpParams()
+          .set('dataInicial', dataInicial)
+          .set('dataFinal', dataFinal)
+          .set('filial', filial.toString())
+          .set('localidade', localidade);
+    
+        return this.hppCliente
+          .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
+          .pipe(
+            map((response) => {
+              return response.content.map((item) => Object.assign(new PedidoVenda(), item));
+            })
+          );
+      }
 }
