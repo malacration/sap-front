@@ -11,11 +11,7 @@ import { FaturasService } from '../../service/fatura/faturas.service';
   styleUrls: ['./ordem-carregamento.component.scss']
 })
 export class OrdemCarregamentoComponent implements OnInit {
-  constructor(private orderSalesService: FaturasService) {}
-
-  ngOnInit(): void {}
-
-  nomeOrdemCarregamento: string = '';
+  nomeOrdemCarregamento = '';
   dataInicial: string | null = null;
   dataFinal: string | null = null;
   originList: PedidoVenda[] = [];
@@ -26,192 +22,178 @@ export class OrdemCarregamentoComponent implements OnInit {
   selectedBranch: Branch;
   localidadeId: number;
   selectedLocalidade: BusinessPartner;
-  isDestinationMinimized: boolean = false;
-  originSearch: string = '';
-  destinationSearch: string = '';
+  isDestinationMinimized = false;
+  originSearch = '';
+  destinationSearch = '';
 
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
   @ViewChild('returnAllModal', { static: true }) returnAllModal: ModalComponent;
 
-  toggle() {
+  constructor(private orderSalesService: FaturasService) {}
+
+  ngOnInit(): void {}
+
+  toggle(): void {
     this.isOn = !this.isOn;
   }
 
-  limparDataInicial() {
-    this.dataInicial = null;
-  }
-  
-  limparDataFinal() {
-    this.dataFinal = null;
+  clearDate(field: 'dataInicial' | 'dataFinal'): void {
+    this[field] = null;
   }
 
-  selectBranch(branch: Branch) {
+  selectBranch(branch: Branch): void {
     this.branchId = branch.bplid;
     this.selectedBranch = branch;
   }
 
-  selectLocalidade(bp: BusinessPartner) {
+  selectLocalidade(bp: BusinessPartner): void {
     this.localidadeId = bp.U_Localidade;
     this.selectedLocalidade = bp;
   }
 
-  isFilterValid(): boolean {
-    return !!(this.selectedBranch && this.selectedLocalidade);
+  get isFilterValid(): boolean {
+    return !!this.selectedBranch && !!this.selectedLocalidade;
   }
 
-  filtrarPedidos() {
-    if (this.isFilterValid()) {
-      // Usar datas vazias caso não sejam fornecidas
-      const startDate = this.dataInicial || '';
-      const endDate = this.dataFinal || '';
-      this.orderSalesService
-        .getPedidos(startDate, endDate, this.branchId, this.localidadeId)
-        .subscribe({
-          next: (pedidos) => {
-            this.originList = this.sortPedidos(pedidos || []);
-            this.originalOrder = [...this.originList];
-            this.destinationList = [];
-            this.originSearch = '';
-            this.destinationSearch = '';
-          },
-          error: (err) => {
-            console.error('Error fetching pedidos:', err);
-            this.originList = [];
-            this.originalOrder = [];
-            this.destinationList = [];
-            this.originSearch = '';
-            this.destinationSearch = '';
-          }
-        });
-    } else {
+  filtrarPedidos(): void {
+    if (!this.isFilterValid) {
       console.warn('Please select branch and locality');
-      this.originList = [];
-      this.originalOrder = [];
-      this.destinationList = [];
-      this.originSearch = '';
-      this.destinationSearch = '';
+      this.resetLists();
+      return;
     }
+
+    const startDate = this.dataInicial || '';
+    const endDate = this.dataFinal || '';
+
+    this.orderSalesService
+      .getPedidos(startDate, endDate, this.branchId, this.localidadeId)
+      .subscribe({
+        next: pedidos => this.handlePedidosSuccess(pedidos),
+        error: err => this.handlePedidosError(err)
+      });
+  }
+
+  private handlePedidosSuccess(pedidos: PedidoVenda[]): void {
+    this.originList = this.sortPedidos(pedidos || []);
+    this.originalOrder = [...this.originList];
+    this.resetSearchFields();
+  }
+
+  private handlePedidosError(error: any): void {
+    console.error('Error fetching pedidos:', error);
+    this.resetLists();
+  }
+
+  private resetLists(): void {
+    this.originList = [];
+    this.originalOrder = [];
+    this.destinationList = [];
+    this.resetSearchFields();
+  }
+
+  private resetSearchFields(): void {
+    this.originSearch = '';
+    this.destinationSearch = '';
   }
 
   private sortPedidos(pedidos: PedidoVenda[]): PedidoVenda[] {
-    return pedidos.sort((a, b) => {
-      const docNumA = String(a.DocNum ?? '');
-      const docNumB = String(b.DocNum ?? '');
-      const docNumCompare = docNumA.localeCompare(docNumB);
-      if (docNumCompare !== 0) return docNumCompare;
-
-      const cardCodeA = String(a.CardCode ?? '');
-      const cardCodeB = String(b.CardCode ?? '');
-      return cardCodeA.localeCompare(cardCodeB);
+    return [...pedidos].sort((a, b) => {
+      const docNumCompare = String(a.DocNum ?? '').localeCompare(String(b.DocNum ?? ''));
+      return docNumCompare || String(a.CardCode ?? '').localeCompare(String(b.CardCode ?? ''));
     });
   }
 
-  getGroupedOriginList(): { docNum: string, items: PedidoVenda[] }[] {
-    const filteredList = this.filterList(this.originList, this.originSearch);
-    const grouped = filteredList.reduce((acc, pedido) => {
-      const key = String(pedido.DocNum ?? 'unknown');
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(pedido);
-      return acc;
-    }, {} as { [key: string]: PedidoVenda[] });
-
-    return Object.keys(grouped)
-      .sort()
-      .map(docNum => ({
-        docNum,
-        items: grouped[docNum]
-      }));
+  getGroupedList(list: PedidoVenda[], searchTerm: string): { docNum: string; items: PedidoVenda[] }[] {
+    const filteredList = this.filterList(list, searchTerm);
+    const grouped = this.groupByDocNum(filteredList);
+    return this.sortGroupedList(grouped);
   }
 
-  getGroupedDestinationList(): { docNum: string, items: PedidoVenda[] }[] {
-    const filteredList = this.filterList(this.destinationList, this.destinationSearch);
-    const grouped = filteredList.reduce((acc, pedido) => {
+  private groupByDocNum(list: PedidoVenda[]): Record<string, PedidoVenda[]> {
+    return list.reduce((acc, pedido) => {
       const key = String(pedido.DocNum ?? 'unknown');
-      if (!acc[key]) {
-        acc[key] = [];
-      }
+      acc[key] = acc[key] || [];
       acc[key].push(pedido);
       return acc;
-    }, {} as { [key: string]: PedidoVenda[] });
-
-    return Object.keys(grouped)
-      .sort()
-      .map(docNum => ({
-        docNum,
-        items: grouped[docNum]
-      }));
+    }, {} as Record<string, PedidoVenda[]>);
   }
 
-  consultarEstoque() {
+  private sortGroupedList(grouped: Record<string, PedidoVenda[]>): { docNum: string; items: PedidoVenda[] }[] {
+    return Object.keys(grouped)
+      .sort()
+      .map(docNum => ({ docNum, items: grouped[docNum] }));
+  }
+
+  consultarEstoque(): void {
     this.previewModal.openModal();
   }
 
-  moveToDestination(pedido: PedidoVenda) {
-    if (this.isOn) {
-      const docNum = pedido.DocNum;
-      const itemsToMove = this.originList.filter(item => item.DocNum === docNum);
-      this.originList = this.originList.filter(item => item.DocNum !== docNum);
-      this.destinationList = [...this.destinationList, ...itemsToMove];
-    } else {
-      this.originList = this.originList.filter(item => item !== pedido);
-      this.destinationList = [...this.destinationList, pedido];
-    }
+  moveToDestination(pedido: PedidoVenda): void {
+    const itemsToMove = this.isOn 
+      ? this.originList.filter(item => item.DocNum == pedido.DocNum)
+      : [pedido];
+
+    this.originList = this.originList.filter(item => 
+      !itemsToMove.some(moveItem => moveItem == item)
+    );
+    this.destinationList = [...this.destinationList, ...itemsToMove];
   }
 
-  moveToOrigin(pedido: PedidoVenda) {
-    this.destinationList = this.destinationList.filter(item => item !== pedido);
+  moveToOrigin(pedido: PedidoVenda): void {
+    this.destinationList = this.destinationList.filter(item => item != pedido);
+    this.insertPedidoInOriginalOrder(pedido);
+  }
 
-    const originalIndex = this.originalOrder.findIndex(
-      item => item === pedido || (
-        item.DocNum === pedido.DocNum &&
-        item.CardCode === pedido.CardCode &&
-        item.CardName === pedido.CardName &&
-        item.BuyUnitMsr === pedido.BuyUnitMsr
+  private insertPedidoInOriginalOrder(pedido: PedidoVenda): void {
+    const originalIndex = this.findOriginalIndex(pedido);
+    if (originalIndex < 0) {
+      this.originList = [...this.originList, pedido];
+      return;
+    }
+
+    let insertIndex = 0;
+    for (let i = 0; i < this.originList.length; i++) {
+      const currentOriginalIndex = this.findOriginalIndex(this.originList[i]);
+      if (currentOriginalIndex > originalIndex) break;
+      insertIndex = i + 1;
+    }
+
+    this.originList = [
+      ...this.originList.slice(0, insertIndex),
+      pedido,
+      ...this.originList.slice(insertIndex)
+    ];
+  }
+
+  private findOriginalIndex(pedido: PedidoVenda): number {
+    return this.originalOrder.findIndex(item => 
+      item == pedido || (
+        item.DocNum == pedido.DocNum &&
+        item.CardCode == pedido.CardCode &&
+        item.CardName == pedido.CardName &&
+        item.BuyUnitMsr == pedido.BuyUnitMsr
       )
     );
-
-    if (originalIndex >= 0) {
-      let insertIndex = 0;
-      for (let i = 0; i < this.originList.length; i++) {
-        const currentOriginalIndex = this.originalOrder.findIndex(
-          item => item === this.originList[i]
-        );
-        if (currentOriginalIndex > originalIndex) {
-          break;
-        }
-        insertIndex = i + 1;
-      }
-      this.originList = [
-        ...this.originList.slice(0, insertIndex),
-        pedido,
-        ...this.originList.slice(insertIndex)
-      ];
-    } else {
-      this.originList = [...this.originList, pedido];
-    }
   }
 
-  openReturnAllModal() {
+  openReturnAllModal(): void {
     this.returnAllModal.openModal();
   }
 
-  returnAllToOrigin() {
-    this.destinationList.forEach(pedido => this.moveToOrigin(pedido));
+  returnAllToOrigin(): void {
+    [...this.destinationList].forEach(pedido => this.moveToOrigin(pedido));
     this.returnAllModal.closeModal();
   }
 
-  filterList(list: PedidoVenda[], search: string): PedidoVenda[] {
-    if (!search) {
-      return list;
-    }
-    return list.filter((item) =>
-      String(item.DocNum ?? '').toLowerCase().includes(search.toLowerCase())
-    );
+  private filterList(list: PedidoVenda[], search: string): PedidoVenda[] {
+    return !search 
+      ? list 
+      : list.filter(item => 
+          String(item.DocNum ?? '').toLowerCase().includes(search.toLowerCase())
+      );
   }
 
-  sendOrder() {
+  sendOrder(): void {
     console.log('Creating ordem de carregamento:', {
       nome: this.nomeOrdemCarregamento,
       origin: this.originList,
@@ -219,13 +201,11 @@ export class OrdemCarregamentoComponent implements OnInit {
     });
   }
 
-  toggleDestinationMinimize() {
+  toggleDestinationMinimize(): void {
     this.isDestinationMinimized = !this.isDestinationMinimized;
   }
 
-  calculateTotalWeight(): number {
-    return this.destinationList.reduce((total, pedido) => {
-      return total + (pedido.Weight || 0);
-    }, 0);
+  get totalWeight(): number {
+    return this.destinationList.reduce((total, pedido) => total + (pedido.Weight || 0), 0);
   }
 }

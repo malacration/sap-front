@@ -1,4 +1,4 @@
-// Color Variables
+// Variáveis
 $primary: #007bff;
 $success: #28a745;
 $danger: #dc3545;
@@ -9,313 +9,14 @@ $gray-200: #e9ecef;
 $gray-600: #6c757d;
 $gray-800: #343a40;
 $shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-
-// Spacing Variables
 $spacer: 1rem;
 $border-radius: 0.375rem;
-
-// Typography
 $font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 $font-size-base: 1rem;
+$transition: all 0.2s ease;
 
-// Container and Card Styles
-.container-fluid {
-  padding: $spacer * 2;
-  background-color: $gray-100;
-  min-height: 100vh;
-}
-
-.card-primary {
-  border: none;
-  border-radius: $border-radius;
-  background-color: $white;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: $shadow;
-  }
-
-  .card-header {
-    border-radius: $border-radius $border-radius 0 0;
-    padding: $spacer * 1.5;
-    font-size: 1.25rem;
-    font-weight: 500;
-  }
-
-  .card-body {
-    padding: $spacer * 2;
-  }
-}
-
-// Form Elements
-.form-label {
-  font-weight: 500;
-  color: $gray-800;
-  margin-bottom: 0.5rem;
-}
-
-.input-group {
-  position: relative;
-
-  .form-control {
-    border-radius: $border-radius;
-    border: 1px solid $gray-200;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-    &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
-      outline: none;
-    }
-
-    &::placeholder {
-      color: $gray-600;
-    }
-  }
-
-  .btn {
-    border-radius: $border-radius;
-    font-weight: 500;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-
-    &:hover {
-      transform: translateY(-1px);
-    }
-  }
-
-  .input-group-text {
-    background-color: $gray-100;
-    border: 1px solid $gray-200;
-    border-right: none;
-    border-radius: $border-radius 0 0 $border-radius;
-    color: $gray-600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 $spacer * 0.5;
-
-    i.bi-search {
-      font-size: 1rem;
-    }
-  }
-
-  .form-control.search-input {
-    border-radius: 0 $border-radius $border-radius 0;
-    padding-left: $spacer * 0.5;
-  }
-}
-
-// Search Input
-.list-container {
-  .form-control {
-    border-radius: $border-radius;
-    border: 1px solid $gray-200;
-    padding: $spacer * 0.5;
-    font-size: $font-size-base * 0.9;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-    &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
-      outline: none;
-    }
-
-    &::placeholder {
-      color: $gray-600;
-    }
-  }
-}
-
-// Estilizar o botão de limpar no lado direito
-.btn-clear {
-  background-color: $danger;
-  border: none;
-  color: $white;
-  font-size: 1rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0 $border-radius $border-radius 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 2;
-
-  i.bi.bi-x {
-    font-size: 1.2rem;
-    color: $white;
-  }
-
-  &:hover {
-    background-color: darken($danger, 10%);
-  }
-}
-
-// Toggle Button
-.btn {
-  &.btn-success {
-    background-color: $success;
-    border-color: $success;
-
-    &:hover {
-      background-color: darken($success, 10%);
-      border-color: darken($success, 10%);
-    }
-  }
-
-  &.btn-danger {
-    background-color: $danger;
-    border-color: $danger;
-
-    &:hover {
-      background-color: darken($danger, 10%);
-      border-color: darken($danger, 10%);
-    }
-  }
-
-  &.btn-primary {
-    background-color: $primary;
-    border-color: $primary;
-
-    &:hover {
-      background-color: darken($primary, 10%);
-      border-color: darken($primary, 10%);
-    }
-
-    &[disabled] {
-      background-color: $gray-600;
-      border-color: $gray-600;
-      cursor: not-allowed;
-      opacity: 0.65;
-    }
-  }
-
-  &.btn-outline-primary {
-    border-color: $primary;
-    color: $primary;
-
-    &:hover {
-      background-color: $primary;
-      color: $white;
-    }
-  }
-
-  &.btn-sm {
-    font-size: 0.875rem;
-    padding: $spacer * 0.25 $spacer * 0.5;
-    line-height: 1.5;
-  }
-}
-
-// Lists Container
-.lists-container {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: stretch;
-
-  .origin-container {
-    transition: all 0.3s ease;
-    padding: 0 $spacer * 0.5;
-    flex-grow: 1;
-  }
-
-  .destination-container {
-    transition: all 0.3s ease;
-    padding: 0 $spacer * 0.25;
-
-    &.minimized {
-      width: 150px;
-      flex: 0 0 150px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding-left: 0;
-
-      .minimized-info {
-        border: 2px solid $primary;
-        border-radius: $border-radius;
-        background-color: $gray-100;
-        padding: $spacer * 0.5;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: auto;
-        text-align: center;
-        margin-left: auto;
-
-        .btn-primary {
-          font-size: $font-size-base * 0.8;
-          padding: $spacer * 0.4 $spacer * 0.6;
-          white-space: normal;
-          text-align: center;
-          line-height: 1.3;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: $spacer * 0.3;
-          background-color: $primary;
-          color: $white;
-          border: none;
-          border-radius: $border-radius;
-          width: 100%;
-
-          span {
-            display: block;
-            font-weight: 500;
-          }
-        }
-      }
-    }
-
-    &:not(.minimized) {
-      flex-grow: 1;
-    }
-  }
-
-  .list-container {
-    max-height: 400px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: $gray-600 $gray-100;
-    border: 2px solid $primary;
-    border-radius: $border-radius;
-    padding: $spacer * 0.5;
-    background-color: $white;
-
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: $gray-100;
-      border-radius: $border-radius;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: $gray-600;
-      border-radius: $border-radius;
-
-      &:hover {
-        background: darken($gray-600, 10%);
-      }
-    }
-  }
-}
-
-// Origin/Destination Lists
-.list-group {
-  border-radius: $border-radius;
-  border: 2px solid $gray-200;
-  max-height: 336px;
-  overflow-y: auto;
+// Mixins
+@mixin scrollbar-styles {
   scrollbar-width: thin;
   scrollbar-color: $gray-600 $gray-100;
 
@@ -336,6 +37,299 @@ $font-size-base: 1rem;
       background: darken($gray-600, 10%);
     }
   }
+}
+
+@mixin card-styles {
+  border: none;
+  border-radius: $border-radius;
+  background-color: $white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow;
+  }
+}
+
+@mixin button-variant($background, $border) {
+  background-color: $background;
+  border-color: $border;
+
+  &:hover {
+    background-color: darken($background, 10%);
+    border-color: darken($border, 10%);
+  }
+}
+
+// Estilos Base
+.ordem-carregamento-container {
+  .container-fluid {
+    padding: $spacer * 2;
+    background-color: $gray-100;
+    min-height: 100vh;
+
+    @media (max-width: 768px) {
+      padding: $spacer;
+    }
+  }
+}
+
+// Componentes
+.card-primary {
+  @include card-styles;
+
+  .card-header {
+    border-radius: $border-radius $border-radius 0 0;
+    padding: $spacer * 1.5;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+
+  .card-body {
+    padding: $spacer * 2;
+
+    @media (max-width: 768px) {
+      padding: $spacer;
+    }
+  }
+}
+
+// Elementos de Formulário
+.form-label {
+  font-weight: 500;
+  color: $gray-800;
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  position: relative;
+
+  .form-control {
+    border-radius: $border-radius;
+    border: 1px solid $gray-200;
+    transition: $transition;
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: $gray-600;
+    }
+  }
+
+  .input-group-text {
+    background-color: $gray-100;
+    border: 1px solid $gray-200;
+    border-right: none;
+    border-radius: $border-radius 0 0 $border-radius;
+    color: $gray-600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 $spacer * 0.5;
+
+    .bi-search {
+      font-size: 1rem;
+    }
+  }
+}
+
+// Botões
+.btn {
+  border-radius: $border-radius;
+  font-weight: 500;
+  transition: $transition;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &-success {
+    @include button-variant($success, $success);
+  }
+
+  &-danger {
+    @include button-variant($danger, $danger);
+  }
+
+  &-primary {
+    @include button-variant($primary, $primary);
+
+    &[disabled] {
+      background-color: $gray-600;
+      border-color: $gray-600;
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+  }
+
+  &-outline-primary {
+    border-color: $primary;
+    color: $primary;
+
+    &:hover {
+      background-color: $primary;
+      color: $white;
+    }
+  }
+
+  &-clear {
+    background-color: $danger;
+    border: none;
+    color: $white;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0 $border-radius $border-radius 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2;
+
+    .bi-x {
+      font-size: 1.2rem;
+      color: $white;
+    }
+
+    &:hover {
+      background-color: darken($danger, 10%);
+    }
+  }
+
+  &-block {
+    padding: $spacer * 1;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: $border-radius;
+    transition: $transition;
+
+    &:hover {
+      @include button-variant($success, $success);
+    }
+  }
+
+  &-sm {
+    font-size: 0.875rem;
+    padding: $spacer * 0.25 $spacer * 0.5;
+    line-height: 1.5;
+  }
+}
+
+// Listas e Containers
+.lists-container {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
+  .origin-container,
+  .destination-container {
+    transition: all 0.3s ease;
+    padding: 0 $spacer * 0.5;
+    flex-grow: 1;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      margin-bottom: $spacer;
+    }
+
+    &.minimized {
+      width: 150px;
+      flex: 0 0 150px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-left: 0;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        flex: 0 0 100%;
+        justify-content: center;
+        padding: $spacer * 0.25;
+      }
+
+      .minimized-info {
+        border: 2px solid $primary;
+        border-radius: $border-radius;
+        background-color: $gray-100;
+        padding: $spacer * 0.5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: auto;
+        text-align: center;
+        margin-left: auto;
+
+        @media (max-width: 768px) {
+          width: auto;
+          display: inline-flex;
+          justify-content: center;
+        }
+
+        .btn-primary {
+          font-size: $font-size-base * 0.8;
+          padding: $spacer * 0.4 $spacer * 0.6;
+          white-space: normal;
+          text-align: center;
+          line-height: 1.3;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: $spacer * 0.3;
+          background-color: $primary;
+          color: $white;
+          border: none;
+          border-radius: $border-radius;
+          width: 100%;
+
+          @media (max-width: 768px) {
+            font-size: $font-size-base * 0.75;
+            padding: $spacer * 0.3 $spacer * 0.5;
+            gap: $spacer * 0.2;
+            width: auto;
+            white-space: nowrap;
+          }
+
+          span {
+            display: block;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+
+  .list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 2px solid $primary;
+    border-radius: $border-radius;
+    padding: $spacer * 0.5;
+    background-color: $white;
+    @include scrollbar-styles;
+  }
+}
+
+.list-group {
+  border-radius: $border-radius;
+  border: 2px solid $gray-200;
+  max-height: 336px;
+  overflow-y: auto;
+  @include scrollbar-styles;
 
   .list-group-item {
     border: none;
@@ -344,7 +338,7 @@ $font-size-base: 1rem;
     border-bottom: 1px solid $gray-200;
     font-size: $font-size-base;
     color: $gray-800;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: $transition;
 
     &:hover {
       background-color: $gray-100;
@@ -355,38 +349,39 @@ $font-size-base: 1rem;
     &:last-child {
       border-bottom: none;
     }
-  }
-}
 
-.d-flex.gap-2 {
-  button {
-    flex: 1;
-    padding: $spacer * 0.75 $spacer;
-    font-size: $font-size-base;
-    font-weight: 500;
-    border-radius: $border-radius;
-    transition: background-color 0.2s ease, transform 0.2s ease;
-
-    &:hover {
-      transform: translateY(-1px);
+    &-action {
+      cursor: pointer;
     }
   }
 }
 
-.btn-block {
-  padding: $spacer * 1;
-  font-size: 1.1rem;
-  font-weight: 500;
-  border-radius: $border-radius;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+// Grupos de Pedidos
+.order-group {
+  margin-bottom: $spacer * 1.5;
 
-  &:hover {
-    background-color: darken($success, 10%);
-    transform: translateY(-1px);
+  .order-header {
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    border-bottom: 1px solid $gray-200;
+    border-radius: $border-radius $border-radius 0 0;
+    background-color: $warning;
+    color: $gray-800;
+    padding: $spacer * 0.75;
+  }
+
+  .list-group {
+    border: 1px solid $gray-200;
+    border-radius: 0 0 $border-radius $border-radius;
+    max-height: 240px;
+    overflow-y: auto;
+    @include scrollbar-styles;
   }
 }
 
-// Origin/Destination Headers
+// Cabeçalhos
 h4.bg-primary {
   font-size: 1.1rem;
   font-weight: 500;
@@ -397,7 +392,7 @@ h4.bg-primary {
   margin-bottom: 0;
 }
 
-// Modal Styling
+// Modais
 app-modal {
   .modal-content {
     border-radius: $border-radius;
@@ -421,7 +416,7 @@ app-modal {
       padding: $spacer * 2;
       text-align: center;
 
-      h1 {
+      h2 {
         font-size: 1.5rem;
         color: $gray-800;
         margin-bottom: $spacer;
@@ -435,121 +430,37 @@ app-modal {
   }
 }
 
-// Order Grouping Styles
-.order-group {
-  margin-bottom: $spacer * 1.5;
-
-  .order-header {
-    font-size: 1rem;
+// Adicione isso no seu arquivo SCSS
+.d-flex.gap-2 {
+  margin-bottom: $spacer * 1.5; // Adiciona espaço abaixo dos botões
+  
+  button {
+    flex: 1;
+    padding: $spacer * 0.75 $spacer;
+    font-size: $font-size-base;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05rem;
-    border-bottom: 1px solid $gray-200;
-    border-radius: $border-radius $border-radius 0 0;
-    background-color: $warning;
-    color: $gray-800;
-    padding: $spacer * 0.75;
-  }
+    border-radius: $border-radius;
+    transition: $transition;
 
-  .list-group {
-    border: 1px solid $gray-200;
-    border-radius: 0 0 $border-radius $border-radius;
-    max-height: 240px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: $gray-600 $gray-100;
-
-    &::-webkit-scrollbar {
-      width: 6px;
+    &:hover {
+      transform: translateY(-1px);
     }
-
-    &::-webkit-scrollbar-track {
-      background: $gray-100;
-      border-radius: $border-radius;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: $gray-600;
-      border-radius: $border-radius;
-
-      &:hover {
-        background: darken($gray-600, 10%);
-      }
-    }
-
-    .list-group-item {
-      border-bottom: 1px solid $gray-200;
-
-      &:last-child {
-        border-bottom: none;
-      }
+    
+    // Adiciona margem direita apenas no botão de Consultar Estoque
+    &.me-3 {
+      margin-right: $spacer * 1;
     }
   }
 }
 
-// Responsive Adjustments
+// Responsividade
 @media (max-width: 768px) {
-  .container-fluid {
-    padding: $spacer;
-  }
-
-  .card-body {
-    padding: $spacer;
-  }
-
-  .row.g-3 {
-    > div {
-      margin-bottom: $spacer;
-    }
+  .row.g-3 > div {
+    margin-bottom: $spacer;
   }
 
   .btn-block {
     font-size: 1rem;
     padding: $spacer * 0.75;
-  }
-
-  .lists-container {
-    flex-direction: column;
-
-    .origin-container, .destination-container {
-      width: 100%;
-      margin-bottom: $spacer;
-
-      &.col-md-10 {
-        flex: 0 0 100%;
-        max-width: 100%;
-      }
-
-      &.minimized {
-        width: 100%;
-        flex: 0 0 100%;
-        justify-content: center;
-        padding: $spacer * 0.25;
-
-        .minimized-info {
-          width: auto;
-          display: inline-flex;
-          justify-content: center;
-          padding: $spacer * 0.5;
-
-          .btn-primary {
-            font-size: $font-size-base * 0.75;
-            padding: $spacer * 0.3 $spacer * 0.5;
-            flex-direction: column;
-            gap: $spacer * 0.2;
-            width: auto;
-          }
-        }
-      }
-    }
-
-    .destination-container.minimized {
-      .minimized-info {
-        .btn-primary {
-          width: auto;
-          white-space: nowrap;
-        }
-      }
-    }
   }
 }
