@@ -20,12 +20,13 @@ export class OrdemCarregamentoComponent implements OnInit {
   dataFinal: string;
   originList: PedidoVenda[] = [];
   destinationList: PedidoVenda[] = [];
-  originalOrder: PedidoVenda[] = []; 
+  originalOrder: PedidoVenda[] = [];
   isOn = false;
   branchId: string;
   selectedBranch: Branch;
   localidadeId: number;
   selectedLocalidade: BusinessPartner;
+  isDestinationMinimized: boolean = false;
 
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
 
@@ -67,7 +68,7 @@ export class OrdemCarregamentoComponent implements OnInit {
         .subscribe({
           next: (pedidos) => {
             this.originList = this.sortPedidos(pedidos || []);
-            this.originalOrder = [...this.originList]; 
+            this.originalOrder = [...this.originList];
             this.destinationList = [];
           },
           error: (err) => {
@@ -191,5 +192,15 @@ export class OrdemCarregamentoComponent implements OnInit {
       origin: this.originList,
       destination: this.destinationList
     });
+  }
+
+  toggleDestinationMinimize() {
+    this.isDestinationMinimized = !this.isDestinationMinimized;
+  }
+
+  calculateTotalWeight(): number {
+    return this.destinationList.reduce((total, pedido) => {
+      return total + (pedido.Weight || 0);
+    }, 0);
   }
 }

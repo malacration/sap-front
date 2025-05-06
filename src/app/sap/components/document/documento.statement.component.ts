@@ -227,6 +227,7 @@ export class PedidoVenda{
   DocTotal: number
   ItemCode
   Dscription
+  Weight
   DocumentLines : Array<LinhasPedido>
   TaxExtension : TaxExtension
   BPL_IDAssignedToInvoice : string
