@@ -16,8 +16,8 @@ export class OrdemCarregamentoComponent implements OnInit {
   ngOnInit(): void {}
 
   nomeOrdemCarregamento: string = '';
-  dataInicial: string;
-  dataFinal: string;
+  dataInicial: string | null = null;
+  dataFinal: string | null = null;
   originList: PedidoVenda[] = [];
   destinationList: PedidoVenda[] = [];
   originalOrder: PedidoVenda[] = [];
@@ -56,18 +56,16 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   isFilterValid(): boolean {
-    return !!(
-      this.dataInicial &&
-      this.dataFinal &&
-      this.selectedBranch &&
-      this.selectedLocalidade
-    );
+    return !!(this.selectedBranch && this.selectedLocalidade);
   }
 
   filtrarPedidos() {
     if (this.isFilterValid()) {
+      // Usar datas vazias caso não sejam fornecidas
+      const startDate = this.dataInicial || '';
+      const endDate = this.dataFinal || '';
       this.orderSalesService
-        .getPedidos(this.dataInicial, this.dataFinal, this.branchId, this.localidadeId)
+        .getPedidos(startDate, endDate, this.branchId, this.localidadeId)
         .subscribe({
           next: (pedidos) => {
             this.originList = this.sortPedidos(pedidos || []);
@@ -86,7 +84,7 @@ export class OrdemCarregamentoComponent implements OnInit {
           }
         });
     } else {
-      console.warn('Please fill all filters');
+      console.warn('Please select branch and locality');
       this.originList = [];
       this.originalOrder = [];
       this.destinationList = [];
@@ -151,8 +149,15 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   moveToDestination(pedido: PedidoVenda) {
-    this.originList = this.originList.filter(item => item !== pedido);
-    this.destinationList = [...this.destinationList, pedido];
+    if (this.isOn) {
+      const docNum = pedido.DocNum;
+      const itemsToMove = this.originList.filter(item => item.DocNum === docNum);
+      this.originList = this.originList.filter(item => item.DocNum !== docNum);
+      this.destinationList = [...this.destinationList, ...itemsToMove];
+    } else {
+      this.originList = this.originList.filter(item => item !== pedido);
+      this.destinationList = [...this.destinationList, pedido];
+    }
   }
 
   moveToOrigin(pedido: PedidoVenda) {

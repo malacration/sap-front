@@ -43,19 +43,25 @@ export class FaturasService {
             )
     }
 
-      getPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<PedidoVenda[]> {
-        const params = new HttpParams()
-          .set('dataInicial', dataInicial)
-          .set('dataFinal', dataFinal)
-          .set('filial', filial.toString())
-          .set('localidade', localidade);
-    
-        return this.hppCliente
-          .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
-          .pipe(
-            map((response) => {
-              return response.content.map((item) => Object.assign(new PedidoVenda(), item));
-            })
-          );
+    getPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<PedidoVenda[]> {
+      let params = new HttpParams()
+        .set('filial', filial.toString())
+        .set('localidade', localidade.toString());
+  
+      if (dataInicial) {
+        params = params.set('dataInicial', dataInicial);
       }
+  
+      if (dataFinal) {
+        params = params.set('dataFinal', dataFinal);
+      }
+  
+      return this.hppCliente
+        .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
+        .pipe(
+          map((response) => {
+            return response.content.map((item) => Object.assign(new PedidoVenda(), item));
+          })
+        );
+    }
 }

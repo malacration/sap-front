@@ -17,12 +17,12 @@
               placeholder="Digite o nome da ordem"
             />
             <button
-              (click)="toggle()"
+            (click)="toggle()"
               class="btn"
-              [ngClass]="{ 'btn-success': isOn, 'btn-danger': !isOn }"
-            >
-              {{ isOn ? 'On' : 'Off' }}
-            </button>
+            [ngClass]="{ 'btn-success': isOn, 'btn-danger': !isOn }"
+          >
+            {{ isOn ? 'On' : 'Off' }}
+          </button>
           </div>
         </div>
         <div class="row g-3">
