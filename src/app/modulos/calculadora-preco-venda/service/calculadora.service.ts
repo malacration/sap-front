@@ -1,9 +1,8 @@
 import { Injectable } from "@angular/core"
-import { ConfigService } from "../../core/services/config.service"
 import { HttpClient } from "@angular/common/http"
 import { Observable, map, of } from "rxjs"
-import { Page } from "../../sap/model/page.model"
 import { Produto } from "../models/produto"
+import { ConfigService } from "../../../core/services/config.service"
 
 
 @Injectable({

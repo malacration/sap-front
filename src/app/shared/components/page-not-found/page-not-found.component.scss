@@ -1,0 +1,83 @@
+/* ------ Layout base ------ */
+.error-wrapper {
+    min-height: 100vh;
+    width: 100vw;
+    overflow: hidden;             // impede scroll lateral pelo glow
+    position: relative;
+    text-align: center;
+    background: radial-gradient(circle at 50% 20%, #0d1b2a 0%, #1b263b 40%, #415a77 100%);
+    padding: 3rem 1rem;
+    gap: 1.75rem;                 // espaço entre elementos
+  }
+  
+  /* ------ Efeito de estrelas (CSS puro) ------ */
+  .stars,
+  .stars::before,
+  .stars::after {
+    content: "";
+    z-index: 0;
+    pointer-events: none;  
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: transparent url("data:image/svg+xml,\
+      %3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E\
+        %3Ccircle cx='1' cy='1' r='1' fill='white'/%3E%3C/svg%3E") repeat;
+    animation: starMove 120s linear infinite;
+    opacity: .35;
+  }
+  .stars::before { animation-duration: 240s; opacity: .25; }
+  .stars::after  { animation-duration: 360s; opacity: .15; }
+  
+  @keyframes starMove { to { transform: translate3d(50%, 50%, 0); } }
+  
+  /* ------ DON’T PANIC ------ */
+  .dont-panic {
+    font-family: "Roboto Condensed", "Trebuchet MS", sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    /* Tamanho elástico: entre 2.5rem e 8rem */
+    font-size: clamp(2.5rem, 6vw + 1rem, 8rem);
+  
+    /* Glow refinado */
+    text-shadow:
+      0 0 8px rgba(255,255,255,.8),
+      0 0 20px rgba(23,162,184,.8),
+      0 0 40px rgba(23,162,184,.6);
+  
+    animation: pulse 6s ease-in-out infinite;
+  }
+  
+  /* ------ Código 404 ------ */
+  .code {
+    font-size: clamp(2rem, 3vw + .5rem, 4rem);
+    font-weight: 600;
+    color: #ffc107;               // amarelo “warning” do Admin LTE
+    margin: 0;
+  }
+  
+  /* ------ Descrição ------ */
+  .desc {
+    max-width: 40rem;
+    color: #e9ecef;
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+  
+  /* ------ Botão usa classes Admin LTE/Bootstrap (.btn-info) ------ */
+  .btn-info {
+    padding: .75rem 2.5rem;
+    font-size: 1.1rem;
+    box-shadow: 0 0 12px rgba(23,162,184,.5);
+  }
+  .btn-info:hover { box-shadow: 0 0 18px rgba(23,162,184,.75); }
+  
+  /* ------ Animações ------ */
+  @keyframes pulse {
+    0%,100% { transform: scale(1);   opacity: 1; }
+    50%     { transform: scale(1.05); opacity: .9; }
+  }
+  

@@ -44,4 +44,28 @@ export class ItensComponent implements OnInit {
       this.changeItens.emit(this.itens)
     }
   }
+
+  arredondarParaTroco(){
+    this.aplicarDescontoCentavos()
+  }
+
+  //Esse metodo gera valores totalmente inconsistentes, nao acredito que seria adequado
+  aplicarDescontoCentavos() {
+    // 1. Extrair centavos do total
+    const centavos = Math.round((this.total() * 100) % 100);
+
+    // 2. Achar o item com menor valor total
+    const itemMaisBarato = this.itens.reduce((menor, atual) => {
+      return atual.totalSemFormatacao() < menor.totalSemFormatacao() ? atual : menor;
+    });
+  
+    // 3. Calcular o desconto percentual necessário
+    const descontoPercentual = parseFloat(((centavos / itemMaisBarato.unitPriceLiquid())).toFixed(4));
+
+    if(descontoPercentual > 0)
+      itemMaisBarato.descontoVendedorPorcentagem = itemMaisBarato.descontoVendedorPorcentagem+descontoPercentual
+    // 4. Aplicar o desconto ao item escolhido
+    alert(descontoPercentual)
+  }
+  
 }

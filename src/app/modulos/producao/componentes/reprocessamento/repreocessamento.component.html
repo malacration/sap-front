@@ -1,0 +1,46 @@
+<div class="card card-primary">
+    <div class="card-header">
+        <h3 class="card-title">Selecione</h3>
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <div class="row">
+                <label class="col-auto col-form-label">Cod. Produto Acabado</label>
+                <div class="col">
+                    <input class="form-control" [(ngModel)]="codProdutoAcabado">
+                </div>
+                <label class="col-auto col-form-label">Quantidade</label>
+                <div class="col">
+                    <input type="text" class="form-control" [(ngModel)]="quantidade">
+                </div>
+                <label class="col-auto col-form-label">Cod. Depósito</label>
+                <div class="col">
+                    <input class="form-control" [(ngModel)]="codDeposito">
+                </div>
+                <label class="col-auto col-form-label">Cod. Produto intermediário</label>
+                <div class="col">
+                    <input class="form-control" [(ngModel)]="codImtermediario">
+                </div>
+                <div>
+                    <button (click)="selecionar()" class="btn btn-primary">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="loading" class="overlay d-flex flex-column align-items-center justify-content-center">
+        <div>
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+</div>
+
+
+
+Selecione o PAC
+<br>
+Selecione o Deposito
+<br>
+modal - selecione
+<br>
+selecione o PDC
+
