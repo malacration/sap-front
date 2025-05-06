@@ -4,6 +4,7 @@ import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { PedidoVenda } from '../document/documento.statement.component';
 import { FaturasService } from '../../service/fatura/faturas.service';
+import { NextLink } from '../../model/next-link';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -25,6 +26,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   isDestinationMinimized = false;
   originSearch = '';
   destinationSearch = '';
+  pedidosNext
 
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
   @ViewChild('returnAllModal', { static: true }) returnAllModal: ModalComponent;
@@ -32,6 +34,10 @@ export class OrdemCarregamentoComponent implements OnInit {
   constructor(private orderSalesService: FaturasService) {}
 
   ngOnInit(): void {}
+
+  changePageFunction($event){
+    alert($event)
+  }
 
   toggle(): void {
     this.isOn = !this.isOn;
@@ -73,8 +79,9 @@ export class OrdemCarregamentoComponent implements OnInit {
       });
   }
 
-  private handlePedidosSuccess(pedidos: PedidoVenda[]): void {
-    this.originList = this.sortPedidos(pedidos || []);
+  private handlePedidosSuccess(pedidos: NextLink<PedidoVenda>): void {
+    this.pedidosNext = pedidos
+    this.originList = this.sortPedidos(pedidos.content || []);
     this.originalOrder = [...this.originList];
     this.resetSearchFields();
   }

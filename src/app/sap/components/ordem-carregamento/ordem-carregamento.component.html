@@ -154,6 +154,12 @@
                       {{ pedido.CardCode }} - {{ pedido.CardName }} - {{ pedido.BuyUnitMsr }}
                     </li>
                   </ul>
+                   
+                </div>
+                <div class="order-group">
+                  <button class="btn btn-primary" (click)="changePageFunction(pedidosNext.nextLink)">
+                    Carregar Mais
+                  </button>
                 </div>
               </ng-container>
               

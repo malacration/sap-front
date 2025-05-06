@@ -43,7 +43,7 @@ export class FaturasService {
             )
     }
 
-    getPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<PedidoVenda[]> {
+    getPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<NextLink<PedidoVenda>> {
       let params = new HttpParams()
         .set('filial', filial.toString())
         .set('localidade', localidade.toString());
@@ -60,7 +60,8 @@ export class FaturasService {
         .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
         .pipe(
           map((response) => {
-            return response.content.map((item) => Object.assign(new PedidoVenda(), item));
+            response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+            return response
           })
         );
     }
