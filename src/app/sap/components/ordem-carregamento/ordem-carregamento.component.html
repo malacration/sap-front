@@ -100,6 +100,19 @@
               </button>
             </div>
             <div class="list-container">
+              <div class="mb-2">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="originSearch"
+                    placeholder="Pesquisar por número do pedido..."
+                  />
+                </div>
+              </div>
               <div *ngFor="let group of getGroupedOriginList()" class="order-group">
                 <div class="order-header bg-warning text-dark p-2 rounded-top">
                   Pedido {{ group.docNum }}
@@ -121,8 +134,24 @@
           <div class="col-md-6 destination-container" [ngClass]="{'minimized': isDestinationMinimized}">
             <div class="d-flex justify-content-between align-items-center mb-2" *ngIf="!isDestinationMinimized">
               <h4 class="bg-primary text-white p-2 rounded">Destino</h4>
+              <button class="btn btn-warning" (click)="openReturnAllModal()" *ngIf="destinationList.length > 0">
+                Voltar Todos
+              </button>
             </div>
             <div class="list-container" *ngIf="!isDestinationMinimized">
+              <div class="mb-2">
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="destinationSearch"
+                    placeholder="Pesquisar por número do pedido..."
+                  />
+                </div>
+              </div>
               <div *ngFor="let group of getGroupedDestinationList()" class="order-group">
                 <div class="order-header bg-warning text-dark p-2 rounded-top">
                   Pedido {{ group.docNum }}
@@ -144,7 +173,8 @@
             </div>
             <div class="minimized-info text-center p-3" *ngIf="isDestinationMinimized">
               <button class="btn btn-primary btn-sm" (click)="toggleDestinationMinimize()">
-                {{ destinationList.length }} Pedidos<br>{{ calculateTotalWeight() | number:'1.2-2' }} kg
+                <span>{{ destinationList.length }} Pedidos</span>
+                <span>{{ calculateTotalWeight() | number:'1.2-2' }} kg</span>
               </button>
             </div>
           </div>
@@ -175,5 +205,20 @@
   <div class="text-center">
     <h1>Consulta de Estoque</h1>
     <p>Conteúdo do modal de estoque aqui.</p>
+  </div>
+</app-modal>
+
+<!-- Modal de Confirmação Voltar Todos -->
+<app-modal
+  #returnAllModal
+  [title]="'Confirmar Ação'"
+>
+  <div class="text-center">
+    <h1>Confirmar Retorno</h1>
+    <p>Você tem certeza que deseja voltar todos os pedidos para a lista de origem?</p>
+    <div class="d-flex justify-content-center gap-2 mt-3">
+      <button class="btn btn-danger" (click)="returnAllModal.closeModal()">Cancelar</button>
+      <button class="btn btn-success" (click)="returnAllToOrigin()">Confirmar</button>
+    </div>
   </div>
 </app-modal>

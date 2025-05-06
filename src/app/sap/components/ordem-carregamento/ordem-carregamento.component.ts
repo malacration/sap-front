@@ -27,8 +27,11 @@ export class OrdemCarregamentoComponent implements OnInit {
   localidadeId: number;
   selectedLocalidade: BusinessPartner;
   isDestinationMinimized: boolean = false;
+  originSearch: string = '';
+  destinationSearch: string = '';
 
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
+  @ViewChild('returnAllModal', { static: true }) returnAllModal: ModalComponent;
 
   toggle() {
     this.isOn = !this.isOn;
@@ -70,12 +73,16 @@ export class OrdemCarregamentoComponent implements OnInit {
             this.originList = this.sortPedidos(pedidos || []);
             this.originalOrder = [...this.originList];
             this.destinationList = [];
+            this.originSearch = '';
+            this.destinationSearch = '';
           },
           error: (err) => {
             console.error('Error fetching pedidos:', err);
             this.originList = [];
             this.originalOrder = [];
             this.destinationList = [];
+            this.originSearch = '';
+            this.destinationSearch = '';
           }
         });
     } else {
@@ -83,6 +90,8 @@ export class OrdemCarregamentoComponent implements OnInit {
       this.originList = [];
       this.originalOrder = [];
       this.destinationList = [];
+      this.originSearch = '';
+      this.destinationSearch = '';
     }
   }
 
@@ -100,7 +109,8 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   getGroupedOriginList(): { docNum: string, items: PedidoVenda[] }[] {
-    const grouped = this.originList.reduce((acc, pedido) => {
+    const filteredList = this.filterList(this.originList, this.originSearch);
+    const grouped = filteredList.reduce((acc, pedido) => {
       const key = String(pedido.DocNum ?? 'unknown');
       if (!acc[key]) {
         acc[key] = [];
@@ -118,7 +128,8 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   getGroupedDestinationList(): { docNum: string, items: PedidoVenda[] }[] {
-    const grouped = this.destinationList.reduce((acc, pedido) => {
+    const filteredList = this.filterList(this.destinationList, this.destinationSearch);
+    const grouped = filteredList.reduce((acc, pedido) => {
       const key = String(pedido.DocNum ?? 'unknown');
       if (!acc[key]) {
         acc[key] = [];
@@ -177,12 +188,21 @@ export class OrdemCarregamentoComponent implements OnInit {
     }
   }
 
-  filterList(list: any[], search: string): any[] {
+  openReturnAllModal() {
+    this.returnAllModal.openModal();
+  }
+
+  returnAllToOrigin() {
+    this.destinationList.forEach(pedido => this.moveToOrigin(pedido));
+    this.returnAllModal.closeModal();
+  }
+
+  filterList(list: PedidoVenda[], search: string): PedidoVenda[] {
     if (!search) {
       return list;
     }
     return list.filter((item) =>
-      item.CardName.toLowerCase().includes(search.toLowerCase())
+      String(item.DocNum ?? '').toLowerCase().includes(search.toLowerCase())
     );
   }
 
