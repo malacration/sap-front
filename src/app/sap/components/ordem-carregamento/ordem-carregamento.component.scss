@@ -238,7 +238,6 @@ $transition: all 0.2s ease;
     transition: all 0.3s ease;
     padding: 0 $spacer * 0.5;
     flex-grow: 1;
-
     @media (max-width: 768px) {
       width: 100%;
       margin-bottom: $spacer;
@@ -246,12 +245,14 @@ $transition: all 0.2s ease;
 
     &.minimized {
       width: 150px;
-      flex: 0 0 150px;
+      flex: 0 0 160px ;
+      padding-top: 50px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: flex-end;
       padding-left: 0;
+      margin-left:30px;
 
       @media (max-width: 768px) {
         width: 100%;
