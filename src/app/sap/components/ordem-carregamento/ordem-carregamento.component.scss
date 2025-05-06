@@ -56,6 +56,8 @@ $font-size-base: 1rem;
 }
 
 .input-group {
+  position: relative;
+
   .form-control {
     border-radius: $border-radius;
     border: 1px solid $gray-200;
@@ -81,24 +83,36 @@ $font-size-base: 1rem;
       transform: translateY(-1px);
     }
   }
-
-.btn-clear {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: $gray-600;
-  font-size: 1.2rem;
-  cursor: pointer;
-  z-index: 10;
-
-  &:hover {
-    color: $danger;
-  }
 }
 
+// Estilizar o botão de limpar no lado direito
+.btn-clear {
+  background-color: $danger;
+  border: none;
+  color: $white;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0 $border-radius $border-radius 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 2;
+
+  i.bi.bi-x {
+    font-size: 1.2rem;
+    color: $white; // Garantir que o "X" seja branco
+  }
+
+  &:hover {
+    background-color: darken($danger, 10%);
+  }
+}
 
 // Toggle Button
 .btn {
@@ -457,5 +471,4 @@ app-modal {
       }
     }
   }
-}
 }

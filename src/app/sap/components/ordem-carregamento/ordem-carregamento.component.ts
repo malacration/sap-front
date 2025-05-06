@@ -37,7 +37,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   limparDataInicial() {
     this.dataInicial = null;
   }
-
+  
   limparDataFinal() {
     this.dataFinal = null;
   }
