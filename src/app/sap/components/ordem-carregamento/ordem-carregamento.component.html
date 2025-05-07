@@ -51,7 +51,7 @@
                 title="Limpar Data Inicial"
                 aria-label="Limpar data inicial"
               >
-                <i class="bi bi-x"></i>
+                <i class="fas fa-trash"></i>
               </button>
             </div>
           </div>
@@ -73,7 +73,7 @@
                 title="Limpar Data Final"
                 aria-label="Limpar data final"
               >
-                <i class="bi bi-x"></i>
+                <i class="fas fa-trash"></i>
               </button>
             </div>
           </div>
@@ -113,7 +113,7 @@
           <!-- Lista de Origem -->
           <div class="col-md-6 origin-container" [ngClass]="{'col-md-10': isDestinationMinimized}">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="bg-primary text-white p-2 rounded">Origem</h4>
+              <h4 class="bg-primary text-white p-1 rounded">Origem</h4>
               <button 
                 class="btn btn-outline-primary" 
                 (click)="toggleDestinationMinimize()"
@@ -128,7 +128,7 @@
               <div class="mb-2">
                 <div class="input-group">
                   <span class="input-group-text">
-                    <i class="bi bi-search"></i>
+                    <i class="fas fa-search"></i>
                   </span>
                   <input
                     type="text"
@@ -141,7 +141,7 @@
               </div>
               
               <!-- Lista de Pedidos Origem -->
-              <ng-container *ngIf="getGroupedList(originList, originSearch).length; else emptyOrigin">
+              <ng-container *ngIf="getGroupedList(originList, originSearch).length; else emptyOrigin" class="cachorro">
                 <div *ngFor="let group of getGroupedList(originList, originSearch)" class="order-group">
                   <div class="order-header bg-warning text-dark p-2 rounded-top">
                     Pedido {{ group.docNum }}
@@ -177,7 +177,7 @@
           <div class="col-md-6 destination-container" [ngClass]="{'minimized': isDestinationMinimized}">
             <!-- Cabeçalho Destino (visível quando não minimizado) -->
             <div class="d-flex justify-content-between align-items-center mb-2" *ngIf="!isDestinationMinimized">
-              <h4 class="bg-primary text-white p-2 rounded">Destino</h4>
+              <h4 class="bg-primary text-white p-1 rounded">Destino</h4>
               <button 
                 class="btn btn-warning" 
                 (click)="openReturnAllModal()" 
@@ -194,7 +194,7 @@
               <div class="mb-2">
                 <div class="input-group">
                   <span class="input-group-text">
-                    <i class="bi bi-search"></i>
+                    <i class="fas fa-search"></i>
                   </span>
                   <input
                     type="text"

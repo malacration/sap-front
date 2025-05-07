@@ -37,7 +37,6 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   changePageFunction($event){
     this.orderSalesService.search($event).subscribe(it => {
-      // alert($event)
       this.pedidosNext.content.push(...it.content)
       this.pedidosNext.nextLink = it.nextLink
     })
