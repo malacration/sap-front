@@ -36,7 +36,11 @@ export class OrdemCarregamentoComponent implements OnInit {
   ngOnInit(): void {}
 
   changePageFunction($event){
-    alert($event)
+    this.orderSalesService.search($event).subscribe(it => {
+      // alert($event)
+      this.pedidosNext.content.push(...it.content)
+      this.pedidosNext.nextLink = it.nextLink
+    })
   }
 
   toggle(): void {

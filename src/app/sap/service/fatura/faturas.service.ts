@@ -65,4 +65,13 @@ export class FaturasService {
           })
         );
     }
+
+      search(keyWord) : Observable<Page<PedidoVenda>>{
+        return this.hppCliente
+          .post<Page<PedidoVenda>>(this.url+"/searchAll",keyWord)
+          .pipe(map((page) => {
+            page.content = page.content.map((ff) => Object.assign(new PedidoVenda(),ff) )
+            return page
+          }))
+      }
 }
