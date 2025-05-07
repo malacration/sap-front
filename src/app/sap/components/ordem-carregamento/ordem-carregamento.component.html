@@ -113,7 +113,7 @@
           <!-- Lista de Origem -->
           <div class="col-md-6 origin-container" [ngClass]="{'col-md-10': isDestinationMinimized}">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h4 class="bg-primary text-white p-1 rounded">Origem</h4>
+              <h4 class="nome-lista">Origem</h4>
               <button 
                 class="btn btn-outline-primary" 
                 (click)="toggleDestinationMinimize()"
@@ -177,7 +177,7 @@
           <div class="col-md-6 destination-container" [ngClass]="{'minimized': isDestinationMinimized}">
             <!-- Cabeçalho Destino (visível quando não minimizado) -->
             <div class="d-flex justify-content-between align-items-center mb-2" *ngIf="!isDestinationMinimized">
-              <h4 class="bg-primary text-white p-1 rounded">Destino</h4>
+              <h4 class="nome-lista">Destino</h4>
               <button 
                 class="btn btn-warning" 
                 (click)="openReturnAllModal()" 
