@@ -5,6 +5,8 @@ import { ConfigService } from '../../../core/services/config.service';
 import { Fatura } from '../../model/fatura/fatura.model';
 import { Page } from '../../model/page.model';
 import { Parcela } from '../../model/fatura/parcela.model';
+import { NextLink } from '../../model/next-link';
+import { PedidoVenda } from '../../components/document/documento.statement.component';
 
 @Injectable({
   providedIn: 'root'
@@ -40,4 +42,36 @@ export class FaturasService {
                 { observe: 'body', responseType: 'blob' as 'json' }
             )
     }
+
+    getPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<NextLink<PedidoVenda>> {
+      let params = new HttpParams()
+        .set('filial', filial.toString())
+        .set('localidade', localidade.toString());
+  
+      if (dataInicial) {
+        params = params.set('dataInicial', dataInicial);
+      }
+  
+      if (dataFinal) {
+        params = params.set('dataFinal', dataFinal);
+      }
+  
+      return this.hppCliente
+        .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
+        .pipe(
+          map((response) => {
+            response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+            return response
+          })
+        );
+    }
+
+      search(keyWord) : Observable<NextLink<PedidoVenda>>{
+        return this.hppCliente
+          .post<NextLink<PedidoVenda>>(this.url+"/searchAll",keyWord)
+          .pipe(map((page) => {
+            page.content = page.content.map((ff) => Object.assign(new PedidoVenda(),ff) )
+            return page
+          }))
+      }
 }

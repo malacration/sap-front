@@ -221,10 +221,13 @@ export class DocumentStatementComponent implements OnInit {
 
 export class PedidoVenda{
   CardCode: string
+  CardName : string
   DocNum: number
   DocDate: string
   DocTotal: number
   ItemCode
+  Dscription
+  Weight
   DocumentLines : Array<LinhasPedido>
   TaxExtension : TaxExtension
   BPL_IDAssignedToInvoice : string
@@ -237,6 +240,24 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
+  DocEntry : number
+  Quantity: number
+  BuyUnitMsr
+  U_Localidade
+  Weight1
+  Name
+  OnHand: number;
+  IsCommited: number;
+  OnOrder: number;
+  DflWhs: string;
+
+  get diminuicaoEstoque(){
+    return this.OnHand - this.Quantity
+  }
+
+  get somaEstoque() {
+    return this.OnHand - this.IsCommited + this.OnOrder;
+  }
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

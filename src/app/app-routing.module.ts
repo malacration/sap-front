@@ -20,6 +20,7 @@ import { CustoMecadoriaStatementComponent } from './calculadora-preco-venda/comp
 import { CalculadoraStatementComponent } from './calculadora-preco-venda/components/statement/statement.component';
 import { SelecaoProdutoComponent } from './calculadora-preco-venda/components/selecao-produto/selecao-produto.component';
 import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/components/formacao/formacao.component';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 
  let routes: Routes = [
   {
@@ -89,6 +90,35 @@ import { FormacaoPrecoStatementComponent } from './calculadora-preco-venda/compo
         data: ["icon:fas fa-exchange-alt"],
         canActivate: [authGuard],
         component: TransferenciaClientesComponent
+      },
+    ]
+  },
+  {
+    path: 'carregamento',
+    title: 'Carregamento',
+    data: ["icon:fas fa-truck"],
+    canActivate: [authGuard],
+    children: [ 
+      {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'parceiro-negocio/:cardCode',
+        title: 'Parceiro Negocio',
+        data: ["hidden"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'ordem-carregamento',
+        title: 'Ordem de Carregamento',
+        data: ["icon:fas fa-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoComponent
       },
     ]
   },

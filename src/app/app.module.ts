@@ -105,6 +105,9 @@ import { TrocaComponent } from './sap/components/venda-futura/troca/troca.compon
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 import { CalculadoraModule } from './calculadora-preco-venda/calculadora.module';
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { LocalidadeSelectComponent } from './sap/components/form/localidade/localidade-select.component';
+import { BranchSustenSelectComponent } from './sap/components/form/branch-susten/branch-susten-select.component';
 
 
 registerLocaleData(localeBr);
@@ -158,6 +161,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListComponent,
     CotacoesStatementComponent,
     PedidosVendaStatementComponent,
+    OrdemCarregamentoComponent,
+    LocalidadeSelectComponent,
+    BranchSustenSelectComponent,
     ManageRolesComponent,
     AssignRoleComponent,
     DocumentCoreComponent,

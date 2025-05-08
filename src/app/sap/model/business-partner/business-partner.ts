@@ -20,6 +20,8 @@ export class BusinessPartner implements Actiable{
     Referencias : ReferenciaComercial
     CreditLine : number = 0
     Balance : number = 0
+    U_Localidade: number
+    Name : string
 
     private _addressOptions
     private _referenceOptions
