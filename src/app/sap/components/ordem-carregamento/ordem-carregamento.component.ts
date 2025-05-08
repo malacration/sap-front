@@ -37,8 +37,7 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   changePageFunction($event){
     this.orderSalesService.search($event).subscribe(it => {
-      this.pedidosNext.content.push(...it.content)
-      this.pedidosNext.nextLink = it.nextLink
+      this.handlePedidosSuccess(it)
     })
   }
 
@@ -84,7 +83,7 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   private handlePedidosSuccess(pedidos: NextLink<PedidoVenda>): void {
     this.pedidosNext = pedidos
-    this.originList = this.sortPedidos(pedidos.content || []);
+    this.originList = [...this.originList, ...this.sortPedidos(pedidos.content || [])];
     this.originalOrder = [...this.originList];
     this.resetSearchFields();
   }
