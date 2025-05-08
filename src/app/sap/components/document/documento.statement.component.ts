@@ -241,11 +241,23 @@ export class PedidoVenda{
   Frete : number
   VehicleState: string
   DocEntry : number
-  Quantity
+  Quantity: number
   BuyUnitMsr
   U_Localidade
   Weight1
   Name
+  OnHand: number;
+  IsCommited: number;
+  OnOrder: number;
+  DflWhs: string;
+
+  get diminuicaoEstoque(){
+    return this.OnHand - this.Quantity
+  }
+
+  get somaEstoque() {
+    return this.OnHand - this.IsCommited + this.OnOrder;
+  }
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

@@ -1,159 +1,169 @@
 .name-top {
-    border-bottom: 8px solid transparent;
-  }
-  
-  .btn-2 {
-    margin-left: 8px;
-  }
-  
-  .btn-clear {
-    background-color: red;
-    color: white;
-    font-size: 14px;
-    padding: 4px 8px;
-  }
-  
-  .nome-lista {
-    color: green;
-    border-bottom: 2px solid green;
-    padding-bottom: 4px;
-    font-size: 18px;
-  }
-  
-  .list-container {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px;
-  }
-  
-  .scrollable-list {
-    max-height: 480px; /* Altura para ~12 itens */
-    overflow-y: auto;
-    padding: 8px;
-    flex: 1; /* Ensure it takes available space */
-  }
-  
-  .list-group {
-    margin-bottom: 0;
-  }
-  
-  .list-group-item {
-    border: none;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .list-group-item:hover {
-    background-color: #f8f9fa;
-  }
-  
-  .order-header {
-    font-weight: bold;
-    font-size: 14px;
-    padding: 6px;
-  }
-  
+  border-bottom: 8px solid transparent;
+}
+
+.btn-2 {
+  margin-left: 8px;
+}
+
+.btn-clear {
+  background-color: red;
+  color: white;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.nome-lista {
+  color: green;
+  border-bottom: 2px solid green;
+  padding-bottom: 4px;
+  font-size: 18px;
+}
+
+.list-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.scrollable-list {
+  max-height: 480px; /* Altura para ~12 itens */
+  overflow-y: auto;
+  padding: 8px;
+  flex: 1; /* Ensure it takes available space */
+}
+
+.list-group {
+  margin-bottom: 0;
+}
+
+.list-group-item {
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.order-header {
+  font-weight: bold;
+  font-size: 14px;
+  padding: 6px;
+}
+
+.lists-container {
+  display: flex;
+  flex-direction: row; /* Horizontal layout */
+  gap: 16px; /* Space between origin and destination */
+  width: 100%;
+}
+
+.origin-container {
+  flex: 1; /* Take remaining space */
+  min-width: 0; /* Prevent overflow */
+}
+
+.origin-container.expanded {
+  flex: 1; /* Expand to take most space when destination is minimized */
+}
+
+.destination-container {
+  flex: 1; /* Equal width when not minimized */
+  min-width: 0;
+}
+
+.destination-container.minimized {
+  flex: 0 0 100px; /* Fixed width when minimized */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.minimized-info {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column; /* Vertical layout for minimized content */
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%; /* Full height of container */
+}
+
+.minimized-info button {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.minimized-info span {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.btn {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+.input-group {
+  font-size: 14px;
+}
+
+.form-control {
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+.card-header {
+  padding: 8px;
+}
+
+.card-body {
+  padding: 12px;
+}
+
+.scrollable-list .btn {
+  margin-top: 8px; /* Espaçamento para o botão Carregar Mais */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .lists-container {
-    display: flex;
-    flex-direction: row; /* Horizontal layout */
-    gap: 16px; /* Space between origin and destination */
-    width: 100%;
+    flex-direction: column; /* Stack vertically on small screens */
   }
-  
-  .origin-container {
-    flex: 1; /* Take remaining space */
-    min-width: 0; /* Prevent overflow */
-  }
-  
-  .origin-container.expanded {
-    flex: 1; /* Expand to take most space when destination is minimized */
-  }
-  
-  .destination-container {
-    flex: 1; /* Equal width when not minimized */
-    min-width: 0;
-  }
-  
+
   .destination-container.minimized {
-    flex: 0 0 100px; /* Fixed width when minimized */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
+    flex: 0 0 auto; /* Reset fixed width */
+    width: 100%; /* Full width on small screens */
   }
-  
-  .minimized-info {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 6px;
-    display: flex;
-    flex-direction: column; /* Vertical layout for minimized content */
-    align-items: center;
-    justify-content: center;
+
+  .origin-container {
     width: 100%;
-    height: 100%; /* Full height of container */
   }
-  
-  .minimized-info button {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-  
-  .minimized-info span {
-    font-size: 12px;
-    margin-bottom: 4px;
-  }
-  
-  .btn {
-    font-size: 14px;
-    padding: 6px 12px;
-  }
-  
-  .input-group {
-    font-size: 14px;
-  }
-  
-  .form-control {
-    font-size: 14px;
-    padding: 4px 8px;
-  }
-  
-  .card-header {
+
+  .minimized-info {
+    flex-direction: row; /* Horizontal layout for minimized content on small screens */
+    justify-content: space-between;
     padding: 8px;
   }
-  
-  .card-body {
-    padding: 12px;
+
+  .minimized-info span {
+    margin-bottom: 0;
+    margin-right: 8px;
   }
-  
-  .scrollable-list .btn {
-    margin-top: 8px; /* Espaçamento para o botão Carregar Mais */
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .lists-container {
-      flex-direction: column; /* Stack vertically on small screens */
-    }
-  
-    .destination-container.minimized {
-      flex: 0 0 auto; /* Reset fixed width */
-      width: 100%; /* Full width on small screens */
-    }
-  
-    .origin-container {
-      width: 100%;
-    }
-  
-    .minimized-info {
-      flex-direction: row; /* Horizontal layout for minimized content on small screens */
-      justify-content: space-between;
-      padding: 8px;
-    }
-  
-    .minimized-info span {
-      margin-bottom: 0;
-      margin-right: 8px;
-    }
-  }
+}
+
+.stock-highlight {
+  background-color: #007bff; /* Cor azul do Bootstrap (bg-primary) */
+  color: #fff; /* Texto branco para contraste */
+  padding: 2px 6px; /* Pequeno preenchimento para melhor aparência */
+  border-radius: 3px; /* Bordas arredondadas */
+  margin-left: 8px; /* Espaçamento à esquerda */
+  font-weight: bold; /* Texto em negrito para destaque */
+  transition: background-color 0.3s ease; /* Suaviza a transição de cor */
+}

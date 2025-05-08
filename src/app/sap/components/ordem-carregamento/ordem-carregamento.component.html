@@ -5,7 +5,7 @@
       <div class="card-header bg-primary text-white">
         <h3 class="card-title mb-0 font-weight-bold">Ordem de Carregamento</h3>
       </div>
-      
+
       <div class="card-body">
         <!-- Nome da Ordem -->
         <div class="mb-2">
@@ -83,7 +83,7 @@
               (selectedOut)="selectBranch($event)"
             ></app-branch-susten-select>
           </div>
-          
+
           <div class="col-md-3 col-sm-6">
             <app-localidade-select
               #localidade
@@ -97,8 +97,8 @@
           <button class="btn btn-primary" (click)="filtrarPedidos()" [disabled]="!isFilterValid">
             Filtrar
           </button>
-          <button class="btn btn-primary btn-2" (click)="consultarEstoque()">
-            Consultar Estoque
+          <button class="btn btn-primary btn-2" (click)="filtrarEstoquePedidos()">
+            Filtrar Estoque
           </button>
         </div>
       </div>
@@ -113,15 +113,15 @@
           <div class="origin-container flex-grow-1" [ngClass]="{'expanded': isDestinationMinimized}">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h4 class="nome-lista">Origem</h4>
-              <button 
-                class="btn btn-outline-primary" 
+              <button
+                class="btn btn-outline-primary"
                 (click)="toggleDestinationMinimize()"
                 aria-label="Toggle destination panel"
               >
                 {{ isDestinationMinimized ? 'Maximizar Destino' : 'Minimizar Destino' }}
               </button>
             </div>
-            
+
             <div class="list-container">
               <!-- Pesquisa Origem (fixa fora da área de rolagem) -->
               <div class="mb-1">
@@ -138,7 +138,7 @@
                   />
                 </div>
               </div>
-              
+
               <!-- Área rolável para Lista de Pedidos Origem -->
               <div class="scrollable-list">
                 <ng-container *ngIf="getGroupedList(originList, originSearch).length; else emptyOrigin">
@@ -147,22 +147,27 @@
                       Pedido {{ group.docNum }}
                     </div>
                     <ul class="list-group mb-2">
-                      <li 
-                        *ngFor="let pedido of group.items" 
+                      <li
+                        *ngFor="let pedido of group.items"
                         class="list-group-item list-group-item-action"
                         (click)="moveToDestination(pedido)"
                         tabindex="0"
                       >
-                        {{ pedido.CardCode }} - {{ pedido.CardName }} - {{ pedido.BuyUnitMsr }}
+                      {{ pedido.CardCode }} - {{ pedido.CardName }} - {{ pedido.BuyUnitMsr }} - {{pedido.Quantity}}
+                        <span *ngIf="isStockFiltered" class="stock-highlight"> = {{ pedido.OnHand }}</span>
                       </li>
                     </ul>
                   </div>
                   <!-- Botão Carregar Mais (dentro da área de rolagem) -->
-                  <button class="btn btn-primary" (click)="changePageFunction(pedidosNext.nextLink)">
+                  <button
+                    class="btn btn-primary"
+                    (click)="changePageFunction(pedidosNext.nextLink)"
+                    *ngIf="pedidosNext?.nextLink"
+                  >
                     Carregar Mais
                   </button>
                 </ng-container>
-                
+
                 <ng-template #emptyOrigin>
                   <div class="text-center text-muted p-2">
                     Nenhum pedido encontrado.
@@ -175,18 +180,18 @@
           <!-- Lista de Destino -->
           <div class="destination-container" [ngClass]="{'minimized': isDestinationMinimized}">
             <!-- Cabeçalho Destino (visível quando não minimizado) -->
-            <div class="d-flex justify-content-between align-items-center mb-2" *ngIf="!isDestinationMinimized">
+            <div class="d-flex justify-content-between align-items-center mb-peco2" *ngIf="!isDestinationMinimized">
               <h4 class="nome-lista">Destino</h4>
-              <button 
-                class="btn btn-warning" 
-                (click)="openReturnAllModal()" 
+              <button
+                class="btn btn-warning"
+                (click)="openReturnAllModal()"
                 *ngIf="destinationList.length > 0"
                 aria-label="Retornar todos os pedidos"
               >
                 Voltar Todos
               </button>
             </div>
-            
+
             <!-- Conteúdo Destino (visível quando não minimizado) -->
             <div class="list-container" *ngIf="!isDestinationMinimized">
               <!-- Pesquisa Destino (fixa fora da área de rolagem) -->
@@ -204,7 +209,7 @@
                   />
                 </div>
               </div>
-              
+
               <!-- Área rolável para Lista de Pedidos Destino -->
               <div class="scrollable-list">
                 <ng-container *ngIf="getGroupedList(destinationList, destinationSearch).length; else emptyDestination">
@@ -213,18 +218,19 @@
                       Pedido {{ group.docNum }}
                     </div>
                     <ul class="list-group mb-2">
-                      <li 
-                        *ngFor="let pedido of group.items" 
+                      <li
+                        *ngFor="let pedido of group.items"
                         class="list-group-item list-group-item-action"
                         (click)="moveToOrigin(pedido)"
                         tabindex="0"
                       >
-                        {{ pedido.CardCode }} - {{ pedido.CardName }} - {{ pedido.BuyUnitMsr }}
+                        {{ pedido.CardCode }} - {{ pedido.CardName }} - {{ pedido.BuyUnitMsr }} - {{pedido.Quantity}}
+                        <span class="stock-highlight">Estoque após: {{ pedido.diminuicaoEstoque }}</span>
                       </li>
                     </ul>
                   </div>
                 </ng-container>
-                
+
                 <ng-template #emptyDestination>
                   <div class="text-center text-muted p-2">
                     Nenhum pedido selecionado.
@@ -232,11 +238,11 @@
                 </ng-template>
               </div>
             </div>
-            
+
             <!-- Visualização Minimizada -->
             <div class="minimized-info" *ngIf="isDestinationMinimized">
-              <button 
-                class="btn btn-primary btn-sm" 
+              <button
+                class="btn btn-primary btn-sm"
                 (click)="toggleDestinationMinimize()"
                 aria-label="Expandir painel de destino"
               >
@@ -266,39 +272,16 @@
   </div>
 </section>
 
-<!-- Modal de Estoque -->
-<app-modal
-  #previewModal
-  [title]="'Consultar Estoque'"
-  modalSize="lg"
->
-  <div class="text-center">
-    <h2>Consulta de Estoque</h2>
-    <p>Conteúdo do modal de estoque aqui.</p>
-  </div>
-</app-modal>
-
 <!-- Modal de Confirmação Voltar Todos -->
-<app-modal
-  #returnAllModal
-  [title]="'Confirmar Ação'"
->
+<app-modal #returnAllModal [title]="'Confirmar Ação'">
   <div class="text-center">
     <h2>Confirmar Retorno</h2>
     <p>Você tem certeza que deseja voltar todos os pedidos para a lista de origem?</p>
     <div class="d-flex justify-content-center gap-2 mt-2">
-      <button 
-        class="btn btn-danger" 
-        (click)="returnAllModal.closeModal()"
-        aria-label="Cancelar operação"
-      >
+      <button class="btn btn-danger" (click)="returnAllModal.closeModal()" aria-label="Cancelar operação">
         Cancelar
       </button>
-      <button 
-        class="btn btn-success" 
-        (click)="returnAllToOrigin()"
-        aria-label="Confirmar retorno de todos os pedidos"
-      >
+      <button class="btn btn-success" (click)="returnAllToOrigin()" aria-label="Confirmar retorno de todos os pedidos">
         Confirmar
       </button>
     </div>

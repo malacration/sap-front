@@ -26,7 +26,8 @@ export class OrdemCarregamentoComponent implements OnInit {
   isDestinationMinimized = false;
   originSearch = '';
   destinationSearch = '';
-  pedidosNext
+  pedidosNext: NextLink<PedidoVenda>;
+  isStockFiltered = false;
 
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
   @ViewChild('returnAllModal', { static: true }) returnAllModal: ModalComponent;
@@ -35,10 +36,10 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   ngOnInit(): void {}
 
-  changePageFunction($event){
-    this.orderSalesService.search($event).subscribe(it => {
-      this.handlePedidosSuccess(it)
-    })
+  changePageFunction($event: string): void {
+    this.orderSalesService.search($event).subscribe((it) => {
+      this.handlePedidosSuccess(it);
+    });
   }
 
   toggle(): void {
@@ -70,19 +71,26 @@ export class OrdemCarregamentoComponent implements OnInit {
       return;
     }
 
+    this.isStockFiltered = false;
+
     const startDate = this.dataInicial || '';
     const endDate = this.dataFinal || '';
 
     this.orderSalesService
       .getPedidos(startDate, endDate, this.branchId, this.localidadeId)
       .subscribe({
-        next: pedidos => this.handlePedidosSuccess(pedidos),
-        error: err => this.handlePedidosError(err)
+        next: (pedidos) => this.handlePedidosSuccess(pedidos),
+        error: (err) => this.handlePedidosError(err),
       });
   }
 
+  filtrarEstoquePedidos(): void {
+    this.isStockFiltered = true;
+    this.filtrarPedidos
+  }
+
   private handlePedidosSuccess(pedidos: NextLink<PedidoVenda>): void {
-    this.pedidosNext = pedidos
+    this.pedidosNext = pedidos;
     this.originList = [...this.originList, ...this.sortPedidos(pedidos.content || [])];
     this.originalOrder = [...this.originList];
     this.resetSearchFields();
@@ -97,6 +105,7 @@ export class OrdemCarregamentoComponent implements OnInit {
     this.originList = [];
     this.originalOrder = [];
     this.destinationList = [];
+    this.isStockFiltered = false;
     this.resetSearchFields();
   }
 
@@ -130,7 +139,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   private sortGroupedList(grouped: Record<string, PedidoVenda[]>): { docNum: string; items: PedidoVenda[] }[] {
     return Object.keys(grouped)
       .sort()
-      .map(docNum => ({ docNum, items: grouped[docNum] }));
+      .map((docNum) => ({ docNum, items: grouped[docNum] }));
   }
 
   consultarEstoque(): void {
@@ -138,18 +147,18 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   moveToDestination(pedido: PedidoVenda): void {
-    const itemsToMove = this.isOn 
-      ? this.originList.filter(item => item.DocNum == pedido.DocNum)
+    const itemsToMove = this.isOn
+      ? this.originList.filter((item) => item.DocNum == pedido.DocNum)
       : [pedido];
 
-    this.originList = this.originList.filter(item => 
-      !itemsToMove.some(moveItem => moveItem == item)
+    this.originList = this.originList.filter(
+      (item) => !itemsToMove.some((moveItem) => moveItem == item)
     );
     this.destinationList = [...this.destinationList, ...itemsToMove];
   }
 
   moveToOrigin(pedido: PedidoVenda): void {
-    this.destinationList = this.destinationList.filter(item => item != pedido);
+    this.destinationList = this.destinationList.filter((item) => item != pedido);
     this.insertPedidoInOriginalOrder(pedido);
   }
 
@@ -170,18 +179,18 @@ export class OrdemCarregamentoComponent implements OnInit {
     this.originList = [
       ...this.originList.slice(0, insertIndex),
       pedido,
-      ...this.originList.slice(insertIndex)
+      ...this.originList.slice(insertIndex),
     ];
   }
 
   private findOriginalIndex(pedido: PedidoVenda): number {
-    return this.originalOrder.findIndex(item => 
-      item == pedido || (
-        item.DocNum == pedido.DocNum &&
-        item.CardCode == pedido.CardCode &&
-        item.CardName == pedido.CardName &&
-        item.BuyUnitMsr == pedido.BuyUnitMsr
-      )
+    return this.originalOrder.findIndex(
+      (item) =>
+        item == pedido ||
+        (item.DocNum == pedido.DocNum &&
+          item.CardCode == pedido.CardCode &&
+          item.CardName == pedido.CardName &&
+          item.BuyUnitMsr == pedido.BuyUnitMsr)
     );
   }
 
@@ -190,23 +199,23 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   returnAllToOrigin(): void {
-    [...this.destinationList].forEach(pedido => this.moveToOrigin(pedido));
+    [...this.destinationList].forEach((pedido) => this.moveToOrigin(pedido));
     this.returnAllModal.closeModal();
   }
 
   private filterList(list: PedidoVenda[], search: string): PedidoVenda[] {
-    return !search 
-      ? list 
-      : list.filter(item => 
+    return !search
+      ? list
+      : list.filter((item) =>
           String(item.DocNum ?? '').toLowerCase().includes(search.toLowerCase())
-      );
+        );
   }
 
   sendOrder(): void {
     console.log('Creating ordem de carregamento:', {
       nome: this.nomeOrdemCarregamento,
       origin: this.originList,
-      destination: this.destinationList
+      destination: this.destinationList,
     });
   }
 
