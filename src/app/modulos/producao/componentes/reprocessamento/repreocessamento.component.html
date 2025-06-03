@@ -34,13 +34,11 @@
     </div>
 </div>
 
-
-
-Selecione o PAC
-<br>
-Selecione o Deposito
-<br>
-modal - selecione
-<br>
-selecione o PDC
-
+<app-modal [(show)]="showLote" [title]="'Selecione'" >
+    <selecao-lote *ngIf="showLote"
+        [itemCode]="codProdutoAcabado"
+        [codDeposito]="codDeposito"
+        [quantidade]="quantidade"
+        (lotesSelecionados)="lotesSelecionados($event)">
+    </selecao-lote>
+</app-modal>

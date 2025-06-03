@@ -57,7 +57,8 @@ import { ModalComponent } from './components/modal/modal.component';
     PercentageDirective,
     CurrencyDirective,
     PaginacaoComponent,
-    ModalComponent
+    ModalComponent,
+    ReactiveFormsModule
   ]
 })
 export class SharedModule {}

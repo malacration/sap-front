@@ -1,33 +1,54 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { AlertService } from '../../../../sap/service/alert.service';
+import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { BatchStock } from '../../../sap-shared/_models/BatchStock.model';
+import { ReprocessamentoService } from '../../_services/reprocessamento.service';
+import { Reprocessamento } from '../../_model/reprocessamento';
 
 @Component({
   selector: 'selecao-produto-calc',
   templateUrl: './repreocessamento.component.html',
 })
-export class ReprocessamentoComponent implements OnInit {
+export class ReprocessamentoComponent {
   
-
-  //TODO remover hard codes depois
-  codProdutoAcabado : string = "PAC0000238"
+  codProdutoAcabado : string = "PAC0000241"
   quantidade : number = 10
   codDeposito : string = "500.01"
   codImtermediario: string = "PDC0000029"
-
-
   loading = false
 
-  constructor(){
+  lotes = undefined
+  showLote = false
+
+  constructor(private service : ReprocessamentoService){
 
   }
-
-  ngOnInit(): void {
-
-  }
-
 
   selecionar(){
-    alert("selecionado")
+    this.showLote = true
+  }
+
+  lotesSelecionados(lotes : Array<BatchStock>){
+    this.showLote = false
+    this.loading = true
+    let reprocessamento = new Reprocessamento(
+      this.codProdutoAcabado,
+      this.quantidade,
+      this.codDeposito,
+      this.codImtermediario,
+       lotes)
+    this.service.reprocesar(reprocessamento).subscribe({next : it => {
+        this.loading = false
+        this.codProdutoAcabado = ""
+        this.quantidade = 0
+        this.codDeposito = ""
+        this.codImtermediario = ""
+      },
+      error: () => {
+        
+      },
+      complete : () => {
+        this.loading = false
+      }
+    })
   }
 }
 
