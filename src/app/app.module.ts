@@ -109,6 +109,7 @@ import { ProducaoModule } from './modulos/producao/producao.module';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 import { LocalidadeService } from './sap/service/localidade.service';
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
+import { ResultadoSearchComponent } from './shared/components/modal/resultado-search/resultado-search.component';
 
 
 registerLocaleData(localeBr);
@@ -178,7 +179,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     TabComponent,
     TrocaComponent,
     OrdemCarregamentoComponent,
-    LocalidadeSearchComponent
+    LocalidadeSearchComponent,
+    ResultadoSearchComponent
   ],
   imports: [
     NgxPaginationModule,
