@@ -28,10 +28,8 @@ jobs:
         cd dist
         zip -r ../build.zip .
 
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+    - name: Attach asset na release existente
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./build.zip
-        asset_name: build.zip
-        asset_content_type: application/zip
+        tag_name: ${{ github.event.release.tag_name }}
+        files: build.zip
