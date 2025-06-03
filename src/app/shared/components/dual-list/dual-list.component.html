@@ -1,0 +1,21 @@
+
+
+<div class="card card-primary">
+    <div class="card-body">
+        <app-resultado-search 
+            [definition]="definition"
+            [loading]="loading"
+            [resultadoBusca]="resultadoBusca"
+            (changePage)="changePageFunction($event)"
+            (actionOutput)="action($event)">
+        </app-resultado-search>
+    </div>
+</div>
+
+<app-resultado-search 
+    [definition]="definition"
+    [loading]="loading"
+    [resultadoBusca]="itensSelecionados"
+    (changePage)="changePageFunction($event)"
+    (actionOutput)="action($event)">
+</app-resultado-search>

@@ -19,6 +19,8 @@ import { PercentageDirective } from './directives/percentage.directive';
 import { CurrencyDirective } from './directives/curency.directive copy';
 import { PaginacaoComponent } from './components/paginacao/paginacao.component';
 import { ModalComponent } from './components/modal/modal.component';
+import { DualListComponent } from './components/dual-list/dual-list.component';
+import { ResultadoSearchComponent } from './components/modal/resultado-search/resultado-search.component';
 
 @NgModule({
   providers: [
@@ -35,7 +37,9 @@ import { ModalComponent } from './components/modal/modal.component';
     PercentageDirective,
     CurrencyDirective,
     PaginacaoComponent,
-    ModalComponent
+    ModalComponent,
+    DualListComponent,
+    ResultadoSearchComponent
   ],
   imports: [
     CommonModule, 
@@ -58,7 +62,9 @@ import { ModalComponent } from './components/modal/modal.component';
     CurrencyDirective,
     PaginacaoComponent,
     ModalComponent,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    DualListComponent,
+    ResultadoSearchComponent
   ]
 })
 export class SharedModule {}

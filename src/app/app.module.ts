@@ -180,7 +180,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     TrocaComponent,
     OrdemCarregamentoComponent,
     LocalidadeSearchComponent,
-    ResultadoSearchComponent
   ],
   imports: [
     NgxPaginationModule,

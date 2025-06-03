@@ -29,14 +29,14 @@ export class ResultadoSearchComponent {
     search = new EventEmitter<String>();
   
     @Output() 
-    contentSelected = new EventEmitter<any>();
+    actionOutput = new EventEmitter<ActionReturn>();
     
     keyWord = ""
     content : any = null
     currentPage = 0
   
     ngOnInit(): void {
-      this.buscaModal.classeModal = "modal-xl"
+      
     }
       
     @ViewChild('busca', {static: true}) buscaModal: ModalComponent;
@@ -54,10 +54,7 @@ export class ResultadoSearchComponent {
     }
   
     action(action : ActionReturn){
-      if(action.type == 'selected'){
-        this.content = action.data
-        this.contentSelected.emit(this.content)
-      }
+      this.actionOutput.emit(action)
     }
   
     clear(){
