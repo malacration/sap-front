@@ -18,6 +18,7 @@ import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 
  let routes: Routes = [
   {
@@ -87,6 +88,35 @@ import { ReprocessamentoComponent } from './modulos/producao/componentes/reproce
         data: ["icon:fas fa-exchange-alt"],
         canActivate: [authGuard],
         component: TransferenciaClientesComponent
+      },
+    ]
+  },
+  {
+    path: 'carregamento',
+    title: 'Carregamento',
+    data: ["icon:fas fa-truck"],
+    canActivate: [authGuard],
+    children: [ 
+      {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'parceiro-negocio/:cardCode',
+        title: 'Parceiro Negocio',
+        data: ["hidden"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'ordem-carregamento',
+        title: 'Ordem',
+        data: ["icon:fas fa-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoComponent
       },
     ]
   },
