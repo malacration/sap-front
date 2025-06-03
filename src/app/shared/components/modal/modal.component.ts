@@ -36,7 +36,7 @@ export class ModalComponent implements OnChanges, OnDestroy {
   }
   
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe()
+    this.subscriptions?.unsubscribe()
   }
 
   ngOnChanges(changes: SimpleChanges): void {
