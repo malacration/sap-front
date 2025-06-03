@@ -1,7 +1,6 @@
-import { RouterLink } from '@angular/router';
 import Big from 'big.js';
-import { RouteLink } from '../../sap/model/route-link';
-import { Action, ActionReturn } from '../../shared/components/action/action.model';
+import { RouteLink } from '../../../sap/model/route-link';
+import { Action, ActionReturn } from '../../../shared/components/action/action.model';
 
 
 export class Produto{

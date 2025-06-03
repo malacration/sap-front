@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Column } from '../../../shared/components/table/column.model';
 import { formatCurrency } from '@angular/common';
 import { Produto } from '../../models/produto';
+import { Column } from '../../../../shared/components/table/column.model';
 
 @Component({
   selector: 'custo-mercadoria',

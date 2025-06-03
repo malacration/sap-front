@@ -64,12 +64,10 @@ export class DescontoComponent {
 
   //Esse valor e o percentual que deve ser atribuido ao preco
   get percentual() : Big{
-    console.log(this.resultado,"resultado")
     return Big(this.resultado).div(Big(this.valor).toFixed(6, Big.roundHalfUp))
   }
 
   get porcentagemDesconto() : Big{
-    console.log(this.percentual,"percentual")
     return Big(1).minus(this.percentual).times(100).toFixed(4, Big.roundHalfUp)
   }
 

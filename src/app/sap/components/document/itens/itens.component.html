@@ -58,7 +58,18 @@
     </div>
   </div>
   <div class="card-footer">
-    <b>Total:</b> {{total() | currency}}
+    <div class="row m-0 p-0">
+      <div class="col">
+        <b>Total:</b> {{total() | currency}}
+      </div>
+      <!-- //TODO precisa ajudar o metodo de arredondamento, esse gera valores inconsistentes
+      <div class="col">
+        <button (click)="arredondarParaTroco()"  type="button" class="btn btn-sm btn-primary" title="Ajustar desconto">
+          Arredondar com Desconto
+        </button>
+      </div> -->
+    </div>
+    
   </div>
   <div *ngIf="geralLoading" class="overlay">
     <i class="fas fa-2x fa-sync-alt fa-spin"></i>

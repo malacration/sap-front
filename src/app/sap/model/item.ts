@@ -107,6 +107,13 @@ export class Item{
     }
 
     aplicaDesconto($event){
-        this.descontoVendedorPorcentagem = $event
+        if(typeof $event == 'number')
+            this.descontoVendedorPorcentagem = $event
+        else if($event instanceof Number)
+            this.descontoVendedorPorcentagem = $event.valueOf()
+        else if(typeof $event == 'string' && !isNaN(parseFloat($event)))
+            this.descontoVendedorPorcentagem = parseFloat($event)
+        else
+            alert($event+" else"+typeof $event)
     }
 }

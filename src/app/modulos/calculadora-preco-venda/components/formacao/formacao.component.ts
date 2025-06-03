@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { Column } from '../../../shared/components/table/column.model';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
-import { ModalComponent } from '../../../shared/components/modal/modal.component';
-import { ActionReturn } from '../../../shared/components/action/action.model';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { Column } from '../../../../shared/components/table/column.model';
+import { ActionReturn } from '../../../../shared/components/action/action.model';
 
 @Component({
   selector: 'formacao-preco',

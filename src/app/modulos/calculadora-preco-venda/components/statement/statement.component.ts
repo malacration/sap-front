@@ -1,10 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Analise } from '../../models/analise';
-import { ParameterService } from '../../../shared/service/parameter.service';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Produto } from '../../models/produto';
 import { CalculadoraService } from '../../service/calculadora.service';
+import { ParameterService } from '../../../../shared/service/parameter.service';
 
 @Component({
   selector: 'statement-calc',
