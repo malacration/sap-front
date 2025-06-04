@@ -1,14 +1,17 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import {
+  HttpClientModule,
+  HttpClient,
+  HTTP_INTERCEPTORS,
+} from '@angular/common/http';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
 
 import { AppRoutingModule } from './app-routing.module';
 
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 // NG Translate
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
@@ -29,8 +32,6 @@ import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazend
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
 import { RomaneioFazendaInsumoService } from './sap/service/romaneio-fazenda-insumo.service';
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
-
-
 
 import { NgxPaginationModule } from 'ngx-pagination';
 import { AlertService } from './sap/service/alert.service';
@@ -107,16 +108,14 @@ import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
-import { LocalidadeService } from './sap/service/localidade.service';
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
-import { ResultadoSearchComponent } from './shared/components/modal/resultado-search/resultado-search.component';
-
+import { LocalidadeService } from './sap/service/localidade.service';
 
 registerLocaleData(localeBr);
 
- 
 // AoT requires an exported function for factories
-const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
+const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
+  new TranslateHttpLoader(http, './assets/i18n/', '.json');
 
 @NgModule({
   declarations: [
@@ -191,24 +190,24 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
-    
+
     AppRoutingModule,
     ToastrModule.forRoot({
       timeOut: 3000,
       positionClass: 'toast-top-right',
-      preventDuplicates: true
+      preventDuplicates: true,
     }),
     // ProfabricComponentsModule,
-    StoreModule.forRoot({ui: uiReducer}),
+    StoreModule.forRoot({ ui: uiReducer }),
   ],
   providers: [
     {
       provide: LOCALE_ID,
-      useValue: "pt-BR"
+      useValue: 'pt-BR',
     },
     {
-      provide:  DEFAULT_CURRENCY_CODE,
-      useValue: 'BRL'
+      provide: DEFAULT_CURRENCY_CODE,
+      useValue: 'BRL',
     },
     RomaneioFazendaInsumoService,
     FormaPagamentoService,

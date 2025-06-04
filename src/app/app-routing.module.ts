@@ -91,6 +91,35 @@ import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/
       },
     ]
   },
+    {
+    path: 'carregamento',
+    title: 'Carregamento',
+    data: ["icon:fas fa-truck"],
+    canActivate: [authGuard],
+    children: [ 
+      {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'parceiro-negocio/:cardCode',
+        title: 'Parceiro Negocio',
+        data: ["hidden"],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent
+      },
+      {
+        path: 'Ordem',
+        title: 'Ordem',
+        data: ["icon:fas fa-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoComponent
+      },
+    ]
+  },
   {
     path: 'carregamento',
     title: 'Carregamento',
