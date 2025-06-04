@@ -106,6 +106,9 @@ import { DescontoComponent } from './sap/components/document/desconto/desconto.c
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
+import { LocalidadeService } from './sap/service/localidade.service';
 
 
 registerLocaleData(localeBr);
@@ -173,7 +176,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DescontoComponent,
     TabsComponent,
     TabComponent,
-    TrocaComponent
+    TrocaComponent,
+    OrdemCarregamentoComponent,
+    LocalidadeSearchComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -223,6 +228,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CotacaoService,
     PedidosVendaService,
     CurrencyPipe,
+    LocalidadeService,
     FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
