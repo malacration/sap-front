@@ -59,12 +59,10 @@ export class ModalSelectComponent implements OnInit {
     this.buscaModal.closeModal()
   }
 
-  action(action : ActionReturn){
-    if(action.type == 'selected'){
-      this.content = action.data
+	  action(content){
+      this.content = content
       this.closeModal()
-      this.contentSelected.emit(this.content)
-    }
+      this.contentSelected.emit(content)
   }
 
   clear(){

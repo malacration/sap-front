@@ -25,17 +25,11 @@
 </div>
 
 <app-modal #busca>
-    <app-table [content]="resultadoBusca.content" [definition]="definition" (actionOutput)="action($event)"></app-table>
-    <div *ngIf="loading" class="text-center">
-        <i class="fas fa-2x fa-sync fa-spin"></i>
-    </div>
-    <div class="row">
-        <div *ngIf="!loading && resultadoBusca.nextLink" class="col text-center">
-            <button class="btn btn-primary" (click)="changePageFunction(resultadoBusca.nextLink)">
-                Carregar Mais
-                <i class="far fa-plus-square"></i>
-            </button>
-            <app-paginacao *ngIf="!loading && !resultadoBusca.nextLink" #paginacao (pageChange)="changePageFunction($event)" [totalItens]="50" [pageSize]="2" [hardCodeWidth]="350"></app-paginacao>
-        </div>        
-    </div>
+    <app-resultado-search 
+        [definition]="definition"
+        [loading]="loading"
+        [resultadoBusca]="resultadoBusca"
+        (changePage)="changePageFunction($event)"
+        (contentSelected)="action($event)">
+    </app-resultado-search>
 </app-modal>
