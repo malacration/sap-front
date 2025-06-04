@@ -19,7 +19,6 @@ import { PercentageDirective } from './directives/percentage.directive';
 import { CurrencyDirective } from './directives/curency.directive copy';
 import { PaginacaoComponent } from './components/paginacao/paginacao.component';
 import { ModalComponent } from './components/modal/modal.component';
-import { DualListComponent } from './components/dual-list/dual-list.component';
 import { ResultadoSearchComponent } from './components/modal/resultado-search/resultado-search.component';
 
 @NgModule({
@@ -38,7 +37,10 @@ import { ResultadoSearchComponent } from './components/modal/resultado-search/re
     CurrencyDirective,
     PaginacaoComponent,
     ModalComponent,
+<<<<<<< HEAD
     DualListComponent,
+=======
+>>>>>>> 79c7942c5db2ecc0cfbd0ef958e559e5e706f26b
     ResultadoSearchComponent
   ],
   imports: [
@@ -63,7 +65,10 @@ import { ResultadoSearchComponent } from './components/modal/resultado-search/re
     PaginacaoComponent,
     ModalComponent,
     ReactiveFormsModule,
+<<<<<<< HEAD
     DualListComponent,
+=======
+>>>>>>> 79c7942c5db2ecc0cfbd0ef958e559e5e706f26b
     ResultadoSearchComponent
   ]
 })
