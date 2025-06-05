@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PedidoVenda } from '../../sap/components/document/documento.statement.component';
+import { SweetAlertResult } from 'sweetalert2';
+import { AlertService } from '../../sap/service/alert.service';
 
 @Component({
   selector: 'app-dual-list-box',
@@ -14,6 +16,8 @@ export class DualListBoxComponent {
   searchTermAvailable = '';
   searchTermSelected = '';
   carregamentoPorPedido: boolean = false;
+
+  constructor(private alertService: AlertService) {}
 
   // Função de ordenação por DocNum e ItemCode
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
@@ -100,8 +104,12 @@ export class DualListBoxComponent {
   }
 
   removeAll(): void {
-    this.availableItems = this.sortItems([...(this.availableItems || []), ...(this.selectedItems || [])]);
-    this.selectedItems = [];
-    this.selectedItemsChange.emit(this.selectedItems);
+    this.alertService.confirm('Deseja realmente remover todos os itens selecionados?').then((result: SweetAlertResult) => {
+      if (result.isConfirmed) {
+        this.availableItems = this.sortItems([...(this.availableItems || []), ...(this.selectedItems || [])]);
+        this.selectedItems = [];
+        this.selectedItemsChange.emit(this.selectedItems);
+      }
+    });
   }
 }
