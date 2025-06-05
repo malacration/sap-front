@@ -1,3 +1,12 @@
+<div class="toggle-container">
+  <button 
+    class="btn btn-sm btn-toggle" 
+    [ngClass]="{'btn-primary': carregamentoPorPedido, 'btn-outline-primary': !carregamentoPorPedido}"
+    (click)="toggleCarregamentoPorPedido()">
+    {{ carregamentoPorPedido ? 'Carregamento por Pedido: Ativado' : 'Carregamento por Pedido: Desativado' }}
+  </button>
+</div>
+
 <div class="dual-list-container">
   <div class="list-box">
     <h5>Disponíveis</h5>
@@ -11,7 +20,7 @@
           <li *ngFor="let item of group.items" 
               class="list-item" 
               (click)="selectItem(item)">
-            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - {{ item.Quantity * item.Weight1 }}
+            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
           </li>
         </ul>
       </div>
@@ -36,7 +45,7 @@
           <li *ngFor="let item of group.items" 
               class="list-item" 
               (click)="removeItem(item)">
-            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - wyświetlacz: {{ item.Quantity * item.Weight1 }}
+            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
           </li>
         </ul>
       </div>

@@ -1,3 +1,32 @@
+.toggle-container {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-toggle {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+
+  &.btn-primary {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+  }
+
+  &.btn-outline-primary {
+    background-color: transparent;
+    color: #007bff;
+    border: 1px solid #007bff;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
 .dual-list-container {
   display: flex;
   gap: 24px;
@@ -6,6 +35,7 @@
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  flex-direction: row; /* Listas lado a lado */
 }
 
 .list-box {
@@ -38,7 +68,7 @@
 }
 
 .order-header {
-  background-color: #ffc107; /* Yellow warning color */
+  background-color: #ffc107;
   color: #333;
   padding: 8px 16px;
   font-weight: 500;
@@ -66,8 +96,7 @@
   text-overflow: ellipsis;
 
   &:hover {
-    background-color: #e6f0fa; /* Keep background color change */
-    /* Removed transform animation */
+    background-color: #e6f0fa;
   }
 
   &.selected {
