@@ -9,25 +9,23 @@ import { LocalidadeService } from '../../service/localidade.service';
 @Component({
   selector: 'app-ordem-carregamento',
   templateUrl: './ordem-carregamento.component.html',
-  styleUrls: ['./ordem-carregamento.component.scss']
+  styleUrls: ['./ordem-carregamento.component.scss'],
 })
 export class OrdemCarregamentoComponent implements OnInit {
-
   // Nome Ordem de Carregamento
-  nameOrdInput : string
+  nameOrdInput: string;
 
   //  Data Inicial e Final
+  showEstoque = false;
+  dtInicial: string;
+  dtFinal: string;
 
-  dtInicial : string
-  dtFinal : string
-  
   // Selecionar Filial
-  branchId
+  branchId;
   selectedBranch: Branch = null;
 
   // Selecionar Localidade
-  localidade : Localidade = null;
-
+  localidade: Localidade = null;
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -38,26 +36,32 @@ export class OrdemCarregamentoComponent implements OnInit {
   ngOnInit(): void {}
 
   // Selecionar Filial
-  selectBranch(branch: Branch){
+  selectBranch(branch: Branch) {
     this.branchId = branch.bplid;
-    this.selectedBranch = branch; 
+    this.selectedBranch = branch;
   }
 
   // Selecionar Localidade
-  selectLocalidade($event){
-    this.localidade = $event
-    this.localidadeService.get(this.localidade.Code).subscribe(it =>{
-        this.localidade = it
-    })
+  selectLocalidade($event) {
+    this.localidade = $event;
+    this.localidadeService.get(this.localidade.Code).subscribe((it) => {
+      this.localidade = it;
+    });
   }
 
   // Btn Filtrar
-  criarAnalise(){
-    return alert(this.dtInicial + this.dtFinal + this.branchId + this.localidade)
+  criarAnalise() {
+    return alert(
+      this.dtInicial + this.dtFinal + this.branchId + this.localidade
+    );
   }
 
-  // Botão filtrar não pode estar null 
-  isnotNullFiltrar(){
-    return this.branchId && this.localidade
+  selecionar() {
+    this.showEstoque = true;
+  }
+
+  // Botão filtrar não pode estar null
+  isnotNullFiltrar() {
+    return this.branchId && this.localidade;
   }
 }

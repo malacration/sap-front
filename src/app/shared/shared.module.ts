@@ -22,12 +22,9 @@ import { ModalComponent } from './components/modal/modal.component';
 import { ResultadoSearchComponent } from './components/modal/resultado-search/resultado-search.component';
 
 @NgModule({
-  providers: [
-    ParameterService,
-    AuthService,
-  ],
+  providers: [ParameterService, AuthService],
   declarations: [
-    PageNotFoundComponent, 
+    PageNotFoundComponent,
     WebviewDirective,
     TableComponent,
     ActionComponent,
@@ -37,25 +34,21 @@ import { ResultadoSearchComponent } from './components/modal/resultado-search/re
     CurrencyDirective,
     PaginacaoComponent,
     ModalComponent,
-<<<<<<< HEAD
-    DualListComponent,
-=======
->>>>>>> 79c7942c5db2ecc0cfbd0ef958e559e5e706f26b
-    ResultadoSearchComponent
+    ResultadoSearchComponent,
   ],
   imports: [
-    CommonModule, 
+    CommonModule,
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
     TranslateModule,
     FormsModule,
     BrowserModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   exports: [
-    TranslateModule, 
-    WebviewDirective, 
+    TranslateModule,
+    WebviewDirective,
     FormsModule,
     TableComponent,
     CommonModule,
@@ -65,11 +58,7 @@ import { ResultadoSearchComponent } from './components/modal/resultado-search/re
     PaginacaoComponent,
     ModalComponent,
     ReactiveFormsModule,
-<<<<<<< HEAD
-    DualListComponent,
-=======
->>>>>>> 79c7942c5db2ecc0cfbd0ef958e559e5e706f26b
-    ResultadoSearchComponent
-  ]
+    ResultadoSearchComponent,
+  ],
 })
 export class SharedModule {}

@@ -70,7 +70,7 @@
         </div>
         <!--  Btn Consultar Estoque -->
         <div class="form-group">
-          <button (click)="criarAnalise()" class="btn btn-primary btnEstoque">
+          <button (click)="selecionar()" class="btn btn-primary btnEstoque">
             Consultar Estoque
           </button>
         </div>
@@ -83,3 +83,7 @@
     <div class="card-body"></div>
   </div>
 </section>
+
+<app-modal [(show)]="showEstoque" [title]="'Pedidos'">
+  <pedidos-carregamento> </pedidos-carregamento>
+</app-modal>

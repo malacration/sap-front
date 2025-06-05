@@ -53,16 +53,11 @@ export class ResultadoSearchComponent {
       this.changePage.emit($event)
     }
   
-<<<<<<< HEAD
-    action(action : ActionReturn){
-      this.actionOutput.emit(action)
-=======
 	  action(action : ActionReturn){
       if(action.type == 'selected'){
         this.content = action.data
         this.contentSelected.emit(this.content)
       }
->>>>>>> 79c7942c5db2ecc0cfbd0ef958e559e5e706f26b
     }
   
     clear(){
