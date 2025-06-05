@@ -5,18 +5,33 @@ import { ConfigService } from '../../../core/services/config.service';
 import { DocumentAngularSave } from './document-angular-save';
 import { PedidoVenda } from '../../components/document/documento.statement.component';
 
+interface SearchResponse {
+  content: PedidoVenda[];
+  nextLink: string;
+}
+
+interface SearchRequest {
+  dataInicial: string;
+  dataFinal: string;
+  branchId: string;
+  localidade: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
-export class OrderSalesService  implements DocumentAngularSave{
+export class OrderSalesService implements DocumentAngularSave {
+  url = "http://localhost:8080/pedido-venda";
 
-  url = "http://localhost:8080/pedido-venda"
-
-  constructor(private config : ConfigService, private hppCliente : HttpClient) {
-      this.url = config.getHost()+"/pedido-venda"
+  constructor(private config: ConfigService, private httpClient: HttpClient) {
+    this.url = config.getHost() + "/pedido-venda";
   }
 
-  save(body : PedidoVenda) : Observable<any>{
-    return this.hppCliente.post<any>(this.url+"/angular",body)
+  save(body: PedidoVenda): Observable<any> {
+    return this.httpClient.post<any>(this.url + "/angular", body);
+  }
+
+  search(request: SearchRequest): Observable<SearchResponse> {
+    return this.httpClient.post<SearchResponse>(`${this.url}/search`, request);
   }
 }

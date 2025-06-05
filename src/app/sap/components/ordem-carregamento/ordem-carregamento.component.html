@@ -9,50 +9,55 @@
         <div class="card-body">                
             <div class="form-group">
                 <label for="cpfCnpj">Nome da Ordem de Carregamento</label>
-                <input type="text" placeholder="" class="form-control" id="cpfCnpj" [ngModel]="nameOrdInput">
+                <input type="text" placeholder="" class="form-control" id="cpfCnpj" [(ngModel)]="nameOrdInput">
             </div>
         </div>
 
         <div class="card-body">
-                <div class="row">
-                      <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="dataInicial">Data Inicial</label>
-                            <input type="date" class="form-control" name="dataInicial" [(ngModel)]="dtInicial" >
-                        </div>
-                      </div>
-                      <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="dataFinal">Data Final</label>
-                            <input type="date" class="form-control" name="dataFinal" [(ngModel)]="dtFinal" >
-                        </div>
-                      </div>
-                      <div class="col-sm-2">
-                          <div class="form-group">
-                              <app-branch-select #branch (selectedOut)="selectBranch($event)"></app-branch-select>
-                          </div>
-                      </div>
-                      <div class="col-sm-2">
-                          <div class="form-group">
-                              <app-localidade-search (selected)="selectLocalidade($event)" ></app-localidade-search>
-                          </div>
-                      </div>
-
-                      <!--  Btn Filtrar -->                      
-                        <div class="form-group">
-                            <button [disabled]="!isnotNullFiltrar()" (click)="criarAnalise()" class="btn btn-primary btnFiltrar">Filtrar</button>
-                        </div>
-                      <!--  Btn Consultar Estoque -->                      
-                        <div class="form-group">
-                            <button (click)="criarAnalise()" class="btn btn-primary btnEstoque">Consultar Estoque</button>
-                        </div>
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <label for="dataInicial">Data Inicial</label>
+                        <input type="date" class="form-control" name="dataInicial" [(ngModel)]="dtInicial">
                     </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <label for="dataFinal">Data Final</label>
+                        <input type="date" class="form-control" name="dataFinal" [(ngModel)]="dtFinal">
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <app-branch-select #branch (selectedOut)="selectBranch($event)"></app-branch-select>
+                    </div>
+                </div>
+                <div class="col-sm-2">
+                    <div class="form-group">
+                        <app-localidade-search (selected)="selectLocalidade($event)"></app-localidade-search>
+                    </div>
+                </div>
+
+                <!-- Btn Filtrar -->                      
+                <div class="form-group">
+                    <button [disabled]="!isnotNullFiltrar()" (click)="criarAnalise()" class="btn btn-primary btnFiltrar">Filtrar</button>
+                </div>
+                <!-- Btn Consultar Estoque -->                      
+                <div class="form-group">
+                    <button (click)="criarAnalise()" class="btn btn-primary btnEstoque">Consultar Estoque</button>
+                </div>
             </div>
         </div>
 
         <!--- Região da Lista -->
         <div class="card card-primary">
-        <div class="card-body">                
+            <div class="card-body">                
+            <app-dual-list-box 
+                [availableItems]="availableOrders || []"
+                [selectedItems]="selectedOrders || []"
+                (selectedItemsChange)="onSelectedOrdersChange($event)">
+            </app-dual-list-box>
+            </div>
         </div>
-        </div>
+    </div>
 </section>

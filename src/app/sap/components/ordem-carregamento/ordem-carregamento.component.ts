@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { Branch } from '../../model/branch';
 import { Localidade } from '../../model/localidade/localidade';
 import { LocalidadeService } from '../../service/localidade.service';
+import { OrderSalesService } from '../../service/document/order-sales.service';
+import { PedidoVenda } from '../document/documento.statement.component';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -12,52 +14,65 @@ import { LocalidadeService } from '../../service/localidade.service';
   styleUrls: ['./ordem-carregamento.component.scss']
 })
 export class OrdemCarregamentoComponent implements OnInit {
-
-  // Nome Ordem de Carregamento
-  nameOrdInput : string
-
-  //  Data Inicial e Final
-
-  dtInicial : string
-  dtFinal : string
-  
-  // Selecionar Filial
-  branchId
+  nameOrdInput: string;
+  dtInicial: string;
+  dtFinal: string;
+  branchId: string;
   selectedBranch: Branch = null;
-
-  // Selecionar Localidade
-  localidade : Localidade = null;
-
+  localidade: Localidade = null;
+  
+  // Para a dual list box
+  availableOrders: PedidoVenda[] = [];
+  selectedOrders: PedidoVenda[] = [];
 
   constructor(
     private localidadeService: LocalidadeService,
     private alertService: AlertService,
-    private router: Router
+    private router: Router,
+    private orderSalesService: OrderSalesService
   ) {}
 
   ngOnInit(): void {}
 
-  // Selecionar Filial
-  selectBranch(branch: Branch){
+  selectBranch(branch: Branch) {
     this.branchId = branch.bplid;
     this.selectedBranch = branch; 
   }
 
-  // Selecionar Localidade
-  selectLocalidade($event){
-    this.localidade = $event
-    this.localidadeService.get(this.localidade.Code).subscribe(it =>{
-        this.localidade = it
-    })
+  selectLocalidade($event) {
+    this.localidade = $event;
+    this.localidadeService.get(this.localidade.Code).subscribe(it => {
+      this.localidade = it;
+    });
   }
 
-  // Btn Filtrar
-  criarAnalise(){
-    return alert(this.dtInicial + this.dtFinal + this.branchId + this.localidade)
+  criarAnalise() {
+    if (!this.isnotNullFiltrar()) {
+      this.alertService.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    this.orderSalesService.search({
+      dataInicial: this.dtInicial,
+      dataFinal: this.dtFinal,
+      branchId: this.branchId,
+      localidade: this.localidade.Code
+    }).subscribe({
+      next: (result) => {
+        this.availableOrders = result.content;
+        this.selectedOrders = []; // limpa ao buscar
+      },
+      error: (err) => {
+        this.alertService.error('Erro ao buscar pedidos');
+      }
+    });
   }
 
-  // Botão filtrar não pode estar null 
-  isnotNullFiltrar(){
-    return this.branchId && this.localidade
+  isnotNullFiltrar() {
+    return this.branchId && this.localidade;
+  }
+
+  onSelectedOrdersChange(orders: PedidoVenda[]) {
+    this.selectedOrders = orders;
   }
 }
