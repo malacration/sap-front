@@ -7,7 +7,7 @@
       <div *ngFor="let item of filteredAvailableItems" 
            class="list-item" 
            (click)="selectItem(item)">
-        {{item.CardCode}} - {{item.DocNum}}
+        {{item.CardCode}} - {{item.DocNum}} - {{item.U_Localidade}}
       </div>
     </div>
     <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
@@ -26,7 +26,7 @@
       <div *ngFor="let item of filteredSelectedItems" 
            class="list-item" 
            (click)="removeItem(item)">
-        {{item.CardCode}} - {{item.DocNum}}
+        {{item.CardCode}} - {{item.DocNum}} - {{item.U_Localidade}}
       </div>
     </div>
     <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>

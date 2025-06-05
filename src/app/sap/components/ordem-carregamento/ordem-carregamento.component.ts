@@ -20,6 +20,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   branchId: string;
   selectedBranch: Branch = null;
   localidade: Localidade = null;
+    loading = false;
   
   // Para a dual list box
   availableOrders: PedidoVenda[] = [];
@@ -75,4 +76,6 @@ export class OrdemCarregamentoComponent implements OnInit {
   onSelectedOrdersChange(orders: PedidoVenda[]) {
     this.selectedOrders = orders;
   }
+
+  sendOrder(){}
 }

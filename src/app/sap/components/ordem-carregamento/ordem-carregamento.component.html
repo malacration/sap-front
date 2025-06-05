@@ -58,6 +58,17 @@
                 (selectedItemsChange)="onSelectedOrdersChange($event)">
             </app-dual-list-box>
             </div>
+
+            <!-- COnfirmar -->
+                     <div class="row">
+          <div class="col">
+            <button *ngIf="!loading" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Realizar Transferência</button>
+            <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Transferindo...</button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="loading" class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
         </div>
     </div>
 </section>
