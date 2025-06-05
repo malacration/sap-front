@@ -4,10 +4,16 @@
     <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
            [(ngModel)]="searchTermAvailable">
     <div class="list-container">
-      <div *ngFor="let item of filteredAvailableItems" 
-           class="list-item" 
-           (click)="selectItem(item)">
-        {{item.CardCode}} - {{item.DocNum}} - {{item.U_Localidade}}
+      <!-- Group available items by DocNum -->
+      <div *ngFor="let group of groupedAvailableItems" class="order-group">
+        <div class="order-header">Pedido: {{ group.docNum }}</div>
+        <ul class="order-list">
+          <li *ngFor="let item of group.items" 
+              class="list-item" 
+              (click)="selectItem(item)">
+            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - {{ item.Quantity * item.Weight1 }}
+          </li>
+        </ul>
       </div>
     </div>
     <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
@@ -23,10 +29,16 @@
     <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
            [(ngModel)]="searchTermSelected">
     <div class="list-container">
-      <div *ngFor="let item of filteredSelectedItems" 
-           class="list-item" 
-           (click)="removeItem(item)">
-        {{item.CardCode}} - {{item.DocNum}} - {{item.U_Localidade}}
+      <!-- Group selected items by DocNum -->
+      <div *ngFor="let group of groupedSelectedItems" class="order-group">
+        <div class="order-header">Pedido: {{ group.docNum }}</div>
+        <ul class="order-list">
+          <li *ngFor="let item of group.items" 
+              class="list-item" 
+              (click)="removeItem(item)">
+            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - wyświetlacz: {{ item.Quantity * item.Weight1 }}
+          </li>
+        </ul>
       </div>
     </div>
     <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>

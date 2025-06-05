@@ -3,9 +3,9 @@
   gap: 24px;
   margin: 24px 0;
   align-items: stretch;
-  width: 100%; /* Garante que o contêiner use toda a largura disponível */
-  max-width: 100%; /* Evita restrições de largura */
-  overflow-x: hidden; /* Evita scroll horizontal no contêiner pai */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .list-box {
@@ -25,12 +25,32 @@
 .list-container {
   height: 300px;
   overflow-y: auto;
-  overflow-x: hidden; /* Evita o scroll horizontal */
+  overflow-x: hidden;
   border: 1px solid #e8ecef;
   border-radius: 6px;
   background-color: #f9fafb;
-  width: 100%; /* Garante que o contêiner use toda a largura disponível */
-  box-sizing: border-box; /* Inclui padding e borda na largura total */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.order-group {
+  margin-bottom: 12px;
+}
+
+.order-header {
+  background-color: #ffc107; /* Yellow warning color */
+  color: #333;
+  padding: 8px 16px;
+  font-weight: 500;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+.order-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .list-item {
@@ -39,16 +59,15 @@
   border-bottom: 1px solid #e8ecef;
   display: flex;
   align-items: center;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  width: 100%; /* Garante que o item ocupe apenas a largura do contêiner */
-  box-sizing: border-box; /* Inclui padding e borda na largura total */
-  white-space: nowrap; /* Evita que o texto quebre em várias linhas */
-  overflow: hidden; /* Esconde qualquer conteúdo que transborde */
-  text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
+  width: 100%;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &:hover {
-    background-color: #e6f0fa;
-    transform: translateX(2px);
+    background-color: #e6f0fa; /* Keep background color change */
+    /* Removed transform animation */
   }
 
   &.selected {
@@ -85,7 +104,6 @@
   }
 }
 
-/* Scrollbar customization for better aesthetics */
 .list-container::-webkit-scrollbar {
   width: 8px;
 }

@@ -239,6 +239,9 @@ export class PedidoVenda{
   VehicleState: string
   U_Localidade : number
   Name : string
+  Dscription : string
+  Quantity : number
+  Weight1 : number
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

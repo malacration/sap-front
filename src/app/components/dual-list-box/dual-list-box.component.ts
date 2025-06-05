@@ -7,24 +7,46 @@ import { PedidoVenda } from '../../sap/components/document/documento.statement.c
   styleUrls: ['./dual-list-box.component.scss']
 })
 export class DualListBoxComponent {
-  @Input() availableItems: PedidoVenda[] = []; // Inicializa com array vazio
-  @Input() selectedItems: PedidoVenda[] = []; // Inicializa com array vazio
+  @Input() availableItems: PedidoVenda[] = [];
+  @Input() selectedItems: PedidoVenda[] = [];
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
-  
+
   searchTermAvailable = '';
   searchTermSelected = '';
 
-  get filteredAvailableItems(): PedidoVenda[] {
-    // Verifica se availableItems existe antes de filtrar
-    return (this.availableItems || []).filter(item => 
-      `${item.CardCode} - ${item.DocNum}`.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
+  // Group available items by DocNum
+  get groupedAvailableItems(): { docNum: number, items: PedidoVenda[] }[] {
+    const grouped = (this.availableItems || []).reduce((acc, item) => {
+      const docNum = item.DocNum;
+      if (!acc[docNum]) {
+        acc[docNum] = { docNum, items: [] };
+      }
+      acc[docNum].items.push(item);
+      return acc;
+    }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
+
+    return Object.values(grouped).filter(group =>
+      group.items.some(item =>
+        `${item.CardCode} - ${item.DocNum}`.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
+      )
     );
   }
 
-  get filteredSelectedItems(): PedidoVenda[] {
-    // Verifica se selectedItems existe antes de filtrar
-    return (this.selectedItems || []).filter(item => 
-      `${item.CardCode} - ${item.DocNum}`.toLowerCase().includes(this.searchTermSelected.toLowerCase())
+  // Group selected items by DocNum
+  get groupedSelectedItems(): { docNum: number, items: PedidoVenda[] }[] {
+    const grouped = (this.selectedItems || []).reduce((acc, item) => {
+      const docNum = item.DocNum;
+      if (!acc[docNum]) {
+        acc[docNum] = { docNum, items: [] };
+      }
+      acc[docNum].items.push(item);
+      return acc;
+    }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
+
+    return Object.values(grouped).filter(group =>
+      group.items.some(item =>
+        `${item.CardCode} - ${item.DocNum}`.toLowerCase().includes(this.searchTermSelected.toLowerCase())
+      )
     );
   }
 
