@@ -7,13 +7,12 @@
   </button>
 </div>
 
-<div class="dual-list-container">
+<div class="dual-list-container" [ngClass]="{'expanded-available': isSelectedListCollapsed}">
   <div class="list-box left-list">
     <h5>Disponíveis</h5>
     <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
            [(ngModel)]="searchTermAvailable">
     <div class="list-container">
-      <!-- Group available items by DocNum -->
       <div *ngFor="let group of groupedAvailableItems" class="order-group">
         <div class="order-header">
           <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
@@ -44,7 +43,6 @@
       </button>
     </div>
     <div class="list-content" [ngClass]="{'collapsed': isSelectedListCollapsed}">
-      <!-- Exibição completa quando não colapsada -->
       <ng-container *ngIf="!isSelectedListCollapsed">
         <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
                [(ngModel)]="searchTermSelected">
@@ -65,7 +63,6 @@
         </div>
         <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
       </ng-container>
-      <!-- Exibição simplificada quando colapsada -->
       <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
         <button class="btn btn-sm btn-outline-secondary maximize-btn" (click)="toggleSelectedList()">
           {{ groupedSelectedItems.length }} Pedidos, Peso Total: {{ totalSelectedWeight }}
