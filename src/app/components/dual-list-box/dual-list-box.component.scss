@@ -55,7 +55,7 @@
   padding: 12px;
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease, flex 0.3s ease; /* Adiciona transição suave para a expansão */
+  transition: box-shadow 0.2s ease, flex 0.3s ease;
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -78,21 +78,24 @@
   font-size: 14px;
   width: 100%;
   text-align: center;
+  background-color: #28a745; /* Fundo verde */
+  color: #ffffff; /* Texto branco */
+  border: none;
 }
 
 .collapsed-info {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 100%; /* Ocupa toda a altura da área colapsada */
   padding: 8px;
 }
 
 .list-content.collapsed {
-  height: 60px; /* Altura reduzida quando colapsada */
+  height: 300px; /* Mesma altura da lista de disponíveis para consistência */
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; /* Centraliza o botão verticalmente e horizontalmente */
 }
 
 .list-container {
@@ -174,34 +177,6 @@
   border-radius: 4px;
   font-size: 12px;
   white-space: nowrap;
-}
-
-.list-actions {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-  align-items: center;
-
-  button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    background-color: #007bff;
-    color: #ffffff;
-    border: none;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    font-weight: 500;
-
-    &:hover {
-      background-color: #0056b3;
-      transform: translateY(-1px);
-    }
-
-    &:disabled {
-      background-color: #b3c7e6;
-      cursor: not-allowed;
-    }
-  }
 }
 
 .list-container::-webkit-scrollbar {

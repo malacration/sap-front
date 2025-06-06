@@ -30,11 +30,6 @@
     <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
   </div>
 
-  <div class="list-actions">
-    <button class="btn btn-sm btn-outline-primary" (click)="selectAll()">>></button>
-    <button class="btn btn-sm btn-outline-primary" (click)="removeAll()"><<</button>
-  </div>
-
   <div class="list-box right-list">
     <div class="list-header">
       <h5>Selecionados</h5>
@@ -49,8 +44,8 @@
         <div class="list-container">
           <div *ngFor="let group of groupedSelectedItems" class="order-group">
             <div class="order-header">
-              <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
-              <span class="stock-red" *ngIf="showStock">Estoque: {{ calculateGroupStock(group.items, true) }}</span>
+                <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
+                <span class="stock-red" *ngIf="showStock">Estoque: {{ calculateGroupStock(group.items, true) }}</span>
             </div>
             <ul class="order-list">
               <li *ngFor="let item of group.items" 
@@ -64,7 +59,7 @@
         <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
       </ng-container>
       <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
-        <button class="btn btn-sm btn-outline-secondary maximize-btn" (click)="toggleSelectedList()">
+        <button class="btn btn-sm btn-success maximize-btn" (click)="toggleSelectedList()">
           {{ groupedSelectedItems.length }} Pedidos, Peso Total: {{ totalSelectedWeight }}
         </button>
       </div>
