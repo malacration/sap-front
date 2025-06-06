@@ -21,6 +21,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   selectedBranch: Branch = null;
   localidade: Localidade = null;
   loading = false;
+  showStock: boolean = false;
   
   // Para a dual list box
   availableOrders: PedidoVenda[] = [];
@@ -61,7 +62,7 @@ export class OrdemCarregamentoComponent implements OnInit {
     }).subscribe({
       next: (result) => {
         this.availableOrders = result.content;
-        this.selectedOrders = []; // limpa ao buscar
+        this.selectedOrders = [];
       },
       error: (err) => {
         this.alertService.error('Erro ao buscar pedidos');
@@ -85,5 +86,9 @@ export class OrdemCarregamentoComponent implements OnInit {
     this.dtFinal = null;
   }
 
-  sendOrder(){}
+  toggleEstoque() {
+    this.showStock = !this.showStock;
+  }
+
+  sendOrder() {}
 }

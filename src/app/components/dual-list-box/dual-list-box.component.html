@@ -21,6 +21,7 @@
               class="list-item" 
               (click)="selectItem(item)">
             {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+            <span class="stock-green" *ngIf="showStock">Estoque: {{ calculateStock(item, false) }}</span>
           </li>
         </ul>
       </div>
@@ -33,7 +34,8 @@
     <button class="btn btn-sm btn-outline-primary" (click)="removeAll()"><<</button>
   </div>
 
-  <div class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
+  <div class Ascending
+class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
     <div class="list-header">
       <h5>Selecionados</h5>
       <button *ngIf="!isSelectedListCollapsed" class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
@@ -57,6 +59,7 @@
                 class="list-item" 
                 (click)="removeItem(item)">
               {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+              <span class="stock-red" *ngIf="showStock">Estoque: {{ calculateStock(item, true) }}</span>
             </li>
           </ul>
         </div>

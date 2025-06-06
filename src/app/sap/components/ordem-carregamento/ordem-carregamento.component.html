@@ -55,6 +55,10 @@
                 <div class="form-group">
                     <button (click)="criarAnalise()" class="btn btn-primary btnEstoque">Consultar Estoque</button>
                 </div>
+                <!-- Btn Estoque -->
+                <div class="form-group">
+                    <button (click)="toggleEstoque()" class="btn btn-primary btnEstoque">Estoque</button>
+                </div>
             </div>
         </div>
 
@@ -64,6 +68,7 @@
             <app-dual-list-box 
                 [availableItems]="availableOrders || []"
                 [selectedItems]="selectedOrders || []"
+                [showStock]="showStock"
                 (selectedItemsChange)="onSelectedOrdersChange($event)">
             </app-dual-list-box>
             </div>

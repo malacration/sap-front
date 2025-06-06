@@ -127,8 +127,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  &:医療
-
   &:hover {
     background-color: #e6f0fa;
   }
@@ -137,6 +135,24 @@
     background-color: #d9e8ff;
     font-weight: 500;
   }
+}
+
+.stock-green {
+  background-color: #28a745;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  display: inline-block;
+}
+
+.stock-red {
+  background-color: #dc3545;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  display: inline-block;
 }
 
 .list-actions {
