@@ -14,8 +14,8 @@ export class DualListBoxComponent {
   @Input() showStock: boolean = false;
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
 
-  searchTermAvailable = '';
-  searchTermSelected = '';
+  searchTermAvailable: string = '';
+  searchTermSelected: string = '';
   carregamentoPorPedido: boolean = false;
   isSelectedListCollapsed: boolean = false;
 
@@ -26,13 +26,18 @@ export class DualListBoxComponent {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
   }
 
-  // Calcular estoque para um item
+  // Calculate stock for an item
   calculateStock(item: PedidoVenda, isSelected: boolean): number {
     const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
     return isSelected ? stock - (item.Quantity || 0) : stock;
   }
 
-  // Função de ordenação por DocNum e ItemCode
+  // Calculate total stock for a group of items
+  calculateGroupStock(items: PedidoVenda[], isSelected: boolean): number {
+    return items.reduce((sum, item) => sum + this.calculateStock(item, isSelected), 0);
+  }
+
+  // Sort items by DocNum and ItemCode
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
     return items.sort((a, b) => {
       if (a.DocNum !== b.DocNum) {
@@ -43,7 +48,7 @@ export class DualListBoxComponent {
   }
 
   // Group available items by DocNum
-  get groupedAvailableItems(): { docNum: number, items: PedidoVenda[] }[] {
+  get groupedAvailableItems(): { docNum: number; items: PedidoVenda[] }[] {
     const grouped = (this.availableItems || []).reduce((acc, item) => {
       const docNum = item.DocNum;
       if (!acc[docNum]) {
@@ -51,7 +56,7 @@ export class DualListBoxComponent {
       }
       acc[docNum].items.push(item);
       return acc;
-    }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
+    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
       .filter(group =>
@@ -65,7 +70,7 @@ export class DualListBoxComponent {
   }
 
   // Group selected items by DocNum
-  get groupedSelectedItems(): { docNum: number, items: PedidoVenda[] }[] {
+  get groupedSelectedItems(): { docNum: number; items: PedidoVenda[] }[] {
     const grouped = (this.selectedItems || []).reduce((acc, item) => {
       const docNum = item.DocNum;
       if (!acc[docNum]) {
@@ -73,7 +78,7 @@ export class DualListBoxComponent {
       }
       acc[docNum].items.push(item);
       return acc;
-    }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
+    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
       .filter(group =>

@@ -19,7 +19,7 @@
   &.btn-outline-primary {
     background-color: transparent;
     color: #007bff;
-    border: 1px solid #007bff;
+    border: 1px semi-solid #007bff;
   }
 
   &:hover {
@@ -36,15 +36,6 @@
   max-width: 100%;
   overflow-x: hidden;
   flex-direction: row;
-
-  &.right-collapsed {
-    .right-list {
-      flex: 0 0 150px;
-    }
-    .left-list {
-      flex: 2;
-    }
-  }
 }
 
 .list-box {
@@ -54,18 +45,10 @@
   padding: 12px;
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease, flex 0.3s ease;
+  transition: box-shadow 0.2s ease;
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  &.right-list.collapsed {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
   }
 }
 
@@ -75,13 +58,30 @@
   align-items: center;
 }
 
-.collapse-btn, .maximize-btn {
+.collapse-btn {
   padding: 4px 8px;
   font-size: 12px;
 }
 
 .collapsed-info {
   text-align: center;
+  padding: 8px;
+}
+
+.list-content.collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.collapsed-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: left;
 }
 
 .list-container {
@@ -107,6 +107,16 @@
   border-radius: 4px 4px 0 0;
   border-bottom: 1px solid #e0e0e0;
   font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-info {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 
 .order-list {
@@ -142,8 +152,8 @@
   color: #ffffff;
   padding: 4px 8px;
   border-radius: 4px;
-  margin-left: 10px;
-  display: inline-block;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .stock-red {
@@ -151,8 +161,8 @@
   color: #ffffff;
   padding: 4px 8px;
   border-radius: 4px;
-  margin-left: 10px;
-  display: inline-block;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .list-actions {
