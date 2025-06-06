@@ -35,46 +35,49 @@ export class DualListBoxComponent {
     });
   }
 
-  // Group available items by DocNum
-  get groupedAvailableItems(): { docNum: number, items: PedidoVenda[] }[] {
-    const grouped = (this.availableItems || []).reduce((acc, item) => {
-      const docNum = item.DocNum;
-      if (!acc[docNum]) {
-        acc[docNum] = { docNum, items: [] };
-      }
-      acc[docNum].items.push(item);
-      return acc;
-    }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
+// Group available items by DocNum
+get groupedAvailableItems(): { docNum: number, items: PedidoVenda[] }[] {
+  const grouped = (this.availableItems || []).reduce((acc, item) => {
+    const docNum = item.DocNum;
+    if (!acc[docNum]) {
+      acc[docNum] = { docNum, items: [] };
+    }
+    acc[docNum].items.push(item);
+    return acc;
+  }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
 
-    return Object.values(grouped)
-      .filter(group =>
-        group.items.some(item =>
-          `${item.CardCode} - ${item.DocNum}`.toLowerCase().includes(this.searchTermAvailable.toLowerCase())
-        )
+  return Object.values(grouped)
+    .filter(group =>
+      group.items.some(item =>
+        `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
+          .toLowerCase()
+          .includes(this.searchTermAvailable.toLowerCase())
       )
-      .sort((a, b) => a.docNum - b.docNum); // Ordena os grupos por DocNum
-  }
+    )
+    .sort((a, b) => a.docNum - b.docNum); // Ordena os grupos por DocNum
+}
 
-  // Group selected items by DocNum
-  get groupedSelectedItems(): { docNum: number, items: PedidoVenda[] }[] {
-    const grouped = (this.selectedItems || []).reduce((acc, item) => {
-      const docNum = item.DocNum;
-      if (!acc[docNum]) {
-        acc[docNum] = { docNum, items: [] };
-      }
-      acc[docNum].items.push(item);
-      return acc;
-    }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
+// Group selected items by DocNum
+get groupedSelectedItems(): { docNum: number, items: PedidoVenda[] }[] {
+  const grouped = (this.selectedItems || []).reduce((acc, item) => {
+    const docNum = item.DocNum;
+    if (!acc[docNum]) {
+      acc[docNum] = { docNum, items: [] };
+    }
+    acc[docNum].items.push(item);
+    return acc;
+  }, {} as { [key: number]: { docNum: number, items: PedidoVenda[] } });
 
-    return Object.values(grouped)
-      .filter(group =>
-        group.items.some(item =>
-          `${item.CardCode} - ${item.DocNum}`.toLowerCase().includes(this.searchTermSelected.toLowerCase())
-        )
+  return Object.values(grouped)
+    .filter(group =>
+      group.items.some(item =>
+        `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
+          .toLowerCase()
+          .includes(this.searchTermSelected.toLowerCase())
       )
-      .sort((a, b) => a.docNum - b.docNum); // Ordena os grupos por DocNum
-  }
-
+    )
+    .sort((a, b) => a.docNum - b.docNum); // Ordena os grupos por DocNum
+}
   toggleCarregamentoPorPedido(): void {
     this.carregamentoPorPedido = !this.carregamentoPorPedido;
   }
