@@ -16,8 +16,14 @@ export class DualListBoxComponent {
   searchTermAvailable = '';
   searchTermSelected = '';
   carregamentoPorPedido: boolean = false;
+  isSelectedListCollapsed: boolean = false;
 
   constructor(private alertService: AlertService) {}
+
+  // Calculate total weight of selected items
+  get totalSelectedWeight(): number {
+    return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
+  }
 
   // Função de ordenação por DocNum e ItemCode
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
@@ -71,6 +77,10 @@ export class DualListBoxComponent {
 
   toggleCarregamentoPorPedido(): void {
     this.carregamentoPorPedido = !this.carregamentoPorPedido;
+  }
+
+  toggleSelectedList(): void {
+    this.isSelectedListCollapsed = !this.isSelectedListCollapsed;
   }
 
   selectItem(item: PedidoVenda): void {

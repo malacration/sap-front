@@ -35,7 +35,16 @@
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  flex-direction: row; /* Listas lado a lado */
+  flex-direction: row;
+
+  &.right-collapsed {
+    .right-list {
+      flex: 0 0 150px;
+    }
+    .left-list {
+      flex: 2;
+    }
+  }
 }
 
 .list-box {
@@ -45,11 +54,34 @@
   padding: 12px;
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, flex 0.3s ease;
 
   &:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
+
+  &.right-list.collapsed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collapse-btn, .maximize-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.collapsed-info {
+  text-align: center;
 }
 
 .list-container {
@@ -94,6 +126,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:医療
 
   &:hover {
     background-color: #e6f0fa;

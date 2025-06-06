@@ -7,8 +7,8 @@
   </button>
 </div>
 
-<div class="dual-list-container">
-  <div class="list-box">
+<div class="dual-list-container" [ngClass]="{'right-collapsed': isSelectedListCollapsed}">
+  <div class="list-box left-list">
     <h5>Disponíveis</h5>
     <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
            [(ngModel)]="searchTermAvailable">
@@ -33,23 +33,35 @@
     <button class="btn btn-sm btn-outline-primary" (click)="removeAll()"><<</button>
   </div>
 
-  <div class="list-box">
-    <h5>Selecionados</h5>
-    <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
-           [(ngModel)]="searchTermSelected">
-    <div class="list-container">
-      <!-- Group selected items by DocNum -->
-      <div *ngFor="let group of groupedSelectedItems" class="order-group">
-        <div class="order-header">Pedido: {{ group.docNum }}</div>
-        <ul class="order-list">
-          <li *ngFor="let item of group.items" 
-              class="list-item" 
-              (click)="removeItem(item)">
-            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
-          </li>
-        </ul>
-      </div>
+  <div class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
+    <div class="list-header">
+      <h5>Selecionados</h5>
+      <button *ngIf="!isSelectedListCollapsed" class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
+        Minimizar
+      </button>
     </div>
-    <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
+    <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
+      <button class="btn btn-sm btn-outline-primary maximize-btn" (click)="toggleSelectedList()">
+        {{ groupedSelectedItems.length }} Pedidos, Peso Total: {{ totalSelectedWeight }}
+      </button>
+    </div>
+    <div *ngIf="!isSelectedListCollapsed" class="list-content">
+      <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
+             [(ngModel)]="searchTermSelected">
+      <div class="list-container">
+        <!-- Group selected items by DocNum -->
+        <div *ngFor="let group of groupedSelectedItems" class="order-group">
+          <div class="order-header">Pedido: {{ group.docNum }}</div>
+          <ul class="order-list">
+            <li *ngFor="let item of group.items" 
+                class="list-item" 
+                (click)="removeItem(item)">
+              {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Name }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+            </li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
+    </div>
   </div>
 </div>
