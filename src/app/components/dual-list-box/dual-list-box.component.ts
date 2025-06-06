@@ -58,6 +58,7 @@ export class DualListBoxComponent {
     }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
+      .filter(group => group.items.length > 0)
       .filter(group =>
         group.items.some(item =>
           `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
@@ -79,6 +80,7 @@ export class DualListBoxComponent {
     }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
+      .filter(group => group.items.length > 0)
       .filter(group =>
         group.items.some(item =>
           `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`

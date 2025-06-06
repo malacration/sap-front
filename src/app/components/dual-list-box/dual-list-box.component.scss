@@ -127,10 +127,10 @@
 }
 
 .order-info {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 30%; /* Ajustado para dar espaço aos três elementos */
+  white-space: normal; /* Permite quebra de linha */
+  overflow: visible; /* Remove truncamento */
+  text-overflow: initial; /* Remove efeito de "..." */
+  max-width: 50%; /* Aumenta espaço para localidade */
 }
 
 .stock-info {

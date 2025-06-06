@@ -15,7 +15,9 @@
     <div class="list-container">
       <div *ngFor="let group of groupedAvailableItems" class="order-group">
         <div class="order-header">
-          <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
+          <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
+            Pedido: {{ group.docNum }} | Localidade: {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
+          </span>
           <span class="stock-green" *ngIf="showStock">Estoque: {{ calculateGroupStock(group.items, false) }}</span>
         </div>
         <ul class="order-list">
@@ -44,7 +46,9 @@
         <div class="list-container">
           <div *ngFor="let group of groupedSelectedItems" class="order-group">
             <div class="order-header">
-              <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
+              <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
+                Pedido: {{ group.docNum }} | Localidade: {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
+              </span>
               <div class="stock-info" *ngIf="showStock">
                 <span class="stock-green">Estoque: {{ calculateGroupStock(group.items, false) }}</span>
                 <span class="stock-blue">Qtd: {{ calculateGroupQuantity(group.items) }}</span>
