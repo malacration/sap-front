@@ -21,23 +21,19 @@ export class DualListBoxComponent {
 
   constructor(private alertService: AlertService) {}
 
-  // Calculate total weight of selected items
   get totalSelectedWeight(): number {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
   }
 
-  // Calculate stock for an item
   calculateStock(item: PedidoVenda, isSelected: boolean): number {
     const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
     return isSelected ? stock - (item.Quantity || 0) : stock;
   }
 
-  // Calculate total stock for a group of items
   calculateGroupStock(items: PedidoVenda[], isSelected: boolean): number {
     return items.reduce((sum, item) => sum + this.calculateStock(item, isSelected), 0);
   }
 
-  // Sort items by DocNum and ItemCode
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
     return items.sort((a, b) => {
       if (a.DocNum !== b.DocNum) {
@@ -47,7 +43,6 @@ export class DualListBoxComponent {
     });
   }
 
-  // Group available items by DocNum
   get groupedAvailableItems(): { docNum: number; items: PedidoVenda[] }[] {
     const grouped = (this.availableItems || []).reduce((acc, item) => {
       const docNum = item.DocNum;
@@ -69,7 +64,6 @@ export class DualListBoxComponent {
       .sort((a, b) => a.docNum - b.docNum);
   }
 
-  // Group selected items by DocNum
   get groupedSelectedItems(): { docNum: number; items: PedidoVenda[] }[] {
     const grouped = (this.selectedItems || []).reduce((acc, item) => {
       const docNum = item.DocNum;

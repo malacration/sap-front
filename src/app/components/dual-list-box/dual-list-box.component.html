@@ -44,11 +44,11 @@
       </button>
     </div>
     <div class="list-content" [ngClass]="{'collapsed': isSelectedListCollapsed}">
-      <input *ngIf="!isSelectedListCollapsed" type="text" class="form-control mb-2" placeholder="Pesquisar..." 
-             [(ngModel)]="searchTermSelected">
-      <div class="list-container">
-        <!-- Group selected items by DocNum when not collapsed -->
-        <ng-container *ngIf="!isSelectedListCollapsed">
+      <!-- Exibição completa quando não colapsada -->
+      <ng-container *ngIf="!isSelectedListCollapsed">
+        <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
+               [(ngModel)]="searchTermSelected">
+        <div class="list-container">
           <div *ngFor="let group of groupedSelectedItems" class="order-group">
             <div class="order-header">
               <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
@@ -62,19 +62,15 @@
               </li>
             </ul>
           </div>
-        </ng-container>
-        <!-- Exibição simplificada quando minimizado -->
-        <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
-          <p>{{ groupedSelectedItems.length }} Pedidos, Peso Total: {{ totalSelectedWeight }}</p>
-          <ul class="order-list collapsed-list">
-            <li *ngFor="let group of groupedSelectedItems" class="list-item">
-              Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }} ({{ group.items.length }} itens)
-              <span class="stock-red" *ngIf="showStock">Estoque: {{ calculateGroupStock(group.items, true) }}</span>
-            </li>
-          </ul>
         </div>
+        <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
+      </ng-container>
+      <!-- Exibição simplificada quando colapsada -->
+      <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
+        <button class="btn btn-sm btn-outline-secondary maximize-btn" (click)="toggleSelectedList()">
+          {{ groupedSelectedItems.length }} Pedidos, Peso Total: {{ totalSelectedWeight }}
+        </button>
       </div>
     </div>
-    <button *ngIf="!isSelectedListCollapsed" class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
   </div>
 </div>

@@ -19,7 +19,7 @@
   &.btn-outline-primary {
     background-color: transparent;
     color: #007bff;
-    border: 1px semi-solid #007bff;
+    border: 1px solid #007bff;
   }
 
   &:hover {
@@ -63,25 +63,26 @@
   font-size: 12px;
 }
 
-.collapsed-info {
+.maximize-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  width: 100%;
   text-align: center;
+}
+
+.collapsed-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
   padding: 8px;
 }
 
 .list-content.collapsed {
+  height: 60px; /* Altura reduzida quando colapsada */
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  height: 100%;
-}
-
-.collapsed-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  text-align: left;
+  align-items: center;
 }
 
 .list-container {
