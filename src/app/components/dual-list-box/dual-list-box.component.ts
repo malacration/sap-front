@@ -34,6 +34,10 @@ export class DualListBoxComponent {
     return items.reduce((sum, item) => sum + this.calculateStock(item, isSelected), 0);
   }
 
+  calculateGroupQuantity(items: PedidoVenda[]): number {
+    return items.reduce((sum, item) => sum + (item.Quantity || 0), 0);
+  }
+
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
     return items.sort((a, b) => {
       if (a.DocNum !== b.DocNum) {

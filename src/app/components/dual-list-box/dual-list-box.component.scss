@@ -39,11 +39,11 @@
 
   &.expanded-available {
     .left-list {
-      flex: 3; /* Expande a lista de disponíveis */
+      flex: 3;
     }
     .right-list {
-      flex: 0.5; /* Minimiza a lista de selecionados */
-      min-width: 150px; /* Garante um tamanho mínimo para o botão */
+      flex: 0.5;
+      min-width: 150px;
     }
   }
 }
@@ -78,8 +78,8 @@
   font-size: 14px;
   width: 100%;
   text-align: center;
-  background-color: #28a745; /* Fundo verde */
-  color: #ffffff; /* Texto branco */
+  background-color: #28a745;
+  color: #ffffff;
   border: none;
 }
 
@@ -87,15 +87,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%; /* Ocupa toda a altura da área colapsada */
+  height: 100%;
   padding: 8px;
 }
 
 .list-content.collapsed {
-  height: 300px; /* Mesma altura da lista de disponíveis para consistência */
+  height: 300px;
   display: flex;
   justify-content: center;
-  align-items: center; /* Centraliza o botão verticalmente e horizontalmente */
+  align-items: center;
 }
 
 .list-container {
@@ -130,7 +130,40 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 60%;
+  max-width: 30%; /* Ajustado para dar espaço aos três elementos */
+}
+
+.stock-info {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.stock-green {
+  background-color: #28a745;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.stock-blue {
+  background-color: #007bff;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.stock-red {
+  background-color: #dc3545;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .order-list {
@@ -159,24 +192,6 @@
     background-color: #d9e8ff;
     font-weight: 500;
   }
-}
-
-.stock-green {
-  background-color: #28a745;
-  color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.stock-red {
-  background-color: #dc3545;
-  color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
 }
 
 .list-container::-webkit-scrollbar {

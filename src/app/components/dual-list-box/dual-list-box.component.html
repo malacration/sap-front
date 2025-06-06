@@ -44,8 +44,12 @@
         <div class="list-container">
           <div *ngFor="let group of groupedSelectedItems" class="order-group">
             <div class="order-header">
-                <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
-                <span class="stock-red" *ngIf="showStock">Estoque: {{ calculateGroupStock(group.items, true) }}</span>
+              <span class="order-info">Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}</span>
+              <div class="stock-info" *ngIf="showStock">
+                <span class="stock-green">Estoque Anterior: {{ calculateGroupStock(group.items, false) }}</span>
+                <span class="stock-blue">Quantidade: {{ calculateGroupQuantity(group.items) }}</span>
+                <span class="stock-red">Estoque Atual: {{ calculateGroupStock(group.items, true) }}</span>
+              </div>
             </div>
             <ul class="order-list">
               <li *ngFor="let item of group.items" 
