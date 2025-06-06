@@ -18,13 +18,17 @@
           <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
             Pedido: {{ group.docNum }} | Localidade: {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
           </span>
-          <span class="stock-green" *ngIf="showStock">Estoque: {{ calculateGroupStock(group.items, false) }}</span>
         </div>
         <ul class="order-list">
           <li *ngFor="let item of group.items" 
               class="list-item" 
               (click)="selectItem(item)">
-            {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+            <div class="item-details">
+              {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+            </div>
+            <div class="stock-info" *ngIf="showStock">
+              <span class="stock-green">Estoque: {{ calculateStock(item, false) }}</span>
+            </div>
           </li>
         </ul>
       </div>
@@ -49,17 +53,19 @@
               <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
                 Pedido: {{ group.docNum }} | Localidade: {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
               </span>
-              <div class="stock-info" *ngIf="showStock">
-                <span class="stock-green">Estoque: {{ calculateGroupStock(group.items, false) }}</span>
-                <span class="stock-blue">Qtd: {{ calculateGroupQuantity(group.items) }}</span>
-                <span class="stock-red">Est Atual: {{ calculateGroupStock(group.items, true) }}</span>
-              </div>
             </div>
             <ul class="order-list">
               <li *ngFor="let item of group.items" 
                   class="list-item" 
                   (click)="removeItem(item)">
-                {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+                <div class="item-details">
+                  {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+                </div>
+                <div class="stock-info" *ngIf="showStock">
+                  <span class="stock-green">Estoque: {{ calculateStock(item, false) }}</span>
+                  <span class="stock-blue">Qtd: {{ item.Quantity }}</span>
+                  <span class="stock-red">Est Atual: {{ calculateStock(item, true) }}</span>
+                </div>
               </li>
             </ul>
           </div>

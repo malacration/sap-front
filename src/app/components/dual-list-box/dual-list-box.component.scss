@@ -127,16 +127,17 @@
 }
 
 .order-info {
-  white-space: normal; /* Permite quebra de linha */
-  overflow: visible; /* Remove truncamento */
-  text-overflow: initial; /* Remove efeito de "..." */
-  max-width: 50%; /* Aumenta espaço para localidade */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: initial;
+  max-width: 50%;
 }
 
 .stock-info {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-top: 4px;
 }
 
 .stock-green {
@@ -177,12 +178,10 @@
   cursor: pointer;
   border-bottom: 1px solid #e8ecef;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
   box-sizing: border-box;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 
   &:hover {
     background-color: #e6f0fa;
@@ -192,6 +191,13 @@
     background-color: #d9e8ff;
     font-weight: 500;
   }
+}
+
+.item-details {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .list-container::-webkit-scrollbar {
