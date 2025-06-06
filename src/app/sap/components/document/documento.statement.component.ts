@@ -242,6 +242,9 @@ export class PedidoVenda{
   Dscription : string
   Quantity : number
   Weight1 : number
+  OnHand : number
+  IsCommited : number
+  OnOrder : number   
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
