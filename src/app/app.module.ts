@@ -110,7 +110,7 @@ import { ProducaoModule } from './modulos/producao/producao.module';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
 import { LocalidadeService } from './sap/service/localidade.service';
-import { PedidosCarregamentoComponent } from './sap/components/Pedidos-Carregamento/pedidos-carregamento.component';
+import { DualListBoxComponent } from './components/dual-list-box/dual-list-box.component';
 
 registerLocaleData(localeBr);
 
@@ -180,7 +180,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     TrocaComponent,
     OrdemCarregamentoComponent,
     LocalidadeSearchComponent,
-    PedidosCarregamentoComponent,
+    DualListBoxComponent,
   ],
   imports: [
     NgxPaginationModule,
