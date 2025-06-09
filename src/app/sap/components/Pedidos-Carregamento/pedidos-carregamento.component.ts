@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as moment from 'moment';
 import {
   PedidosCarregamentoService,
   PedidoCarregamento,
@@ -10,67 +11,62 @@ import {
   styleUrls: ['./pedidos-carregamento.component.scss'],
 })
 export class PedidosCarregamentoComponent implements OnInit {
-  /** Lista completa vinda do backend */
-  todosPedidos: PedidoCarregamento[] = [];
+  startDate = '';
+  endDate = '';
 
-  /** Lista “filtrada” (neste caso, mesma que todosPedidos) */
   filteredPedidos: PedidoCarregamento[] = [];
-
-  /** Flag de carregamento */
   carregando = false;
 
-  /** Controles de filtro — continuam declarados, mas não mudam o resultado */
-  filterDate: string = '';
-  filterVendor: string = '';
-  filterClient: string = '';
-  filterProduct: string = '';
-
-  /** Paginação */
-  pageSize = 10;
+  pageSize = 20;
   currentPage = 1;
 
   constructor(private pedidosService: PedidosCarregamentoService) {}
 
   ngOnInit(): void {
-    this.loadPedidosParaModal();
+    // opcional: inicializar com data de hoje se quiser
+    // const hoje = moment().format('YYYY-MM-DD');
+    // this.startDate = hoje;
+    // this.endDate   = hoje;
+    // this.filterPedidos();
   }
 
-  /** Busca TODOS os pedidos no backend e preenche this.todosPedidos e this.filteredPedidos */
-  private loadPedidosParaModal(): void {
+  /** dispara sempre que muda startDate ou endDate */
+  // pedidos-carregamento.component.ts
+
+  filterPedidos(): void {
+    if (!this.startDate || !this.endDate) {
+      this.filteredPedidos = [];
+      return;
+    }
+
     this.carregando = true;
-    this.pedidosService.get().subscribe({
-      next: (data) => {
-        this.todosPedidos = data;
-        // Ao terminar de buscar, simplesmente exibimos a lista completa:
-        this.filteredPedidos = [...this.todosPedidos];
+    this.pedidosService.getByDates(this.startDate, this.endDate).subscribe({
+      next: (pedidosArray) => {
+        console.log('array vindo do service', pedidosArray);
+        this.filteredPedidos = pedidosArray;
+        this.currentPage = 1;
         this.carregando = false;
       },
       error: (err) => {
-        console.error('Erro ao buscar pedidos:', err);
+        console.error('Erro ao buscar pedidos por datas:', err);
+        this.filteredPedidos = [];
         this.carregando = false;
       },
     });
   }
 
-  /**
-   * Mesmo que o usuário digite algo nos filtros, NÃO vamos alterar filteredPedidos.
-   * Apenas reiniciamos a página para a 1 toda vez que um filtro for modificado.
-   */
-  applyFilters(): void {
-    this.currentPage = 1;
-    // Intencionalmente não alteramos filteredPedidos.
-    // Mantemos toda a lista em filteredPedidos para que nada seja filtrado.
+  /** formata yyyyMMdd → dd/MM/YYYY */
+  formatDocDate(ymd: string): string {
+    return moment(ymd, 'YYYYMMDD').format('DD/MM/YYYY');
   }
 
-  /** Chamado pelo componente de paginação quando a página muda */
+  get pagedPedidos(): PedidoCarregamento[] {
+    if (!this.filteredPedidos) return [];
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredPedidos.slice(start, start + this.pageSize);
+  }
+
   onPageChange(novaPagina: number) {
     this.currentPage = novaPagina;
-  }
-
-  /** Retorna apenas o “fatiado” de 10 itens para exibir na tabela */
-  get pagedPedidos(): PedidoCarregamento[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = this.currentPage * this.pageSize;
-    return this.filteredPedidos.slice(start, end);
   }
 }

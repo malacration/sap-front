@@ -1,7 +1,7 @@
 <div class="container-fluid">
   <!-- 1) Filtros: datas, parceiro e item (datas primeiro, alinhado) -->
   <div class="row mb-2 align-items-end">
-    <div class="col-sm-3">
+    <div class="col-sm-2">
       <label class="form-label">Data Início</label>
       <input
         type="date"
@@ -10,7 +10,7 @@
         (ngModelChange)="filterPedidos()"
       />
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-2">
       <label class="form-label">Data Fim</label>
       <input
         type="date"
@@ -19,59 +19,77 @@
         (ngModelChange)="filterPedidos()"
       />
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-2">
       <app-busines-partner-search
         (selected)="onPartnerSelected($event)"
       ></app-busines-partner-search>
     </div>
-    <div class="col-sm-3">
-      <app-item-search (selected)="onItemSelected($event)"></app-item-search>
+    <div class="col-sm-2">
+      <app-item-search
+        (selected)="onItemSelected($event)"
+        [branchId]="branchId"
+      ></app-item-search>
+    </div>
+    <div class="col-sm-2">
+      <app-sales-person-search
+        (selected)="selectOriginSalesPerson($event)"
+        [name]="'Vendedor'"
+      ></app-sales-person-search>
     </div>
   </div>
 
   <!-- 2) Mensagens -->
   <div *ngIf="carregando" class="text-center py-4">Carregando...</div>
-  <div
-    *ngIf="!carregando && filteredPedidos.length === 0"
-    class="alert alert-warning"
-  >
-    Nenhum pedido encontrado.
-  </div>
 
-  <!-- 3) Tabela -->
-  <div class="row" *ngIf="!carregando && filteredPedidos.length > 0">
-    <div class="col-12">
-      <table class="table table-bordered table-sm">
-        <thead class="thead-light">
-          <tr>
-            <th>Data Pedido</th>
-            <th>Cliente</th>
-            <th>Vendedor</th>
-            <th>Produto</th>
-            <th>Frete</th>
-            <th>QTD Imediata</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let pedido of pagedPedidos">
-            <td>{{ pedido.DocDate }}</td>
-            <td>{{ pedido.CardName }}</td>
-            <td>{{ pedido.SlpName }}</td>
-            <td>{{ pedido.ItemCode }} - {{ pedido.Dscription }}</td>
-            <td>{{ pedido.DistribSum | number : "1.2-2" }}</td>
-            <td>
-              {{
-                pedido.Usage === 9 ? (pedido.Quantity | number : "1.2-2") : "-"
-              }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- se não estiver carregando, aí sim acessa length -->
+  <ng-container *ngIf="!carregando">
+    <div *ngIf="filteredPedidos.length === 0" class="alert alert-warning">
+      Nenhum pedido encontrado.
     </div>
-  </div>
 
+    <!-- só mostra a tabela se tiver pelo menos 1 item -->
+    <div class="row" *ngIf="filteredPedidos.length > 0">
+      <div class="col-12">
+        <div class="table-scroll">
+          <table class="table table-bordered table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Vendedor</th>
+                <th>Produto</th>
+                <th>Frete</th>
+                <th>QTD Imediata</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- pagedPedidos já sempre devolve array -->
+              <tr *ngFor="let pedido of pagedPedidos">
+                <td>{{ formatDocDate(pedido.DocDate) }}</td>
+                <td>{{ pedido.CardName }}</td>
+                <td>{{ pedido.SlpName }}</td>
+                <td>{{ pedido.ItemCode }} - {{ pedido.Dscription }}</td>
+                <td>{{ pedido.DistribSum | number : "1.2-2" }}</td>
+                <td>
+                  {{
+                    pedido.Usage === 9
+                      ? (pedido.Quantity | number : "1.2-2")
+                      : "-"
+                  }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+  <span>Total de {{ filteredPedidos.length }} itens</span>
   <!-- 4) Paginação -->
-  <div class="row mt-3" *ngIf="!carregando && filteredPedidos.length > 0">
+  <div
+    class="row mt-3"
+    *ngIf="!carregando && (filteredPedidos?.length || 0) > 0"
+  >
     <div class="col-12 text-center">
       <app-paginacao
         [totalItens]="filteredPedidos.length"
