@@ -1,19 +1,35 @@
 <div class="container-fluid">
-  <!-- === 1) Campos de filtro (busca de parceiro + busca de item) === -->
-  <div class="row mb-2">
-    <div class="col-sm-6">
-      <label class="form-label">Parceiro (Business Partner)</label>
+  <!-- 1) Filtros: datas, parceiro e item (datas primeiro, alinhado) -->
+  <div class="row mb-2 align-items-end">
+    <div class="col-sm-3">
+      <label class="form-label">Data Início</label>
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="startDate"
+        (ngModelChange)="filterPedidos()"
+      />
+    </div>
+    <div class="col-sm-3">
+      <label class="form-label">Data Fim</label>
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="endDate"
+        (ngModelChange)="filterPedidos()"
+      />
+    </div>
+    <div class="col-sm-3">
       <app-busines-partner-search
         (selected)="onPartnerSelected($event)"
       ></app-busines-partner-search>
     </div>
-    <div class="col-sm-6">
-      <label class="form-label">Item</label>
+    <div class="col-sm-3">
       <app-item-search (selected)="onItemSelected($event)"></app-item-search>
     </div>
   </div>
 
-  <!-- === 2) Mensagens de carregamento / “nenhum pedido” === -->
+  <!-- 2) Mensagens -->
   <div *ngIf="carregando" class="text-center py-4">Carregando...</div>
   <div
     *ngIf="!carregando && filteredPedidos.length === 0"
@@ -22,42 +38,30 @@
     Nenhum pedido encontrado.
   </div>
 
-  <!-- === 3) Tabela de resultados filtrados e paginados === -->
+  <!-- 3) Tabela -->
   <div class="row" *ngIf="!carregando && filteredPedidos.length > 0">
     <div class="col-12">
       <table class="table table-bordered table-sm">
         <thead class="thead-light">
           <tr>
-            <th>DATA</th>
-            <th>FILIAL</th>
-            <th>CLIENTE</th>
-            <th>VENDEDOR</th>
-            <th>PRODUTO</th>
-            <th>FRETE</th>
-            <th>IMEDIATA</th>
-            <th>SEM PREVISÃO</th>
+            <th>Data Pedido</th>
+            <th>Cliente</th>
+            <th>Vendedor</th>
+            <th>Produto</th>
+            <th>Frete</th>
+            <th>QTD Imediata</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let pedido of pagedPedidos">
             <td>{{ pedido.DocDate }}</td>
             <td>{{ pedido.CardName }}</td>
-            <td>{{ pedido.CardName }}</td>
             <td>{{ pedido.SlpName }}</td>
             <td>{{ pedido.ItemCode }} - {{ pedido.Dscription }}</td>
             <td>{{ pedido.DistribSum | number : "1.2-2" }}</td>
             <td>
               {{
-                pedido.Usage === 9
-                  ? (pedido.DistribSum | number : "1.2-2")
-                  : "-"
-              }}
-            </td>
-            <td>
-              {{
-                pedido.Usage === 16
-                  ? (pedido.DistribSum | number : "1.2-2")
-                  : "-"
+                pedido.Usage === 9 ? (pedido.Quantity | number : "1.2-2") : "-"
               }}
             </td>
           </tr>
@@ -66,7 +70,7 @@
     </div>
   </div>
 
-  <!-- === 4) Paginação no rodapé === -->
+  <!-- 4) Paginação -->
   <div class="row mt-3" *ngIf="!carregando && filteredPedidos.length > 0">
     <div class="col-12 text-center">
       <app-paginacao

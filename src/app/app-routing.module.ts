@@ -20,7 +20,7 @@ import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 
- let routes: Routes = [
+let routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
@@ -29,183 +29,154 @@ import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/
   {
     path: 'home',
     title: 'Inicio',
-    data: ["icon:fas fa-home"],
-    component: HomeComponent
+    data: ['icon:fas fa-home'],
+    component: HomeComponent,
   },
   {
     path: 'login',
     title: 'Login',
-    data: ["hidden"],
-    component: LoginComponent
+    data: ['hidden'],
+    component: LoginComponent,
   },
   {
     path: 'romaneio',
     title: 'Romaneio',
-    data: ["internal"],
-    component: RomaneioComponent
+    data: ['internal'],
+    component: RomaneioComponent,
   },
   {
     path: 'romaneio-fazenda-insumo/:id/:tipo',
     title: 'Romaneio Fazenda Insumo',
-    data: ["hidden"],
-    component: RomaneioFazendaInsumoComponent
+    data: ['hidden'],
+    component: RomaneioFazendaInsumoComponent,
   },
   {
     path: 'faturas',
     title: 'Faturas',
-    data: ["icon:fas fa-file-invoice"],
-    component: FaturasComponent
+    data: ['icon:fas fa-file-invoice'],
+    component: FaturasComponent,
   },
   {
     path: 'cadastro/:id',
     title: 'Cadastro',
-    data: ["internal","hidden"],
-    component: CadastroComponent
+    data: ['internal', 'hidden'],
+    component: CadastroComponent,
   },
   {
     path: 'clientes',
     title: 'Clientes',
-    data: ["icon:fas fa-users"],
+    data: ['icon:fas fa-users'],
     canActivate: [authGuard],
-    children: [ 
+    children: [
       {
         path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract"],
+        data: ['icon:fas fa-file-contract'],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: ParceiroNegocioComponent,
       },
       {
         path: 'parceiro-negocio/:cardCode',
         title: 'Parceiro Negocio',
-        data: ["hidden"],
+        data: ['hidden'],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: ParceiroNegocioComponent,
       },
       {
         path: 'transferencia',
         title: 'Transferências',
-        data: ["icon:fas fa-exchange-alt"],
+        data: ['icon:fas fa-exchange-alt'],
         canActivate: [authGuard],
-        component: TransferenciaClientesComponent
+        component: TransferenciaClientesComponent,
       },
-    ]
-  },
-    {
-    path: 'carregamento',
-    title: 'Carregamento',
-    data: ["icon:fas fa-truck"],
-    canActivate: [authGuard],
-    children: [ 
-      {
-        path: 'parceiro-negocio',
-        title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract"],
-        canActivate: [authGuard],
-        component: ParceiroNegocioComponent
-      },
-      {
-        path: 'parceiro-negocio/:cardCode',
-        title: 'Parceiro Negocio',
-        data: ["hidden"],
-        canActivate: [authGuard],
-        component: ParceiroNegocioComponent
-      },
-      {
-        path: 'Ordem',
-        title: 'Ordem',
-        data: ["icon:fas fa-box"],
-        canActivate: [authGuard],
-        component: OrdemCarregamentoComponent
-      },
-    ]
+    ],
   },
   {
     path: 'carregamento',
-    title: 'Carregamento',
-    data: ["icon:fas fa-truck"],
+    title: 'Ordem Carregamento',
+    data: ['icon:fas fa-truck'],
     canActivate: [authGuard],
-    children: [ 
+    children: [
       {
         path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract"],
+        data: ['icon:fas fa-file-contract'],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: ParceiroNegocioComponent,
       },
       {
         path: 'parceiro-negocio/:cardCode',
         title: 'Parceiro Negocio',
-        data: ["hidden"],
+        data: ['hidden'],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: ParceiroNegocioComponent,
       },
       {
         path: 'ordem-carregamento',
         title: 'Ordem',
-        data: ["icon:fas fa-box"],
+        data: ['icon:fas fa-box'],
         canActivate: [authGuard],
-        component: OrdemCarregamentoComponent
+        component: OrdemCarregamentoComponent,
       },
-    ]
+    ],
   },
   {
     title: 'Venda',
     canActivate: [authGuard],
-    data: ["icon:fas fa-shopping-bag"],
+    data: ['icon:fas fa-shopping-bag'],
     path: 'venda',
-    children: [ 
+    children: [
       {
         path: 'document',
         title: 'Vender',
         canActivate: [authGuard],
-        data: ["icon:fas fa-shopping-cart"],
-        component: DocumentStatementComponent
+        data: ['icon:fas fa-shopping-cart'],
+        component: DocumentStatementComponent,
       },
       {
         path: 'cotacao',
         title: 'Cotação',
         canActivate: [authGuard],
-        data: ["icon:fas fa-file-alt"],
-        component: CotacoesStatementComponent
+        data: ['icon:fas fa-file-alt'],
+        component: CotacoesStatementComponent,
       },
       {
         path: 'pedidos-venda',
         title: 'Pedidos',
         canActivate: [authGuard],
         component: PedidosVendaStatementComponent,
-        data: ["icon:fas fa-file-signature"],
+        data: ['icon:fas fa-file-signature'],
       },
       {
         path: 'venda-futura',
         title: 'Contratos',
-        data: ["icon:fas fa-file-contract"],
+        data: ['icon:fas fa-file-contract'],
         canActivate: [authGuard],
-        component: VendaFuturaStatementComponent
+        component: VendaFuturaStatementComponent,
       },
-    ]
+    ],
   },
   {
     title: 'Administrador',
     canActivate: [authGuard],
-    data: ["hidden","icon:fas fa-cog"],
+    data: ['hidden', 'icon:fas fa-cog'],
     path: 'roles',
-    children: [ 
+    children: [
       {
         path: 'manage-roles',
         title: 'Roles',
-        data: ["icon:fas fa-users"],
+        data: ['icon:fas fa-users'],
         canActivate: [authGuard],
-        component: ManageRolesComponent
+        component: ManageRolesComponent,
       },
       {
         path: 'assign-role',
         title: 'Atribuicao',
-        data: ["icon:fas fa-user-check"],
+        data: ['icon:fas fa-user-check'],
         canActivate: [authGuard],
-        component: AssignRoleComponent
+        component: AssignRoleComponent,
       },
-    ]
+    ],
   },
   {
     title: 'Producao',
@@ -220,15 +191,13 @@ import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/
   {
     path: '**',
     title: 'Não encontrado',
-    data: ["hidden"],
-    component: PageNotFoundComponent
-  }
+    data: ['hidden'],
+    component: PageNotFoundComponent,
+  },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes)
-  ],
-  exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
