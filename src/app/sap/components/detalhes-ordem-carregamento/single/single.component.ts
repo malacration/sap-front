@@ -1,0 +1,54 @@
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Column } from '../../../../shared/components/table/column.model';
+import { AlertService } from '../../../service/alert.service';
+import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { OrdemCarregamentoService } from '../../../service/ordem-carregamento.service';
+import { OrdemCarregamento } from '../../../model/ordem-carregamento';
+
+
+
+@Component({
+  selector: 'app-ordem-carregamento-single',
+  templateUrl: './single.component.html',
+  styleUrls: ['./single.component.scss']
+})
+export class OrdemCarregamentoSingleComponent implements OnInit {
+
+
+  constructor(
+    private alertService : AlertService,
+    private ordemCarregamentoService : OrdemCarregamentoService){
+
+  }
+
+  cardName = "windson"
+  id = "666"
+  
+  @Input() 
+  selected: OrdemCarregamento = null;
+
+  @Output()
+  close = new EventEmitter();
+
+
+  ngOnInit(): void {
+    this.selected.Ord_CRG_LINHACollection.forEach(it => {
+    });
+  }
+
+  voltar(){
+    this.close.emit()
+  }
+
+  action(event : ActionReturn){
+  }
+
+  abrirModalPreview(){
+  }
+
+  definition = [
+    new Column('Núm. do Pedido', 'u_docNumPedido'),
+    new Column('Cód. Cliente', 'u_cardCode'),
+    new Column('Nome Cliente', 'u_cardName'),
+  ];
+}

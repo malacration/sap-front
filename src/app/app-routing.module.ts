@@ -19,6 +19,7 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 
  let routes: Routes = [
   {
@@ -98,18 +99,11 @@ import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/
     canActivate: [authGuard],
     children: [ 
       {
-        path: 'parceiro-negocio',
-        title: 'Parceiro Negocio',
+        path: 'detalhes-carregamento',
+        title: 'Detalhes',
         data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
-      },
-      {
-        path: 'parceiro-negocio/:cardCode',
-        title: 'Parceiro Negocio',
-        data: ["hidden"],
-        canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: OrdemCarregamentoStatementComponent
       },
       {
         path: 'Ordem',
