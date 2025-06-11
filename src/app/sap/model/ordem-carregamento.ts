@@ -12,6 +12,8 @@ export class OrdemCarregamento {
     U_nameOrdem: string;
     Ord_CRG_LINHACollection: LinhaItem[];
     U_dataCriacao: string;
+    U_Status : string
+    U_pesoTotal : number
 
 
     // routerLinkPn() : RouteLink{
@@ -20,7 +22,7 @@ export class OrdemCarregamento {
 
     getActions(): Action[] {
         return [
-            new Action("", new ActionReturn("selected",this), "far fa-check-circle")
+            new Action("", new ActionReturn("selected",this), "far fa-eye")
         ]
     }
 

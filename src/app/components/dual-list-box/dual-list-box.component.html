@@ -16,7 +16,7 @@
       <div *ngFor="let group of groupedAvailableItems" class="order-group">
         <div class="order-header">
           <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
-            Pedido: {{ group.docNum }} | Localidade: {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
+            Pedido: {{ group.docNum }} | Localidade: <i class="fas fa-map-marker"></i> {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
           </span>
         </div>
         <ul class="order-list">
@@ -24,10 +24,13 @@
               class="list-item" 
               (click)="selectItem(item)">
             <div class="item-details">
-              {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
+              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: <i class="fas fa-weight-hanging"></i> {{ item.Quantity * item.Weight1 }}
             </div>
             <div class="stock-info" *ngIf="showStock">
-              <span class="stock-green">Estoque: {{ calculateStock(item, false) }}</span>
+              <span class="stock-green">Em Estoque: {{ calculateStock(item, false) }}</span>
+              <!-- <span class="stock-green">Em Produção: {{ calculateStock(item, false) }}</span> -->
+              <span class="stock-red">Em Carregamento: {{ calculateStock(item, false) }}</span>
+              <span class="stock-blue">Balanço: {{ calculateStock(item, false) }}</span>
             </div>
           </li>
         </ul>
@@ -57,7 +60,7 @@
           <div *ngFor="let group of groupedSelectedItems" class="order-group">
             <div class="order-header">
               <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
-                Pedido: {{ group.docNum }} | Localidade: {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
+                Pedido: {{ group.docNum }} | Localidade: <i class="fas fa-map-marker"></i> {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
               </span>
             </div>
             <ul class="order-list">
@@ -65,12 +68,7 @@
                   class="list-item" 
                   (click)="removeItem(item)">
                 <div class="item-details">
-                  {{ item.ItemCode }} - {{ item.Dscription }} - {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}
-                </div>
-                <div class="stock-info" *ngIf="showStock">
-                  <span class="stock-green">Estoque: {{ calculateStock(item, false) }}</span>
-                  <span class="stock-blue">Qtd: {{ item.Quantity }}</span>
-                  <span class="stock-red">Est Atual: {{ calculateStock(item, true) }}</span>
+              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: <i class="fas fa-weight-hanging"></i> {{ item.Quantity * item.Weight1 }}
                 </div>
               </li>
             </ul>

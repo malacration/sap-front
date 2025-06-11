@@ -30,12 +30,9 @@ export class DualListBoxComponent {
     return isSelected ? stock - (item.Quantity || 0) : stock;
   }
 
-  calculateGroupStock(items: PedidoVenda[], isSelected: boolean): number {
-    return items.reduce((sum, item) => sum + this.calculateStock(item, isSelected), 0);
-  }
-
-  calculateGroupQuantity(items: PedidoVenda[]): number {
-    return items.reduce((sum, item) => sum + (item.Quantity || 0), 0);
+  calculateCarregamento(item: PedidoVenda, isSelected: boolean): number {
+  const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
+  return isSelected ? stock - (item.Quantity || 0) : stock;
   }
 
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
