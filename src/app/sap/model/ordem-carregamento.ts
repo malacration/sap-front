@@ -39,4 +39,5 @@ export class LinhaItem {
     u_docNumPedido: number;
     LineId: number;
     VisOrder: number;
+    u_quantidade : number
 }
