@@ -22,6 +22,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   localidade: Localidade = null;
   loading = false;
   showStock: boolean = false;
+  showPainelPedidos = false;
 
   // Para a dual list box
   availableOrders: PedidoVenda[] = [];
@@ -90,6 +91,9 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   toggleEstoque() {
     this.showStock = !this.showStock;
+  }
+  selecionar() {
+    this.showPainelPedidos = true;
   }
 
   sendOrder() {}
