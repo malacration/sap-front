@@ -16,7 +16,10 @@ export class PedidosCarregamentoComponent implements OnInit {
 
   filteredPedidos: PedidoCarregamento[] = [];
   carregando = false;
-
+  branchId = '2';
+  vendedor: any;
+  cliente: any;
+  agrupador: any;
   pageSize = 20;
   currentPage = 1;
 
@@ -68,5 +71,17 @@ export class PedidosCarregamentoComponent implements OnInit {
 
   onPageChange(novaPagina: number) {
     this.currentPage = novaPagina;
+  }
+
+  selectOriginSalesPerson($event: any): void {
+    this.vendedor = $event;
+  }
+
+  selectOnPartnerSelected($event: any): void {
+    this.cliente = $event;
+  }
+  onGroupByChange(novo: string): void {
+    this.agrupador = novo;
+    console.log(novo);
   }
 }

@@ -111,6 +111,7 @@ import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
 import { LocalidadeService } from './sap/service/localidade.service';
 import { PedidosCarregamentoComponent } from './sap/components/Pedidos-Carregamento/pedidos-carregamento.component';
+import { GroupBySelectComponent } from './sap/components/form/select/agrupador/agrupador.select.component';
 
 registerLocaleData(localeBr);
 
@@ -181,6 +182,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     OrdemCarregamentoComponent,
     LocalidadeSearchComponent,
     PedidosCarregamentoComponent,
+    GroupBySelectComponent,
   ],
   imports: [
     NgxPaginationModule,

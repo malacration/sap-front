@@ -36,6 +36,11 @@
         [name]="'Vendedor'"
       ></app-sales-person-search>
     </div>
+    <div class="col-sm-2">
+      <app-group-by-select
+        (selectedOut)="onGroupByChange($event)"
+      ></app-group-by-select>
+    </div>
   </div>
 
   <!-- 2) Mensagens -->
@@ -68,7 +73,7 @@
                 <td>{{ formatDocDate(pedido.DocDate) }}</td>
                 <td>{{ pedido.CardName }}</td>
                 <td>{{ pedido.SlpName }}</td>
-                <td>{{ pedido.ItemCode }} - {{ pedido.Dscription }}</td>
+                <td>{{ pedido.ItemCode }} - {{ pedido.Description }}</td>
                 <td>{{ pedido.DistribSum | number : "1.2-2" }}</td>
                 <td>
                   {{
