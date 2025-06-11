@@ -110,8 +110,13 @@ import { ProducaoModule } from './modulos/producao/producao.module';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
 import { LocalidadeService } from './sap/service/localidade.service';
+<<<<<<< HEAD
 import { PedidosCarregamentoComponent } from './sap/components/Pedidos-Carregamento/pedidos-carregamento.component';
 import { GroupBySelectComponent } from './sap/components/form/select/agrupador/agrupador.select.component';
+import { DualListBoxComponent } from './components/dual-list-box/dual-list-box.component';
+=======
+import { DualListBoxComponent } from './components/dual-list-box/dual-list-box.component';
+>>>>>>> 1c208741fc5f7168dcb73763d6f6ae3fe0ca8d0b
 
 registerLocaleData(localeBr);
 
@@ -181,8 +186,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     TrocaComponent,
     OrdemCarregamentoComponent,
     LocalidadeSearchComponent,
-    PedidosCarregamentoComponent,
-    GroupBySelectComponent,
+    DualListBoxComponent,
   ],
   imports: [
     NgxPaginationModule,
