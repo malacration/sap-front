@@ -9,7 +9,7 @@
 
 <div class="dual-list-container" [ngClass]="{'expanded-available': isSelectedListCollapsed}">
   <div class="list-box left-list">
-    <h5>Disponíveis</h5>
+    <h5 class="titulo">Disponíveis</h5>
     <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
            [(ngModel)]="searchTermAvailable">
     <div class="list-container">
@@ -39,6 +39,11 @@
   <div class="list-box right-list">
     <div class="list-header">
       <h5>Selecionados</h5>
+              <div class="total-weight-info mb-2">
+          <span class="btn btn-sm btn-primary">
+            Peso Total Selecionado: {{ totalSelectedWeight }}
+          </span>
+        </div>
       <button class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
         {{ isSelectedListCollapsed ? 'Maximizar' : 'Minimizar' }}
       </button>
@@ -47,6 +52,7 @@
       <ng-container *ngIf="!isSelectedListCollapsed">
         <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
                [(ngModel)]="searchTermSelected">
+
         <div class="list-container">
           <div *ngFor="let group of groupedSelectedItems" class="order-group">
             <div class="order-header">
