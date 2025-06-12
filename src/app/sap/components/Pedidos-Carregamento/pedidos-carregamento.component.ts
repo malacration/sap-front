@@ -1,9 +1,16 @@
+import { NextLinkService } from './../../../shared/service/nextLink.service';
 import { Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import {
   PedidosCarregamentoService,
   PedidoCarregamento,
 } from '../../service/pedidos-carregamento.service';
+import { Branch } from '../../model/branch';
+import { SalesPerson } from '../../model/sales-person/sales-person';
+import { BusinessPartner } from '../../model/business-partner/business-partner';
+import { Item } from '../../model/item';
+import { Column } from '../../../shared/components/table/column.model';
+import { Page } from '../../model/page.model';
 
 @Component({
   selector: 'pedidos-carregamento',
@@ -16,48 +23,64 @@ export class PedidosCarregamentoComponent implements OnInit {
 
   filteredPedidos: PedidoCarregamento[] = [];
   carregando = false;
-  branchId = '2';
+  item: string;
+  branchId: string;
   vendedor: any;
   cliente: any;
-  agrupador: any;
+  groupBy: any;
   pageSize = 20;
   currentPage = 1;
+  resultado: Page<PedidoCarregamento>;
 
-  constructor(private pedidosService: PedidosCarregamentoService) {}
+  constructor(
+    private pedidosService: PedidosCarregamentoService,
+    private nextLinkService: NextLinkService
+  ) {}
 
   ngOnInit(): void {
-    // opcional: inicializar com data de hoje se quiser
-    // const hoje = moment().format('YYYY-MM-DD');
-    // this.startDate = hoje;
-    // this.endDate   = hoje;
-    // this.filterPedidos();
+    const hoje = moment().format('YYYY-MM-DD');
+    this.startDate = hoje;
+    this.endDate = hoje;
+    this.filterPedidos();
   }
 
-  /** dispara sempre que muda startDate ou endDate */
-  // pedidos-carregamento.component.ts
+  resetFilters() {
+    this.startDate = null;
+    this.endDate = null;
+    this.branchId = '';
+    this.cliente = '';
+    this.item = '';
+    this.vendedor = '';
+    this.groupBy = null;
+    this.filteredPedidos = [];
+  }
 
   filterPedidos(): void {
-    if (!this.startDate || !this.endDate) {
-      this.filteredPedidos = [];
-      return;
-    }
-
+    if (!this.startDate || !this.endDate || this.branchId == null) return;
     this.carregando = true;
-    this.pedidosService.getByDates(this.startDate, this.endDate).subscribe({
-      next: (pedidosArray) => {
-        console.log('array vindo do service', pedidosArray);
-        this.filteredPedidos = pedidosArray;
-        this.currentPage = 1;
-        this.carregando = false;
-      },
-      error: (err) => {
-        console.error('Erro ao buscar pedidos por datas:', err);
-        this.filteredPedidos = [];
-        this.carregando = false;
-      },
-    });
+    this.pedidosService
+      .getByFilters(
+        this.startDate,
+        this.endDate,
+        +this.branchId,
+        this.cliente,
+        this.item,
+        this.vendedor,
+        this.groupBy
+      )
+      .subscribe({
+        next: (data) => {
+          this.filteredPedidos = data.content;
+          this.resultado = data;
+          this.currentPage = 1;
+          this.carregando = false;
+        },
+        error: () => {
+          this.filteredPedidos = [];
+          this.carregando = false;
+        },
+      });
   }
-
   /** formata yyyyMMdd → dd/MM/YYYY */
   formatDocDate(ymd: string): string {
     return moment(ymd, 'YYYYMMDD').format('DD/MM/YYYY');
@@ -73,15 +96,46 @@ export class PedidosCarregamentoComponent implements OnInit {
     this.currentPage = novaPagina;
   }
 
-  selectOriginSalesPerson($event: any): void {
-    this.vendedor = $event;
+  selectOriginSalesPerson(salesPerson: SalesPerson): void {
+    this.vendedor = salesPerson.SalesEmployeeCode;
+    this.filterPedidos();
   }
 
-  selectOnPartnerSelected($event: any): void {
-    this.cliente = $event;
+  onPartnerSelected(partner: BusinessPartner) {
+    this.cliente = partner.CardCode;
+    this.filterPedidos();
   }
-  onGroupByChange(novo: string): void {
-    this.agrupador = novo;
-    console.log(novo);
+  onGroupByChange(novo: string) {
+    this.groupBy = novo;
+    this.filterPedidos();
+  }
+  selectBranch(branch: Branch) {
+    this.branchId = branch.bplid;
+    if (this.startDate && this.endDate) {
+      this.filterPedidos();
+    }
+  }
+  addItem(ItemCode: Item) {
+    this.item = ItemCode.ItemCode;
+    console.log(ItemCode.ItemCode);
+    this.filterPedidos();
+  }
+  getDefinition() {
+    return [
+      new Column('id', 'CardCode'),
+      new Column('qtd', 'QuantidadeCurency'),
+    ];
+  }
+
+  action($event) {}
+
+  nextLink() {
+    this.nextLinkService
+      .next<Page<PedidoCarregamento>>(this.resultado.nextLink)
+      .subscribe((it) => {
+        this.filteredPedidos.push(...it.content);
+        this.resultado.nextLink = it.nextLink;
+        this.resultado.content.push(...it.content);
+      });
   }
 }

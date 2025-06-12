@@ -20,9 +20,10 @@ import { CurrencyDirective } from './directives/curency.directive copy';
 import { PaginacaoComponent } from './components/paginacao/paginacao.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { ResultadoSearchComponent } from './components/modal/resultado-search/resultado-search.component';
+import { NextLinkService } from './service/nextLink.service';
 
 @NgModule({
-  providers: [ParameterService, AuthService],
+  providers: [ParameterService, AuthService, NextLinkService],
   declarations: [
     PageNotFoundComponent,
     WebviewDirective,

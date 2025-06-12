@@ -113,6 +113,7 @@ import { LocalidadeService } from './sap/service/localidade.service';
 import { PedidosCarregamentoComponent } from './sap/components/Pedidos-Carregamento/pedidos-carregamento.component';
 import { GroupBySelectComponent } from './sap/components/form/select/agrupador/agrupador.select.component';
 import { DualListBoxComponent } from './components/dual-list-box/dual-list-box.component';
+import { ItemPickerComponent } from './sap/components/search/item-search-no-branch/item-picker.component';
 
 registerLocaleData(localeBr);
 
@@ -185,6 +186,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     DualListBoxComponent,
     PedidosCarregamentoComponent,
     GroupBySelectComponent,
+    ItemPickerComponent,
   ],
   imports: [
     NgxPaginationModule,

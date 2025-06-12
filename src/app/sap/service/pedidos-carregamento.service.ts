@@ -2,9 +2,21 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { Page } from '../model/page.model';
 
 export interface PedidoCarregamento {
-  /* … */
+  DocEntry?: number;
+  DocDate?: string;
+  CardCode?: string;
+  CardName?: string;
+  SlpCode?: number;
+  SlpName?: string;
+  ItemCode?: string;
+  Description?: string;
+  DistribSum?: number;
+  Quantity?: number;
+  OnHand?: number;
+  QuantidadeCurency;
 }
 @Injectable({ providedIn: 'root' })
 export class PedidosCarregamentoService {
@@ -12,23 +24,27 @@ export class PedidosCarregamentoService {
 
   constructor(private http: HttpClient) {}
 
-  getByDates(
+  getByFilters(
     dataInicial: string,
-    dataFinal: string
-  ): Observable<PedidoCarregamento[]> {
-    const params = new HttpParams()
+    dataFinal: string,
+    filial: number,
+    cliente?: string,
+    item?: string,
+    vendedor?: string,
+    agrupador?: string
+  ): Observable<Page<PedidoCarregamento>> {
+    let params = new HttpParams()
       .set('dataInicial', dataInicial)
-      .set('dataFinal', dataFinal);
+      .set('dataFinal', dataFinal)
+      .set('filial', filial.toString())
+      .set('agrupador', agrupador || '');
 
-    return (
-      this.http
-        // 1) tipamos pra NextLink-like
-        .get<{ content: PedidoCarregamento[]; nextLink: string }>(
-          this.baseUrl,
-          { params }
-        )
-        // 2) extraímos apenas o array que interessa
-        .pipe(map((res) => res.content))
-    );
+    if (cliente) params = params.set('cliente', cliente);
+    if (item) params = params.set('item', item);
+    if (vendedor) params = params.set('vendedor', vendedor);
+
+    return this.http.get<Page<PedidoCarregamento>>(this.baseUrl, {
+      params,
+    });
   }
 }

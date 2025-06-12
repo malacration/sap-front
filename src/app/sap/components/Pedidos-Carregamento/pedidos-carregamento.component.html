@@ -1,107 +1,184 @@
 <div class="container-fluid">
-  <!-- 1) Filtros: datas, parceiro e item (datas primeiro, alinhado) -->
-  <div class="row mb-2 align-items-end">
-    <div class="col-sm-2">
-      <label class="form-label">Data Início</label>
-      <input
-        type="date"
-        class="form-control"
-        [(ngModel)]="startDate"
-        (ngModelChange)="filterPedidos()"
-      />
+  <app-table
+    [editableDynamic]="true"
+    [content]="filteredPedidos"
+    [definition]="getDefinition()"
+    (actionOutput)="action($event)"
+  ></app-table>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-sm-3">
+        <label>Data Início</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="startDate"
+          (ngModelChange)="filterPedidos()"
+        />
+      </div>
+      <div class="col-sm-3">
+        <label>Data Fim</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="endDate"
+          (ngModelChange)="filterPedidos()"
+        />
+      </div>
+      <div class="col-sm-3">
+        <app-branch-select
+          (selectedOut)="selectBranch($event)"
+        ></app-branch-select>
+      </div>
+      <div class="col-sm-3">
+        <app-busines-partner-search
+          (selected)="onPartnerSelected($event)"
+        ></app-busines-partner-search>
+      </div>
     </div>
-    <div class="col-sm-2">
-      <label class="form-label">Data Fim</label>
-      <input
-        type="date"
-        class="form-control"
-        [(ngModel)]="endDate"
-        (ngModelChange)="filterPedidos()"
-      />
-    </div>
-    <div class="col-sm-2">
-      <app-busines-partner-search
-        (selected)="onPartnerSelected($event)"
-      ></app-busines-partner-search>
-    </div>
-    <div class="col-sm-2">
-      <app-item-search
-        (selected)="onItemSelected($event)"
-        [branchId]="branchId"
-      ></app-item-search>
-    </div>
-    <div class="col-sm-2">
-      <app-sales-person-search
-        (selected)="selectOriginSalesPerson($event)"
-        [name]="'Vendedor'"
-      ></app-sales-person-search>
-    </div>
-    <div class="col-sm-2">
-      <app-group-by-select
-        (selectedOut)="onGroupByChange($event)"
-      ></app-group-by-select>
+
+    <div class="row mt-4">
+      <div class="col-sm-4">
+        <app-item-picker
+          (contentSelected)="addItem($event)"
+          [title]="'Selecione um produto'"
+        >
+        </app-item-picker>
+      </div>
+      <div class="col-sm-4">
+        <app-sales-person-search
+          (selected)="selectOriginSalesPerson($event)"
+          [name]="'Vendedor'"
+        ></app-sales-person-search>
+      </div>
+      <div class="col-sm-4">
+        <app-group-by-select
+          [selected]="groupBy"
+          (selectedOut)="onGroupByChange($event)"
+        ></app-group-by-select>
+      </div>
     </div>
   </div>
 
-  <!-- 2) Mensagens -->
   <div *ngIf="carregando" class="text-center py-4">Carregando...</div>
-
-  <!-- se não estiver carregando, aí sim acessa length -->
   <ng-container *ngIf="!carregando">
     <div *ngIf="filteredPedidos.length === 0" class="alert alert-warning">
       Nenhum pedido encontrado.
     </div>
 
-    <!-- só mostra a tabela se tiver pelo menos 1 item -->
     <div class="row" *ngIf="filteredPedidos.length > 0">
       <div class="col-12">
-        <div class="table-scroll">
-          <table class="table table-bordered table-sm">
-            <thead class="thead-light">
-              <tr>
-                <th>Data</th>
-                <th>Cliente</th>
-                <th>Vendedor</th>
-                <th>Produto</th>
-                <th>Frete</th>
-                <th>QTD Imediata</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- pagedPedidos já sempre devolve array -->
-              <tr *ngFor="let pedido of pagedPedidos">
-                <td>{{ formatDocDate(pedido.DocDate) }}</td>
-                <td>{{ pedido.CardName }}</td>
-                <td>{{ pedido.SlpName }}</td>
-                <td>{{ pedido.ItemCode }} - {{ pedido.Description }}</td>
-                <td>{{ pedido.DistribSum | number : "1.2-2" }}</td>
-                <td>
-                  {{
-                    pedido.Usage === 9
-                      ? (pedido.Quantity | number : "1.2-2")
-                      : "-"
-                  }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="table-scroll" *ngIf="filteredPedidos.length > 0">
+          <ng-container [ngSwitch]="groupBy">
+            <table
+              *ngSwitchCase="'cliente'"
+              class="table table-bordered table-sm"
+            >
+              <thead class="thead-light">
+                <tr>
+                  <th>CardCode</th>
+                  <th>CardName</th>
+                  <th>ItemCode</th>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>OnHand</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of pagedPedidos">
+                  <td>{{ p.CardCode }}</td>
+                  <td>{{ p.CardName }}</td>
+                  <td>{{ p.ItemCode }}</td>
+                  <td>{{ p.Description }}</td>
+                  <td>{{ p.Quantity }}</td>
+                  <td>{{ p.OnHand }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table
+              *ngSwitchCase="'vendedor'"
+              class="table table-bordered table-sm"
+            >
+              <thead class="thead-light">
+                <tr>
+                  <th>SlpCode</th>
+                  <th>SlpName</th>
+                  <th>ItemCode</th>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>OnHand</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of pagedPedidos">
+                  <td>{{ p.SlpCode }}</td>
+                  <td>{{ p.SlpName }}</td>
+                  <td>{{ p.ItemCode }}</td>
+                  <td>{{ p.Description }}</td>
+                  <td>{{ p.Quantity }}</td>
+                  <td>{{ p.OnHand }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table *ngSwitchCase="'item'" class="table table-bordered table-sm">
+              <thead class="thead-light">
+                <tr>
+                  <th>ItemCode</th>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>OnHand</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of pagedPedidos">
+                  <td>{{ p.ItemCode }}</td>
+                  <td>{{ p.Description }}</td>
+                  <td>{{ p.Quantity }}</td>
+                  <td>{{ p.OnHand }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <table *ngSwitchDefault class="table table-bordered table-sm">
+              <thead class="thead-light">
+                <tr>
+                  <th>Data</th>
+                  <th>Cliente</th>
+                  <th>Vendedor</th>
+                  <th>Produto</th>
+                  <th>Frete</th>
+                  <th>QTD Imediata</th>
+                  <th>Em Estoque</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of pagedPedidos">
+                  <td>{{ formatDocDate(p.DocDate) }}</td>
+                  <td>{{ p.CardName }}</td>
+                  <td>{{ p.SlpName }}</td>
+                  <td>{{ p.ItemCode }} - {{ p.Description }}</td>
+                  <td>{{ p.DistribSum | number : "1.2-2" }}</td>
+                  <td>{{ p.Quantity | number : "1.2-2" }}</td>
+                  <td>{{ p.OnHand }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
         </div>
+
+        <span *ngIf="filteredPedidos.length === 0" class="alert alert-warning">
+          Nenhum pedido encontrado.
+        </span>
+        <span>Total de {{ filteredPedidos.length }} itens</span>
       </div>
     </div>
   </ng-container>
-  <span>Total de {{ filteredPedidos.length }} itens</span>
-  <!-- 4) Paginação -->
   <div
     class="row mt-3"
     *ngIf="!carregando && (filteredPedidos?.length || 0) > 0"
   >
-    <div class="col-12 text-center">
-      <app-paginacao
-        [totalItens]="filteredPedidos.length"
-        [pageSize]="pageSize"
-        [currentPage]="currentPage"
-        (pageChange)="onPageChange($event)"
-      ></app-paginacao>
-    </div>
+    <div class="col-12 text-center"></div>
   </div>
+  <button class="btn btn-primary" (click)="nextLink()">Carregar Mais</button>
 </div>

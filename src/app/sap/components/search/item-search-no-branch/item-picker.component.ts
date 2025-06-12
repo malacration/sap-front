@@ -16,15 +16,13 @@ import { Page } from '../../../model/page.model';
 import { SearchComponent } from '../../../../shared/components/search/search.component';
 
 @Component({
-  selector: 'app-item-search',
-  templateUrl: './item-search.component.html',
+  selector: 'app-item-picker',
+  templateUrl: './item-picker.component.html',
 })
-export class ItemSearchComponent implements OnInit {
+export class ItemPickerComponent implements OnInit {
   @ViewChild('search', { static: true }) search: SearchComponent<Item>;
 
   definition = new Item().getDefinition();
-  @Input()
-  branchId;
 
   @Input()
   title;
@@ -36,7 +34,7 @@ export class ItemSearchComponent implements OnInit {
   constructor(private itemService: ItemService) {}
 
   ngOnInit(): void {
-    this.service = new ItemServiceBanch(this.itemService, this.branchId);
+    this.service = new ItemServiceBanch(this.itemService);
   }
 
   contentSelectedFun($event) {
@@ -46,9 +44,9 @@ export class ItemSearchComponent implements OnInit {
 }
 
 class ItemServiceBanch implements SearchService<Item> {
-  constructor(private service: ItemService, private branchId) {}
+  constructor(private service: ItemService) {}
 
   search($event: any): Observable<Page<Item>> {
-    return this.service.search($event, this.branchId);
+    return this.service.searchItem($event);
   }
 }
