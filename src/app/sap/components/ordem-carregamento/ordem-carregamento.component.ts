@@ -25,11 +25,15 @@ export class OrdemCarregamentoComponent implements OnInit {
   localidade: Localidade = null;
   loading = false;
   showStock: boolean = false;
-  isNameManuallyEdited: boolean = false; // Flag to track manual edits
+  isNameManuallyEdited: boolean = false;
 
   // Para a dual list box
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
+
+  // Track previous selections
+  private previousBranchId: string = null;
+  private previousLocalidadeCode: string = null;
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -55,18 +59,16 @@ export class OrdemCarregamentoComponent implements OnInit {
     });
   }
 
-  // Update the order name only if it hasn't been manually edited
   updateOrderName() {
     if (!this.isNameManuallyEdited && this.selectedBranch && this.localidade) {
-      const nomeFilial = this.selectedBranch?.bplname || 'Filial'; // Replace with actual branch name property
-      const rotaName = this.localidade?.Name || 'Localidade'; // Replace with actual locality name property
+      const nomeFilial = this.selectedBranch?.bplname || 'Filial';
+      const rotaName = this.localidade?.Name || 'Localidade';
       this.nameOrdInput = `${nomeFilial} Com Destino: ${rotaName}`;
     }
   }
 
-  // Handle manual changes to the input field
   onNameInputChange() {
-    this.isNameManuallyEdited = true; // Mark as manually edited
+    this.isNameManuallyEdited = true;
   }
 
   criarAnalise(): void {
@@ -74,6 +76,19 @@ export class OrdemCarregamentoComponent implements OnInit {
       this.alertService.error('Preencha todos os campos obrigatórios');
       return;
     }
+
+    // Check if branch has changed
+    const branchChanged = this.previousBranchId !== this.branchId;
+
+    // Store current selections for the next comparison
+    this.previousBranchId = this.branchId;
+    this.previousLocalidadeCode = this.localidade.Code;
+
+    // Clear selectedOrders if branch has changed
+    if (branchChanged) {
+      this.selectedOrders = [];
+    }
+    // If branch is the same, keep selectedOrders (no action needed)
 
     const startDate = this.dtInicial || '';
     const endDate = this.dtFinal || '';
@@ -83,7 +98,10 @@ export class OrdemCarregamentoComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.availableOrders = result.content;
-          this.selectedOrders = [];
+          // Filter out already selected orders from availableOrders
+          this.availableOrders = this.availableOrders.filter(
+            order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
+          );
         },
         error: (err) => {
           this.alertService.error('Erro ao buscar pedidos');
@@ -117,18 +135,6 @@ export class OrdemCarregamentoComponent implements OnInit {
       return;
     }
 
-    console.log('Selected Orders:', this.selectedOrders);
-    console.log('ORD_CRG_LINHA:', this.selectedOrders.map((pedido, index) => ({
-      U_orderDocEntry: pedido.DocEntry,
-      U_docNumPedido: pedido.DocNum,
-      U_cardCode: pedido.CardCode,
-      U_cardName: pedido.CardName,
-      U_quantidade: pedido.Quantity,
-      DocEntry: 0,
-      LineId: index,
-      VisOrder: index
-    })));
-
     this.loading = true;
     const requests: Observable<any>[] = [];
 
@@ -149,8 +155,6 @@ export class OrdemCarregamentoComponent implements OnInit {
       linha.U_pesoItem = pedido.Weight1;
       return linha;
     });
-
-    console.log('OrdemCarregamento:', ordemCarregamento);
 
     requests.push(this.ordemCarregamentoService.save(ordemCarregamento));
 
