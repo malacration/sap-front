@@ -69,26 +69,26 @@ export class OrdemCarregamentoComponent implements OnInit {
     this.isNameManuallyEdited = true; // Mark as manually edited
   }
 
-  criarAnalise() {
+  criarAnalise(): void {
     if (!this.isnotNullFiltrar()) {
       this.alertService.error('Preencha todos os campos obrigatórios');
       return;
     }
 
-    this.orderSalesService.search({
-      dataInicial: this.dtInicial,
-      dataFinal: this.dtFinal,
-      branchId: this.branchId,
-      localidade: this.localidade.Code
-    }).subscribe({
-      next: (result) => {
-        this.availableOrders = result.content;
-        this.selectedOrders = [];
-      },
-      error: (err) => {
-        this.alertService.error('Erro ao buscar pedidos');
-      }
-    });
+    const startDate = this.dtInicial || '';
+    const endDate = this.dtFinal || '';
+
+    this.orderSalesService
+      .search(startDate, endDate, this.branchId, 20)
+      .subscribe({
+        next: (result) => {
+          this.availableOrders = result.content;
+          this.selectedOrders = [];
+        },
+        error: (err) => {
+          this.alertService.error('Erro ao buscar pedidos');
+        }
+      });
   }
 
   isnotNullFiltrar() {

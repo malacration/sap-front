@@ -1,9 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { DocumentAngularSave } from './document-angular-save';
 import { PedidoVenda } from '../../components/document/documento.statement.component';
+import { NextLink } from '../../model/next-link';
 
 interface SearchResponse {
   content: PedidoVenda[];
@@ -31,7 +32,26 @@ export class OrderSalesService implements DocumentAngularSave {
     return this.httpClient.post<any>(this.url + "/angular", body);
   }
 
-  search(request: SearchRequest): Observable<SearchResponse> {
-    return this.httpClient.post<SearchResponse>(`${this.url}/search`, request);
+  search(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<NextLink<PedidoVenda>> {
+    let params = new HttpParams()
+      .set('filial', filial.toString())
+      .set('localidade', localidade.toString());
+
+    if (dataInicial) {
+      params = params.set('dataInicial', dataInicial);
+    }
+
+    if (dataFinal) {
+      params = params.set('dataFinal', dataFinal);
+    }
+
+    return this.httpClient
+      .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
+      .pipe(
+        map((response) => {
+          response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+          return response
+        })
+      );
   }
 }
