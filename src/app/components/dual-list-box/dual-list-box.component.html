@@ -24,7 +24,7 @@
               class="list-item" 
               (click)="selectItem(item)">
             <div class="item-details">
-              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: <i class="fas fa-weight-hanging"></i> {{ item.Quantity * item.Weight1 }}
+              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}  <i class="fas fa-weight-hanging"></i>
             </div>
             <div class="stock-info" *ngIf="showStock">
               <span class="stock-green">Em Estoque: {{ calculateStock(item, false) }}</span>
@@ -68,7 +68,7 @@
                   class="list-item" 
                   (click)="removeItem(item)">
                 <div class="item-details">
-              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: <i class="fas fa-weight-hanging"></i> {{ item.Quantity * item.Weight1 }}
+              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }} <i class="fas fa-weight-hanging"></i>
                 </div>
               </li>
             </ul>

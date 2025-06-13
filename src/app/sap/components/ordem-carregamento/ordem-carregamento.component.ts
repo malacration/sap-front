@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
-import { Observable, forkJoin} from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { AlertService } from '../../service/alert.service';
 import { Router } from '@angular/router';
 import { Branch } from '../../model/branch';
@@ -17,7 +17,7 @@ import { OrdemCarregamentoService } from '../../service/ordem-carregamento.servi
   styleUrls: ['./ordem-carregamento.component.scss']
 })
 export class OrdemCarregamentoComponent implements OnInit {
-  nameOrdInput: string;
+  nameOrdInput: string = '';
   dtInicial: string;
   dtFinal: string;
   branchId: string;
@@ -25,7 +25,8 @@ export class OrdemCarregamentoComponent implements OnInit {
   localidade: Localidade = null;
   loading = false;
   showStock: boolean = false;
-  
+  isNameManuallyEdited: boolean = false; // Flag to track manual edits
+
   // Para a dual list box
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
@@ -42,14 +43,30 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   selectBranch(branch: Branch) {
     this.branchId = branch.bplid;
-    this.selectedBranch = branch; 
+    this.selectedBranch = branch;
+    this.updateOrderName();
   }
 
   selectLocalidade($event) {
     this.localidade = $event;
     this.localidadeService.get(this.localidade.Code).subscribe(it => {
       this.localidade = it;
+      this.updateOrderName();
     });
+  }
+
+  // Update the order name only if it hasn't been manually edited
+  updateOrderName() {
+    if (!this.isNameManuallyEdited && this.selectedBranch && this.localidade) {
+      const nomeFilial = this.selectedBranch?.bplname || 'Filial'; // Replace with actual branch name property
+      const rotaName = this.localidade?.Name || 'Localidade'; // Replace with actual locality name property
+      this.nameOrdInput = `${nomeFilial} Com Destino: ${rotaName}`;
+    }
+  }
+
+  // Handle manual changes to the input field
+  onNameInputChange() {
+    this.isNameManuallyEdited = true; // Mark as manually edited
   }
 
   criarAnalise() {
@@ -94,23 +111,23 @@ export class OrdemCarregamentoComponent implements OnInit {
     this.showStock = !this.showStock;
   }
 
-sendOrder() {
+  sendOrder() {
     if (!this.nameOrdInput || this.selectedOrders.length === 0) {
-        this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido');
-        return;
+      this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido');
+      return;
     }
 
-    console.log('Selected Orders:', this.selectedOrders); // Log de depuração
+    console.log('Selected Orders:', this.selectedOrders);
     console.log('ORD_CRG_LINHA:', this.selectedOrders.map((pedido, index) => ({
-        U_orderDocEntry: pedido.DocEntry,
-        U_docNumPedido: pedido.DocNum,
-        U_cardCode: pedido.CardCode,
-        U_cardName: pedido.CardName,
-        U_quantidade: pedido.Quantity,
-        DocEntry: 0,
-        LineId: index,
-        VisOrder: index
-    }))); 
+      U_orderDocEntry: pedido.DocEntry,
+      U_docNumPedido: pedido.DocNum,
+      U_cardCode: pedido.CardCode,
+      U_cardName: pedido.CardName,
+      U_quantidade: pedido.Quantity,
+      DocEntry: 0,
+      LineId: index,
+      VisOrder: index
+    })));
 
     this.loading = true;
     const requests: Observable<any>[] = [];
@@ -119,51 +136,50 @@ sendOrder() {
     ordemCarregamento.U_nameOrdem = this.nameOrdInput;
     ordemCarregamento.U_Status = 'Aberto';
     ordemCarregamento.U_pesoTotal = this.calcularPesoTotal();
-ordemCarregamento.ORD_CRG_LINHACollection = this.selectedOrders.map((pedido, index) => {
-    const linha = new LinhaItem();
-    linha.U_orderDocEntry = pedido.DocEntry;
-    linha.U_docNumPedido = pedido.DocNum;
-    linha.U_cardCode = pedido.CardCode;
-    linha.U_cardName = pedido.CardName;
-    linha.U_quantidade = pedido.Quantity;
-    linha.DocEntry = 0;
-    linha.LineId = index;
-    linha.VisOrder = index;
-    // Adicione o peso se necessário
-    linha.U_pesoItem = pedido.Weight1;
-    return linha;
-});
+    ordemCarregamento.ORD_CRG_LINHACollection = this.selectedOrders.map((pedido, index) => {
+      const linha = new LinhaItem();
+      linha.U_orderDocEntry = pedido.DocEntry;
+      linha.U_docNumPedido = pedido.DocNum;
+      linha.U_cardCode = pedido.CardCode;
+      linha.U_cardName = pedido.CardName;
+      linha.U_quantidade = pedido.Quantity;
+      linha.DocEntry = 0;
+      linha.LineId = index;
+      linha.VisOrder = index;
+      linha.U_pesoItem = pedido.Weight1;
+      return linha;
+    });
 
-    console.log('OrdemCarregamento:', ordemCarregamento); // Log de depuração
+    console.log('OrdemCarregamento:', ordemCarregamento);
 
     requests.push(this.ordemCarregamentoService.save(ordemCarregamento));
 
     forkJoin(requests).subscribe({
-        next: () => {
-            this.concluirEnvio();
-        },
-        error: (err) => {
-            this.loading = false;
-            this.alertService.error('Erro ao enviar ordem de carregamento');
-            console.error(err);
-        }
+      next: () => {
+        this.concluirEnvio();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.alertService.error('Erro ao enviar ordem de carregamento');
+        console.error(err);
+      }
     });
-}
-
-calcularPesoTotal(): number {
-  return this.selectedOrders.reduce((total, pedido) => {
-    return total + (pedido.Weight1 || 0) * (pedido.Quantity || 1);
-  }, 0);
-}
-
-  concluirEnvio(){
-    this.alertService.info("Seu pedido foi Enviado").then(() => {
-      this.loading = false
-      this.limparFormulario()
-    })
   }
 
-  limparFormulario(){
+  calcularPesoTotal(): number {
+    return this.selectedOrders.reduce((total, pedido) => {
+      return total + (pedido.Weight1 || 0) * (pedido.Quantity || 1);
+    }, 0);
+  }
+
+  concluirEnvio() {
+    this.alertService.info('Seu pedido foi Enviado').then(() => {
+      this.loading = false;
+      this.limparFormulario();
+    });
+  }
+
+  limparFormulario() {
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
       this.router.navigate(['venda/cotacao']);
     });
