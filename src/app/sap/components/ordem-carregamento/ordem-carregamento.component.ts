@@ -79,7 +79,7 @@ export class OrdemCarregamentoComponent implements OnInit {
     const endDate = this.dtFinal || '';
 
     this.orderSalesService
-      .search(startDate, endDate, this.branchId, 20)
+      .search(startDate, endDate, this.branchId, this.localidade.Code)
       .subscribe({
         next: (result) => {
           this.availableOrders = result.content;

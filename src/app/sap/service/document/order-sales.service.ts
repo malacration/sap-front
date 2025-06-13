@@ -32,7 +32,7 @@ export class OrderSalesService implements DocumentAngularSave {
     return this.httpClient.post<any>(this.url + "/angular", body);
   }
 
-  search(dataInicial: string, dataFinal: string, filial: string, localidade: number): Observable<NextLink<PedidoVenda>> {
+  search(dataInicial: string, dataFinal: string, filial: string, localidade: string): Observable<NextLink<PedidoVenda>> {
     let params = new HttpParams()
       .set('filial', filial.toString())
       .set('localidade', localidade.toString());
