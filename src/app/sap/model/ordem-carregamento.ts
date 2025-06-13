@@ -10,10 +10,10 @@ import { ItemRetirada } from "./venda/item-retirada";
 export class OrdemCarregamento {
     DocEntry: number;
     U_nameOrdem: string;
-    Ord_CRG_LINHACollection: LinhaItem[];
+    ORD_CRG_LINHACollection: LinhaItem[];  // Note a mudança no nome da propriedade
     U_dataCriacao: string;
-    U_Status : string
-    U_pesoTotal : number
+    U_Status: string;
+    U_pesoTotal: number;
 
 
     // routerLinkPn() : RouteLink{
@@ -32,12 +32,13 @@ export class OrdemCarregamento {
 }
 
 export class LinhaItem {
-    u_cardName: string;
-    docEntry: number;
-    u_orderDocEntry: number;
-    u_cardCode: string;
-    u_docNumPedido: number;
+    U_cardName: string;  // Note o U_ maiúsculo
+    DocEntry: number;
+    U_orderDocEntry: number;
+    U_cardCode: string;
+    U_docNumPedido: number;
     LineId: number;
     VisOrder: number;
-    u_quantidade : number
+    U_quantidade: number;
+    U_pesoItem?: number; 
 }

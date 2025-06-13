@@ -221,6 +221,8 @@ export class DocumentStatementComponent implements OnInit {
 
 export class PedidoVenda{
   CardCode: string
+  CardName: string
+  DocEntry: number
   DocNum: number
   DocDate: string
   DocTotal: number

@@ -3,10 +3,9 @@ import { ConfigService } from "../../core/services/config.service";
 import { HttpClient } from "@angular/common/http";
 import { Page } from "../model/page.model";
 import { Observable, map } from "rxjs";
-import {LinhaItem, VendaFutura} from "../model/venda/venda-futura"
 import { PedidoRetirada } from "../model/venda/pedido-retirada";
 import { PedidoTroca } from "../model/venda/pedido-troca";
-import { OrdemCarregamento } from "../model/ordem-carregamento";
+import { LinhaItem, OrdemCarregamento } from "../model/ordem-carregamento";
 
 @Injectable({
     providedIn: 'root'
@@ -43,9 +42,22 @@ export class OrdemCarregamentoService{
 
     private vendaFuturaAssing(it) : OrdemCarregamento{
       const ordemCarregamento = Object.assign(new OrdemCarregamento(), it);
-      ordemCarregamento.AR_CF_LINHACollection = ordemCarregamento.Ord_CRG_LINHACollection.map(item => 
-        Object.assign(new LinhaItem(), item)
+      ordemCarregamento.Ord_CRG_LINHACollection = (it.ORD_CRG_LINHACollection || []).map(item => 
+        Object.assign(new LinhaItem(), {
+          DocEntry: item.docEntry,
+          LineId: item.LineId,
+          U_orderDocEntry: item.u_orderDocEntry,
+          U_docNumPedido: item.u_docNumPedido,
+          U_cardCode: item.u_cardCode,
+          U_cardName: item.u_cardName,
+          U_quantidade: item.u_quantidade,
+          U_pesoItem: item.u_pesoItem
+        })
       );
-      return ordemCarregamento
+      return ordemCarregamento;
     }
+
+    save(body : OrdemCarregamento) : Observable<any>{
+    return this.http.post<any>(this.url+"/angular",body)
+  }
 }

@@ -32,7 +32,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
 
   ngOnInit(): void {
-    this.selected.Ord_CRG_LINHACollection.forEach(it => {
+    this.selected.ORD_CRG_LINHACollection.forEach(it => {
     });
   }
 
@@ -47,9 +47,9 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   definition = [
-    new Column('Núm. do Pedido', 'u_docNumPedido'),
-    new Column('Cód. Cliente', 'u_cardCode'),
-    new Column('Nome Cliente', 'u_cardName'),
-    new Column('Quantidade', 'u_quantidade'),
+    new Column('Núm. do Pedido', 'U_docNumPedido'),
+    new Column('Cód. Cliente', 'U_cardCode'),
+    new Column('Nome Cliente', 'U_cardName'),
+    new Column('Quantidade', 'U_quantidade'),
   ];
 }
