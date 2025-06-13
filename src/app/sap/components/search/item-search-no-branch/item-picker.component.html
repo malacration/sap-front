@@ -1,6 +1,6 @@
 <app-search
   [title]="title"
-  [definition]="definition"
+  [definition]="getDefinition()"
   [service]="service"
   (contentSelected)="contentSelectedFun($event)"
   [name]="'Item'"

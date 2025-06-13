@@ -110,7 +110,7 @@ import { ProducaoModule } from './modulos/producao/producao.module';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
 import { LocalidadeService } from './sap/service/localidade.service';
-import { PedidosCarregamentoComponent } from './sap/components/Pedidos-Carregamento/pedidos-carregamento.component';
+import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { GroupBySelectComponent } from './sap/components/form/select/agrupador/agrupador.select.component';
 import { DualListBoxComponent } from './components/dual-list-box/dual-list-box.component';
 import { ItemPickerComponent } from './sap/components/search/item-search-no-branch/item-picker.component';
@@ -184,7 +184,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     OrdemCarregamentoComponent,
     LocalidadeSearchComponent,
     DualListBoxComponent,
-    PedidosCarregamentoComponent,
+    PainelExpedicaoPedidosComponent,
     GroupBySelectComponent,
     ItemPickerComponent,
   ],

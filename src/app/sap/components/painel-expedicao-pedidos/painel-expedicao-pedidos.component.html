@@ -1,0 +1,99 @@
+<div class="container-fluid">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-sm-3">
+        <label>Data Início</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="startDate"
+          (ngModelChange)="getPedidos()"
+        />
+      </div>
+      <div class="col-sm-3">
+        <label>Data Fim</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="endDate"
+          (ngModelChange)="getPedidos()"
+        />
+      </div>
+      <div class="col-sm-3">
+        <app-branch-select
+          (selectedOut)="selectBranch($event)"
+        ></app-branch-select>
+      </div>
+      <div class="col-sm-3">
+        <app-busines-partner-search
+          (selected)="onPartnerSelected($event)"
+        ></app-busines-partner-search>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col-sm-4">
+        <app-item-picker
+          (contentSelected)="addItem($event)"
+          [title]="'Selecione um produto'"
+        ></app-item-picker>
+      </div>
+
+      <div class="col-sm-4">
+        <app-sales-person-search
+          (selected)="selectOriginSalesPerson($event)"
+          [name]="'Vendedor'"
+        ></app-sales-person-search>
+      </div>
+      <div class="col-sm-4">
+        <app-group-by-select
+          [selected]="groupBy"
+          (selectedOut)="onGroupByChange($event)"
+        ></app-group-by-select>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="carregando" class="text-center py-4">Carregando...</div>
+  <ng-container *ngIf="!carregando">
+    <div *ngIf="resultado.content.length === 0" class="alert alert-warning">
+      Nenhum pedido encontrado.
+    </div>
+
+    <div class="row" *ngIf="resultado.content.length > 0">
+      <div class="col-12 px-0">
+        <app-table
+          [editableDynamic]="true"
+          [content]="resultado.content"
+          [definition]="columns"
+          (actionOutput)="action($event)"
+        ></app-table>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="row mt-3" *ngIf="!carregando && resultado.content.length > 0">
+    <div class="col-12 text-center"></div>
+  </div>
+  <span>Total de {{ resultado.content.length }} itens</span>
+
+  <ng-container *ngIf="!carregando && resultado.content.length > 0">
+    <div class="row mt-3">
+      <div class="col-12 text-center">
+        <!-- se ainda tiver nextLink, mostra o botão -->
+        <button
+          *ngIf="resultado.nextLink; else semMais"
+          class="btn btn-primary"
+          (click)="nextLink()"
+        >
+          Carregar Mais
+        </button>
+
+        <!-- quando não tiver mais páginas, mostra mensagem -->
+        <ng-template #semMais>
+          <span class="text-muted">Não há mais registros.</span>
+        </ng-template>
+      </div>
+    </div>
+  </ng-container>
+</div>

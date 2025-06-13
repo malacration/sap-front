@@ -14,6 +14,7 @@ import { SearchService } from '../../../service/search.service';
 import { Observable } from 'rxjs';
 import { Page } from '../../../model/page.model';
 import { SearchComponent } from '../../../../shared/components/search/search.component';
+import { Column } from '../../../../shared/components/table/column.model';
 
 @Component({
   selector: 'app-item-picker',
@@ -22,7 +23,13 @@ import { SearchComponent } from '../../../../shared/components/search/search.com
 export class ItemPickerComponent implements OnInit {
   @ViewChild('search', { static: true }) search: SearchComponent<Item>;
 
-  definition = new Item().getDefinition();
+  getDefinition() {
+    return [
+      new Column('Codigo do Item', 'ItemCode'),
+      new Column('Nome', 'ItemDescription'),
+      new Column('Preço', 'unitPriceBrl'),
+    ];
+  }
 
   @Input()
   title;

@@ -5,6 +5,8 @@ import { map, catchError } from 'rxjs/operators';
 import { Page } from '../model/page.model';
 
 export interface PedidoCarregamento {
+  content: any;
+  nextLink: string;
   DocEntry?: number;
   DocDate?: string;
   CardCode?: string;
@@ -16,7 +18,6 @@ export interface PedidoCarregamento {
   DistribSum?: number;
   Quantity?: number;
   OnHand?: number;
-  QuantidadeCurency;
 }
 @Injectable({ providedIn: 'root' })
 export class PedidosCarregamentoService {
