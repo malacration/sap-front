@@ -146,6 +146,8 @@ export class OrdemCarregamentoComponent implements OnInit {
       linha.LineId = index;
       linha.VisOrder = index;
       linha.U_pesoItem = pedido.Weight1;
+      linha.U_itemCode = pedido.ItemCode
+      linha.U_description = pedido.Dscription
       return linha;
     });
 

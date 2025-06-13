@@ -51,5 +51,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     new Column('Cód. Cliente', 'U_cardCode'),
     new Column('Nome Cliente', 'U_cardName'),
     new Column('Quantidade', 'U_quantidade'),
+    new Column('CODIGO', 'U_itemCode'),
+    new Column('DSC', 'U_description')
   ];
 }

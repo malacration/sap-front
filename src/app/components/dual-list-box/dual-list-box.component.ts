@@ -25,11 +25,6 @@ export class DualListBoxComponent {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
   }
 
-  calculateStock(item: PedidoVenda, isSelected: boolean): number {
-    const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
-    return isSelected ? stock - (item.Quantity || 0) : stock;
-  }
-
   calculateCarregamento(item: PedidoVenda, isSelected: boolean): number {
   const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
   return isSelected ? stock - (item.Quantity || 0) : stock;

@@ -41,4 +41,6 @@ export class LinhaItem {
     VisOrder: number;
     U_quantidade: number;
     U_pesoItem?: number; 
+    U_itemCode : string;
+    U_description : string;
 }
