@@ -27,11 +27,9 @@ export class OrdemCarregamentoComponent implements OnInit {
   showStock: boolean = false;
   isNameManuallyEdited: boolean = false;
 
-  // Para a dual list box
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
 
-  // Track previous selections
   private previousBranchId: string = null;
   private previousLocalidadeCode: string = null;
 
@@ -77,18 +75,14 @@ export class OrdemCarregamentoComponent implements OnInit {
       return;
     }
 
-    // Check if branch has changed
     const branchChanged = this.previousBranchId !== this.branchId;
 
-    // Store current selections for the next comparison
     this.previousBranchId = this.branchId;
     this.previousLocalidadeCode = this.localidade.Code;
 
-    // Clear selectedOrders if branch has changed
     if (branchChanged) {
       this.selectedOrders = [];
     }
-    // If branch is the same, keep selectedOrders (no action needed)
 
     const startDate = this.dtInicial || '';
     const endDate = this.dtFinal || '';
@@ -98,7 +92,6 @@ export class OrdemCarregamentoComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.availableOrders = result.content;
-          // Filter out already selected orders from availableOrders
           this.availableOrders = this.availableOrders.filter(
             order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
           );
