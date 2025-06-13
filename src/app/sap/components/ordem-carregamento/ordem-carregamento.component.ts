@@ -178,7 +178,7 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   limparFormulario() {
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['venda/cotacao']);
+      this.router.navigate(['carregamento/detalhes-carregamento']);
     });
   }
 }
