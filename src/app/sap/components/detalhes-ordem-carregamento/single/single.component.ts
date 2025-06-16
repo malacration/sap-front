@@ -42,6 +42,14 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   abrirModalPreview() {}
 
+  confirmarCancelamento(docEntry: number) {
+    this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.").then(it => {
+        if(it.isConfirmed) {
+            this.alertService.info("Documento cancelado com sucesso (simulação)");
+        }
+    });
+}
+
   definition = [
     new Column('Núm. do Pedido', 'U_docNumPedido'),
     new Column('Cód. Cliente', 'U_cardCode'),
