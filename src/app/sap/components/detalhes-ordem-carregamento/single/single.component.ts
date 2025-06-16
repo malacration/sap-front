@@ -1,11 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Column } from '../../../../shared/components/table/column.model';
 import { AlertService } from '../../../service/alert.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { OrdemCarregamentoService } from '../../../service/ordem-carregamento.service';
 import { OrdemCarregamento } from '../../../model/ordem-carregamento';
-
-
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -13,38 +11,37 @@ import { OrdemCarregamento } from '../../../model/ordem-carregamento';
   styleUrls: ['./single.component.scss']
 })
 export class OrdemCarregamentoSingleComponent implements OnInit {
-
-
   constructor(
-    private alertService : AlertService,
-    private ordemCarregamentoService : OrdemCarregamentoService){
+    private alertService: AlertService,
+    private ordemCarregamentoService: OrdemCarregamentoService
+  ) {}
 
-  }
+  cardName = "windson";
+  id = "666";
 
-  cardName = "windson"
-  id = "666"
-  
-  @Input() 
+  @Input()
   selected: OrdemCarregamento = null;
 
   @Output()
   close = new EventEmitter();
 
+  // Variáveis para armazenar os dados de logística
+  placa: string = '';
+  nomeMotorista: string = '';
+  transportadora: string = '';
+  nomeOrdem: string = '';
 
   ngOnInit(): void {
-    this.selected.ORD_CRG_LINHACollection.forEach(it => {
-    });
+    this.selected.ORD_CRG_LINHACollection.forEach(it => {});
   }
 
-  voltar(){
-    this.close.emit()
+  voltar() {
+    this.close.emit();
   }
 
-  action(event : ActionReturn){
-  }
+  action(event: ActionReturn) {}
 
-  abrirModalPreview(){
-  }
+  abrirModalPreview() {}
 
   definition = [
     new Column('Núm. do Pedido', 'U_docNumPedido'),

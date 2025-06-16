@@ -1,4 +1,3 @@
-<br>
 <section class="content">
     <div class="card card-primary">
         <div class="card-header">
@@ -6,7 +5,7 @@
             <div class="card-tools float-right">
                 <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
                     Gerar Nota Fiscal Saída
-                  </button>
+                </button>
             </div>
         </div>
         <div class="card-body">
@@ -30,10 +29,38 @@
                     <app-tabs>
                         <app-tab tabTitle="Produtos" [active]="true">
                             <app-table
-                                [content]="selected?.ORD_CRG_LINHACollection" 
-                                [definition]="definition" 
+                                [content]="selected?.ORD_CRG_LINHACollection"
+                                [definition]="definition"
                                 (actionOutput)="action($event)">
                             </app-table>
+                        </app-tab>
+                        <app-tab tabTitle="Logística">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Placa do Veículo</label>
+                                        <input type="text" class="form-control" [(ngModel)]="placa" placeholder="Ex: ABC-1234">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Nome do Motorista</label>
+                                        <input type="text" class="form-control" [(ngModel)]="nomeMotorista" placeholder="Ex: João Silva">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Transportadora</label>
+                                        <input type="text" class="form-control" [(ngModel)]="transportadora" placeholder="Ex: Transportadora XYZ">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Nome da Ordem</label>
+                                        <input type="text" class="form-control" [(ngModel)]="nomeOrdem" placeholder="Ex: Ordem 001">
+                                    </div>
+                                </div>
+                            </div>
                         </app-tab>
                     </app-tabs>
                 </dd>
