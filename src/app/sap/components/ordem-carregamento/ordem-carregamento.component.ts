@@ -76,14 +76,10 @@ export class OrdemCarregamentoComponent implements OnInit {
     }
 
     const branchChanged = this.previousBranchId !== this.branchId;
-
     this.previousBranchId = this.branchId;
     this.previousLocalidadeCode = this.localidade.Code;
 
-    if (branchChanged) {
-      this.selectedOrders = [];
-    }
-
+    // Don't clear selected orders when branch changes - they should stay with their original branch
     const startDate = this.dtInicial || '';
     const endDate = this.dtFinal || '';
 
@@ -92,6 +88,7 @@ export class OrdemCarregamentoComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.availableOrders = result.content;
+          // Filter out already selected orders regardless of branch
           this.availableOrders = this.availableOrders.filter(
             order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
           );
@@ -172,7 +169,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   concluirEnvio() {
-    this.alertService.info('Seu pedido foi Enviado').then(() => {
+    this.alertService.info('Ordem de carregamento criada com sucesso').then(() => {
       this.loading = false;
       this.limparFormulario();
     });
