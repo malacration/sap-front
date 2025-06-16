@@ -19,6 +19,7 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 
 let routes: Routes = [
   {
@@ -120,6 +121,7 @@ let routes: Routes = [
       },
     ],
   },
+
   {
     title: 'Venda',
     canActivate: [authGuard],
@@ -187,6 +189,21 @@ let routes: Routes = [
     title: 'Calculadora',
     path: 'statment-calc',
     component: CalculadoraStatementComponent,
+  },
+  {
+    path: 'relatorios',
+    title: 'Relatórios',
+    data: ['icon:fas fa-chart-line'],
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'painel-pedidos-expedicao',
+        title: 'Pedidos para Expedição',
+        data: ['icon:fas fa-file-alt'],
+        canActivate: [authGuard],
+        component: PainelExpedicaoPedidosComponent,
+      },
+    ],
   },
   {
     path: '**',

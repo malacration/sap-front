@@ -71,6 +71,7 @@ export class ModalSelectComponent implements OnInit {
   clear() {
     this.content = null;
     this.keyWord = '';
+    this.contentSelected.emit(undefined);
   }
 
   disableSearch() {

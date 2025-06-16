@@ -29,7 +29,6 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     size: 0,
   };
 
-  // filtros
   branchId: string;
   cliente: any;
   vendedor: any;
@@ -92,6 +91,15 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   getPedidos(): void {
     if (!this.startDate || !this.endDate || this.branchId == null) return;
     this.carregando = true;
+    console.log('>> getPedidos()', {
+      startDate: this.startDate,
+      endDate: this.endDate,
+      branchId: this.branchId,
+      cliente: this.cliente,
+      item: this.item,
+      vendedor: this.vendedor,
+      groupBy: this.groupBy,
+    });
     this.pedidosService
       .getByFilters(
         this.startDate,
@@ -121,7 +129,6 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
       });
   }
 
-  /** yyyyMMdd → dd/MM/YYYY */
   private formatDocDate(ymd: string): string {
     return moment(ymd, 'YYYYMMDD').format('DD/MM/YYYY');
   }
@@ -131,18 +138,18 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     this.getPedidos();
   }
 
-  onPartnerSelected(partner: BusinessPartner): void {
-    this.cliente = partner.CardCode;
+  onPartnerSelected(partner: BusinessPartner | null): void {
+    this.cliente = partner?.CardCode ?? '';
     this.getPedidos();
   }
 
-  selectOriginSalesPerson(sp: SalesPerson): void {
-    this.vendedor = sp.SalesEmployeeCode;
+  selectOriginSalesPerson(sp: SalesPerson | null): void {
+    this.vendedor = sp?.SalesEmployeeCode ?? null;
     this.getPedidos();
   }
 
-  addItem(item: Item): void {
-    this.item = item.ItemCode;
+  addItem(item: Item | null): void {
+    this.item = item?.ItemCode ?? null;
     this.getPedidos();
   }
 
@@ -176,7 +183,6 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           console.error('Erro no nextLink()', err);
           this.carregando = false;
         },
-        //, complete: () => { … }  // se precisar
       });
   }
 }

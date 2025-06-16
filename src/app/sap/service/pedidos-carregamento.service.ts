@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Page } from '../model/page.model';
-
+import Big from 'big.js';
 export interface PedidoCarregamento {
   content: any;
   nextLink: string;
@@ -22,6 +22,7 @@ export interface PedidoCarregamento {
 @Injectable({ providedIn: 'root' })
 export class PedidosCarregamentoService {
   private baseUrl = 'http://localhost:8080/painel/pedidos';
+  DistribSum: any;
 
   constructor(private http: HttpClient) {}
 

@@ -46,7 +46,6 @@ export class ItemPickerComponent implements OnInit {
 
   contentSelectedFun($event) {
     this.contentSelected.emit($event);
-    this.search.clear();
   }
 }
 
