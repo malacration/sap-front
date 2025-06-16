@@ -25,7 +25,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   @Output()
   close = new EventEmitter();
 
-  // Variáveis para armazenar os dados de logística
   placa: string = '';
   nomeMotorista: string = '';
   transportadora: string = '';
@@ -47,8 +46,12 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     new Column('Núm. do Pedido', 'U_docNumPedido'),
     new Column('Cód. Cliente', 'U_cardCode'),
     new Column('Nome Cliente', 'U_cardName'),
+    new Column('Cód. Item', 'U_itemCode'),
+    new Column('Dsc. Item', 'U_description'),
     new Column('Quantidade', 'U_quantidade'),
-    new Column('CODIGO', 'U_itemCode'),
-    new Column('DSC', 'U_description')
+    new Column('Peso', 'U_pesoItem'),
+    new Column('Un. Medida', 'U_unMedida'),
+    new Column('Em Estoque', 'U_qtdEstoque'),
+    new Column('Lote', ''),
   ];
 }
