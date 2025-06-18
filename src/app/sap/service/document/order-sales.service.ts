@@ -6,18 +6,6 @@ import { DocumentAngularSave } from './document-angular-save';
 import { PedidoVenda } from '../../components/document/documento.statement.component';
 import { NextLink } from '../../model/next-link';
 
-interface SearchResponse {
-  content: PedidoVenda[];
-  nextLink: string;
-}
-
-interface SearchRequest {
-  dataInicial: string;
-  dataFinal: string;
-  branchId: string;
-  localidade: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -50,7 +38,18 @@ export class OrderSalesService implements DocumentAngularSave {
       .pipe(
         map((response) => {
           response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
-          return response
+          return response;
+        })
+      );
+  }
+
+  searchAll(nextLink: string): Observable<NextLink<PedidoVenda>> {
+    return this.httpClient
+      .post<NextLink<PedidoVenda>>(`${this.url}/searchAll`, nextLink)
+      .pipe(
+        map((response) => {
+          response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+          return response;
         })
       );
   }

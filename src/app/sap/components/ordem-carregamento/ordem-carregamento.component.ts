@@ -10,6 +10,7 @@ import { OrderSalesService } from '../../service/document/order-sales.service';
 import { PedidoVenda } from '../document/documento.statement.component';
 import { LinhaItem, OrdemCarregamento } from '../../model/ordem-carregamento';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
+import { NextLink } from '../../model/next-link';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -26,9 +27,9 @@ export class OrdemCarregamentoComponent implements OnInit {
   loading = false;
   showStock: boolean = false;
   isNameManuallyEdited: boolean = false;
-
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
+  nextLink: string = ''; // Propriedade para armazenar o nextLink
 
   private previousBranchId: string = null;
   private previousLocalidadeCode: string = null;
@@ -79,22 +80,49 @@ export class OrdemCarregamentoComponent implements OnInit {
     this.previousBranchId = this.branchId;
     this.previousLocalidadeCode = this.localidade.Code;
 
-    // Don't clear selected orders when branch changes - they should stay with their original branch
     const startDate = this.dtInicial || '';
     const endDate = this.dtFinal || '';
 
     this.orderSalesService
       .search(startDate, endDate, this.branchId, this.localidade.Code)
       .subscribe({
-        next: (result) => {
+        next: (result: NextLink<PedidoVenda>) => {
           this.availableOrders = result.content;
-          // Filter out already selected orders regardless of branch
+          this.nextLink = result.nextLink; // Armazena o nextLink
+          // Filtra pedidos já selecionados
           this.availableOrders = this.availableOrders.filter(
             order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
           );
         },
         error: (err) => {
           this.alertService.error('Erro ao buscar pedidos');
+          console.error(err);
+        }
+      });
+  }
+
+  loadMoreOrders(): void {
+    if (!this.nextLink) {
+      this.alertService.error('Não há mais pedidos para carregar');
+      return;
+    }
+
+    this.orderSalesService
+      .searchAll(this.nextLink)
+      .subscribe({
+        next: (result: NextLink<PedidoVenda>) => {
+          // Adiciona os novos pedidos à lista existente
+          this.availableOrders = [
+            ...this.availableOrders,
+            ...result.content.filter(
+              order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
+            )
+          ];
+          this.nextLink = result.nextLink; // Atualiza o nextLink
+        },
+        error: (err) => {
+          this.alertService.error('Erro ao carregar mais pedidos');
+          console.error(err);
         }
       });
   }
@@ -143,8 +171,8 @@ export class OrdemCarregamentoComponent implements OnInit {
       linha.LineId = index;
       linha.VisOrder = index;
       linha.U_pesoItem = pedido.Weight1;
-      linha.U_itemCode = pedido.ItemCode
-      linha.U_description = pedido.Dscription
+      linha.U_itemCode = pedido.ItemCode;
+      linha.U_description = pedido.Dscription;
       return linha;
     });
 

@@ -80,6 +80,11 @@
           (selectedItemsChange)="onSelectedOrdersChange($event)"
         >
         </app-dual-list-box>
+
+        <!-- Botão Carregar Mais -->
+        <div class="text-center mt-3" *ngIf="nextLink">
+          <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
+        </div>
       </div>
 
       <!-- Confirmar -->
