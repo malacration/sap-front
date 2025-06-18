@@ -28,11 +28,11 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   routeSubscriptions : Array<Subscription> = new Array()
 
   definition = [
-    new Column('ID', 'DocEntry'),
-    new Column('Nome', 'U_nameOrdem'),
-    new Column('Peso Total', 'U_pesoTotal'),
-    new Column('Status', 'U_Status'),
-    new Column('Criado em', 'dataCriacao')
+      new Column('ID', 'DocEntry'),
+      new Column('Nome', 'U_nameOrdem'),
+      new Column('Peso Total (Kg)', 'U_pesoTotal'),
+      new Column('Status', 'U_Status'),
+      new Column('Criado em', 'dataCriacao')
   ]
   
   constructor(
