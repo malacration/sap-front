@@ -11,7 +11,7 @@ export class OrdemCarregamento {
     DocEntry: number;
     U_nameOrdem: string;
     ORD_CRG_LINHACollection: LinhaItem[];  // Note a mudança no nome da propriedade
-    U_dataCriacao: string;
+    CreateDate: string;
     U_Status: string;
     U_pesoTotal: number;
 
@@ -27,7 +27,7 @@ export class OrdemCarregamento {
     }
 
     get dataCriacao() {
-        return moment(this.U_dataCriacao).format('DD/MM/YYYY'); 
+        return moment(this.CreateDate).format('DD/MM/YYYY'); 
     }
 }
 
