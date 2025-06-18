@@ -1,4 +1,3 @@
-<br/>
 <section class="content">
   <div class="card card-primary">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -77,14 +76,11 @@
           [availableItems]="availableOrders || []"
           [selectedItems]="selectedOrders || []"
           [showStock]="showStock"
+          [nextLink]="nextLink"
           (selectedItemsChange)="onSelectedOrdersChange($event)"
+          (loadMore)="loadMoreOrders()"
         >
         </app-dual-list-box>
-
-        <!-- Botão Carregar Mais -->
-        <div class="text-center mt-3" *ngIf="nextLink">
-          <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
-        </div>
       </div>
 
       <!-- Confirmar -->

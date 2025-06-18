@@ -12,7 +12,9 @@ export class DualListBoxComponent {
   @Input() availableItems: PedidoVenda[] = [];
   @Input() selectedItems: PedidoVenda[] = [];
   @Input() showStock: boolean = false;
+  @Input() nextLink: string = '';
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
+  @Output() loadMore = new EventEmitter<void>();
 
   searchTermAvailable: string = '';
   searchTermSelected: string = '';
@@ -26,8 +28,8 @@ export class DualListBoxComponent {
   }
 
   calculateCarregamento(item: PedidoVenda, isSelected: boolean): number {
-  const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
-  return isSelected ? stock - (item.Quantity || 0) : stock;
+    const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
+    return isSelected ? stock - (item.Quantity || 0) : stock;
   }
 
   private sortItems(items: PedidoVenda[]): PedidoVenda[] {
@@ -129,5 +131,9 @@ export class DualListBoxComponent {
         this.selectedItemsChange.emit(this.selectedItems);
       }
     });
+  }
+
+  loadMoreOrders(): void {
+    this.loadMore.emit();
   }
 }

@@ -24,15 +24,19 @@
               class="list-item" 
               (click)="selectItem(item)">
             <div class="item-details">
-              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }}  <i class="fas fa-weight-hanging"></i>
+              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }} <i class="fas fa-weight-hanging"></i>
             </div>
             <div class="stock-info" *ngIf="showStock">
               <span class="stock-green">Em Estoque: {{ item.OnHand }}</span>
-              <span class="stock-red">Em Producão {{ item.OnOrder }}</span>
+              <span class="stock-red">Em Produção {{ item.OnOrder }}</span>
               <!-- <span class="stock-blue">Balanço: {{ calculateStock(item, false) }}</span> -->
             </div>
           </li>
         </ul>
+      </div>
+      <!-- Botão Carregar Mais -->
+      <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLink">
+        <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
       </div>
     </div>
     <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
@@ -41,11 +45,11 @@
   <div class="list-box right-list">
     <div class="list-header">
       <h5>Selecionados</h5>
-              <div class="total-weight-info mb-2">
-          <span class="btn btn-sm btn-primary">
-            Peso Total Selecionado: {{ totalSelectedWeight }}
-          </span>
-        </div>
+      <div class="total-weight-info mb-2">
+        <span class="btn btn-sm btn-primary">
+          Peso Total Selecionado: {{ totalSelectedWeight }}
+        </span>
+      </div>
       <button class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
         {{ isSelectedListCollapsed ? 'Maximizar' : 'Minimizar' }}
       </button>
@@ -67,7 +71,7 @@
                   class="list-item" 
                   (click)="removeItem(item)">
                 <div class="item-details">
-              <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }} <i class="fas fa-weight-hanging"></i>
+                  <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 }} <i class="fas fa-weight-hanging"></i>
                 </div>
               </li>
             </ul>

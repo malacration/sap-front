@@ -29,7 +29,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   isNameManuallyEdited: boolean = false;
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
-  nextLink: string = ''; // Propriedade para armazenar o nextLink
+  nextLink: string = '';
 
   private previousBranchId: string = null;
   private previousLocalidadeCode: string = null;
@@ -88,8 +88,7 @@ export class OrdemCarregamentoComponent implements OnInit {
       .subscribe({
         next: (result: NextLink<PedidoVenda>) => {
           this.availableOrders = result.content;
-          this.nextLink = result.nextLink; // Armazena o nextLink
-          // Filtra pedidos já selecionados
+          this.nextLink = result.nextLink;
           this.availableOrders = this.availableOrders.filter(
             order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
           );
@@ -111,14 +110,13 @@ export class OrdemCarregamentoComponent implements OnInit {
       .searchAll(this.nextLink)
       .subscribe({
         next: (result: NextLink<PedidoVenda>) => {
-          // Adiciona os novos pedidos à lista existente
           this.availableOrders = [
             ...this.availableOrders,
             ...result.content.filter(
               order => !this.selectedOrders.some(selected => selected.DocEntry === order.DocEntry)
             )
           ];
-          this.nextLink = result.nextLink; // Atualiza o nextLink
+          this.nextLink = result.nextLink;
         },
         error: (err) => {
           this.alertService.error('Erro ao carregar mais pedidos');

@@ -4,7 +4,7 @@
   justify-content: center;
 }
 
-.titulo{
+.titulo {
   margin-top: 14px;
   margin-bottom: 20px;
 }
@@ -127,6 +127,10 @@
   background-color: #f9fafb;
   width: 100%;
   box-sizing: border-box;
+}
+
+.load-more-wrapper {
+  margin-bottom: 16px; /* Add margin-bottom for spacing */
 }
 
 .order-group {
