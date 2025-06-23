@@ -29,6 +29,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   nomeMotorista: string = '';
   transportadora: string = '';
   nomeOrdem: string = '';
+  loading = false;
 
   ngOnInit(): void {
     this.selected.ORD_CRG_LINHACollection.forEach(it => {});
@@ -43,12 +44,25 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   abrirModalPreview() {}
 
   confirmarCancelamento(docEntry: number) {
-    this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.").then(it => {
+    this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.")
+      .then(it => {
         if(it.isConfirmed) {
-            this.alertService.info("Documento cancelado com sucesso (simulação)");
+          this.loading = true;
+          this.ordemCarregamentoService.cancel(docEntry).subscribe({
+            next: () => {
+              this.alertService.confirm("Documento cancelado com sucesso!");
+              this.selected.U_Status = "Cancelado";
+            },
+            error: (err) => {
+              this.alertService.error("Erro ao cancelar documento: " + err.message);
+            },
+            complete: () => {
+              this.loading = false;
+            }
+          });
         }
-    });
-}
+      });
+  }
 
   definition = [
     new Column('Núm. do Pedido', 'U_docNumPedido'),

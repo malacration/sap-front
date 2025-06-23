@@ -60,4 +60,9 @@ export class OrdemCarregamentoService{
     save(body : OrdemCarregamento) : Observable<any>{
     return this.http.post<any>(this.url+"/angular",body)
   }
+
+  cancel(id: number): Observable<any> {
+  const url = `${this.url}/${id}/cancel`;
+  return this.http.post(url, {});
+}
 }
