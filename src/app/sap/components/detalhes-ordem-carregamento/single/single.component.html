@@ -3,9 +3,10 @@
         <div class="card-header">
             <h3 class="card-title"><b>Detalhes da Ordem de Carregamento</b></h3>
             <div class="card-tools float-right">
-                <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
-                    Gerar Nota Fiscal Saída
-                </button>
+            <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;" [disabled]="loading">
+                <span *ngIf="!loading">Gerar Nota Fiscal Saída</span>
+                <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
+            </button>
                 <button (click)="confirmarCancelamento(selected.DocEntry)" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
                     Cancelar
                 </button>

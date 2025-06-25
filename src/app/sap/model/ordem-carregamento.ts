@@ -32,7 +32,7 @@ export class OrdemCarregamento {
 }
 
 export class LinhaItem {
-    U_cardName: string;  // Note o U_ maiúsculo
+    U_cardName: string;
     DocEntry: number;
     U_orderDocEntry: number;
     U_cardCode: string;
@@ -40,7 +40,8 @@ export class LinhaItem {
     LineId: number;
     VisOrder: number;
     U_quantidade: number;
-    U_pesoItem?: number; 
-    U_itemCode : string;
-    U_description : string;
+    U_pesoItem?: number;
+    U_itemCode: string;
+    U_description: string;
+    U_batchNumbers?: { BatchNumber: string; Quantity: number; ItemCode: string }[];
 }

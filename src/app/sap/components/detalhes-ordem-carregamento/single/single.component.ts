@@ -4,6 +4,7 @@ import { AlertService } from '../../../service/alert.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { OrdemCarregamentoService } from '../../../service/ordem-carregamento.service';
 import { OrdemCarregamento } from '../../../model/ordem-carregamento';
+import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -13,7 +14,8 @@ import { OrdemCarregamento } from '../../../model/ordem-carregamento';
 export class OrdemCarregamentoSingleComponent implements OnInit {
   constructor(
     private alertService: AlertService,
-    private ordemCarregamentoService: OrdemCarregamentoService
+    private ordemCarregamentoService: OrdemCarregamentoService,
+    private invoiceGenerationService: InvoiceGenerationService
   ) {}
 
   cardName = "windson";
@@ -41,7 +43,31 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   action(event: ActionReturn) {}
 
-  abrirModalPreview() {}
+  gerarNotaFiscal() {
+    this.loading = true;
+    this.invoiceGenerationService.generateInvoiceFromLoadingOrder(this.selected)
+      .subscribe({
+        next: (response) => {
+          this.alertService.confirm('Nota fiscal gerada com sucesso!');
+          // You might want to refresh the data or navigate somewhere
+        },
+        error: (error) => {
+          this.alertService.error('Erro ao gerar nota fiscal: ' + error.message);
+        },
+        complete: () => {
+          this.loading = false;
+        }
+      });
+  }
+
+  abrirModalPreview() {
+    this.alertService.confirm('Deseja gerar a nota fiscal para esta ordem de carregamento?')
+      .then(result => {
+        if (result.isConfirmed) {
+          this.gerarNotaFiscal();
+        }
+      });
+  }
 
   confirmarCancelamento(docEntry: number) {
     this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.")
