@@ -48,8 +48,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.invoiceGenerationService.generateInvoiceFromLoadingOrder(this.selected)
       .subscribe({
         next: (response) => {
+          this.finalizarDocumento(this.selected.DocEntry);
           this.alertService.confirm('Nota fiscal gerada com sucesso!');
-          // You might want to refresh the data or navigate somewhere
         },
         error: (error) => {
           this.alertService.error('Erro ao gerar nota fiscal: ' + error.message);
@@ -67,6 +67,22 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
           this.gerarNotaFiscal();
         }
       });
+  }
+
+  finalizarDocumento(docEntry: number) {
+    this.loading = true;
+    this.ordemCarregamentoService.finalizar(docEntry).subscribe({
+      next: () => {
+        this.alertService.confirm("Documento finalizado com sucesso!");
+        this.selected.U_Status = "Fechado";
+      },
+      error: (err) => {
+        this.alertService.error("Erro ao finalizar documento: " + err.message);
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
   }
 
   confirmarCancelamento(docEntry: number) {

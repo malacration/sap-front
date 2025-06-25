@@ -65,4 +65,9 @@ export class OrdemCarregamentoService{
   const url = `${this.url}/${id}/cancel`;
   return this.http.post(url, {});
 }
+
+  finalizar(id: number): Observable<any> {
+  const url = `${this.url}/${id}/finalizar`;
+  return this.http.post(url, {});
+}
 }
