@@ -247,6 +247,16 @@ export class PedidoVenda{
   OnHand : number
   IsCommited : number
   OnOrder : number   
+  // Campos Adicionar SQL
+  UnitPrice : number
+  WarehouseCode : string
+  Usage : number
+  TaxCode : string
+  CostingCode : string
+  CostingCode2 : string
+  BaseType : number
+  BaseEntry : number
+  BaseLine : number
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

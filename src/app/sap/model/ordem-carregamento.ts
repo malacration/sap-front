@@ -14,6 +14,7 @@ export class OrdemCarregamento {
     CreateDate: string;
     U_Status: string;
     U_pesoTotal: number;
+    U_filial : number;
 
 
     // routerLinkPn() : RouteLink{
@@ -43,5 +44,17 @@ export class LinhaItem {
     U_pesoItem?: number;
     U_itemCode: string;
     U_description: string;
+
+    // Campos novos
+    U_precoUnitario : number;
+    U_codigoDeposito : string;
+    U_usage : number;
+    U_taxCode : string
+    U_costingCode : string
+    U_costingCode2 : string
+    U_baseType : number
+    U_baseEntry : number
+    U_baseLine : number
+
     U_batchNumbers?: { BatchNumber: string; Quantity: number; ItemCode: string }[];
 }

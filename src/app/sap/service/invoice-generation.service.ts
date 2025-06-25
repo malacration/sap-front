@@ -26,15 +26,15 @@ private transformLoadingOrderToInvoice(loadingOrder: OrdemCarregamento): any {
     const documentLines = loadingOrder.ORD_CRG_LINHACollection.map(item => ({
         ItemCode: item.U_itemCode,
         Quantity: item.U_quantidade,
-        UnitPrice: '987826', // Note que agora é string para compatibilidade
-        WarehouseCode: '502.06',
-        Usage: '9',
-        TaxCode: '5101-021',
-        CostingCode: '500',
-        CostingCode2: "50000201",
+        UnitPrice: item.U_precoUnitario, 
+        WarehouseCode: item.U_codigoDeposito,
+        Usage: item.U_usage,
+        TaxCode: item.U_taxCode,
+        CostingCode: item.U_costingCode,
+        CostingCode2: item.U_costingCode2,
         BaseType: 17,
-        BaseEntry: 94068,
-        BaseLine: 0,
+        BaseEntry: item.U_orderDocEntry,
+        BaseLine: item.U_baseLine,
         U_description: item.U_description,
         BatchNumbers: item.U_batchNumbers?.map(batch => ({
             BatchNumber: batch.BatchNumber || "QMG005116", // Usa o batch da ordem ou um default
@@ -51,7 +51,7 @@ private transformLoadingOrderToInvoice(loadingOrder: OrdemCarregamento): any {
         CardCode: loadingOrder.ORD_CRG_LINHACollection[0]?.U_cardCode || '',
         DocDueDate: currentDate,
         DocumentLines: documentLines,
-        BPL_IDAssignedToInvoice: '11',
+        BPL_IDAssignedToInvoice: '2',
         Comments: `Nota fiscal gerada a partir da ordem de carregamento ${loadingOrder.DocEntry}`,
         U_id_pedido_forca: loadingOrder.DocEntry.toString(),
     };

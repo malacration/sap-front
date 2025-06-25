@@ -48,7 +48,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.invoiceGenerationService.generateInvoiceFromLoadingOrder(this.selected)
       .subscribe({
         next: (response) => {
-          this.finalizarDocumento(this.selected.DocEntry);
+          // this.finalizarDocumento(this.selected.DocEntry);
           this.alertService.confirm('Nota fiscal gerada com sucesso!');
         },
         error: (error) => {

@@ -21,7 +21,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   nameOrdInput: string = '';
   dtInicial: string;
   dtFinal: string;
-  branchId: string;
+  branchId: string = "11"
   selectedBranch: Branch = null;
   localidade: Localidade = null;
   loading = false;
@@ -158,6 +158,7 @@ export class OrdemCarregamentoComponent implements OnInit {
     ordemCarregamento.U_nameOrdem = this.nameOrdInput;
     ordemCarregamento.U_Status = 'Aberto';
     ordemCarregamento.U_pesoTotal = this.calcularPesoTotal();
+    ordemCarregamento.U_filial = Number(this.selectedOrders[0].BPL_IDAssignedToInvoice);
     ordemCarregamento.ORD_CRG_LINHACollection = this.selectedOrders.map((pedido, index) => {
       const linha = new LinhaItem();
       linha.U_orderDocEntry = pedido.DocEntry;
@@ -171,6 +172,13 @@ export class OrdemCarregamentoComponent implements OnInit {
       linha.U_pesoItem = pedido.Weight1;
       linha.U_itemCode = pedido.ItemCode;
       linha.U_description = pedido.Dscription;
+      linha.U_precoUnitario = pedido.UnitPrice
+      linha.U_codigoDeposito = pedido.WarehouseCode
+      linha.U_usage = pedido.Usage
+      linha.U_taxCode = pedido.TaxCode
+      linha.U_costingCode = pedido.CostingCode
+      linha.U_costingCode2 = pedido.CostingCode2
+      linha.U_baseLine = pedido.BaseLine
       return linha;
     });
 
