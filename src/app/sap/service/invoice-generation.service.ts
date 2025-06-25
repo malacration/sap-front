@@ -51,7 +51,7 @@ private transformLoadingOrderToInvoice(loadingOrder: OrdemCarregamento): any {
         CardCode: loadingOrder.ORD_CRG_LINHACollection[0]?.U_cardCode || '',
         DocDueDate: currentDate,
         DocumentLines: documentLines,
-        BPL_IDAssignedToInvoice: '2',
+        BPL_IDAssignedToInvoice: loadingOrder.U_filial3,
         Comments: `Nota fiscal gerada a partir da ordem de carregamento ${loadingOrder.DocEntry}`,
         U_id_pedido_forca: loadingOrder.DocEntry.toString(),
     };
