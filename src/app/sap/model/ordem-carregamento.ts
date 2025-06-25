@@ -14,7 +14,7 @@ export class OrdemCarregamento {
     CreateDate: string;
     U_Status: string;
     U_pesoTotal: number;
-    U_filial : number;
+    U_filial3 : string;
 
 
     // routerLinkPn() : RouteLink{

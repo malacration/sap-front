@@ -158,7 +158,7 @@ export class OrdemCarregamentoComponent implements OnInit {
     ordemCarregamento.U_nameOrdem = this.nameOrdInput;
     ordemCarregamento.U_Status = 'Aberto';
     ordemCarregamento.U_pesoTotal = this.calcularPesoTotal();
-    ordemCarregamento.U_filial = Number(this.selectedOrders[0].BPL_IDAssignedToInvoice);
+    ordemCarregamento.U_filial3 = this.branchId
     ordemCarregamento.ORD_CRG_LINHACollection = this.selectedOrders.map((pedido, index) => {
       const linha = new LinhaItem();
       linha.U_orderDocEntry = pedido.DocEntry;
