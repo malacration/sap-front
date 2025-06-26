@@ -173,8 +173,8 @@
   white-space: nowrap;
 }
 
-.stock-blue {
-  background-color: #007bff;
+.stock-gray {
+  background-color: #6c757d;
   color: #ffffff;
   padding: 4px 8px;
   border-radius: 4px;
@@ -240,4 +240,22 @@
   &:hover {
     background: #868e96;
   }
+}
+
+.stock-orange {
+  background-color: #e65100;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.stock-purple {
+  background-color: #9c27b0;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
 }

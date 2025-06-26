@@ -143,6 +143,20 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   toggleEstoque() {
     this.showStock = !this.showStock;
+    if (this.showStock && this.availableOrders.length > 0) {
+      this.loadQuantidadesEmCarregamento();
+    }
+  }
+
+  loadQuantidadesEmCarregamento() {
+  this.availableOrders.forEach(order => {
+    if (order.ItemCode) {
+      this.ordemCarregamentoService.getEstoqueEmCarregamento(order.ItemCode)
+        .subscribe(quantidade => {
+          order.quantidadeEmCarregamento = quantidade;
+        });
+    }
+  });
   }
 
   sendOrder() {

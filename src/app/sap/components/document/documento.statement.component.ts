@@ -257,7 +257,8 @@ export class PedidoVenda{
   BaseType : number
   BaseEntry : number
   BaseLine : number
-
+  quantidadeEmCarregamento?: number;
+  
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
   } 

@@ -73,15 +73,15 @@
     <!--- Região da Lista -->
     <div class="card card-primary">
       <div class="card-body">
-        <app-dual-list-box
-          [availableItems]="availableOrders || []"
-          [selectedItems]="selectedOrders || []"
-          [showStock]="showStock"
-          [nextLink]="nextLink"
-          (selectedItemsChange)="onSelectedOrdersChange($event)"
-          (loadMore)="loadMoreOrders()"
-        >
-        </app-dual-list-box>
+      <app-dual-list-box
+        [availableItems]="availableOrders || []"
+        [selectedItems]="selectedOrders || []"
+        [showStock]="showStock"
+        [nextLink]="nextLink"
+        (selectedItemsChange)="onSelectedOrdersChange($event)"
+        (loadMore)="loadMoreOrders()"
+      >
+      </app-dual-list-box>
       </div>
 
       <!-- Confirmar -->

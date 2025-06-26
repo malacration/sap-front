@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PedidoVenda } from '../../sap/components/document/documento.statement.component';
 import { SweetAlertResult } from 'sweetalert2';
 import { AlertService } from '../../sap/service/alert.service';
+import { OrdemCarregamentoService } from '../../sap/service/ordem-carregamento.service';
 
 @Component({
   selector: 'app-dual-list-box',
@@ -16,12 +17,15 @@ export class DualListBoxComponent {
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
   @Output() loadMore = new EventEmitter<void>();
 
+  quantidadesEmCarregamento: {[itemCode: string]: number} = {};
   searchTermAvailable: string = '';
   searchTermSelected: string = '';
   carregamentoPorPedido: boolean = false;
   isSelectedListCollapsed: boolean = false;
 
-  constructor(private alertService: AlertService) {}
+  constructor(private alertService: AlertService,
+    private ordemCarregamentoService : OrdemCarregamentoService
+  ) {}
 
   get totalSelectedWeight(): number {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
@@ -84,6 +88,22 @@ export class DualListBoxComponent {
       )
       .sort((a, b) => a.docNum - b.docNum);
   }
+
+  getQuantidadeEmCarregamento(item: PedidoVenda): number {
+    return item.quantidadeEmCarregamento || 0;
+  }
+
+  loadQuantidadesEmCarregamento() {
+    this.availableItems.forEach(item => {
+      if (item.ItemCode) {
+        this.ordemCarregamentoService.getEstoqueEmCarregamento(item.ItemCode)
+          .subscribe(quantidade => {
+            this.quantidadesEmCarregamento[item.ItemCode] = quantidade;
+          });
+      }
+    });
+  }
+
 
   toggleCarregamentoPorPedido(): void {
     this.carregamentoPorPedido = !this.carregamentoPorPedido;

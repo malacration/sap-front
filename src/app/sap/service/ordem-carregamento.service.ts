@@ -70,4 +70,8 @@ export class OrdemCarregamentoService{
   const url = `${this.url}/${id}/finalizar`;
   return this.http.post(url, {});
 }
+
+getEstoqueEmCarregamento(itemCode: string): Observable<number> {
+  return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
+}
 }
