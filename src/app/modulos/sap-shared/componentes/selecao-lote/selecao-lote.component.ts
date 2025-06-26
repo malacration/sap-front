@@ -67,10 +67,14 @@ export class SelecaoLoteComponent implements OnChanges, OnInit {
   }
 
   isDisable(){
-    return this.totalSelecionado() !== this.quantidade
+    return this.totalSelecionado() != this.quantidade
   }
 
   confirmar(){
-    this.lotesSelecionados.emit(this.lotes.filter(it => it.quantitySelecionadaEditable > 0))
+    const lotes = this.lotes.filter(it => it.quantitySelecionadaEditable > 0)
+    lotes.forEach(it => {
+      it.Quantity = it.quantitySelecionadaEditable
+    })
+    this.lotesSelecionados.emit(lotes)
   }
 }
