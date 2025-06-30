@@ -1,7 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
 import { Page } from '../model/page.model';
 import Big from 'big.js';
 export interface PedidoCarregamento {
@@ -18,6 +17,7 @@ export interface PedidoCarregamento {
   DistribSum?: number;
   Quantity?: number;
   OnHand?: number;
+  EmOrdemDeCarregamento?: string;
 }
 @Injectable({ providedIn: 'root' })
 export class PedidosCarregamentoService {

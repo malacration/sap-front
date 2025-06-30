@@ -46,7 +46,13 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     this.endDate = hoje;
     this.getPedidos();
   }
-
+  private formatPedido(p: PedidoCarregamento): PedidoCarregamento {
+    return {
+      ...p,
+      DocDate: this.formatDocDate(p.DocDate),
+      EmOrdemDeCarregamento: p.EmOrdemDeCarregamento != null ? 'Sim' : 'Não',
+    };
+  }
   get columns(): Column[] {
     switch (this.groupBy) {
       case 'cliente':
@@ -57,6 +63,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Descrição', 'Description'),
           new Column('Quantidade', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
+          new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
       case 'vendedor':
         return [
@@ -66,6 +73,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Descrição', 'Description'),
           new Column('Quantidade', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
+          new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
       case 'item':
         return [
@@ -73,6 +81,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Descrição', 'Description'),
           new Column('Quantidade', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
+          new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
       default:
         return [
@@ -84,6 +93,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Frete', 'DistribSum'),
           new Column('Qtd Imediata', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
+          new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
     }
   }
@@ -91,15 +101,6 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   getPedidos(): void {
     if (!this.startDate || !this.endDate || this.branchId == null) return;
     this.carregando = true;
-    console.log('>> getPedidos()', {
-      startDate: this.startDate,
-      endDate: this.endDate,
-      branchId: this.branchId,
-      cliente: this.cliente,
-      item: this.item,
-      vendedor: this.vendedor,
-      groupBy: this.groupBy,
-    });
     this.pedidosService
       .getByFilters(
         this.startDate,
@@ -112,13 +113,9 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          const formatted = data.content.map((p) => ({
-            ...p,
-            DocDate: this.formatDocDate(p.DocDate),
-          }));
           this.resultado = {
             ...data,
-            content: formatted,
+            content: data.content.map((p) => this.formatPedido(p)),
           };
           this.carregando = false;
         },
@@ -168,13 +165,10 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
       .next<PedidoCarregamento>(this.resultado.nextLink)
       .subscribe({
         next: (page) => {
-          const formatted = page.content.map((p) => ({
-            ...p,
-            DocDate: this.formatDocDate(p.DocDate),
-          }));
+          const novos = page.content.map((p) => this.formatPedido(p));
           this.resultado = {
             ...this.resultado,
-            content: [...this.resultado.content, ...formatted],
+            content: [...this.resultado.content, ...novos],
             nextLink: page.nextLink,
           };
           this.carregando = false;
