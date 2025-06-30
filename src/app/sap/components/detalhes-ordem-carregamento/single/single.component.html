@@ -3,7 +3,7 @@
         <div class="card-header">
             <h3 class="card-title"><b>Detalhes da Ordem de Carregamento</b></h3>
             <div class="card-tools float-right">
-                <button (click)="abrirModalPreview()" 
+                <button (click)="gerarNotaFiscal()" 
                         type="button" 
                         class="btn btn-warning btn-sm" 
                         style="margin-left: 8px;" 
@@ -98,7 +98,7 @@
                     <span>×</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div *ngIf="false" class="modal-body">
                 <div *ngIf="groupedItems[currentPage]">
                     <h6>Item: {{ groupedItems[currentPage].itemCode }} - {{ groupedItems[currentPage].description }}</h6>
                     <selecao-lote
@@ -131,4 +131,58 @@
     </div>
 </div>
 </section>
-<button (click)="debug(getGroupedItems())">grupo</button>
+
+<!-- colocar o modal fullscren -->
+<app-modal [(show)]="this.showModalLote" [modalSize]="'xl'" [title]="'Selecione os lotes'" >
+
+    <!-- Essa Ajustar a responsabilidade dessa coluna, ela tem que limitada ao tamanho dos labels e a selacao de lote ocupar todo o espaco -->
+    <div class="row">
+        <div class="col">
+            <div *ngFor="let it of getGroupedItems()">
+                <div class="row">
+                    <!-- tem que ter um botao aqui para modificar oq eu quero selecionar e ao clicar tem que dar clear no lote daquele item -->
+                     <!-- Esse cara deve ser uma caixa tipo semafaro (branco - pendente de acao, sucesse - item com selecao, - primary current selecion) -->
+                    
+                    <!-- Esse * deve ser removido e subistituido pelas cores -->
+                     <!-- <div class="btn btn-primary" *ngIf="isCurrentLote(it,currentSelecaoLote)">&nbsp;*&nbsp;</div> -->
+                     
+                    <div class="btn btn-primary">{{it.id}} - {{it.deposito}} : {{it.quantidade}}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+             <selecao-lote *ngIf="currentSelecaoLote"
+                [itemCode]="currentSelecaoLote.id"
+                [codDeposito]="currentSelecaoLote.deposito"
+                [quantidade]="currentSelecaoLote.quantidade"
+                (lotesSelecionados)="addLotesSelecionados($event)"
+            >
+            </selecao-lote>
+        </div>
+    </div>
+    <div class="card" *ngFor="let it of itensSelecaoLoteAgrupado">
+        <div *ngIf="it?.lotes?.length > 0">
+            <div class="row">
+                <div class="col">Item - Deposito</div>
+                <div class="col">{{it.id +" - "+it.deposito}}</div>
+            </div>
+            <div class="row" >
+                <div class="col">Lotes Selecionados - Quantidade</div>
+                <div class="col">
+                    <div class="row" *ngFor="let lote of it.lotes">
+                        {{lote.DistNumber + " - "+lote.Quantity}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</app-modal>
+
+<!-- Coloque esse trech como debug e deixe uma variavle para ocutar use ngif pois isso evita processamento extra -->
+<ul>
+  <li *ngFor="let it of getGroupedItems()">
+    <span>{{it.id}} - {{it.deposito}} : {{it.quantidade}}</span>
+  </li>
+</ul>

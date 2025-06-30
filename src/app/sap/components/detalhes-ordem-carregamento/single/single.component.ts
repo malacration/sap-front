@@ -7,13 +7,21 @@ import { OrdemCarregamento } from '../../../model/ordem-carregamento';
 import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 
+
+class ItemSelecaoLoteAgrupado{ 
+  id: string; 
+  deposito: string; 
+  quantidade: number 
+  lotes? : BatchStock[]
+}
+
 @Component({
   selector: 'app-ordem-carregamento-single',
   templateUrl: './single.component.html',
   styleUrls: ['./single.component.scss']
 })
 export class OrdemCarregamentoSingleComponent implements OnInit {
-[x: string]: any;
+
   constructor(
     private alertService: AlertService,
     private ordemCarregamentoService: OrdemCarregamentoService,
@@ -35,7 +43,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   nomeOrdem: string = '';
   loading = false;
   showModal = false;
-  selectedBatches : Map<string,BatchStock[]> = new Map();
+
   currentPage: number = 0;
   groupedItems: { itemCode: string, description: string, totalQuantity: number, codDeposito: string }[] = [];
 
@@ -66,14 +74,11 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.groupedItems = Array.from(itemMap.values());
   }
 
-  getGroupedItems() : Map<string,number>{
-    console.log(this.selected.ORD_CRG_LINHACollection)
-    // Object.groupBy(this.selected.ORD_CRG_LINHACollection, it => `${it.U_itemCode}-${it.U_codigoDeposito}`);
-
-    return this.selected.ORD_CRG_LINHACollection.reduce((map, item) => {
+  getGroupedItems(): Array<ItemSelecaoLoteAgrupado> {
+    const map = this.selected.ORD_CRG_LINHACollection.reduce((map, item) => {
       const itemCode = item.U_itemCode;
       const deposito = item.U_codigoDeposito;
-      const quantidade = Number(item.U_quantidade ?? 1); // fallback para 1 caso não exista
+      const quantidade = Number(item.U_quantidade ?? 1);
 
       if (!itemCode || !deposito || isNaN(quantidade)) {
         console.warn("Item inválido ou sem quantidade:", item);
@@ -83,14 +88,46 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       const chave = `${itemCode}-${deposito}`;
       const atual = map.get(chave) ?? 0;
       map.set(chave, atual + quantidade);
-      console.log()
       return map;
     }, new Map<string, number>());
 
+    return Array.from(map.entries()).map(([chave, quantidade]) => {
+      const [id, deposito] = chave.split('-');
+      return { id, deposito, quantidade };
+    }).sort((a,b) => a.id.localeCompare(b.id));
   }
-  
-  debug(it : any){
-    console.log(JSON.stringify(it))
+
+  showModalLote = false;
+  currentIndexSelecaoLote = 0
+  itensSelecaoLoteAgrupado : Array<ItemSelecaoLoteAgrupado> = new Array()
+
+  get currentSelecaoLote() : ItemSelecaoLoteAgrupado {
+    if(this.itensSelecaoLoteAgrupado?.length > 0){
+      return this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote]
+    }
+    return null
+  }
+
+  abrirModalLote(){
+    this.itensSelecaoLoteAgrupado = this.getGroupedItems();
+    this.currentIndexSelecaoLote = 0
+    this.showModalLote = true
+  }
+
+  addLotesSelecionados(lote : BatchStock[]){
+    this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote].lotes = lote
+    if(this.hashNextItemLote()){
+      this.currentIndexSelecaoLote++
+    }
+    
+  }
+
+  hashNextItemLote() : boolean{
+    return this.itensSelecaoLoteAgrupado.length > this.currentIndexSelecaoLote
+  }
+
+  isCurrentLote(atual,current) : boolean{
+    return atual?.id == current?.id && atual?.lote == current?.lote
   }
 
   voltar() {
@@ -101,37 +138,20 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   gerarNotaFiscal() {
     this.loading = true;
-    this.invoiceGenerationService.generateInvoiceFromLoadingOrder(this.selected)
-      .subscribe({
-        next: (response) => {
-          this.alertService.confirm('Nota fiscal gerada com sucesso!');
-        },
-        error: (error) => {
-          this.alertService.error('Erro ao gerar nota fiscal: ' + error.message);
-        },
-        complete: () => {
-          this.loading = false;
-        }
-      });
-  }
-
-  abrirModalPreview() {
-    this.alertService.confirm('Deseja gerar a nota fiscal para esta ordem de carregamento?')
-      .then(result => {
-        if (result.isConfirmed) {
-          if (this.isSelecaoLotesValida()) {
-            this.gerarNotaFiscal();
-          } else {
-            this.abrirModalSelecaoLote();
-          }
-        }
-      });
-  }
-
-  abrirModalSelecaoLote() {
-    this.showModal = true;
-    this.currentPage = 0;
-    this.selectedBatches = new Map();
+    this.abrirModalLote()
+      
+    // this.invoiceGenerationService.generateInvoiceFromLoadingOrder(this.selected)
+    //   .subscribe({
+    //     next: (response) => {
+    //       this.alertService.confirm('Nota fiscal gerada com sucesso!');
+    //     },
+    //     error: (error) => {
+    //       this.alertService.error('Erro ao gerar nota fiscal: ' + error.message);
+    //     },
+    //     complete: () => {
+    //       this.loading = false;
+    //     }
+    // });
   }
 
   fecharModalSelecaoLote() {
@@ -139,35 +159,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.alertService.error('A geração da nota fiscal foi cancelada. Todos os lotes devem ser selecionados.');
   }
 
-  onLotesSelecionados(lotes: BatchStock[], key: string) {
-    this.selectedBatches[key] = lotes;
-  }
-
-  isSelecaoLotesValida(): boolean {
-    return this.groupedItems.every(item => {
-      const lotes = this.selectedBatches[item.itemCode] || [];
-      const totalSelecionado = lotes.reduce((acc, lote) => acc + (Number(lote.quantitySelecionadaEditable) || 0), 0);
-      return totalSelecionado === item.totalQuantity;
-    });
-  }
 
   confirmarSelecaoLotes() {
-    if (!this.isSelecaoLotesValida()) {
-      this.alertService.error('Por favor, selecione todos os lotes necessários para cada item antes de confirmar.');
-      return;
-    }
-    // Assign batches back to original items
-    this.selected.ORD_CRG_LINHACollection.forEach(item => {
-      const lotes = this.selectedBatches[item.U_itemCode] || [];
-      item.U_batchNumbers = lotes.map(lote => ({
-        BatchNumber: lote.DistNumber,
-        Quantity: lote.quantitySelecionadaEditable,
-        ItemCode: item.U_itemCode
-      }));
-    });
-    this.alertService.confirm('Lotes selecionados com sucesso!');
-    this.showModal = false;
-    this.gerarNotaFiscal();
   }
 
   goToPage(page: number) {
