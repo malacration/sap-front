@@ -105,7 +105,8 @@
                         [itemCode]="groupedItems[currentPage].itemCode"
                         [codDeposito]="groupedItems[currentPage].codDeposito"
                         [quantidade]="groupedItems[currentPage].totalQuantity"
-                        (lotesSelecionados)="onLotesSelecionados($event, groupedItems[currentPage].itemCode) ">
+                        (lotesSelecionados)="addLotesSelecionados($event) ">
+                        <!-- (lotesSelecionados)="addLotesSelecionados($event, groupedItems[currentPage].itemCode) "> -->
                     </selecao-lote>
                 </div>
             </div>
@@ -133,26 +134,30 @@
 </section>
 
 <!-- colocar o modal fullscren -->
-<app-modal [(show)]="this.showModalLote" [modalSize]="'xl'" [title]="'Selecione os lotes'" >
+<!-- colocar o modal fullscren -->
+<app-modal [(show)]="this.showModalLote" [modalSize]="'xl'" [title]="'Selecione os lotes'">
 
-    <!-- Essa Ajustar a responsabilidade dessa coluna, ela tem que limitada ao tamanho dos labels e a selacao de lote ocupar todo o espaco -->
     <div class="row">
-        <div class="col">
-            <div *ngFor="let it of getGroupedItems()">
-                <div class="row">
-                    <!-- tem que ter um botao aqui para modificar oq eu quero selecionar e ao clicar tem que dar clear no lote daquele item -->
-                     <!-- Esse cara deve ser uma caixa tipo semafaro (branco - pendente de acao, sucesse - item com selecao, - primary current selecion) -->
-                    
-                    <!-- Esse * deve ser removido e subistituido pelas cores -->
-                     <!-- <div class="btn btn-primary" *ngIf="isCurrentLote(it,currentSelecaoLote)">&nbsp;*&nbsp;</div> -->
-                     
-                    <div class="btn btn-primary">{{it.id}} - {{it.deposito}} : {{it.quantidade}}</div>
-                </div>
+        <div class="col-md-3">
+            <div class="list-group">
+                <button *ngFor="let it of itensSelecaoLoteAgrupado; let i = index" 
+                        class="list-group-item list-group-item-action"
+                        [class.list-group-item-primary]="currentIndexSelecaoLote === i"
+                        [class.list-group-item-success]="it.lotes?.length > 0 && currentIndexSelecaoLote !== i"
+                        (click)="selecionarItemLote(i)">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{it.id}} - {{it.deposito}}</span>
+                        <span class="badge bg-primary rounded-pill">{{it.quantidade}}</span>
+                    </div>
+                    <small *ngIf="it.lotes?.length > 0" class="text-muted">
+                        {{it.lotes.length}} lote(s) selecionado(s)
+                    </small>
+                </button>
             </div>
         </div>
 
-        <div class="col">
-             <selecao-lote *ngIf="currentSelecaoLote"
+        <div class="col-md-9">
+            <selecao-lote *ngIf="currentSelecaoLote"
                 [itemCode]="currentSelecaoLote.id"
                 [codDeposito]="currentSelecaoLote.deposito"
                 [quantidade]="currentSelecaoLote.quantidade"
@@ -161,28 +166,45 @@
             </selecao-lote>
         </div>
     </div>
-    <div class="card" *ngFor="let it of itensSelecaoLoteAgrupado">
-        <div *ngIf="it?.lotes?.length > 0">
-            <div class="row">
-                <div class="col">Item - Deposito</div>
-                <div class="col">{{it.id +" - "+it.deposito}}</div>
-            </div>
-            <div class="row" >
-                <div class="col">Lotes Selecionados - Quantidade</div>
-                <div class="col">
-                    <div class="row" *ngFor="let lote of it.lotes">
-                        {{lote.DistNumber + " - "+lote.Quantity}}
+
+    <div class="card mt-3" *ngIf="mostrarDebug">
+        <div class="card-header">
+            <h5 class="card-title">Resumo de Lotes Selecionados (Debug)</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li *ngFor="let it of itensSelecaoLoteAgrupado" class="list-group-item">
+                    <div *ngIf="it?.lotes?.length > 0">
+                        <div class="fw-bold">{{it.id}} - {{it.deposito}}</div>
+                        <div *ngFor="let lote of it.lotes" class="ms-3">
+                            {{lote.DistNumber}} - {{lote.Quantity}} un.
+                        </div>
                     </div>
-                </div>
-            </div>
+                    <div *ngIf="!it?.lotes || it.lotes.length === 0" class="text-muted">
+                        Nenhum lote selecionado
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
 
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelarSelecaoLotes()">Cancelar</button>
+        <button type="button" class="btn btn-primary" 
+                [disabled]="!todosLotesSelecionados()"
+                (click)="confirmarSelecaoLotes()">
+            Confirmar Lotes
+        </button>
+    </div>
 </app-modal>
 
 <!-- Coloque esse trech como debug e deixe uma variavle para ocutar use ngif pois isso evita processamento extra -->
-<ul>
-  <li *ngFor="let it of getGroupedItems()">
-    <span>{{it.id}} - {{it.deposito}} : {{it.quantidade}}</span>
-  </li>
-</ul>
+<div *ngIf="mostrarDebug" class="debug-section mt-3 p-2 border rounded">
+    <h6>Debug: Itens Agrupados</h6>
+    <ul class="list-unstyled">
+        <li *ngFor="let it of getGroupedItems()">
+            <span class="badge bg-secondary me-2">{{it.id}}</span>
+            <span>Depósito: {{it.deposito}} | Qtd: {{it.quantidade}}</span>
+        </li>
+    </ul>
+</div>

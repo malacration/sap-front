@@ -43,6 +43,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   nomeOrdem: string = '';
   loading = false;
   showModal = false;
+  mostrarDebug = false;
 
   currentPage: number = 0;
   groupedItems: { itemCode: string, description: string, totalQuantity: number, codDeposito: string }[] = [];
@@ -114,12 +115,36 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.showModalLote = true
   }
 
-  addLotesSelecionados(lote : BatchStock[]){
-    this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote].lotes = lote
-    if(this.hashNextItemLote()){
-      this.currentIndexSelecaoLote++
+  selecionarItemLote(index: number) {
+    this.currentIndexSelecaoLote = index;
+  }
+
+  addLotesSelecionados(lotes: BatchStock[]) {
+    if (lotes && lotes.length > 0) {
+        this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote].lotes = lotes;
     }
     
+    const proximoIndex = this.itensSelecaoLoteAgrupado.findIndex(
+        (item, index) => index > this.currentIndexSelecaoLote && (!item.lotes || item.lotes.length == 0)
+    );
+    
+    if (proximoIndex >= 0) {
+        this.currentIndexSelecaoLote = proximoIndex;
+    }
+
+    console.log(lotes)
+  }
+
+  cancelarSelecaoLotes() {
+    this.itensSelecaoLoteAgrupado = [];
+    this.showModalLote = false;
+  }
+
+  todosLotesSelecionados(): boolean {
+    return this.itensSelecaoLoteAgrupado.every(item => 
+        item.lotes && item.lotes.length > 0 && 
+        item.lotes.reduce((sum, lote) => sum + lote.Quantity, 0) == item.quantidade
+    );
   }
 
   hashNextItemLote() : boolean{
@@ -161,6 +186,20 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
 
   confirmarSelecaoLotes() {
+    if (this.todosLotesSelecionados()) {
+        // Aqui você pode implementar a lógica para processar os lotes selecionados
+        console.log('Lotes selecionados:', this.itensSelecaoLoteAgrupado);
+        this.showModalLote = false;
+        
+        // Chame o serviço para gerar a nota fiscal com os lotes selecionados
+        this.gerarNotaFiscalComLotes();
+    } else {
+        this.alertService.error('Por favor, selecione lotes para todos os itens antes de confirmar.');
+    }
+  }
+
+  gerarNotaFiscalComLotes() {
+    alert("oi")
   }
 
   goToPage(page: number) {
