@@ -1,151 +1,101 @@
 <section class="content">
-  <!-- Card de Filtro -->
   <div class="card card-primary">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="card-title mb-0"><b>Ordem de Carregamento</b></h5>
+      <h5 class="card-title mb-0">
+        <b>Ordem de Carregamento</b>
+      </h5>
     </div>
     <div class="card-body">
-      <!-- Nome da Ordem -->
       <div class="form-group">
-        <label for="nameOrdInput">Nome da Ordem de Carregamento</label>
+        <label for="cpfCnpj">Nome da Ordem de Carregamento</label>
         <input
-          id="nameOrdInput"
           type="text"
+          placeholder=""
           class="form-control"
+          id="cpfCnpj"
           [(ngModel)]="nameOrdInput"
-        />
+          (ngModelChange)="onNameInputChange()"
+        >
       </div>
+    </div>
 
+    <div class="card-body">
       <div class="row">
-        <!-- Data Inicial -->
         <div class="col-sm-2">
           <div class="form-group">
             <label for="dataInicial">Data Inicial</label>
             <div class="input-group">
-              <input
-                id="dataInicial"
-                type="date"
-                class="form-control"
-                [(ngModel)]="dtInicial"
-              />
+              <input type="date" class="form-control" name="dataInicial" [(ngModel)]="dtInicial">
               <div class="input-group-append" *ngIf="dtInicial">
-                <button
-                  (click)="clearDataInicial()"
-                  class="btn btn-primary btn-clear"
-                >
-                  <i class="fas fa-times"></i>
-                </button>
+                <button (click)="clearDataInicial()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Data Final -->
         <div class="col-sm-2">
           <div class="form-group">
             <label for="dataFinal">Data Final</label>
             <div class="input-group">
-              <input
-                id="dataFinal"
-                type="date"
-                class="form-control"
-                [(ngModel)]="dtFinal"
-              />
+              <input type="date" class="form-control" name="dataFinal" [(ngModel)]="dtFinal">
               <div class="input-group-append" *ngIf="dtFinal">
-                <button
-                  (click)="clearDataFinal()"
-                  class="btn btn-primary btn-clear"
-                >
-                  <i class="fas fa-times"></i>
-                </button>
+                <button (click)="clearDataFinal()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Branch Select -->
         <div class="col-sm-2">
-          <app-branch-select
-            #branch
-            (selectedOut)="selectBranch($event)"
-          ></app-branch-select>
+          <div class="form-group">
+            <app-branch-select #branch (selectedOut)="selectBranch($event)"></app-branch-select>
+          </div>
         </div>
-
-        <!-- Localidade Search -->
         <div class="col-sm-2">
-          <app-localidade-search
-            (selected)="selectLocalidade($event)"
-          ></app-localidade-search>
+          <div class="form-group">
+            <app-localidade-search (selected)="selectLocalidade($event)"></app-localidade-search>
+          </div>
         </div>
 
-        <!-- Botões de Ação -->
-        <div class="col-sm-2 d-flex align-items-end">
-          <button
-            [disabled]="!isnotNullFiltrar()"
-            (click)="criarAnalise()"
-            class="btn btn-primary btnFiltrar btn-block"
-          >
-            Filtrar
-          </button>
+        <!-- Btn Filtrar -->
+        <div class="form-group">
+          <button [disabled]="!isnotNullFiltrar()" (click)="criarAnalise()" class="btn btn-primary btnFiltrar">Filtrar</button>
         </div>
-        <div class="col-sm-2 d-flex align-items-end">
-          <button
-            (click)="selecionar()"
-            class="btn btn-primary btnEstoque btn-block"
-          >
-            Analise de Pedidos
-          </button>
+        <!-- Btn Consultar Estoque -->
+        <div class="form-group">
+          <button (click)="criarAnalise()" class="btn btn-primary btnEstoque"><i class="fas fa-arrow-up"></i> Análise de Logística</button>
         </div>
-        <div class="col-sm-2 d-flex align-items-end">
-          <button
-            (click)="toggleEstoque()"
-            class="btn btn-primary btnEstoque btn-block"
-          >
-            Estoque
-          </button>
+        <!-- Btn Estoque -->
+        <div class="form-group">
+          <button (click)="toggleEstoque()" class="btn btn-primary btnEstoque">Carregar Estoque</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Card de Lista -->
-  <div class="card card-primary mt-3">
-    <div class="card-body">
+    <!--- Região da Lista -->
+    <div class="card card-primary">
+      <div class="card-body">
       <app-dual-list-box
         [availableItems]="availableOrders || []"
         [selectedItems]="selectedOrders || []"
         [showStock]="showStock"
+        [nextLink]="nextLink"
         (selectedItemsChange)="onSelectedOrdersChange($event)"
-      ></app-dual-list-box>
+        (loadMore)="loadMoreOrders()"
+      >
+      </app-dual-list-box>
+      </div>
 
-      <div class="row mt-3">
+      <!-- Confirmar -->
+      <div class="row">
         <div class="col">
-          <button
-            *ngIf="!loading"
-            (click)="sendOrder()"
-            class="btn btn-success custom-btn btn-block"
-            type="submit"
-          >
-            Realizar Transferência
-          </button>
-          <button
-            *ngIf="loading"
-            disabled
-            class="btn btn-success custom-btn btn-block"
-            type="submit"
-          >
-            Transferindo...
-          </button>
+          <button *ngIf="!loading" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Criar Ordem</button>
+          <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Criando...</button>
         </div>
       </div>
-
-      <div *ngIf="loading" class="overlay">
-        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-      </div>
+    </div>
+    <div *ngIf="loading" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
     </div>
   </div>
 </section>
-
 <app-modal [(show)]="showPainelPedidos" [title]="'Pedidos'">
   <pedidos-carregamento> </pedidos-carregamento>
 </app-modal>

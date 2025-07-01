@@ -113,7 +113,12 @@ import { LocalidadeService } from './sap/service/localidade.service';
 import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { GroupBySelectComponent } from './sap/components/form/select/agrupador/agrupador.select.component';
 import { DualListBoxComponent } from './components/dual-list-box/dual-list-box.component';
+
 import { ItemPickerComponent } from './sap/components/search/item-search-no-branch/item-picker.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
+import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
+import { OrdemCarregamentoService } from './sap/service/ordem-carregamento.service';
+import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 
 registerLocaleData(localeBr);
 
@@ -187,6 +192,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     PainelExpedicaoPedidosComponent,
     GroupBySelectComponent,
     ItemPickerComponent,
+    OrdemCarregamentoStatementComponent,
+    OrdemCarregamentoSingleComponent,
   ],
   imports: [
     NgxPaginationModule,
@@ -198,7 +205,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
-
+    SapSharedModule,
     AppRoutingModule,
     ToastrModule.forRoot({
       timeOut: 3000,
@@ -237,6 +244,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
     PedidosVendaService,
     CurrencyPipe,
     LocalidadeService,
+    OrdemCarregamentoService,
     FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

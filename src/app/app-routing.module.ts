@@ -20,6 +20,7 @@ import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 
 let routes: Routes = [
   {
@@ -111,6 +112,13 @@ let routes: Routes = [
         data: ['hidden'],
         canActivate: [authGuard],
         component: ParceiroNegocioComponent,
+      },
+      {
+        path: 'detalhes-carregamento',
+        title: 'Detalhes',
+        data: ['icon:fas fa-file-contract'],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoStatementComponent,
       },
       {
         path: 'ordem-carregamento',

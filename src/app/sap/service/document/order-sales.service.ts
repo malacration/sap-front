@@ -1,21 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { DocumentAngularSave } from './document-angular-save';
 import { PedidoVenda } from '../../components/document/documento.statement.component';
-
-interface SearchResponse {
-  content: PedidoVenda[];
-  nextLink: string;
-}
-
-interface SearchRequest {
-  dataInicial: string;
-  dataFinal: string;
-  branchId: string;
-  localidade: string;
-}
+import { NextLink } from '../../model/next-link';
 
 @Injectable({
   providedIn: 'root'
@@ -31,7 +20,37 @@ export class OrderSalesService implements DocumentAngularSave {
     return this.httpClient.post<any>(this.url + "/angular", body);
   }
 
-  search(request: SearchRequest): Observable<SearchResponse> {
-    return this.httpClient.post<SearchResponse>(`${this.url}/search`, request);
+  search(dataInicial: string, dataFinal: string, filial: string, localidade: string): Observable<NextLink<PedidoVenda>> {
+    let params = new HttpParams()
+      .set('filial', filial.toString())
+      .set('localidade', localidade.toString());
+
+    if (dataInicial) {
+      params = params.set('dataInicial', dataInicial);
+    }
+
+    if (dataFinal) {
+      params = params.set('dataFinal', dataFinal);
+    }
+
+    return this.httpClient
+      .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
+      .pipe(
+        map((response) => {
+          response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+          return response;
+        })
+      );
+  }
+
+  searchAll(nextLink: string): Observable<NextLink<PedidoVenda>> {
+    return this.httpClient
+      .post<NextLink<PedidoVenda>>(`${this.url}/searchAll`, nextLink)
+      .pipe(
+        map((response) => {
+          response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+          return response;
+        })
+      );
   }
 }
