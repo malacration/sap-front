@@ -6,30 +6,29 @@ import { OrdemCarregamentoService } from '../../../service/ordem-carregamento.se
 import { OrdemCarregamento } from '../../../model/ordem-carregamento';
 import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
+import { DocumentList } from '../../../model/markting/document-list';
 
-
-class ItemSelecaoLoteAgrupado{ 
-  id: string; 
-  deposito: string; 
-  quantidade: number 
-  lotes? : BatchStock[]
+class ItemSelecaoLoteAgrupado {
+  id: string;
+  deposito: string;
+  quantidade: number;
+  lotes?: BatchStock[];
 }
 
 @Component({
   selector: 'app-ordem-carregamento-single',
   templateUrl: './single.component.html',
-  styleUrls: ['./single.component.scss']
+  styleUrls: ['./single.component.scss'],
 })
 export class OrdemCarregamentoSingleComponent implements OnInit {
-
   constructor(
     private alertService: AlertService,
     private ordemCarregamentoService: OrdemCarregamentoService,
     private invoiceGenerationService: InvoiceGenerationService
   ) {}
 
-  cardName = "windson";
-  id = "666";
+  cardName = 'windson';
+  id = '666';
 
   @Input()
   selected: OrdemCarregamento = null;
@@ -44,22 +43,39 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   loading = false;
   showModal = false;
   mostrarDebug = false;
+  notas: DocumentList[] = [];
+  flattened: any[] = [];
 
   currentPage: number = 0;
-  groupedItems: { itemCode: string, description: string, totalQuantity: number, codDeposito: string }[] = [];
+  groupedItems: {
+    itemCode: string;
+    description: string;
+    totalQuantity: number;
+    codDeposito: string;
+  }[] = [];
 
   get totalPages(): number {
     return this.groupedItems.length || 0;
   }
 
   get pages(): number[] {
-    return Array(this.totalPages).fill(0).map((_, i) => i);
+    return Array(this.totalPages)
+      .fill(0)
+      .map((_, i) => i);
   }
 
   ngOnInit(): void {
-    // Group items by U_itemCode and sum quantities
-    const itemMap = new Map<string, { itemCode: string, description: string, totalQuantity: number, codDeposito: string }>();
-    this.selected.ORD_CRG_LINHACollection.forEach(item => {
+    this.loadNotas();
+    const itemMap = new Map<
+      string,
+      {
+        itemCode: string;
+        description: string;
+        totalQuantity: number;
+        codDeposito: string;
+      }
+    >();
+    this.selected.ORD_CRG_LINHACollection.forEach((item) => {
       const existing = itemMap.get(item.U_itemCode);
       if (existing) {
         existing.totalQuantity += item.U_quantidade;
@@ -68,11 +84,51 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
           itemCode: item.U_itemCode,
           description: item.U_description,
           totalQuantity: item.U_quantidade,
-          codDeposito: item.U_codigoDeposito
+          codDeposito: item.U_codigoDeposito,
         });
       }
     });
     this.groupedItems = Array.from(itemMap.values());
+  }
+
+  private loadNotas() {
+    if (!this.selected?.DocEntry) {
+      console.warn('loadNotas: selected sem DocEntry → nada a fazer');
+      return;
+    }
+
+    console.log(
+      'loadNotas: iniciando fetch para carregamento ID',
+      this.selected.DocEntry
+    );
+    this.loading = true;
+
+    this.ordemCarregamentoService
+      .getNotasByCarregamentos(this.selected.DocEntry)
+      .subscribe({
+        next: (docs) => {
+          console.log('loadNotas: dados recebidos →', docs);
+          this.notas = docs;
+          this.flattened = this.notas.flatMap((nota) =>
+            nota.DocumentLines.map((line) => ({
+              SequenceSerial: nota.SequenceSerial,
+              DocNum: nota.DocNum,
+              CardCode: nota.CardCode,
+              CardName: nota.CardName,
+              ItemCode: line.ItemCode,
+              ItemDescription: line.ItemDescription, // ajuste conforme campo real
+              Quantity: line.Quantity,
+              LineTotal: line.LineTotal,
+            }))
+          );
+        },
+        error: (err) => {
+          console.error('loadNotas: erro ao buscar notas →', err);
+        },
+        complete: () => {
+          this.loading = false;
+        },
+      });
   }
 
   getGroupedItems(): Array<ItemSelecaoLoteAgrupado> {
@@ -82,7 +138,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       const quantidade = Number(item.U_quantidade ?? 1);
 
       if (!itemCode || !deposito || isNaN(quantidade)) {
-        console.warn("Item inválido ou sem quantidade:", item);
+        console.warn('Item inválido ou sem quantidade:', item);
         return map;
       }
 
@@ -92,27 +148,29 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       return map;
     }, new Map<string, number>());
 
-    return Array.from(map.entries()).map(([chave, quantidade]) => {
-      const [id, deposito] = chave.split('-');
-      return { id, deposito, quantidade };
-    }).sort((a,b) => a.id.localeCompare(b.id));
+    return Array.from(map.entries())
+      .map(([chave, quantidade]) => {
+        const [id, deposito] = chave.split('-');
+        return { id, deposito, quantidade };
+      })
+      .sort((a, b) => a.id.localeCompare(b.id));
   }
 
   showModalLote = false;
-  currentIndexSelecaoLote = 0
-  itensSelecaoLoteAgrupado : Array<ItemSelecaoLoteAgrupado> = new Array()
+  currentIndexSelecaoLote = 0;
+  itensSelecaoLoteAgrupado: Array<ItemSelecaoLoteAgrupado> = new Array();
 
-  get currentSelecaoLote() : ItemSelecaoLoteAgrupado {
-    if(this.itensSelecaoLoteAgrupado?.length > 0){
-      return this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote]
+  get currentSelecaoLote(): ItemSelecaoLoteAgrupado {
+    if (this.itensSelecaoLoteAgrupado?.length > 0) {
+      return this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote];
     }
-    return null
+    return null;
   }
 
-  abrirModalLote(){
+  abrirModalLote() {
     this.itensSelecaoLoteAgrupado = this.getGroupedItems();
-    this.currentIndexSelecaoLote = 0
-    this.showModalLote = true
+    this.currentIndexSelecaoLote = 0;
+    this.showModalLote = true;
   }
 
   selecionarItemLote(index: number) {
@@ -121,18 +179,20 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   addLotesSelecionados(lotes: BatchStock[]) {
     if (lotes && lotes.length > 0) {
-        this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote].lotes = lotes;
-    }
-    
-    const proximoIndex = this.itensSelecaoLoteAgrupado.findIndex(
-        (item, index) => index > this.currentIndexSelecaoLote && (!item.lotes || item.lotes.length == 0)
-    );
-    
-    if (proximoIndex >= 0) {
-        this.currentIndexSelecaoLote = proximoIndex;
+      this.itensSelecaoLoteAgrupado[this.currentIndexSelecaoLote].lotes = lotes;
     }
 
-    console.log(lotes)
+    const proximoIndex = this.itensSelecaoLoteAgrupado.findIndex(
+      (item, index) =>
+        index > this.currentIndexSelecaoLote &&
+        (!item.lotes || item.lotes.length == 0)
+    );
+
+    if (proximoIndex >= 0) {
+      this.currentIndexSelecaoLote = proximoIndex;
+    }
+
+    console.log(lotes);
   }
 
   cancelarSelecaoLotes() {
@@ -141,18 +201,21 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   todosLotesSelecionados(): boolean {
-    return this.itensSelecaoLoteAgrupado.every(item => 
-        item.lotes && item.lotes.length > 0 && 
-        item.lotes.reduce((sum, lote) => sum + lote.Quantity, 0) == item.quantidade
+    return this.itensSelecaoLoteAgrupado.every(
+      (item) =>
+        item.lotes &&
+        item.lotes.length > 0 &&
+        item.lotes.reduce((sum, lote) => sum + lote.Quantity, 0) ==
+          item.quantidade
     );
   }
 
-  hashNextItemLote() : boolean{
-    return this.itensSelecaoLoteAgrupado.length > this.currentIndexSelecaoLote
+  hashNextItemLote(): boolean {
+    return this.itensSelecaoLoteAgrupado.length > this.currentIndexSelecaoLote;
   }
 
-  isCurrentLote(atual,current) : boolean{
-    return atual?.id == current?.id && atual?.lote == current?.lote
+  isCurrentLote(atual, current): boolean {
+    return atual?.id == current?.id && atual?.lote == current?.lote;
   }
 
   voltar() {
@@ -163,8 +226,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   gerarNotaFiscal() {
     this.loading = true;
-    this.abrirModalLote()
-      
+    this.abrirModalLote();
+
     // this.invoiceGenerationService.generateInvoiceFromLoadingOrder(this.selected)
     //   .subscribe({
     //     next: (response) => {
@@ -181,25 +244,28 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   fecharModalSelecaoLote() {
     this.showModal = false;
-    this.alertService.error('A geração da nota fiscal foi cancelada. Todos os lotes devem ser selecionados.');
+    this.alertService.error(
+      'A geração da nota fiscal foi cancelada. Todos os lotes devem ser selecionados.'
+    );
   }
-
 
   confirmarSelecaoLotes() {
     if (this.todosLotesSelecionados()) {
-        // Aqui você pode implementar a lógica para processar os lotes selecionados
-        console.log('Lotes selecionados:', this.itensSelecaoLoteAgrupado);
-        this.showModalLote = false;
-        
-        // Chame o serviço para gerar a nota fiscal com os lotes selecionados
-        this.gerarNotaFiscalComLotes();
+      // Aqui você pode implementar a lógica para processar os lotes selecionados
+      console.log('Lotes selecionados:', this.itensSelecaoLoteAgrupado);
+      this.showModalLote = false;
+
+      // Chame o serviço para gerar a nota fiscal com os lotes selecionados
+      this.gerarNotaFiscalComLotes();
     } else {
-        this.alertService.error('Por favor, selecione lotes para todos os itens antes de confirmar.');
+      this.alertService.error(
+        'Por favor, selecione lotes para todos os itens antes de confirmar.'
+      );
     }
   }
 
   gerarNotaFiscalComLotes() {
-    alert("oi")
+    alert('oi');
   }
 
   goToPage(page: number) {
@@ -220,38 +286,43 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }
   }
 
-  finalizarDocumento(docEntry: number) {
+  finalizarDocumento(DocEntry: number) {
     this.loading = true;
-    this.ordemCarregamentoService.finalizar(docEntry).subscribe({
+    this.ordemCarregamentoService.finalizar(DocEntry).subscribe({
       next: () => {
-        this.alertService.confirm("Documento finalizado com sucesso!");
-        this.selected.U_Status = "Fechado";
+        this.alertService.confirm('Documento finalizado com sucesso!');
+        this.selected.U_Status = 'Fechado';
       },
       error: (err) => {
-        this.alertService.error("Erro ao finalizar documento: " + err.message);
+        this.alertService.error('Erro ao finalizar documento: ' + err.message);
       },
       complete: () => {
         this.loading = false;
-      }
+      },
     });
   }
 
-  confirmarCancelamento(docEntry: number) {
-    this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.")
-      .then(it => {
+  confirmarCancelamento(DocEntry: number) {
+    this.alertService
+      .confirm(
+        'Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.'
+      )
+      .then((it) => {
         if (it.isConfirmed) {
           this.loading = true;
-          this.ordemCarregamentoService.cancel(docEntry).subscribe({
+          this.ordemCarregamentoService.cancel(DocEntry).subscribe({
             next: () => {
-              this.alertService.confirm("Documento cancelado com sucesso!");
-              this.selected.U_Status = "Cancelado";
+              this.alertService.confirm('Documento cancelado com sucesso!');
+              this.selected.U_Status = 'Cancelado';
             },
             error: (err) => {
-              this.alertService.error("Erro ao cancelar documento: " + err.message);
+              this.alertService.error(
+                'Erro ao cancelar documento: ' + err.message
+              );
             },
             complete: () => {
               this.loading = false;
-            }
+            },
           });
         }
       });
@@ -266,6 +337,17 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     new Column('Quantidade', 'U_quantidade'),
     new Column('Peso', 'U_pesoItem'),
     new Column('Un. Medida', 'U_unMedida'),
-    new Column('Em Estoque', 'U_qtdEstoque')
+    new Column('Em Estoque', 'U_qtdEstoque'),
+  ];
+
+  notasEmitida = [
+    new Column('Núm. da Nota', 'SequenceSerial'),
+    new Column('Núm. do Documento', 'DocNum'),
+    new Column('Cód. Cliente', 'CardCode'),
+    new Column('Nome Cliente', 'CardName'),
+    new Column('Cód. Item', 'ItemCode'),
+    new Column('Dsc. Item', 'ItemDescription'),
+    new Column('Quantidade', 'Quantity'),
+    new Column('Valor', 'LineTotal'),
   ];
 }
