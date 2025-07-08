@@ -1,3 +1,4 @@
+import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { BrowserModule } from '@angular/platform-browser';
 import { DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -212,6 +213,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>
       positionClass: 'toast-top-right',
       preventDuplicates: true,
     }),
+    TooltipModule.forRoot(),
     // ProfabricComponentsModule,
     StoreModule.forRoot({ ui: uiReducer }),
   ],

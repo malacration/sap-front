@@ -7,7 +7,7 @@ import { OrdemCarregamentoService } from '../../sap/service/ordem-carregamento.s
 @Component({
   selector: 'app-dual-list-box',
   templateUrl: './dual-list-box.component.html',
-  styleUrls: ['./dual-list-box.component.scss']
+  styleUrls: ['./dual-list-box.component.scss'],
 })
 export class DualListBoxComponent {
   @Input() availableItems: PedidoVenda[] = [];
@@ -17,22 +17,27 @@ export class DualListBoxComponent {
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
   @Output() loadMore = new EventEmitter<void>();
 
-  quantidadesEmCarregamento: {[itemCode: string]: number} = {};
+  quantidadesEmCarregamento: { [itemCode: string]: number } = {};
   searchTermAvailable: string = '';
   searchTermSelected: string = '';
   carregamentoPorPedido: boolean = false;
   isSelectedListCollapsed: boolean = false;
 
-  constructor(private alertService: AlertService,
-    private ordemCarregamentoService : OrdemCarregamentoService
+  constructor(
+    private alertService: AlertService,
+    private ordemCarregamentoService: OrdemCarregamentoService
   ) {}
 
   get totalSelectedWeight(): number {
-    return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
+    return this.selectedItems.reduce(
+      (sum, item) => sum + item.Quantity * item.Weight1,
+      0
+    );
   }
 
   calculateCarregamento(item: PedidoVenda, isSelected: boolean): number {
-    const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
+    const stock =
+      (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
     return isSelected ? stock - (item.Quantity || 0) : stock;
   }
 
@@ -56,10 +61,12 @@ export class DualListBoxComponent {
     }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
-      .filter(group => group.items.length > 0)
-      .filter(group =>
-        group.items.some(item =>
-          `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
+      .filter((group) => group.items.length > 0)
+      .filter((group) =>
+        group.items.some((item) =>
+          `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${
+            group.docNum
+          }`
             .toLowerCase()
             .includes(this.searchTermAvailable.toLowerCase())
         )
@@ -78,10 +85,12 @@ export class DualListBoxComponent {
     }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
-      .filter(group => group.items.length > 0)
-      .filter(group =>
-        group.items.some(item =>
-          `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
+      .filter((group) => group.items.length > 0)
+      .filter((group) =>
+        group.items.some((item) =>
+          `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${
+            group.docNum
+          }`
             .toLowerCase()
             .includes(this.searchTermSelected.toLowerCase())
         )
@@ -94,16 +103,16 @@ export class DualListBoxComponent {
   }
 
   loadQuantidadesEmCarregamento() {
-    this.availableItems.forEach(item => {
+    this.availableItems.forEach((item) => {
       if (item.ItemCode) {
-        this.ordemCarregamentoService.getEstoqueEmCarregamento(item.ItemCode)
-          .subscribe(quantidade => {
+        this.ordemCarregamentoService
+          .getEstoqueEmCarregamento(item.ItemCode)
+          .subscribe((quantidade) => {
             this.quantidadesEmCarregamento[item.ItemCode] = quantidade;
           });
       }
     });
   }
-
 
   toggleCarregamentoPorPedido(): void {
     this.carregamentoPorPedido = !this.carregamentoPorPedido;
@@ -115,45 +124,88 @@ export class DualListBoxComponent {
 
   selectItem(item: PedidoVenda): void {
     if (this.carregamentoPorPedido) {
-      const itemsToMove = this.availableItems.filter(i => i.DocNum === item.DocNum);
-      this.selectedItems = this.sortItems([...(this.selectedItems || []), ...itemsToMove]);
-      this.availableItems = this.sortItems((this.availableItems || []).filter(i => i.DocNum !== item.DocNum));
+      const itemsToMove = this.availableItems.filter(
+        (i) => i.DocNum === item.DocNum
+      );
+      this.selectedItems = this.sortItems([
+        ...(this.selectedItems || []),
+        ...itemsToMove,
+      ]);
+      this.availableItems = this.sortItems(
+        (this.availableItems || []).filter((i) => i.DocNum !== item.DocNum)
+      );
     } else {
-      this.selectedItems = this.sortItems([...(this.selectedItems || []), item]);
-      this.availableItems = this.sortItems((this.availableItems || []).filter(i => i !== item));
+      this.selectedItems = this.sortItems([
+        ...(this.selectedItems || []),
+        item,
+      ]);
+      this.availableItems = this.sortItems(
+        (this.availableItems || []).filter((i) => i !== item)
+      );
     }
     this.selectedItemsChange.emit(this.selectedItems);
   }
 
   removeItem(item: PedidoVenda): void {
     if (this.carregamentoPorPedido) {
-      const itemsToRemove = this.selectedItems.filter(i => i.DocNum === item.DocNum);
-      this.availableItems = this.sortItems([...(this.availableItems || []), ...itemsToRemove]);
-      this.selectedItems = this.sortItems((this.selectedItems || []).filter(i => i.DocNum !== item.DocNum));
+      const itemsToRemove = this.selectedItems.filter(
+        (i) => i.DocNum === item.DocNum
+      );
+      this.availableItems = this.sortItems([
+        ...(this.availableItems || []),
+        ...itemsToRemove,
+      ]);
+      this.selectedItems = this.sortItems(
+        (this.selectedItems || []).filter((i) => i.DocNum !== item.DocNum)
+      );
     } else {
-      this.availableItems = this.sortItems([...(this.availableItems || []), item]);
-      this.selectedItems = this.sortItems((this.selectedItems || []).filter(i => i !== item));
+      this.availableItems = this.sortItems([
+        ...(this.availableItems || []),
+        item,
+      ]);
+      this.selectedItems = this.sortItems(
+        (this.selectedItems || []).filter((i) => i !== item)
+      );
     }
     this.selectedItemsChange.emit(this.selectedItems);
   }
 
   selectAll(): void {
-    this.selectedItems = this.sortItems([...(this.selectedItems || []), ...(this.availableItems || [])]);
+    this.selectedItems = this.sortItems([
+      ...(this.selectedItems || []),
+      ...(this.availableItems || []),
+    ]);
     this.availableItems = [];
     this.selectedItemsChange.emit(this.selectedItems);
   }
 
   removeAll(): void {
-    this.alertService.confirm('Deseja realmente remover todos os itens selecionados?').then((result: SweetAlertResult) => {
-      if (result.isConfirmed) {
-        this.availableItems = this.sortItems([...(this.availableItems || []), ...(this.selectedItems || [])]);
-        this.selectedItems = [];
-        this.selectedItemsChange.emit(this.selectedItems);
-      }
-    });
+    this.alertService
+      .confirm('Deseja realmente remover todos os itens selecionados?')
+      .then((result: SweetAlertResult) => {
+        if (result.isConfirmed) {
+          this.availableItems = this.sortItems([
+            ...(this.availableItems || []),
+            ...(this.selectedItems || []),
+          ]);
+          this.selectedItems = [];
+          this.selectedItemsChange.emit(this.selectedItems);
+        }
+      });
   }
 
   loadMoreOrders(): void {
     this.loadMore.emit();
+  }
+
+  trackByDocNum(
+    _index: number,
+    group: { docNum: number; items: PedidoVenda[] }
+  ): number {
+    return group.docNum; // chave imutável
+  }
+
+  trackByItem(_index: number, pedido: PedidoVenda): number {
+    return pedido.DocEntry; // chave imutável
   }
 }
