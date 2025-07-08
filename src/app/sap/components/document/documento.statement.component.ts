@@ -221,6 +221,8 @@ export class DocumentStatementComponent implements OnInit {
 
 export class PedidoVenda{
   CardCode: string
+  CardName: string
+  DocEntry: number
   DocNum: number
   DocDate: string
   DocTotal: number
@@ -237,7 +239,26 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
-
+  U_Localidade : number
+  Name : string
+  Dscription : string
+  Quantity : number
+  Weight1 : number
+  OnHand : number
+  IsCommited : number
+  OnOrder : number   
+  // Campos Adicionar SQL
+  UnitPrice : number
+  WarehouseCode : string
+  Usage : number
+  TaxCode : string
+  CostingCode : string
+  CostingCode2 : string
+  BaseType : number
+  BaseEntry : number
+  BaseLine : number
+  quantidadeEmCarregamento?: number;
+  
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
   } 

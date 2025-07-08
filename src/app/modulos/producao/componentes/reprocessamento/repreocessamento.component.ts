@@ -9,10 +9,10 @@ import { Reprocessamento } from '../../_model/reprocessamento';
 })
 export class ReprocessamentoComponent {
   
-  codProdutoAcabado : string = "PAC0000241"
-  quantidade : number = 10
-  codDeposito : string = "500.01"
-  codImtermediario: string = "PDC0000029"
+  codProdutoAcabado : string = ""
+  quantidade : number = 0
+  codDeposito : string = ""
+  codImtermediario: string = ""
   loading = false
 
   lotes = undefined
@@ -36,19 +36,19 @@ export class ReprocessamentoComponent {
       this.codImtermediario,
        lotes)
     this.service.reprocesar(reprocessamento).subscribe({next : it => {
-        this.loading = false
-        this.codProdutoAcabado = ""
-        this.quantidade = 0
-        this.codDeposito = ""
-        this.codImtermediario = ""
-      },
-      error: () => {
-        
+        this.clear()
       },
       complete : () => {
         this.loading = false
       }
     })
+  }
+
+  clear(){
+    this.codProdutoAcabado = ""
+    this.quantidade = 0
+    this.codDeposito = ""
+    this.codImtermediario = ""
   }
 }
 

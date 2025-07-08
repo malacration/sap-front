@@ -19,14 +19,13 @@ import { PercentageDirective } from './directives/percentage.directive';
 import { CurrencyDirective } from './directives/curency.directive copy';
 import { PaginacaoComponent } from './components/paginacao/paginacao.component';
 import { ModalComponent } from './components/modal/modal.component';
+import { ResultadoSearchComponent } from './components/modal/resultado-search/resultado-search.component';
+import { NextLinkService } from './service/nextLink.service';
 
 @NgModule({
-  providers: [
-    ParameterService,
-    AuthService,
-  ],
+  providers: [ParameterService, AuthService, NextLinkService],
   declarations: [
-    PageNotFoundComponent, 
+    PageNotFoundComponent,
     WebviewDirective,
     TableComponent,
     ActionComponent,
@@ -35,21 +34,22 @@ import { ModalComponent } from './components/modal/modal.component';
     PercentageDirective,
     CurrencyDirective,
     PaginacaoComponent,
-    ModalComponent
+    ModalComponent,
+    ResultadoSearchComponent,
   ],
   imports: [
-    CommonModule, 
+    CommonModule,
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
     TranslateModule,
     FormsModule,
     BrowserModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   exports: [
-    TranslateModule, 
-    WebviewDirective, 
+    TranslateModule,
+    WebviewDirective,
     FormsModule,
     TableComponent,
     CommonModule,
@@ -58,7 +58,8 @@ import { ModalComponent } from './components/modal/modal.component';
     CurrencyDirective,
     PaginacaoComponent,
     ModalComponent,
-    ReactiveFormsModule
-  ]
+    ReactiveFormsModule,
+    ResultadoSearchComponent,
+  ],
 })
 export class SharedModule {}

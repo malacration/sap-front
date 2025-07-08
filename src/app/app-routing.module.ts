@@ -18,8 +18,11 @@ import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 
- let routes: Routes = [
+let routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
@@ -28,125 +31,162 @@ import { ReprocessamentoComponent } from './modulos/producao/componentes/reproce
   {
     path: 'home',
     title: 'Inicio',
-    data: ["icon:fas fa-home"],
-    component: HomeComponent
+    data: ['icon:fas fa-home'],
+    component: HomeComponent,
   },
   {
     path: 'login',
     title: 'Login',
-    data: ["hidden"],
-    component: LoginComponent
+    data: ['hidden'],
+    component: LoginComponent,
   },
   {
     path: 'romaneio',
     title: 'Romaneio',
-    data: ["internal"],
-    component: RomaneioComponent
+    data: ['internal'],
+    component: RomaneioComponent,
   },
   {
     path: 'romaneio-fazenda-insumo/:id/:tipo',
     title: 'Romaneio Fazenda Insumo',
-    data: ["hidden"],
-    component: RomaneioFazendaInsumoComponent
+    data: ['hidden'],
+    component: RomaneioFazendaInsumoComponent,
   },
   {
     path: 'faturas',
     title: 'Faturas',
-    data: ["icon:fas fa-file-invoice"],
-    component: FaturasComponent
+    data: ['icon:fas fa-file-invoice'],
+    component: FaturasComponent,
   },
   {
     path: 'cadastro/:id',
     title: 'Cadastro',
-    data: ["internal","hidden"],
-    component: CadastroComponent
+    data: ['internal', 'hidden'],
+    component: CadastroComponent,
   },
   {
     path: 'clientes',
     title: 'Clientes',
-    data: ["icon:fas fa-users"],
+    data: ['icon:fas fa-users'],
     canActivate: [authGuard],
-    children: [ 
+    children: [
       {
         path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract"],
+        data: ['icon:fas fa-file-contract'],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: ParceiroNegocioComponent,
       },
       {
         path: 'parceiro-negocio/:cardCode',
         title: 'Parceiro Negocio',
-        data: ["hidden"],
+        data: ['hidden'],
         canActivate: [authGuard],
-        component: ParceiroNegocioComponent
+        component: ParceiroNegocioComponent,
       },
       {
         path: 'transferencia',
         title: 'Transferências',
-        data: ["icon:fas fa-exchange-alt"],
+        data: ['icon:fas fa-exchange-alt'],
         canActivate: [authGuard],
-        component: TransferenciaClientesComponent
+        component: TransferenciaClientesComponent,
       },
-    ]
+    ],
   },
+  {
+    path: 'carregamento',
+    title: 'Ordem Carregamento',
+    data: ['icon:fas fa-truck'],
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'parceiro-negocio',
+        title: 'Parceiro Negocio',
+        data: ['icon:fas fa-file-contract'],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent,
+      },
+      {
+        path: 'parceiro-negocio/:cardCode',
+        title: 'Parceiro Negocio',
+        data: ['hidden'],
+        canActivate: [authGuard],
+        component: ParceiroNegocioComponent,
+      },
+      {
+        path: 'detalhes-carregamento',
+        title: 'Detalhes',
+        data: ['icon:fas fa-file-contract'],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoStatementComponent,
+      },
+      {
+        path: 'ordem-carregamento',
+        title: 'Ordem',
+        data: ['icon:fas fa-box'],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoComponent,
+      },
+    ],
+  },
+
   {
     title: 'Venda',
     canActivate: [authGuard],
-    data: ["icon:fas fa-shopping-bag"],
+    data: ['icon:fas fa-shopping-bag'],
     path: 'venda',
-    children: [ 
+    children: [
       {
         path: 'document',
         title: 'Vender',
         canActivate: [authGuard],
-        data: ["icon:fas fa-shopping-cart"],
-        component: DocumentStatementComponent
+        data: ['icon:fas fa-shopping-cart'],
+        component: DocumentStatementComponent,
       },
       {
         path: 'cotacao',
         title: 'Cotação',
         canActivate: [authGuard],
-        data: ["icon:fas fa-file-alt"],
-        component: CotacoesStatementComponent
+        data: ['icon:fas fa-file-alt'],
+        component: CotacoesStatementComponent,
       },
       {
         path: 'pedidos-venda',
         title: 'Pedidos',
         canActivate: [authGuard],
         component: PedidosVendaStatementComponent,
-        data: ["icon:fas fa-file-signature"],
+        data: ['icon:fas fa-file-signature'],
       },
       {
         path: 'venda-futura',
         title: 'Contratos',
-        data: ["icon:fas fa-file-contract"],
+        data: ['icon:fas fa-file-contract'],
         canActivate: [authGuard],
-        component: VendaFuturaStatementComponent
+        component: VendaFuturaStatementComponent,
       },
-    ]
+    ],
   },
   {
     title: 'Administrador',
     canActivate: [authGuard],
-    data: ["hidden","icon:fas fa-cog"],
+    data: ['hidden', 'icon:fas fa-cog'],
     path: 'roles',
-    children: [ 
+    children: [
       {
         path: 'manage-roles',
         title: 'Roles',
-        data: ["icon:fas fa-users"],
+        data: ['icon:fas fa-users'],
         canActivate: [authGuard],
-        component: ManageRolesComponent
+        component: ManageRolesComponent,
       },
       {
         path: 'assign-role',
         title: 'Atribuicao',
-        data: ["icon:fas fa-user-check"],
+        data: ['icon:fas fa-user-check'],
         canActivate: [authGuard],
-        component: AssignRoleComponent
+        component: AssignRoleComponent,
       },
-    ]
+    ],
   },
   {
     title: 'Producao',
@@ -159,17 +199,30 @@ import { ReprocessamentoComponent } from './modulos/producao/componentes/reproce
     component: CalculadoraStatementComponent,
   },
   {
+    path: 'relatorios',
+    title: 'Relatórios',
+    data: ['icon:fas fa-chart-line'],
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'painel-pedidos-expedicao',
+        title: 'Pedidos para Expedição',
+        data: ['icon:fas fa-file-alt'],
+        canActivate: [authGuard],
+        component: PainelExpedicaoPedidosComponent,
+      },
+    ],
+  },
+  {
     path: '**',
     title: 'Não encontrado',
-    data: ["hidden"],
-    component: PageNotFoundComponent
-  }
+    data: ['hidden'],
+    component: PageNotFoundComponent,
+  },
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes)
-  ],
-  exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
