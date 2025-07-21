@@ -54,4 +54,15 @@ export class OrderSalesService  implements DocumentAngularSave{
         })
       );
   }
+
+updateOrdemCarregamento(pedidoId: string, ordemCarregamentoId: number): Observable<any> {
+  const body = {
+    U_Ordem_Carregamento: ordemCarregamentoId
+  };
+  
+  return this.hppCliente.post(
+    `${this.url}/${pedidoId}/ordem-carregamento`,
+    body
+  );
+}   
 }

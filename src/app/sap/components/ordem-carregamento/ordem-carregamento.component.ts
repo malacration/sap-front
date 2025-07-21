@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
-import { Observable, forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { AlertService } from '../../service/alert.service';
 import { Router } from '@angular/router';
 import { Branch } from '../../model/branch';
@@ -8,9 +8,9 @@ import { Localidade } from '../../model/localidade/localidade';
 import { OrderSalesService } from '../../service/document/order-sales.service';
 import { PedidoVenda } from '../document/documento.statement.component';
 import { LocalidadeService } from '../../service/localidade.service';
-import { LinhaItem, OrdemCarregamento } from '../../model/ordem-carregamento';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
 import { NextLink } from '../../model/next-link';
+import {OrdemCarregamento2 } from '../../model/ordem-carregamento2';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -21,18 +21,17 @@ export class OrdemCarregamentoComponent implements OnInit {
   nameOrdInput: string = '';
   dtInicial: string;
   dtFinal: string;
-  branchId: string = "11"
+  branchId: string = "11";
   selectedBranch: Branch = null;
   localidade: Localidade = null;
-  loading = false;
   showStock: boolean = false;
   isNameManuallyEdited: boolean = false;
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
   nextLink: string = '';
-
   private previousBranchId: string = null;
   private previousLocalidadeCode: string = null;
+  loading = false
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -148,91 +147,69 @@ export class OrdemCarregamentoComponent implements OnInit {
     }
   }
 
-  loadQuantidadesEmCarregamento() {
-  this.availableOrders.forEach(order => {
-    if (order.ItemCode) {
-      this.ordemCarregamentoService.getEstoqueEmCarregamento(order.ItemCode)
-        .subscribe(quantidade => {
-          order.quantidadeEmCarregamento = quantidade;
-        });
+sendOrder() {
+  if (!this.nameOrdInput || this.selectedOrders.length == 0) {
+    this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido');
+    return;
+  }
+
+  this.loading = true;
+  
+  const ordemCarregamento = new OrdemCarregamento2();
+  ordemCarregamento.U_nameOrdem = this.nameOrdInput;
+  ordemCarregamento.U_Status = 'Aberto';
+  ordemCarregamento.U_filial3 = this.branchId;
+
+  this.ordemCarregamentoService.save(ordemCarregamento).subscribe({
+    next: (response: any) => {
+      const ordemCriada = response; // Supondo que a resposta contém a ordem criada
+      const docEntryOrdem = ordemCriada.DocEntry;
+      
+      // Atualizar cada pedido selecionado com o DocEntry da ordem de carregamento
+      const updateRequests = this.selectedOrders.map(pedido => {
+        return this.orderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), docEntryOrdem);
+      });
+
+      forkJoin(updateRequests).subscribe({
+        next: () => {
+          this.concluirEnvio();
+        },
+        error: (err) => {
+          this.loading = false;
+          this.alertService.error('Erro ao atualizar pedidos com a ordem de carregamento');
+          console.error(err);
+        }
+      });
+    },
+    error: (err) => {
+      this.loading = false;
+      this.alertService.error('Erro ao criar ordem de carregamento');
+      console.error(err);
     }
   });
-  }
+}
 
-  sendOrder() {
-    if (!this.nameOrdInput || this.selectedOrders.length === 0) {
-      this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido');
-      return;
+    concluirEnvio() {
+      this.alertService.info('Ordem de carregamento criada com sucesso').then(() => {
+        this.loading = false;
+        // this.limparFormulario();
+      });
     }
 
-    this.loading = true;
-    const requests: Observable<any>[] = [];
+    // limparFormulario() {
+    //   this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
+    //     this.router.navigate(['carregamento/detalhes-carregamento']);
+    //   });
+    // }
 
-    const ordemCarregamento = new OrdemCarregamento();
-    ordemCarregamento.U_nameOrdem = this.nameOrdInput;
-    ordemCarregamento.U_Status = 'Aberto';
-    ordemCarregamento.U_pesoTotal2 = this.calcularPesoTotal();
-    ordemCarregamento.U_filial3 = this.branchId
-    ordemCarregamento.U_numeroAnexo = 68242
-    ordemCarregamento.ORD_CRG_LINHACollection = this.selectedOrders.map((pedido, index) => {
-      const linha = new LinhaItem();
-      linha.U_orderDocEntry = pedido.DocEntry;
-      linha.U_numDocPedido = pedido.DocNum;
-      linha.U_cardCode = pedido.CardCode;
-      linha.U_cardName = pedido.CardName;
-      linha.U_quantidade = pedido.Quantity;
-      linha.DocEntry = 0;
-      linha.LineId = index;
-      linha.VisOrder = index;
-      linha.U_pesoItem2 = pedido.Weight1;
-      linha.U_itemCode = pedido.ItemCode;
-      linha.U_description = pedido.Dscription;
-      linha.U_precoUnitario = pedido.UnitPrice
-      linha.U_codigoDeposito = pedido.WarehouseCode
-      linha.U_usage = pedido.Usage
-      linha.U_taxCode = pedido.TaxCode
-      linha.U_costingCode = pedido.CostingCode
-      linha.U_costingCode2 = pedido.CostingCode2
-      linha.U_baseLine = pedido.BaseLine
-      linha.U_unMedida = pedido.UomCode
-      linha.U_qtdEmEstoque = pedido.OnHand
-      linha.U_precoNegociado = pedido.PrecoNegociado
-      linha.U_precoBase = pedido.PrecoBase
-      linha.U_comentario = pedido.Comentario
-      linha.U_fretePorLinha = pedido.FretePorLinha
-      return linha;
-    });
-
-    requests.push(this.ordemCarregamentoService.save(ordemCarregamento));
-
-    forkJoin(requests).subscribe({
-      next: () => {
-        this.concluirEnvio();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.alertService.error('Erro ao enviar ordem de carregamento');
-        console.error(err);
+  loadQuantidadesEmCarregamento() {
+    this.availableOrders.forEach(order => {
+      if (order.ItemCode) {
+        this.ordemCarregamentoService.getEstoqueEmCarregamento(order.ItemCode)
+          .subscribe(quantidade => {
+            order.quantidadeEmCarregamento = quantidade;
+          });
       }
-    });
-  }
-
-  calcularPesoTotal(): number {
-    return this.selectedOrders.reduce((total, pedido) => {
-      return total + (pedido.Weight1 || 0) * (pedido.Quantity || 1);
-    }, 0);
-  }
-
-  concluirEnvio() {
-    this.alertService.info('Ordem de carregamento criada com sucesso').then(() => {
-      this.loading = false;
-      this.limparFormulario();
-    });
-  }
-
-  limparFormulario() {
-    this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['carregamento/detalhes-carregamento']);
     });
   }
 }

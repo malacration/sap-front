@@ -147,41 +147,7 @@ export class DocumentStatementComponent implements OnInit {
     return this.itens.reduce((acc,it) => acc+it.unitPriceLiquid()*it.quantidade,0)+this.frete
   }
 
-  sendOrder(){
-    this.loading = true
-    let subiscribers = Array<Observable<any>>();
-
-    let service : DocumentAngularSave = this.quotationService
-    
-    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales' && this.tipoEnvio == 'ret')
-      service = this.orderService
-  
-    this.agruparPorGroupNum().forEach((itens,groupNum) => {
-      let order = new PedidoVenda()
-      order.CardCode = this.businesPartner.CardCode
-      order.BPL_IDAssignedToInvoice = this.branchId
-      order.DocumentLines = itens.map(it => it.getDocumentsLines(this.tipoOperacao))
-      order.PaymentMethod = this.formaPagamento
-      order.PaymentGroupCode = groupNum
-      order.Comments = this.observacao
-      order.DocDueDate = this.dtEntrega
-      order.Frete = this.frete
-      order.TaxExtension = {
-        VehicleState: this.setVehicleState(),
-        Incoterms: this.tipoEnvio == 'ret' ? 9 : 1
-      };
-      subiscribers.push(service.save(order))
-    })
-    forkJoin(subiscribers).subscribe({ 
-      next:result => {
-        this.concluirEnvio();
-      },
-      error : result => {
-        this.loading = false
-      },
-    });
-  }
-
+sendOrder
   concluirEnvio(){
     this.alertService.info("Seu pedido foi Enviado").then(() => {
       this.loading = false

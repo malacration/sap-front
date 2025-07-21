@@ -6,6 +6,7 @@ import { Observable, map } from "rxjs";
 import { PedidoRetirada } from "../model/venda/pedido-retirada";
 import { PedidoTroca } from "../model/venda/pedido-troca";
 import { LinhaItem, OrdemCarregamento } from "../model/ordem-carregamento";
+import { OrdemCarregamento2 } from "../model/ordem-carregamento2";
 
 @Injectable({
     providedIn: 'root'
@@ -57,7 +58,7 @@ export class OrdemCarregamentoService{
       return ordemCarregamento;
     }
 
-    save(body : OrdemCarregamento) : Observable<any>{
+    save(body : OrdemCarregamento2) : Observable<any>{
     return this.http.post<any>(this.url+"/angular",body)
   }
 
