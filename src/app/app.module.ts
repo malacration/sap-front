@@ -111,6 +111,9 @@ import { OrdemCarregamentoService } from './sap/service/ordem-carregamento.servi
 import { LocalidadeService } from './sap/service/localidade.service';
 import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
 import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
+import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
+import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
+import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
 
 
 registerLocaleData(localeBr);
@@ -180,8 +183,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     TabComponent,
     TrocaComponent,
     OrdemCarregamentoComponent,
-    OrdemCarregamentoSingleComponent,
     OrdemCarregamentoStatementComponent,
+    LocalidadeSearchComponent,
+    OrdemCarregamentoSingleComponent,
+    DualListBoxComponent,
   ],
   imports: [
     NgxPaginationModule,
@@ -234,6 +239,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     LocalidadeService,
     OrdemCarregamentoService,
     FutureDeliverySalesService,
+    InvoiceGenerationService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],

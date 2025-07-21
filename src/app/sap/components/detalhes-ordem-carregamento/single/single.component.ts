@@ -4,10 +4,10 @@ import { AlertService } from '../../../service/alert.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { OrdemCarregamentoService } from '../../../service/ordem-carregamento.service';
 import { OrdemCarregamento } from '../../../model/ordem-carregamento';
-import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { BusinessPartnerService } from '../../../service/business-partners.service';
+import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 
 
 class ItemSelecaoLoteAgrupado{ 
