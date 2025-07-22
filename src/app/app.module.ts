@@ -114,6 +114,7 @@ import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-o
 import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
 import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
+import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
 
 
 registerLocaleData(localeBr);
@@ -186,6 +187,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     OrdemCarregamentoStatementComponent,
     LocalidadeSearchComponent,
     OrdemCarregamentoSingleComponent,
+    TransportadoraSearchComponent,
     DualListBoxComponent,
   ],
   imports: [
