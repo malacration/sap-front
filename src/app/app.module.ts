@@ -115,6 +115,7 @@ import { InvoiceGenerationService } from './sap/service/invoice-generation.servi
 import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
 import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
 import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
+import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 
 
 registerLocaleData(localeBr);
@@ -200,6 +201,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
+    SapSharedModule,
     
     AppRoutingModule,
     ToastrModule.forRoot({

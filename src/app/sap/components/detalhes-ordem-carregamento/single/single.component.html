@@ -94,13 +94,12 @@
             <div *ngIf="false" class="modal-body">
                 <div *ngIf="groupedItems[currentPage]">
                     <h6>Item: {{ groupedItems[currentPage].itemCode }} - {{ groupedItems[currentPage].description }}</h6>
-                    <!-- <selecao-lote
+                    <selecao-lote
                         [itemCode]="groupedItems[currentPage].itemCode"
                         [codDeposito]="groupedItems[currentPage].codDeposito"
                         [quantidade]="groupedItems[currentPage].totalQuantity"
                         (lotesSelecionados)="addLotesSelecionados($event) ">
-                        (lotesSelecionados)="addLotesSelecionados($event, groupedItems[currentPage].itemCode) ">
-                    </selecao-lote> -->
+                    </selecao-lote>
                 </div>
             </div>
             <!-- {{debugLotes()}} -->
@@ -150,13 +149,13 @@
         </div>
 
         <div class="col-md-9">
-            <!-- <selecao-lote *ngIf="currentSelecaoLote"
+            <selecao-lote *ngIf="currentSelecaoLote"
                 [itemCode]="currentSelecaoLote.id"
                 [codDeposito]="currentSelecaoLote.deposito"
                 [quantidade]="currentSelecaoLote.quantidade"
                 (lotesSelecionados)="addLotesSelecionados($event)"
             >
-            </selecao-lote> -->
+            </selecao-lote>
         </div>
     </div>
 
