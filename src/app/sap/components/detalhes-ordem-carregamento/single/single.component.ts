@@ -8,6 +8,7 @@ import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.mo
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { BusinessPartnerService } from '../../../service/business-partners.service';
 import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
+import { PedidosVendaService } from '../../../service/document/pedidos-venda.service';
 
 
 class ItemSelecaoLoteAgrupado{ 
@@ -29,6 +30,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     private ordemCarregamentoService: OrdemCarregamentoService,
     private invoiceGenerationService: InvoiceGenerationService,
     private businesPartnerService : BusinessPartnerService,
+    private pedidosVendaService : PedidosVendaService
   ) {}
 
   cardName = "windson";
@@ -48,6 +50,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   showModal = false;
   mostrarDebug = false;
   businesPartner : BusinessPartner = null;
+  pedidos: any[] = []
 
   currentPage: number = 0;
   groupedItems: { itemCode: string, description: string, totalQuantity: number, codDeposito: string }[] = [];
@@ -60,8 +63,12 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     return Array(this.totalPages).fill(0).map((_, i) => i);
   }
 
-  ngOnInit(): void {
-    // Group items by U_itemCode and sum quantities
+ngOnInit(): void {
+    if (this.selected?.DocEntry) {
+      this.loadPedidos(this.selected.DocEntry);
+    }
+
+    // Agrupar itens (como já existe no código)
     const itemMap = new Map<string, { itemCode: string, description: string, totalQuantity: number, codDeposito: string }>();
     this.selected.ORD_CRG_LINHACollection.forEach(item => {
       const existing = itemMap.get(item.U_itemCode);
@@ -77,6 +84,17 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       }
     });
     this.groupedItems = Array.from(itemMap.values());
+  }
+  
+  loadPedidos(docEntry: number) {
+    this.pedidosVendaService.search2(docEntry).subscribe({
+      next: (response: any) => {
+        this.pedidos = response.content; // Armazena os dados retornados
+      },
+      error: (error) => {
+        this.alertService.error('Erro ao carregar pedidos: ' + error.message);
+      }
+    });
   }
 
   selectBp($event){
@@ -380,15 +398,15 @@ prepararPayloadNotaFiscal(): any[] {
       });
   }
 
-  definition = [
-    new Column('Núm. do Pedido', 'U_numDocPedido'),
-    new Column('Cód. Cliente', 'U_cardCode'),
-    new Column('Nome Cliente', 'U_cardName'),
-    new Column('Cód. Item', 'U_itemCode'),
-    new Column('Dsc. Item', 'U_description'),
-    new Column('Quantidade', 'U_quantidade'),
-    new Column('Peso', 'U_pesoItem2'),
-    new Column('Un. Medida', 'U_unMedida'),
-    new Column('Em Estoque', 'U_qtdEmEstoque')
-  ];
+definition = [
+  new Column('Núm. do Pedido', 'DocNum'),
+  new Column('Cód. Cliente', 'CardCode'),
+  new Column('Nome Cliente', 'CardName'),
+  new Column('Cód. Item', 'ItemCode'),
+  new Column('Dsc. Item', 'Dscription'),
+  new Column('Quantidade', 'Quantity'),
+  new Column('Un. Medida', 'UomCode'),
+  new Column('Peso', 'Weight'), // Ajuste se necessário (veja observação abaixo)
+  new Column('Em Estoque', 'OnHand') // Ajuste se necessário (veja observação abaixo)
+];
 }

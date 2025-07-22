@@ -43,6 +43,8 @@ export class PedidosVendaService implements DocumentService{
             }))
     }
 
-    
+    search2(U_Ordem_Carregamento: number): Observable<any> {
+    return this.hppCliente.get(`${this.url}/search2?U_Ordem_Carregamento=${U_Ordem_Carregamento}`);
+    }
 
 }
