@@ -19,6 +19,7 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 
  let routes: Routes = [
   {
@@ -103,6 +104,13 @@ import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/
         data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
         component: OrdemCarregamentoComponent
+      },
+      {
+        path: 'detalhes-carregamento',
+        title: 'Detalhes de Carregamento',
+        data: ["icon:fas fa-file-contract"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoStatementComponent
       }
     ]
   }, 
