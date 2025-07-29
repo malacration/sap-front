@@ -18,6 +18,8 @@ import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 
  let routes: Routes = [
   {
@@ -123,6 +125,28 @@ import { ReprocessamentoComponent } from './modulos/producao/componentes/reproce
         data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
         component: VendaFuturaStatementComponent
+      },
+    ]
+  },
+    {
+    title: 'Carregamento',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-truck"],
+    path: 'ordem-carregamento',
+    children: [ 
+      {
+        path: 'ordem',
+        title: 'Ordem',
+        data: ["icon:fas fa-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoComponent
+      },
+      {
+        path: 'detalhes',
+        title: 'Detalhes',
+        data: ["icon:fas fa-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoStatementComponent
       },
     ]
   },
