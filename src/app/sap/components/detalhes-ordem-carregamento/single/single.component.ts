@@ -43,8 +43,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   // Estado para o modal de lotes
   showLote = false;
   loadingPedidos = false;
-  currentPedido: PedidoVenda | LinhasPedido | null = null; // Pedido atualmente selecionado no modal
-  lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map(); // Armazena lotes por ItemCode
+  currentPedido: PedidoVenda | LinhasPedido | null = null;
+  lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
 
   definition = [
     new Column('Núm. do Pedido', 'DocNum'),
@@ -66,7 +66,22 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.loadingPedidos = true;
     this.pedidosVendaService.search2(docEntry).subscribe({
       next: (response: any) => {
-        this.pedidos = response.content;
+        // Agrupar pedidos por ItemCode e somar Quantity
+        const groupedPedidos = response.content.reduce((acc, pedido) => {
+          const itemCode = pedido.ItemCode;
+          if (!acc[itemCode]) {
+            acc[itemCode] = {
+              ...pedido,
+              Quantity: 0,
+              DocNum: pedido.DocNum // Preserva DocNum, mas pode ser ajustado se necessário
+            };
+          }
+          acc[itemCode].Quantity += pedido.Quantity;
+          return acc;
+        }, {});
+
+        // Converter o objeto agrupado em array
+        this.pedidos = Object.values(groupedPedidos);
         this.loadingPedidos = false;
       },
       error: (error) => {
@@ -94,17 +109,15 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
       return;
     }
-    this.lotesSelecionadosPorItem.clear(); // Limpa seleções anteriores
-    this.currentPedido = this.pedidos[0]; // Seleciona o primeiro pedido por padrão
+    this.lotesSelecionadosPorItem.clear();
+    this.currentPedido = this.pedidos[0];
     this.showLote = true;
   }
 
-  // Seleciona um pedido no modal para configurar seus lotes
   selecionarPedido(pedido: PedidoVenda | LinhasPedido) {
     this.currentPedido = pedido;
   }
 
-  // Armazena os lotes selecionados para o pedido atual
   lotesSelecionados(lotes: Array<BatchStock>) {
     if (this.currentPedido && lotes.length > 0) {
       this.lotesSelecionadosPorItem.set(this.currentPedido.ItemCode, lotes);
@@ -112,7 +125,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }
   }
 
-  // Confirma a Nota Verde para todos os pedidos com lotes selecionados
   confirmarNotaVerde() {
     if (this.lotesSelecionadosPorItem.size === 0) {
       this.alertService.error('Nenhum lote selecionado para confirmar nota verde.');
@@ -121,7 +133,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
     this.loading = true;
 
-    // Processa os lotes de cada ItemCode
     const lotesToSave = Array.from(this.lotesSelecionadosPorItem.entries()).map(([itemCode, lotes]) => ({
       ItemCode: itemCode,
       Batches: lotes.map(lote => ({
