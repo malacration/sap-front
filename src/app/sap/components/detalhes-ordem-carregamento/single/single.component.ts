@@ -9,7 +9,6 @@ import { BusinessPartnerService } from '../../../service/business-partners.servi
 import { PedidosVendaService } from '../../../service/document/pedidos-venda.service';
 import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
-import { Reprocessamento } from '../../../../modulos/producao/_model/reprocessamento';
 import { LinhasPedido, PedidoVenda } from '../../document/documento.statement.component';
 
 @Component({
@@ -39,15 +38,13 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   nomeOrdem: string = '';
   loading = false;
   pedidos: any[] = [];
-  businesPartner : BusinessPartner = null;
+  businesPartner: BusinessPartner = null;
 
-  selectedPedido: PedidoVenda | LinhasPedido | null = null;
-
-  lotesSelecionadosStorage: Array<BatchStock> = [];
-
-  // Lote
+  // Estado para o modal de lotes
   showLote = false;
   loadingPedidos = false;
+  currentPedido: PedidoVenda | LinhasPedido | null = null; // Pedido atualmente selecionado no modal
+  lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map(); // Armazena lotes por ItemCode
 
   definition = [
     new Column('Núm. do Pedido', 'DocNum'),
@@ -65,72 +62,19 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }
   }
 
-  // Lote
-
-  abrirModal() {
-      this.showLote = true;
-  }
-
-lotesSelecionados(lotes: Array<BatchStock>) {
-    this.lotesSelecionadosStorage = lotes;
-    console.log('Lotes armazenados:', this.lotesSelecionadosStorage);
-}
-
-// Adicione esta função na classe OrdemCarregamentoSingleComponent
-confirmarNotaVerde() {
-    if (!this.selectedPedido) {
-        this.alertService.error('Nenhum pedido selecionado para confirmar nota verde.');
-        return;
-    }
-
-    if (!this.lotesSelecionadosStorage || this.lotesSelecionadosStorage.length === 0) {
-        this.alertService.error('Nenhum lote selecionado para confirmar nota verde.');
-        return;
-    }
-
-    this.loading = true;
-
-    // Criar um objeto temporário com BatchNumber em vez de DistNumber
-    const loteToSave = {
-        BatchNumber: this.lotesSelecionadosStorage[0].DistNumber, // Mapeia DistNumber para BatchNumber
-        ExpDate: this.lotesSelecionadosStorage[0].ExpDate,
-        InDate: this.lotesSelecionadosStorage[0].InDate,
-        ItemCode: this.lotesSelecionadosStorage[0].ItemCode,
-        ItemName: this.lotesSelecionadosStorage[0].ItemName,
-        MnfDate: this.lotesSelecionadosStorage[0].MnfDate,
-        Quantity: this.lotesSelecionadosStorage.reduce((sum, lote) => sum + (lote.quantitySelecionadaEditable || lote.Quantity), 0), // Somar quantidades
-        WhsCode: this.lotesSelecionadosStorage[0].WhsCode
-    };
-
-    this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, loteToSave).subscribe({
-        next: (response) => {
-            this.alertService.confirm('Nota verde confirmada com sucesso!');
-            this.showLote = false;
-            this.lotesSelecionadosStorage = [];
-            this.selected.U_Status = "Nota Verde Confirmada";
-        },
-        error: (error) => {
-            this.alertService.error('Erro ao confirmar nota verde: ' + (error.error?.message || error.message));
-        },
-        complete: () => {
-            this.loading = false;
-        }
+  loadPedidos(docEntry: number) {
+    this.loadingPedidos = true;
+    this.pedidosVendaService.search2(docEntry).subscribe({
+      next: (response: any) => {
+        this.pedidos = response.content;
+        this.loadingPedidos = false;
+      },
+      error: (error) => {
+        this.alertService.error('Erro ao carregar pedidos: ' + error.message);
+        this.loadingPedidos = false;
+      }
     });
-}
-
-loadPedidos(docEntry: number) {
-  this.loadingPedidos = true; // Start loading
-  this.pedidosVendaService.search2(docEntry).subscribe({
-    next: (response: any) => {
-      this.pedidos = response.content;
-      this.loadingPedidos = false; // Stop loading on success
-    },
-    error: (error) => {
-      this.alertService.error('Erro ao carregar pedidos: ' + error.message);
-      this.loadingPedidos = false; // Stop loading on error
-    }
-  });
-}
+  }
 
   selectBp($event) {
     this.businesPartner = $event;
@@ -145,28 +89,81 @@ loadPedidos(docEntry: number) {
 
   action(event: ActionReturn) {}
 
-gerarNotaFiscal() {
-  if (this.pedidos.length === 0) {
-    this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
-    return;
+  gerarNotaFiscal() {
+    if (this.pedidos.length === 0) {
+      this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
+      return;
+    }
+    this.lotesSelecionadosPorItem.clear(); // Limpa seleções anteriores
+    this.currentPedido = this.pedidos[0]; // Seleciona o primeiro pedido por padrão
+    this.showLote = true;
   }
-  
-  this.selectedPedido = this.pedidos[0]; // Or derive from user selection
-  this.abrirModal();
-}
+
+  // Seleciona um pedido no modal para configurar seus lotes
+  selecionarPedido(pedido: PedidoVenda | LinhasPedido) {
+    this.currentPedido = pedido;
+  }
+
+  // Armazena os lotes selecionados para o pedido atual
+  lotesSelecionados(lotes: Array<BatchStock>) {
+    if (this.currentPedido && lotes.length > 0) {
+      this.lotesSelecionadosPorItem.set(this.currentPedido.ItemCode, lotes);
+      console.log('Lotes armazenados para', this.currentPedido.ItemCode, lotes);
+    }
+  }
+
+  // Confirma a Nota Verde para todos os pedidos com lotes selecionados
+  confirmarNotaVerde() {
+    if (this.lotesSelecionadosPorItem.size === 0) {
+      this.alertService.error('Nenhum lote selecionado para confirmar nota verde.');
+      return;
+    }
+
+    this.loading = true;
+
+    // Processa os lotes de cada ItemCode
+    const lotesToSave = Array.from(this.lotesSelecionadosPorItem.entries()).map(([itemCode, lotes]) => ({
+      ItemCode: itemCode,
+      Batches: lotes.map(lote => ({
+        BatchNumber: lote.DistNumber,
+        ExpDate: lote.ExpDate,
+        InDate: lote.InDate,
+        ItemName: lote.ItemName,
+        MnfDate: lote.MnfDate,
+        Quantity: lote.quantitySelecionadaEditable || lote.Quantity,
+        WhsCode: lote.WhsCode
+      }))
+    }));
+
+    this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
+      next: (response) => {
+        this.alertService.confirm('Nota verde confirmada com sucesso!');
+        this.showLote = false;
+        this.lotesSelecionadosPorItem.clear();
+        this.currentPedido = null;
+        this.selected.U_Status = 'Nota Verde Confirmada';
+      },
+      error: (error) => {
+        this.alertService.error('Erro ao confirmar nota verde: ' + (error.error?.message || error.message));
+      },
+      complete: () => {
+        this.loading = false;
+      }
+    });
+  }
 
   confirmarCancelamento(docEntry: number) {
-    this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.")
+    this.alertService.confirm('Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.')
       .then(it => {
         if (it.isConfirmed) {
           this.loading = true;
           this.ordemCarregamentoService.cancel(docEntry).subscribe({
             next: () => {
-              this.alertService.confirm("Documento cancelado com sucesso!");
-              this.selected.U_Status = "Cancelado";
+              this.alertService.confirm('Documento cancelado com sucesso!');
+              this.selected.U_Status = 'Cancelado';
             },
             error: (err) => {
-              this.alertService.error("Erro ao cancelar documento: " + err.message);
+              this.alertService.error('Erro ao cancelar documento: ' + err.message);
             },
             complete: () => {
               this.loading = false;
@@ -180,11 +177,11 @@ gerarNotaFiscal() {
     this.loading = true;
     this.ordemCarregamentoService.finalizar(docEntry).subscribe({
       next: () => {
-        this.alertService.confirm("Documento finalizado com sucesso!");
-        this.selected.U_Status = "Fechado";
+        this.alertService.confirm('Documento finalizado com sucesso!');
+        this.selected.U_Status = 'Fechado';
       },
       error: (err) => {
-        this.alertService.error("Erro ao finalizar documento: " + err.message);
+        this.alertService.error('Erro ao finalizar documento: ' + err.message);
       },
       complete: () => {
         this.loading = false;
