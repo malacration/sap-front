@@ -47,6 +47,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   // Lote
   showLote = false;
+  loadingPedidos = false;
 
   definition = [
     new Column('Núm. do Pedido', 'DocNum'),
@@ -117,16 +118,19 @@ confirmarNotaVerde() {
     });
 }
 
-  loadPedidos(docEntry: number) {
-    this.pedidosVendaService.search2(docEntry).subscribe({
-      next: (response: any) => {
-        this.pedidos = response.content;
-      },
-      error: (error) => {
-        this.alertService.error('Erro ao carregar pedidos: ' + error.message);
-      }
-    });
-  }
+loadPedidos(docEntry: number) {
+  this.loadingPedidos = true; // Start loading
+  this.pedidosVendaService.search2(docEntry).subscribe({
+    next: (response: any) => {
+      this.pedidos = response.content;
+      this.loadingPedidos = false; // Stop loading on success
+    },
+    error: (error) => {
+      this.alertService.error('Erro ao carregar pedidos: ' + error.message);
+      this.loadingPedidos = false; // Stop loading on error
+    }
+  });
+}
 
   selectBp($event) {
     this.businesPartner = $event;

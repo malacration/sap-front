@@ -45,11 +45,16 @@
                 <dd class="col-sm">
                     <app-tabs>
                         <app-tab tabTitle="Produtos" [active]="true">
-                            <app-table
+                        <div *ngIf="loadingPedidos" class="text-center p-4">
+                            <i class="fas fa-spinner fa-spin fa-2x"></i>
+                            <p>Carregando produtos...</p>
+                        </div>
+                        <app-table
+                            *ngIf="!loadingPedidos"
                             [content]="pedidos"
                             [definition]="definition"
                             (actionOutput)="action($event)">
-                            </app-table>
+                        </app-table>
                         </app-tab>
                         <app-tab tabTitle="Logística">
                             <div class="row">
