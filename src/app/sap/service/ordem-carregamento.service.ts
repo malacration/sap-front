@@ -7,6 +7,7 @@ import { PedidoRetirada } from "../model/venda/pedido-retirada";
 import { PedidoTroca } from "../model/venda/pedido-troca";
 import { OrdemCarregamento } from "../model/ordem-carregamento";
 import { LinhaItem } from "../model/venda/venda-futura";
+import { BatchStock } from "../../modulos/sap-shared/_models/BatchStock.model";
 
 @Injectable({
     providedIn: 'root'
@@ -75,4 +76,9 @@ export class OrdemCarregamentoService{
     getEstoqueEmCarregamento(itemCode: string): Observable<number> {
       return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
     }
+
+  saveSelectedLotes(docEntry: number, lote: any): Observable<any> {
+      const url = `${this.url}/generate-from-loading-order/${docEntry}`;
+      return this.http.post(url, lote);
+  }
 }

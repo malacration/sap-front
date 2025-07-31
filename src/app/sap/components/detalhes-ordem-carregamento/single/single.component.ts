@@ -23,7 +23,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     private ordemCarregamentoService: OrdemCarregamentoService,
     private invoiceGenerationService: InvoiceGenerationService,
     private businessPartnerService: BusinessPartnerService,
-    private pedidosVendaService: PedidosVendaService
+    private pedidosVendaService: PedidosVendaService,
+    private carregamentoService: OrdemCarregamentoService
   ) {}
 
   @Input()
@@ -87,37 +88,33 @@ confirmarNotaVerde() {
     }
 
     this.loading = true;
-    
-    // Prepare os dados para envio
-    const lotesToSave = this.lotesSelecionadosStorage.map(lote => ({
-        ItemCode: lote.ItemCode,
-        DistNumber: lote.DistNumber,
-        Quantity: lote.quantitySelecionadaEditable || lote.Quantity
-    }));
 
-    // Exemplo de chamada ao serviço (descomente e adapte)
-    // this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
-    //     next: (response) => {
-    //         this.alertService.success('Nota verde confirmada com sucesso!');
-    //         this.showLote = false;
-    //         this.lotesSelecionadosStorage = []; // Limpa os lotes armazenados
-    //     },
-    //     error: (error) => {
-    //         this.alertService.error('Erro ao confirmar nota verde: ' + error.message);
-    //     },
-    //     complete: () => {
-    //         this.loading = false;
-    //     }
-    // });
+    // Criar um objeto temporário com BatchNumber em vez de DistNumber
+    const loteToSave = {
+        BatchNumber: this.lotesSelecionadosStorage[0].DistNumber, // Mapeia DistNumber para BatchNumber
+        ExpDate: this.lotesSelecionadosStorage[0].ExpDate,
+        InDate: this.lotesSelecionadosStorage[0].InDate,
+        ItemCode: this.lotesSelecionadosStorage[0].ItemCode,
+        ItemName: this.lotesSelecionadosStorage[0].ItemName,
+        MnfDate: this.lotesSelecionadosStorage[0].MnfDate,
+        Quantity: this.lotesSelecionadosStorage.reduce((sum, lote) => sum + (lote.quantitySelecionadaEditable || lote.Quantity), 0), // Somar quantidades
+        WhsCode: this.lotesSelecionadosStorage[0].WhsCode
+    };
 
-    // Código temporário para demonstração
-    console.log('Enviando lotes para nota verde:', lotesToSave);
-    setTimeout(() => {
-        this.alertService.confirm('Nota verde confirmada com sucesso!');
-        this.showLote = false;
-        this.lotesSelecionadosStorage = [];
-        this.loading = false;
-    }, 1500);
+    this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, loteToSave).subscribe({
+        next: (response) => {
+            this.alertService.confirm('Nota verde confirmada com sucesso!');
+            this.showLote = false;
+            this.lotesSelecionadosStorage = [];
+            this.selected.U_Status = "Nota Verde Confirmada";
+        },
+        error: (error) => {
+            this.alertService.error('Erro ao confirmar nota verde: ' + (error.error?.message || error.message));
+        },
+        complete: () => {
+            this.loading = false;
+        }
+    });
 }
 
   loadPedidos(docEntry: number) {
