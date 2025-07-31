@@ -42,6 +42,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   selectedPedido: PedidoVenda | LinhasPedido | null = null;
 
+  lotesSelecionadosStorage: Array<BatchStock> = [];
+
   // Lote
   showLote = false;
 
@@ -68,29 +70,54 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
 lotesSelecionados(lotes: Array<BatchStock>) {
-    this.showLote = false;
+    this.lotesSelecionadosStorage = lotes;
+    console.log('Lotes armazenados:', this.lotesSelecionadosStorage);
+}
+
+// Adicione esta função na classe OrdemCarregamentoSingleComponent
+confirmarNotaVerde() {
+    if (!this.selectedPedido) {
+        this.alertService.error('Nenhum pedido selecionado para confirmar nota verde.');
+        return;
+    }
+
+    if (!this.lotesSelecionadosStorage || this.lotesSelecionadosStorage.length === 0) {
+        this.alertService.error('Nenhum lote selecionado para confirmar nota verde.');
+        return;
+    }
+
     this.loading = true;
     
-    // Prepare the data to be saved
-    const lotesToSave = lotes.map(lote => ({
+    // Prepare os dados para envio
+    const lotesToSave = this.lotesSelecionadosStorage.map(lote => ({
         ItemCode: lote.ItemCode,
         DistNumber: lote.DistNumber,
         Quantity: lote.quantitySelecionadaEditable || lote.Quantity
     }));
 
-    console.log('Lotes selecionados para salvar:', lotesToSave);
-    
+    // Exemplo de chamada ao serviço (descomente e adapte)
     // this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
     //     next: (response) => {
-    //         this.alertService.success('Lotes selecionados com sucesso!');
-    //         // After saving lots, generate the invoice
-    //         this.generateInvoiceAfterLoteSelection();
+    //         this.alertService.success('Nota verde confirmada com sucesso!');
+    //         this.showLote = false;
+    //         this.lotesSelecionadosStorage = []; // Limpa os lotes armazenados
     //     },
     //     error: (error) => {
-    //         this.alertService.error('Erro ao salvar lotes: ' + error.message);
+    //         this.alertService.error('Erro ao confirmar nota verde: ' + error.message);
+    //     },
+    //     complete: () => {
     //         this.loading = false;
     //     }
     // });
+
+    // Código temporário para demonstração
+    console.log('Enviando lotes para nota verde:', lotesToSave);
+    setTimeout(() => {
+        this.alertService.confirm('Nota verde confirmada com sucesso!');
+        this.showLote = false;
+        this.lotesSelecionadosStorage = [];
+        this.loading = false;
+    }, 1500);
 }
 
   loadPedidos(docEntry: number) {

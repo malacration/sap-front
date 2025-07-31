@@ -80,12 +80,27 @@
             <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
         </div>
     </div>
-<app-modal [(show)]="showLote" [title]="'Selecione'" >
+<app-modal [(show)]="showLote" [title]="'Selecione os Lotes'" >
     <selecao-lote *ngIf="showLote"
         [itemCode]="selectedPedido?.ItemCode"
         [codDeposito]="selectedPedido?.DflWhs"
         [quantidade]="selectedPedido?.Quantity"
         (lotesSelecionados)="lotesSelecionados($event)">
     </selecao-lote>
+    
+    <div class="modal-footer">
+        <div class="mr-auto">
+            <span *ngIf="lotesSelecionadosStorage?.length > 0">
+                {{ lotesSelecionadosStorage.length }} lote(s) selecionado(s)
+            </span>
+        </div>
+        <button type="button" 
+                class="btn btn-success"
+                (click)="confirmarNotaVerde()"
+                [disabled]="loading || lotesSelecionadosStorage?.length === 0">
+            <span *ngIf="!loading">Confirmar Nota Verde</span>
+            <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
+        </button>
+    </div>
 </app-modal>
 </section>
