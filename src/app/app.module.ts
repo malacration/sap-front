@@ -112,6 +112,7 @@ import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-b
 import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
 import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
+import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 
 
 registerLocaleData(localeBr);
@@ -196,6 +197,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
+    SapSharedModule,
     
     AppRoutingModule,
     ToastrModule.forRoot({

@@ -239,6 +239,7 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
+  DflWhs : string
 
   // Dual List
   U_Localidade : number

@@ -8,6 +8,9 @@ import { BusinessPartner } from '../../../model/business-partner/business-partne
 import { BusinessPartnerService } from '../../../service/business-partners.service';
 import { PedidosVendaService } from '../../../service/document/pedidos-venda.service';
 import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
+import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
+import { Reprocessamento } from '../../../../modulos/producao/_model/reprocessamento';
+import { LinhasPedido, PedidoVenda } from '../../document/documento.statement.component';
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -36,6 +39,14 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   loading = false;
   pedidos: any[] = [];
   businesPartner : BusinessPartner = null;
+  codItem : string = "PAC0000098"
+  codDeposito : string = "500.01"
+  quantidade : number 
+
+  selectedPedido: PedidoVenda | LinhasPedido | null = null;
+
+  // Lote
+  showLote = false;
 
   definition = [
     new Column('Núm. do Pedido', 'DocNum'),
@@ -52,6 +63,38 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.loadPedidos(this.selected.DocEntry);
     }
   }
+
+  // Lote
+
+  abrirModal() {
+      this.showLote = true;
+  }
+
+lotesSelecionados(lotes: Array<BatchStock>) {
+    this.showLote = false;
+    this.loading = true;
+    
+    // Prepare the data to be saved
+    const lotesToSave = lotes.map(lote => ({
+        ItemCode: lote.ItemCode,
+        DistNumber: lote.DistNumber,
+        Quantity: lote.quantitySelecionadaEditable || lote.Quantity
+    }));
+
+    console.log('Lotes selecionados para salvar:', lotesToSave);
+    
+    // this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
+    //     next: (response) => {
+    //         this.alertService.success('Lotes selecionados com sucesso!');
+    //         // After saving lots, generate the invoice
+    //         this.generateInvoiceAfterLoteSelection();
+    //     },
+    //     error: (error) => {
+    //         this.alertService.error('Erro ao salvar lotes: ' + error.message);
+    //         this.loading = false;
+    //     }
+    // });
+}
 
   loadPedidos(docEntry: number) {
     this.pedidosVendaService.search2(docEntry).subscribe({
@@ -77,28 +120,15 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   action(event: ActionReturn) {}
 
-  gerarNotaFiscal() {
-      this.loading = true;
-      const pedido = this.pedidos[0]; 
-      // if (!pedido || !pedido.DocEntry) {
-      //   this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
-      //   this.loading = false;
-      //   return;
-      // }
-
-      this.invoiceGenerationService.generateInvoiceFromLoadingOrder(93738).subscribe({
-        next: (response) => {
-          this.alertService.confirm('Nota fiscal gerada com sucesso!');
-          this.selected.U_Status = 'Fechado';
-        },
-        error: (error) => {
-          this.alertService.error('Erro ao gerar nota fiscal: ' + error.message);
-        },
-        complete: () => {
-          this.loading = false;
-        }
-      });
+gerarNotaFiscal() {
+  if (this.pedidos.length === 0) {
+    this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
+    return;
   }
+  
+  this.selectedPedido = this.pedidos[0]; // Or derive from user selection
+  this.abrirModal();
+}
 
   confirmarCancelamento(docEntry: number) {
     this.alertService.confirm("Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.")

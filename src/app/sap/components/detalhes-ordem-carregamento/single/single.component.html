@@ -80,4 +80,12 @@
             <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
         </div>
     </div>
+<app-modal [(show)]="showLote" [title]="'Selecione'" >
+    <selecao-lote *ngIf="showLote"
+        [itemCode]="selectedPedido?.ItemCode"
+        [codDeposito]="selectedPedido?.DflWhs"
+        [quantidade]="selectedPedido?.Quantity"
+        (lotesSelecionados)="lotesSelecionados($event)">
+    </selecao-lote>
+</app-modal>
 </section>
