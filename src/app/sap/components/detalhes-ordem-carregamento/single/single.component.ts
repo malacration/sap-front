@@ -39,9 +39,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   loading = false;
   pedidos: any[] = [];
   businesPartner : BusinessPartner = null;
-  codItem : string = "PAC0000098"
-  codDeposito : string = "500.01"
-  quantidade : number 
 
   selectedPedido: PedidoVenda | LinhasPedido | null = null;
 

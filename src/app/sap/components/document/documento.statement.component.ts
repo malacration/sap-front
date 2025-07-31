@@ -287,6 +287,7 @@ export class LinhasPedido{
   ItemDescription
   MeasureUnit
   SalUnitMsr
+  DflWhs
 }
 
 export class TaxExtension{
