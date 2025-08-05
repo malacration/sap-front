@@ -106,6 +106,16 @@ import { DescontoComponent } from './sap/components/document/desconto/desconto.c
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { OrdemCarregamentoService } from './sap/service/ordem-carregamento.service';
+import { LocalidadeService } from './sap/service/localidade.service';
+import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
+import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
+import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
+import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
+import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
+import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 
 
 registerLocaleData(localeBr);
@@ -173,7 +183,13 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DescontoComponent,
     TabsComponent,
     TabComponent,
-    TrocaComponent
+    TrocaComponent,
+    OrdemCarregamentoComponent,
+    OrdemCarregamentoStatementComponent,
+    LocalidadeSearchComponent,
+    OrdemCarregamentoSingleComponent,
+    TransportadoraSearchComponent,
+    DualListBoxComponent,
   ],
   imports: [
     NgxPaginationModule,
@@ -185,6 +201,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
+    SapSharedModule,
     
     AppRoutingModule,
     ToastrModule.forRoot({
@@ -223,7 +240,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CotacaoService,
     PedidosVendaService,
     CurrencyPipe,
+    LocalidadeService,
+    OrdemCarregamentoService,
     FutureDeliverySalesService,
+    InvoiceGenerationService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
