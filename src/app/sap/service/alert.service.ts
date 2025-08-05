@@ -42,8 +42,7 @@ export class AlertService {
         const taskPromise = task instanceof Promise ? task : lastValueFrom(task);
 
         return taskPromise.finally(() => {
-            // Verifica se ainda é a instância ativa antes de fechar
-            if (Swal.isVisible() && Swal.getTitle()?.textContent === 'Carregando...') {
+            if (Swal.isVisible() && Swal.getTitle()?.textContent == 'Carregando...') {
                 Swal.close();
             }
         });

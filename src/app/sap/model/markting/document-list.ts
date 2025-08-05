@@ -15,6 +15,8 @@ export class DocumentList{
     DocumentStatus : string
     DocumentAdditionalExpenses : Array<DespesaAdiciona>
     DocumentLines: DocumentLines[];
+    DocStatus : string
+    Devolucao : string
 
     getActions(): Action[] {
         return [
@@ -54,6 +56,17 @@ export class DocumentList{
             return "Aberto"
         }else{
             return "Fechado"
+        }
+            
+    }
+
+    get situacaoBoleto(){
+        if(this.Devolucao != null&& this.Devolucao != undefined)
+            return "Cancelado"
+        else if(this.DocStatus == "C"){
+            return "Fechado"
+        }else{
+            return "Aberto"
         }
             
     }
