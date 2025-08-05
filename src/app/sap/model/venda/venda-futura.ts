@@ -4,7 +4,8 @@ import { Action, ActionReturn } from "../../../shared/components/action/action.m
 import { PedidoRetirada } from "./pedido-retirada";
 import { RouteLink } from "../route-link";
 import { ItemRetirada } from "./item-retirada";
-
+import { DocumentLines, FutureDeliverySales } from "../markting/future-delivery-sales";
+import Big from 'big.js';
 
 
 export class VendaFutura {
@@ -18,16 +19,41 @@ export class VendaFutura {
     U_dataCriacao: string;
     DocNum: number;
     U_filial
+    U_status
+    
+    entregas : Array<FutureDeliverySales> = null
+    entregaLoading = false
 
-
+    
     routerLinkPn() : RouteLink{
         return new RouteLink(this.U_cardName,"/clientes/parceiro-negocio/"+this.U_cardCode) 
     }
 
+    isVerEntregas() : boolean{
+        return !this.entregaLoading && this.U_status == "aberto"
+    }
+
     getActions(): Action[] {
         return [
-            new Action("", new ActionReturn("selected",this), "far fa-check-circle")
-        ]
+            new Action("Abrir", new ActionReturn("selected",this), "fas fa-external-link-alt"),
+            
+            this.isVerEntregas() ? 
+                new Action("Carregar Entregas", new ActionReturn("carregaEntregas",this)) 
+                : 
+                new Action("Carregando...", new ActionReturn("none",this)) 
+        ].filter(it => it != null)
+    }
+
+    get valorEntregue(){
+        // .filter(it => it.DocObjectCode == 'oInvoices')
+        if(this.entregas)
+            return formatCurrency(
+                this.entregas.reduce((acc,value)=> 
+                    value.DocObjectCode == 'oInvoices' ? acc.plus(new Big(value.DocTotal)) : acc.minus(new Big(value.DocTotal)), 
+                new Big(0)
+            ), 'pt', 'R$');
+        else
+            return "-"
     }
 
     get dataCriacao() {

@@ -16,6 +16,7 @@ export class FutureDeliverySales {
   DocDate: string;
   DocTotal: number;
   DocumentLines: DocumentLines[]; 
+  DocObjectCode : string
 
   get formattedDocDate() {
     return moment(this.DocDate).format('DD/MM/YYYY');

@@ -9,6 +9,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ParameterService } from '../../../shared/service/parameter.service';
 import { AlertService } from '../../service/alert.service';
+import { FutureDeliverySalesService } from '../../service/FutureDeliverySales.service';
+import { DocumentLines } from '../../model/markting/future-delivery-sales';
 
 
 
@@ -33,10 +35,13 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     new Column('Produtos', 'produtosCurrency'),
     new Column('Frete', 'frete'),
     new Column('Valor Total', 'totalCurrency'),
-    new Column('Criado em', 'dataCriacao')
+    new Column('Valor Entregue', 'valorEntregue'),
+    new Column('Criado em', 'dataCriacao'),
+    new Column('Status', 'U_status')
   ]
   
   constructor(
+    private futureDeliverySalesService : FutureDeliverySalesService,
     private auth : AuthService,
     private route: ActivatedRoute,
     private alertService : AlertService,
@@ -71,6 +76,17 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     if(event.type == "selected"){
       this.parameterService.setParam(this.route,"id",event.data.DocEntry)
     }
+    if(event.type == "carregaEntregas"){
+      this.carregaEntregas(event.data)
+    }
+  }
+
+  carregaEntregas(vendaFutura : VendaFutura){
+    vendaFutura.entregaLoading = true
+    this.futureDeliverySalesService.getByNotaFiscalSaida(vendaFutura.DocEntry).subscribe(notas => {
+      vendaFutura.entregas = notas
+      vendaFutura.entregaLoading = false
+    })
   }
 
   close(): void {

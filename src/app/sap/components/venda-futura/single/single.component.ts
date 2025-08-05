@@ -9,6 +9,7 @@ import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
 import { AlertService } from '../../../service/alert.service';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { delay, of } from 'rxjs';
 
 
 
@@ -57,7 +58,8 @@ export class VendaFuturaSingleComponent implements OnInit {
   ngOnInit(): void {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
-      this.loadingBoletos = false; 
+      this.loadingBoletos = false;
+      console.log(this.boletos)
     });
 
 
@@ -74,7 +76,8 @@ export class VendaFuturaSingleComponent implements OnInit {
         
         this.entregas.forEach(item => {
           let produto = this.selected.AR_CF_LINHACollection.find(it => it.U_itemCode == item.ItemCode.toString());
-          produto.entregue += item.formattedQuantityInvoice | 0
+          if(produto)
+            produto.entregue += item.formattedQuantityInvoice | 0
         });
 
         this.loadingEntregas = false; 
@@ -139,6 +142,17 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.trocaModal.closeModal()
   }
 
+  encerrarContrato(){
+    this.alertService.confirm("Deseja encerrar o contrato?").then(it => {
+      if(it.isConfirmed){
+        this.alertService.loading(this.vendaFuturaService.encerrarContrato(this.selected.DocEntry)).then( it =>{
+          console.log("segundo");
+          this.alertService.info("Contrato encerrado com sucesso.");
+        })
+      }
+    })
+  }
+
   definition = [
     new Column('Código do Item', 'U_itemCode'),
     new Column('Descrição', 'U_description'),
@@ -153,7 +167,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Código', 'DocNum'),
     new Column('Vencimento', 'vencimento'),
     new Column('Total', 'totalCurrency'),
-    new Column('Status', 'situacao'),
+    new Column('Status', 'situacaoBoleto'),
   ];
 
   documentDefinition = [
