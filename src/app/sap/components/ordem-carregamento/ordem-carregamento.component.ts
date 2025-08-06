@@ -196,7 +196,7 @@ sendOrder() {
 
     limparFormulario() {
       this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-        this.router.navigate(['carregamento/detalhes-carregamento']);
+        this.router.navigate(['ordem-carregamento/detalhes']);
       });
     }
 
