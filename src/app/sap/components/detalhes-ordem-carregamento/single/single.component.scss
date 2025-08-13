@@ -42,3 +42,20 @@
       transform: scale(0.6); 
     }
   }
+
+  .draggable-item {
+    cursor: move;
+    user-select: none;
+    transition: background-color 0.2s;
+    
+    &.dragging {
+      opacity: 0.5;
+      background-color: #f8f9fa;
+      border: 1px dashed #ccc;
+    }
+  }
+
+  .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+  }

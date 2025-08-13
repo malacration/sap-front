@@ -37,6 +37,15 @@
         >
           Cancelar
         </button>
+
+        <button
+          (click)="abrirModalItinerario()"
+          type="button"
+          class="btn btn-warning btn-sm"
+          style="margin-left: 8px;"
+        >
+          Gerar Itinerário
+        </button>
       </div>
     </div>
     <div class="card-body">
@@ -171,4 +180,49 @@
       </button>
     </div>
   </app-modal>
+
+  <app-modal [(show)]="showItinerarioModal" [title]="'Ordenar Itinerário de Carregamento'">
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="alert alert-info">
+          Arraste os itens para ordenar a sequência de carregamento
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Ordem</th>
+                <th>Núm. Pedido</th>
+                <th>Cliente</th>
+                <th>Item</th>
+                <th>Quantidade</th>
+              </tr>
+            </thead>
+            <tbody #sortableList>
+              <tr *ngFor="let pedido of pedidosOrdenados; let i = index" 
+                  draggable="true"
+                  (dragstart)="onDragStart($event, i)"
+                  (dragover)="onDragOver($event, i)"
+                  (dragend)="onDragEnd($event)"
+                  (drop)="onDrop($event, i)"
+                  class="draggable-item">
+                <td>{{i + 1}}</td>
+                <td>{{pedido.DocNum}}</td>
+                <td>{{pedido.CardName}}</td>
+                <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
+                <td>{{pedido.Quantity}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar Ordem</button>
+    <button type="button" class="btn btn-primary" (click)="gerarPDFItinerario()">Gerar PDF</button>
+  </div>
+</app-modal>
 </section>

@@ -39,6 +39,9 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   loading = false;
   pedidos: any[] = [];
   businesPartner: BusinessPartner = null;
+  showItinerarioModal = false;
+  pedidosOrdenados: any[] = [];
+  private draggedItemIndex: number;
 
   // Estado para o modal de lotes
   showLote = false;
@@ -198,5 +201,63 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // Modal
+
+  abrirModalItinerario() {
+  if (this.pedidos.length === 0) {
+    this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
+    return;
+  }
+  
+  this.pedidosOrdenados = [...this.pedidos];
+  this.showItinerarioModal = true;
+  }
+
+  onDragStart(event: DragEvent, index: number) {
+    this.draggedItemIndex = index;
+    event.dataTransfer.setData('text/plain', index.toString());
+    event.dataTransfer.effectAllowed = 'move';
+    const element = event.target as HTMLElement;
+    element.classList.add('dragging');
+  }
+
+  onDragOver(event: DragEvent, index: number) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    
+    const element = event.target as HTMLElement;
+    if (element.nodeName === 'TR') {
+      element.classList.add('drag-over');
+    }
+  }
+
+  onDragEnd(event: DragEvent) {
+    const element = event.target as HTMLElement;
+    element.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  }
+
+  onDrop(event: DragEvent, targetIndex: number) {
+    event.preventDefault();
+    
+    if (this.draggedItemIndex === undefined) return;
+    
+    const movedItem = this.pedidosOrdenados[this.draggedItemIndex];
+    this.pedidosOrdenados.splice(this.draggedItemIndex, 1);
+    this.pedidosOrdenados.splice(targetIndex, 0, movedItem);
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    (event.target as HTMLElement).classList.remove('drag-over');
+  }
+
+  resetarOrdem() {
+    this.pedidosOrdenados = [...this.pedidos];
+  }
+
+  gerarPDFItinerario() {
+    console.log('Itinerário ordenado:', this.pedidosOrdenados);
+    this.alertService.confirm('PDF gerado com sucesso (simulado)');
+    this.showItinerarioModal = false;
   }
 }
