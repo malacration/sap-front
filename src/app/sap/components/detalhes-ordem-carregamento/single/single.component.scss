@@ -59,3 +59,14 @@
     max-height: 60vh;
     overflow-y: auto;
   }
+
+  .fa-grip-vertical {
+  cursor: move;
+  opacity: 1;
+  transition: opacity 0.2s;
+  color:black;
+  }
+
+  .draggable-item:hover .fa-grip-vertical {
+    opacity: 1;
+  }

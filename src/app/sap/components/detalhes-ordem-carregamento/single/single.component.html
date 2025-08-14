@@ -190,32 +190,34 @@
         </div>
         
         <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Ordem</th>
-                <th>Núm. Pedido</th>
-                <th>Cliente</th>
-                <th>Item</th>
-                <th>Quantidade</th>
-              </tr>
-            </thead>
-            <tbody #sortableList>
-              <tr *ngFor="let pedido of pedidosOrdenados; let i = index" 
-                  draggable="true"
-                  (dragstart)="onDragStart($event, i)"
-                  (dragover)="onDragOver($event, i)"
-                  (dragend)="onDragEnd($event)"
-                  (drop)="onDrop($event, i)"
-                  class="draggable-item">
-                <td>{{i + 1}}</td>
-                <td>{{pedido.DocNum}}</td>
-                <td>{{pedido.CardName}}</td>
-                <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
-                <td>{{pedido.Quantity}}</td>
-              </tr>
-            </tbody>
-          </table>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th></th> <!-- Coluna vazia para o ícone -->
+              <th>Ordem</th>
+              <th>Núm. Pedido</th>
+              <th>Cliente</th>
+              <th>Item</th>
+              <th>Quantidade</th>
+            </tr>
+          </thead>
+          <tbody #sortableList>
+            <tr *ngFor="let pedido of pedidosOrdenados; let i = index" 
+                draggable="true"
+                (dragstart)="onDragStart($event, i)"
+                (dragover)="onDragOver($event, i)"
+                (dragend)="onDragEnd($event)"
+                (drop)="onDrop($event, i)"
+                class="draggable-item">
+              <td><i class="fas fa-grip-vertical text-muted"></i></td> <!-- Ícone de arrastar -->
+              <td>{{i + 1}}</td>
+              <td>{{pedido.DocNum}}</td>
+              <td>{{pedido.CardName}}</td>
+              <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
+              <td>{{pedido.Quantity}}</td>
+            </tr>
+          </tbody>
+        </table>
         </div>
       </div>
     </div>
