@@ -16,7 +16,7 @@
       <div *ngFor="let group of groupedAvailableItems" class="order-group">
         <div class="order-header">
           <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
-            Pedido: {{ group.docNum }} |unin Localidade: <i class="fas fa-map-marker"></i> {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
+            Pedido: {{ group.docNum }} | Localidade: <i class="fas fa-map-marker"></i> {{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}
           </span>
         </div>
         <ul class="order-list">
