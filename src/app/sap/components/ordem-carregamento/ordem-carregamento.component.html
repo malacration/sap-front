@@ -78,6 +78,7 @@
         [selectedItems]="selectedOrders || []"
         [showStock]="showStock"
         [nextLink]="nextLink"
+        [isLoadingOrders]="isLoadingOrders"
         (selectedItemsChange)="onSelectedOrdersChange($event)"
         (loadMore)="loadMoreOrders()"
       >

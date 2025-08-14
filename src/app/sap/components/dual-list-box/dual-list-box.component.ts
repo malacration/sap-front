@@ -16,6 +16,7 @@ export class DualListBoxComponent {
   @Input() nextLink: string = '';
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
   @Output() loadMore = new EventEmitter<void>();
+  @Input() isLoadingOrders: boolean = false;
 
   quantidadesEmCarregamento: { [itemCode: string]: number | undefined } = {};
   isLoading: { [itemCode: string]: boolean } = {};

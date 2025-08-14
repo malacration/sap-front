@@ -32,6 +32,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   private previousBranchId: string = null;
   private previousLocalidadeCode: string = null;
   loading = false
+  isLoadingOrders = false;
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -75,6 +76,8 @@ export class OrdemCarregamentoComponent implements OnInit {
       return;
     }
 
+    this.isLoadingOrders = true; // Ativar o loading
+
     const branchChanged = this.previousBranchId !== this.branchId;
     this.previousBranchId = this.branchId;
     this.previousLocalidadeCode = this.localidade.Code;
@@ -91,10 +94,12 @@ export class OrdemCarregamentoComponent implements OnInit {
           this.availableOrders = this.availableOrders.filter(
             order => !this.selectedOrders.some(selected => selected.DocEntry == order.DocEntry)
           );
+          this.isLoadingOrders = false; // Desativar o loading
         },
         error: (err) => {
           this.alertService.error('Erro ao buscar pedidos');
           console.error(err);
+          this.isLoadingOrders = false; // Desativar o loading em caso de erro
         }
       });
   }

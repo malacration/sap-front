@@ -8,11 +8,18 @@
 </div>
 
 <div class="dual-list-container" [ngClass]="{'collapsed-right': isSelectedListCollapsed}">
-  <div class="list-box left-list">
-    <h5 class="titulo">Disponíveis</h5>
-    <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
-           [(ngModel)]="searchTermAvailable">
-    <div class="list-container">
+<div class="list-box left-list">
+  <h5 class="titulo">Disponíveis</h5>
+  <input type="text" class="form-control mb-2" placeholder="Pesquisar..." 
+         [(ngModel)]="searchTermAvailable">
+  <div class="list-container">
+    <!-- Exibir o loading quando isLoadingOrders for true -->
+    <div *ngIf="isLoadingOrders" class="text-center mt-3">
+      <i class="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Carregando pedidos...</p>
+    </div>
+    <!-- Exibir a lista quando não estiver carregando -->
+    <div *ngIf="!isLoadingOrders">
       <div *ngFor="let group of groupedAvailableItems" class="order-group">
         <div class="order-header">
           <span class="order-info" title="{{ group.items.length > 0 ? group.items[0].Name || 'N/A' : 'N/A' }}">
@@ -55,8 +62,9 @@
         <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
       </div>
     </div>
-    <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
   </div>
+  <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
+</div>
 
   <div class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
     <div class="list-header">
