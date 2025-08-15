@@ -48,15 +48,17 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   loadingPedidos = false;
   currentPedido: PedidoVenda | LinhasPedido | null = null;
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
+  localidadesMap: Map<string, string> = new Map();
 
   definition = [
-    new Column('Núm. do Pedido', 'DocNum'),
-    new Column('Cód. Cliente', 'CardCode'),
-    new Column('Nome Cliente', 'CardName'),
-    new Column('Cód. Item', 'ItemCode'),
-    new Column('Dsc. Item', 'Dscription'),
-    new Column('Quantidade', 'Quantity'),
-    new Column('Un. Medida', 'UomCode')
+      new Column('Núm. do Pedido', 'DocNum'),
+      new Column('Cód. Cliente', 'CardCode'),
+      new Column('Nome Cliente', 'CardName'),
+      new Column('Localidade', 'Localidade'), 
+      new Column('Cód. Item', 'ItemCode'),
+      new Column('Dsc. Item', 'Dscription'),
+      new Column('Quantidade', 'Quantity'),
+      new Column('Un. Medida', 'UomCode')
   ];
 
   ngOnInit(): void {
@@ -205,15 +207,39 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   // Modal
 
-  abrirModalItinerario() {
-  if (this.pedidos.length === 0) {
-    this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
-    return;
-  }
-  
-  this.pedidosOrdenados = [...this.pedidos];
-  this.showItinerarioModal = true;
-  }
+async abrirModalItinerario() {
+    if (this.pedidos.length === 0) {
+        this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
+        return;
+    }
+    
+    // Carrega as localidades primeiro
+    this.loading = true;
+    try {
+        // Criar um array de promessas para todas as localidades
+        const promises = this.pedidos.map(pedido => 
+            this.pedidosVendaService.searchLocalidade(20).toPromise()
+        );
+        
+        // Esperar todas as requisições terminarem
+        const results = await Promise.all(promises);
+        
+        // Mapear os resultados
+        results.forEach((res, index) => {
+            if (res.content && res.content.length > 0) {
+                this.localidadesMap.set(this.pedidos[index].CardCode, res.content[0].Name);
+            }
+        });
+        
+        // Agora pode abrir o modal
+        this.pedidosOrdenados = [...this.pedidos];
+        this.showItinerarioModal = true;
+    } catch (error) {
+        this.alertService.error('Erro ao carregar localidades: ' + error.message);
+    } finally {
+        this.loading = false;
+    }
+}
 
   onDragStart(event: DragEvent, index: number) {
     this.draggedItemIndex = index;

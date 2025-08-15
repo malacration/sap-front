@@ -47,6 +47,8 @@ export class PedidosVendaService implements DocumentService{
     return this.hppCliente.get(`${this.url}/search2?U_Ordem_Carregamento=${U_Ordem_Carregamento}`);
     }
 
-    
+    searchLocalidade(Code: number): Observable<any> {
+    return this.hppCliente.get(`${this.url}/search3?Code=${Code}`);
+}
 
 }
