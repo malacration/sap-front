@@ -22,7 +22,6 @@ export class CustoMecadoriaStatementComponent implements OnInit {
 
   ngOnInit(): void {
     let fatorSubProduto = 40
-    console.log(this.receita)
   }
 
   voltar(){

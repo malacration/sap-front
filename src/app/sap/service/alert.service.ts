@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, lastValueFrom } from 'rxjs';
 import { info } from 'console';
-import Swal, { SweetAlertResult } from 'sweetalert2';
+import Swal, { SweetAlertInput, SweetAlertOptions, SweetAlertResult } from 'sweetalert2';
 
 
 @Injectable({
@@ -28,6 +28,37 @@ export class AlertService {
             showCancelButton : true,
           })
     }
+
+    confirmWithInput(
+        text: string = 'Tem certeza? Informe um motivo:',
+        input: SweetAlertInput = 'text',
+        opts: Partial<SweetAlertOptions> = {}
+      ): Promise<SweetAlertResult<string>> {
+        return Swal.fire({
+          title: 'Atenção',
+          text,
+          icon: 'question',
+          input,                        // 'text' | 'textarea' | 'email' | 'number' | 'select' | 'radio' | 'password'
+          inputLabel: opts.inputLabel,
+          inputPlaceholder: opts.inputPlaceholder ?? 'Digite aqui...',
+          inputValue: opts.inputValue ?? '',
+          inputAttributes: { 'aria-label': 'Campo de motivo' },
+          showCancelButton: true,
+          confirmButtonText: 'Confirmar',
+          cancelButtonText: 'Cancelar',
+          reverseButtons: true,
+          // Validação simples (obrigatório)
+          preConfirm: (value) => {
+            if (!value || String(value).trim() === '') {
+              Swal.showValidationMessage('Este campo é obrigatório');
+              return false as any;
+            }
+            return value as any; // value vai para result.value
+          },
+          ...opts,
+        });
+      }
+      
 
     loading<T>(task: Promise<T> | Observable<T>) : Promise<T>{
         const swalInstance = Swal.fire({

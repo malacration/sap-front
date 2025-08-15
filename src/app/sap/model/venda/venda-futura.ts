@@ -30,7 +30,7 @@ export class VendaFutura {
     }
 
     isVerEntregas() : boolean{
-        return !this.entregaLoading && this.U_status == "aberto"
+        return !this.entregaLoading
     }
 
     getActions(): Action[] {
@@ -40,7 +40,7 @@ export class VendaFutura {
             this.isVerEntregas() ? 
                 new Action("Carregar Entregas", new ActionReturn("carregaEntregas",this)) 
                 : 
-                new Action("Carregando...", new ActionReturn("none",this)) 
+                new Action("Carregando...", new ActionReturn("none",this),"fa-solid fa-spinner fa-spin")
         ].filter(it => it != null)
     }
 

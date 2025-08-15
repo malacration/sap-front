@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 export class ModalComponent implements OnChanges, OnDestroy {
   
   @Input()
+  @Output()
   show = false
   
   @Output() showChange = new EventEmitter<boolean>();
@@ -31,6 +32,8 @@ export class ModalComponent implements OnChanges, OnDestroy {
   modalRef?: BsModalRef;
 
   subscriptions : Subscription
+
+  modalAtualizarCustos = false
 
   constructor(private modalService: BsModalService, private cdr: ChangeDetectorRef){
   }

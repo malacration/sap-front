@@ -1,9 +1,10 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
 import { RouteLink } from '../../../sap/model/route-link';
 import { formatCurrency } from '@angular/common';
 import { FormControl } from '@angular/forms';
+import { AlertService } from '../../../sap/service/alert.service';
 
 
 @Component({
@@ -32,7 +33,8 @@ export class TableComponent implements OnInit {
 
 
 
-  constructor(private elementRef: ElementRef) {}
+  constructor(private elementRef: ElementRef, private alertService: AlertService,
+    private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.tableColumns = this.definition.map(it => it.label);
@@ -123,8 +125,21 @@ export class TableComponent implements OnInit {
       item[definition.property+"Blur"]()
   }
 
-  processInputChange(item : any, definition : Column, value: any): void {
-    typeof item[definition.property] === 'function' ? item[definition.property](value) : item[definition.property] = value
+  processInputChange(item: any, definition: Column, value: any): void {
+    // 1) atualiza o "model"
+    if (typeof item[definition.property] === 'function') {
+      item[definition.property](value);
+    } else {
+      item[definition.property] = value;
+    }
+    const key = 'formControlFactory' + definition.property;
+    const fc = item[key] as FormControl | undefined;
+    if (fc) {
+      const viewValue = this.getValue(item, definition);
+      if (fc.value !== viewValue) {
+        fc.setValue(viewValue, { emitEvent: true });
+      }
+    }
   }
   
   evento(retorno : any){
@@ -137,6 +152,44 @@ export class TableComponent implements OnInit {
 
   trackByFn(index, response) {
     return index;
+  }
+
+  teste(column: Column) {
+    this.alertService
+      .confirmWithInput('Atenção, editando todos os valores da coluna '+column.label, 'text')
+      .then((res) => {
+        if (!res.isConfirmed) return;
+  
+        const raw = res.value;
+        const parsed = this.parseNumberLoose(raw);
+        const val: number | string =
+          parsed !== null ? parsed : String(raw ?? '');
+  
+        alert(this.content.length)
+        for (const item of this.content) {
+          this.processInputChange(item, column, val);
+        }
+  
+        this.cdr.markForCheck();
+      });
+  }
+
+  private parseNumberLoose(input: unknown): number | null {
+    if (input == null) return null;
+    if (typeof input === 'number') {
+      return Number.isFinite(input) ? input : null;
+    }
+    if (typeof input !== 'string') return null;
+  
+    let s = input.trim();
+    if (s === '') return null;
+  
+    // Normalização pt-BR: remove separadores de milhar e troca vírgula por ponto
+    // Ex.: "1.234,56" -> "1234.56"
+    s = s.replace(/,/g, '.');
+  
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
   }
 
 }

@@ -35,7 +35,6 @@ import { AuthService } from '../../../../../shared/service/auth.service';
   }
 
   action(event: ActionReturn) {
-    console.log(event);
     if(event.type == "selectedDocumentList"){
       this.selectedDocumentList = event.data;
     }

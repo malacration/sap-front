@@ -6,6 +6,7 @@ import { Observable, map } from "rxjs";
 import {LinhaItem, VendaFutura} from "../model/venda/venda-futura"
 import { PedidoRetirada } from "../model/venda/pedido-retirada";
 import { PedidoTroca } from "../model/venda/pedido-troca";
+import { FutureDeliverySales } from "../model/markting/future-delivery-sales";
 
 @Injectable({
     providedIn: 'root'
@@ -38,6 +39,15 @@ export class VendaFuturaService{
           return page;
         })
       );
+    }
+
+    getEntregas(docEntry: number): Observable<Array<FutureDeliverySales>> {
+      return this.http.get<Array<FutureDeliverySales>>(this.url + "/entregas/"+docEntry)
+        .pipe(
+          map((it) => {
+            return it.map(i => Object.assign(new FutureDeliverySales(), i));
+          })
+        );
     }
 
     cancelarConciliacao(docEntry) : Observable<string>{

@@ -38,7 +38,6 @@ export class MenuItemComponent implements OnInit {
 
     _isOpen = false
     public get isOpen() : boolean {
-        console.log("isopen",this._isOpen)
         this._isOpen = !this._isOpen
         return this._isOpen
     }

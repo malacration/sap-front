@@ -44,7 +44,9 @@
                 "./node_modules/admin-lte/build/scss/adminlte.scss"
               ]
             },
-            "scripts": [],
+            "scripts": [
+              "node_modules/@lgaitan/pace-progress/pace.min.js"
+            ],
             "customWebpackConfig": {
               "path": "./angular.webpack.js",
               "replaceDuplicatePlugins": true
@@ -153,7 +155,8 @@
             "inlineStyleLanguage": "scss",
             "scripts": [],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/@lgaitan/pace-progress/pace-theme-minimal.css"
             ],
             "assets": [
               "src/favicon.svg",

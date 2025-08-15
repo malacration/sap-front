@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
 import { Page } from '../model/page.model';
 import { Item } from '../model/item';
+import { LastPrice } from '../../modulos/calculadora-preco-venda/models/last-price';
 
 @Injectable({
   providedIn: 'root'

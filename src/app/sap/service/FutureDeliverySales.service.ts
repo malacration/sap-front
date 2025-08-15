@@ -14,16 +14,7 @@ export class FutureDeliverySalesService {
   constructor(private config : ConfigService, private hppCliente : HttpClient) {
       this.url = config.getHost()+"/future-sales"
   }
-
-  getByNotaFiscalSaida(docEntry: number): Observable<Array<FutureDeliverySales>> {
-    return this.hppCliente.get<Array<FutureDeliverySales>>(this.url + "/contrato-venda-futura/"+docEntry)
-      .pipe(
-        map((it) => {
-          return it.map(i => Object.assign(new FutureDeliverySales(), i));
-        })
-      );
-  }
-
+  
   getPedidosByContrato(docEntry: number): Observable<Array<FutureDeliverySales>> {
     return this.hppCliente.get<Array<FutureDeliverySales>>(this.url + "/pedidos/"+docEntry)
       .pipe(

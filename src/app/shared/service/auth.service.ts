@@ -37,6 +37,10 @@ export class AuthService {
       .pipe(map((response) => this.setToken(response))) 
   }
 
+  changePassword(password : String){
+    return this.http.post<Token>(`${this.apiUrl}/change-password`,password)
+  }
+
   getDecodeToken() {
     return JSON.parse(window.atob(this.getToken().split('.')[1]));
   }

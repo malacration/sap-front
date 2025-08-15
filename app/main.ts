@@ -41,9 +41,6 @@ function createWindow(): BrowserWindow {
   if(!modoOperacao)
     modoOperacao = "external"
 
-  console.log("host: ",host)
-  console.log("modoOperacao",modoOperacao)
-  console.log("args",args)
   
   loadAngular(win)
   

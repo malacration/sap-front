@@ -59,7 +59,6 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
       this.loadingBoletos = false;
-      console.log(this.boletos)
     });
 
 
@@ -68,7 +67,7 @@ export class VendaFuturaSingleComponent implements OnInit {
       it.produtoEntregueLoading = true;
     });
     
-    this.futureDeliverySalesService.getByNotaFiscalSaida(this.selected.DocEntry).subscribe(response => {
+    this.vendaFuturaService.getEntregas(this.selected.DocEntry).subscribe(response => {
       this.entregas = response.flatMap(entrega => 
         entrega.DocumentLines.map(line => {
           return Object.assign(new DocumentLines(), line, entrega)
@@ -146,7 +145,6 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.alertService.confirm("Deseja encerrar o contrato?").then(it => {
       if(it.isConfirmed){
         this.alertService.loading(this.vendaFuturaService.encerrarContrato(this.selected.DocEntry)).then( it =>{
-          console.log("segundo");
           this.alertService.info("Contrato encerrado com sucesso.");
         })
       }
