@@ -3,6 +3,7 @@ import { HttpClient } from "@angular/common/http"
 import { Observable, map, of } from "rxjs"
 import { Produto } from "../models/produto"
 import { ConfigService } from "../../../core/services/config.service"
+import { LastPrice } from "../models/last-price"
 
 
 @Injectable({
@@ -63,6 +64,10 @@ import { ConfigService } from "../../../core/services/config.service"
         console.error('Erro ao parsear JSON do localStorage:', error);
         return of([]); // Em caso de erro no JSON, retorna um array vazio
       }
-    
+  }
+
+  getLastPrice(itemCode) : Observable<Array<LastPrice>>{
+    return this.hppCliente
+      .get<Array<LastPrice>>(this.url+"/last-price/"+itemCode)
   }
 }

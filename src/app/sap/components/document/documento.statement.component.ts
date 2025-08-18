@@ -63,7 +63,6 @@ export class DocumentStatementComponent implements OnInit {
   }
   
   changeFormaPagamento($event){
-    console.log($event)
     this.formaPagamento = $event
   }
 

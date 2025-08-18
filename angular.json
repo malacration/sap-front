@@ -44,7 +44,9 @@
                 "./node_modules/admin-lte/build/scss/adminlte.scss"
               ]
             },
-            "scripts": [],
+            "scripts": [
+
+            ],
             "customWebpackConfig": {
               "path": "./angular.webpack.js",
               "replaceDuplicatePlugins": true

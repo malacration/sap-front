@@ -18,12 +18,19 @@ import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
+import { ChangePassowrd } from './shared/components/change-password/change-password.component';
 
  let routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',
+  },
+  {
+    path: 'change-passowrd',
+    title: 'Trocar Senha',
+    data: ["hidden"],
+    component: ChangePassowrd
   },
   {
     path: 'home',
@@ -149,13 +156,14 @@ import { ReprocessamentoComponent } from './modulos/producao/componentes/reproce
     ]
   },
   {
-    title: 'Producao',
+    title: 'Produção',
     path: 'producao',
+    data: ["icon:fa-brands fa-product-hunt"],
     component: ReprocessamentoComponent,
   },
   {
     title: 'Calculadora',
-    path: 'statment-calc',
+    path: 'statement-calc',
     component: CalculadoraStatementComponent,
   },
   {

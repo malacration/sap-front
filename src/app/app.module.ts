@@ -106,6 +106,9 @@ import { DescontoComponent } from './sap/components/document/desconto/desconto.c
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
+import { LoadingBarModule } from '@ngx-loading-bar/core';
+import { LoadingBarRouterModule } from '@ngx-loading-bar/router';
+import { LoadingBarHttpClientModule } from '@ngx-loading-bar/http-client';
 
 
 registerLocaleData(localeBr);
@@ -185,7 +188,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
-    
+    LoadingBarModule,
+    LoadingBarRouterModule,      // barra em navegação de rotas
+    LoadingBarHttpClientModule,  // barra em requisições HttpClient
     AppRoutingModule,
     ToastrModule.forRoot({
       timeOut: 3000,

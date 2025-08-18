@@ -83,7 +83,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
 
   carregaEntregas(vendaFutura : VendaFutura){
     vendaFutura.entregaLoading = true
-    this.futureDeliverySalesService.getByNotaFiscalSaida(vendaFutura.DocEntry).subscribe(notas => {
+    this.service.getEntregas(vendaFutura.DocEntry).subscribe(notas => {
       vendaFutura.entregas = notas
       vendaFutura.entregaLoading = false
     })

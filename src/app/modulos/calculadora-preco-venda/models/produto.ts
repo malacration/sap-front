@@ -27,6 +27,7 @@ export class Produto{
   creditoTaxaPisCofinsPercentEditable = 0
   debitoTaxaPisCofinsPercentEditable = 0
   qtdPlanejada : number = 1
+  DefaultWareHouse : string
 
   _custoMateriaPrimaEditable : number
 
@@ -66,7 +67,6 @@ export class Produto{
   }
 
   getSacoTon() : number{
-    console.log(this.KgsPorUnidade, this.ItemCode+" ")
     return this.TONELADA.div(new Big(this.KgsPorUnidade)).toNumber().toFixed(2, Big.roundHalfUp);
   }
 
@@ -89,6 +89,21 @@ export class Produto{
   getCustoGgfToneladaCurrency() : number{
     return this.TONELADA.times(this.CustoGgf).toNumber()
   }
+  
+  custoGgfTonelada = null
+
+  get custoGgfToneladaEditable() : number{
+    if(this.custoGgfTonelada)
+      return this.custoGgfTonelada
+    else
+      return this.getCustoGgfToneladaCurrency()
+    
+  }
+
+  set custoGgfToneladaEditable(valor : number){
+    this.custoGgfTonelada = valor
+  }
+
 
   getMargemCurrency() : number{
     return this.margemPercentEditable*(

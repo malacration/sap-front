@@ -1,0 +1,16 @@
+<div class="progress w-100" [ngStyle]="{ height: height }" aria-label="Progresso">
+  <div
+    [ngClass]="progressBarClasses"
+    role="progressbar"
+    [style.width.%]="percent"
+    [attr.aria-valuenow]="percent"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  >
+    <ng-container *ngIf="showText">{{ percent | number: '1.0-0' }}%</ng-container>
+  </div>
+</div>
+
+<div class="small text-muted mt-1" *ngIf="showCounter">
+  {{ current }} / {{ total }}
+</div>

@@ -19,6 +19,8 @@ import { PercentageDirective } from './directives/percentage.directive';
 import { CurrencyDirective } from './directives/curency.directive copy';
 import { PaginacaoComponent } from './components/paginacao/paginacao.component';
 import { ModalComponent } from './components/modal/modal.component';
+import { ChangePassowrd } from './components/change-password/change-password.component';
+import { ProgressBarComponent } from './components/progress-bar/progress-bar.component';
 
 @NgModule({
   providers: [
@@ -27,6 +29,7 @@ import { ModalComponent } from './components/modal/modal.component';
   ],
   declarations: [
     PageNotFoundComponent, 
+    ProgressBarComponent,
     WebviewDirective,
     TableComponent,
     ActionComponent,
@@ -35,7 +38,8 @@ import { ModalComponent } from './components/modal/modal.component';
     PercentageDirective,
     CurrencyDirective,
     PaginacaoComponent,
-    ModalComponent
+    ModalComponent,
+    ChangePassowrd
   ],
   imports: [
     CommonModule, 
@@ -58,7 +62,9 @@ import { ModalComponent } from './components/modal/modal.component';
     CurrencyDirective,
     PaginacaoComponent,
     ModalComponent,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ProgressBarComponent,
+    ChangePassowrd
   ]
 })
 export class SharedModule {}

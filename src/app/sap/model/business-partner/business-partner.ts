@@ -80,8 +80,6 @@ export class BusinessPartner implements Actiable{
     }
 
     getAddressesByAddressName(addressName : BPAddress) : BPAddress{
-        console.log("Busca: ", addressName.AddressName)
-        console.log(this.BPAddresses)
         return this.BPAddresses.find(it => it.AddressName == addressName.AddressName)
     }
 

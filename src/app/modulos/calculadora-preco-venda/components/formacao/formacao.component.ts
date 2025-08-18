@@ -4,6 +4,11 @@ import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { ItemService } from '../../../../sap/service/item.service';
+import { LastPrice } from '../../models/last-price';
+import { Observable, concat, finalize, tap } from 'rxjs';
+import { CalculadoraService } from '../../service/calculadora.service';
+import { AlertService } from '../../../../sap/service/alert.service';
 
 @Component({
   selector: 'formacao-preco',
@@ -11,12 +16,17 @@ import { ActionReturn } from '../../../../shared/components/action/action.model'
 })
 export class FormacaoPrecoStatementComponent implements OnInit {
   
-  constructor(private cdRef: ChangeDetectorRef){
+  constructor(
+    private cdRef: ChangeDetectorRef,
+    private service : CalculadoraService,
+    private alertService : AlertService
+    ){
 
   }
 
   @ViewChild('custoMercadoria', {static: true}) custoModal: ModalComponent;
   @ViewChild('modalAdicionarItem', {static: true}) adicionarItemModal: ModalComponent;
+  @ViewChild('modalAtualizaCustosAcabado', {static: true}) modalAtualizaCustosAcabado: ModalComponent;
   
 
   @Input()
@@ -28,6 +38,7 @@ export class FormacaoPrecoStatementComponent implements OnInit {
   qtdPlanejada = 1
   
   uniqueIngredients : Map<string, Produto> = new Map<string, Produto>()
+  showModalAtualizaCustosAcabado = false
 
   ngOnInit(): void {
     let fatorSubProduto = 40
@@ -41,16 +52,70 @@ export class FormacaoPrecoStatementComponent implements OnInit {
     return this.analise.produtos[0].useCustoSap
   }
 
- 
-
   modalChangeCustos($event){
     this.groupUniqueIngredients()
     this.custoModal.openModal()
   }
 
-  modelAdicioanrItem($event){
+  modalAdicioanrItem($event){
     this.adicionarItemModal.openModal()
   }
+
+  modalAtualizarCustos($event){
+    this.totalProgressBar = this.analise.produtos.length
+    this.showModalAtualizaCustosAcabado = true
+  }
+
+  tipoCustosAcabado = "-1"
+  loadingCustosAcabado = false
+  totalProgressBar = 0
+  currentProgressBar = 0
+  
+  atualizaCustosAcabado(){
+    this.loadingCustosAcabado = true
+    this.totalProgressBar = this.analise.produtos.length
+    this.cdRef.detectChanges()
+    
+
+    if(this.tipoCustosAcabado == "-1"){
+      this.loadingCustosAcabado = false
+      return this.alertService.error("Informe um tipo de custo")
+    }
+
+    const requests: Observable<LastPrice[]>[] = this.analise.produtos.map(produto =>
+      this.service.getLastPrice(produto.ItemCode).pipe(
+        tap((result: LastPrice[]) => {
+          if(this.tipoCustosAcabado == 'precoAnalisado'){
+            produto.CustoMateriaPrimaCurrency = result[0]?.LstEvlPric ?? 0; 
+          }
+          else if(this.tipoCustosAcabado == 'precoCompra'){
+            produto.CustoMateriaPrimaCurrency = result[0]?.LastPurPrc ?? 0;
+          }
+            this.currentProgressBar++;
+        })
+      )
+    );
+
+    concat(...requests)
+      .pipe(
+        finalize(() => {
+          this.loadingCustosAcabado = false;
+          this.showModalAtualizaCustosAcabado = false
+          this.currentProgressBar = 0
+        })
+      )
+      .subscribe({
+        next: result => {
+          // caso precise processar o resultado de cada requisição
+        },
+        error: err => {
+          console.error('Erro ao buscar preços', err);
+          this.loadingCustosAcabado = false;
+        }
+      });
+  }
+
+
   
   changePage($event){
     this.page = $event
@@ -163,7 +228,7 @@ export class FormacaoPrecoStatementComponent implements OnInit {
     new Column('(%) Perdas', 'perdasPercentEditable'),
     new Column('Perdas', 'getPerdasCurrency'), //Reduzido pelo percentual de credito do pis e cofins
 
-    new Column('GGF/TON', 'getCustoGgfToneladaCurrency'),
+    new Column('GGF/TON', 'custoGgfToneladaEditable'),
     //Margem
     new Column('(%) Margem', 'margemPercentEditable'),
     new Column('Margem', 'getMargemCurrency'),

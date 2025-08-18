@@ -22,7 +22,6 @@ export class UserService {
     if (user) {
       user.role = role; 
     }
-    console.log(`Atribuindo a função ${role} ao usuário ${userId}`);
     return of({ success: true });
   }
 }
