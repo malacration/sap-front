@@ -96,6 +96,26 @@ export class VendaFuturaSingleComponent implements OnInit {
     })
   }
 
+  loadingCriaBoletos = false
+  confirmEmitirBoletos(){
+    this.loadingCriaBoletos = true
+    this.alertService.confirm("Emitir os boletos é uma ação irrevercivel, tem certeza que deseja continuar?")
+    .then(it => {
+      if(it.isConfirmed){
+        this.vendaFuturaService.emitirBoletos(this.selected.DocEntry).subscribe({
+          next(value) {
+            this.alertService.info("Boleto Criado com sucesso")
+          },
+          complete() {
+            this.loadingCriaBoletos = false    
+          }
+        })
+      }else{
+        this.loadingCriaBoletos = false
+      }
+    })
+  }
+
   voltar(){
     this.close.emit()
   }

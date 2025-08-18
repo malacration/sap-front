@@ -77,4 +77,8 @@ export class VendaFuturaService{
       return this.http.post<any>(this.url+"/pedido-retirada",body)
     }
 
+    emitirBoletos(docEntry : number){
+      return this.http.get<any>(this.url+"/emitir-boletos/"+docEntry)
+    }
+
 }

@@ -45,7 +45,7 @@
               ]
             },
             "scripts": [
-              "node_modules/@lgaitan/pace-progress/pace.min.js"
+
             ],
             "customWebpackConfig": {
               "path": "./angular.webpack.js",
@@ -155,8 +155,7 @@
             "inlineStyleLanguage": "scss",
             "scripts": [],
             "styles": [
-              "src/styles.scss",
-              "node_modules/@lgaitan/pace-progress/pace-theme-minimal.css"
+              "src/styles.scss"
             ],
             "assets": [
               "src/favicon.svg",

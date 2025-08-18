@@ -156,8 +156,9 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
     ]
   },
   {
-    title: 'Producao',
+    title: 'Produção',
     path: 'producao',
+    data: ["icon:fa-brands fa-product-hunt"],
     component: ReprocessamentoComponent,
   },
   {
