@@ -30,11 +30,12 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.relatoriosSalvos = this.getList()
-
     this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, "id", id => {
       this.produtoSelecionado = this.analiseSelected?.produtos.find(it => it.ItemCode == id)
-      if(!this.produtoSelecionado)
+      if(!this.produtoSelecionado){
         this.parameterService.removeParam(this.route, "id")
+        this.produtoSelecionado = null
+      }
     })
   }
 

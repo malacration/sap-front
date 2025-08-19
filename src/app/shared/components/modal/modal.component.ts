@@ -35,7 +35,9 @@ export class ModalComponent implements OnChanges, OnDestroy {
 
   modalAtualizarCustos = false
 
-  constructor(private modalService: BsModalService, private cdr: ChangeDetectorRef){
+  constructor(
+    private modalService: BsModalService, 
+    private cdr: ChangeDetectorRef){
   }
   
   ngOnDestroy(): void {
@@ -75,5 +77,9 @@ export class ModalComponent implements OnChanges, OnDestroy {
     if (modalContent) {
       modalContent.scrollTop = modalContent.scrollHeight;
     }
+  }
+
+  forceDetectChanges(){
+    this.cdr.detectChanges()
   }
 }

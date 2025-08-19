@@ -11,21 +11,13 @@
                         <label class="custom-control-label" for="all">Custo Saco (media)?</label>
                     </div>
                 </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary" (click)="modalChangeCustos($event)">Modificar Custos Materia Prima</button>
+                <div class="col-auto">
+                    <div class="btn-group">
+                        <button class="btn btn-default" (click)="modalChangeCustos($event)">Custos Materia Prima</button>
+                        <button class="btn btn-default" (click)="modalAdicioanrItem($event)">Adicionar Itens</button>
+                        <button class="btn btn-default" (click)="modalAtualizarCustos($event)">Atualizar Custo (media)</button>
+                    </div>
                 </div>
-                <div class="col-sm">
-                    <button class="btn btn-primary" (click)="modalAdicioanrItem($event)">Adicionar Itens</button>
-                </div>
-                
-                <!-- <div class="col-sm">
-                    <button class="btn btn-primary" (click)="modelAdicioanrItem($event)">Editar GGF</button>
-                </div> -->
-
-                <div class="col-sm">
-                    <button class="btn btn-primary" (click)="modalAtualizarCustos($event)">Atualizar Custo (media)</button>
-                </div>
-
                 <label for="pageSize" class="col-auto col-form-label">Itens por pagina</label>
                 <div class="col-1">
                     <input class="form-control" type="number" id="pageSize" [(ngModel)]="pageSize">
@@ -55,7 +47,7 @@
 
 <app-modal #custoMercadoria 
     [title]="'Custo das mateiras prima'"> 
-    <app-table [content]="getArrayUniqueIngredients()" [definition]="materiaCustoDefinition">
+    <app-table #table [content]="getArrayUniqueIngredients()" [definition]="materiaCustoDefinition">
 
     </app-table>
     <hr>
@@ -71,22 +63,26 @@
 
 
 
-<app-modal modalAtualizaCustosAcabado
-    [(show)]="showModalAtualizaCustosAcabado"
-    [title]="'Custo dos Produtos Acabado'">
-    <div *ngIf="!loadingCustosAcabado" class="row">
+<app-modal modalAtualizaCustos
+    [(show)]="showModalAtualizaCustos"
+    [title]="'Atualizar Custos'">
+    <div *ngIf="!loadingCustos" class="row">
         <label for="tipoCustosAcabado">Origem Custo</label>
         <select class="form-control" name="tipoCustosAcabado" [(ngModel)]="tipoCustosAcabado">
             <option value="-1" selected disabled>Selecione</option>
             <option value="precoAnalisado">Ultimo Preço Analisado</option>
             <option value="precoCompra">Ultimpo Preço de Compra</option>
+            <option value="precoContabil">Custo Contabil</option>
         </select>
     </div>
     <hr>
-    <div *ngIf="!loadingCustosAcabado" class="row">
-        <button (click)="atualizaCustosAcabado()" [disabled]="loadingCustosAcabado" class="btn btn-primary">Confrimar</button>
+    <div *ngIf="!loadingCustos" class="row">
+        <div class="btn-group">
+            <button (click)="atualizaCustosAcabado()" [disabled]="loadingCustos" class="btn btn-default">Produto Acabado</button>
+            <button (click)="atualizaCustosMateriaPrima()" [disabled]="loadingCustos" class="btn btn-default">Materia Prima</button>
+        </div>
     </div>
-    <div class="row" *ngIf="loadingCustosAcabado">
+    <div class="row" *ngIf="loadingCustos">
         <app-progress-bar [total]="totalProgressBar" [current]="currentProgressBar" ></app-progress-bar>
     </div>
 </app-modal>
