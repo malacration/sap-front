@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -9,12 +9,13 @@ import { LastPrice } from '../../models/last-price';
 import { Observable, concat, finalize, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
 import { AlertService } from '../../../../sap/service/alert.service';
+import { TableComponent } from '../../../../shared/components/table/table.component';
 
 @Component({
   selector: 'formacao-preco',
   templateUrl: './formacao.component.html',
 })
-export class FormacaoPrecoStatementComponent implements OnInit {
+export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   
   constructor(
     private cdRef: ChangeDetectorRef,
@@ -26,8 +27,9 @@ export class FormacaoPrecoStatementComponent implements OnInit {
 
   @ViewChild('custoMercadoria', {static: true}) custoModal: ModalComponent;
   @ViewChild('modalAdicionarItem', {static: true}) adicionarItemModal: ModalComponent;
-  @ViewChild('modalAtualizaCustosAcabado', {static: true}) modalAtualizaCustosAcabado: ModalComponent;
-  
+  @ViewChild('modalAtualizaCustos', {static: true}) modalAtualizaCustos: ModalComponent;
+
+  @ViewChild('table', {static: true}) table: TableComponent;
 
   @Input()
   analise : Analise
@@ -38,10 +40,15 @@ export class FormacaoPrecoStatementComponent implements OnInit {
   qtdPlanejada = 1
   
   uniqueIngredients : Map<string, Produto> = new Map<string, Produto>()
-  showModalAtualizaCustosAcabado = false
+  showModalAtualizaCustos = false
 
   ngOnInit(): void {
     let fatorSubProduto = 40
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(this.analise)
+      this.groupUniqueIngredients()
   }
 
   onToggleCustoSap(){
@@ -53,7 +60,6 @@ export class FormacaoPrecoStatementComponent implements OnInit {
   }
 
   modalChangeCustos($event){
-    this.groupUniqueIngredients()
     this.custoModal.openModal()
   }
 
@@ -63,34 +69,66 @@ export class FormacaoPrecoStatementComponent implements OnInit {
 
   modalAtualizarCustos($event){
     this.totalProgressBar = this.analise.produtos.length
-    this.showModalAtualizaCustosAcabado = true
+    this.showModalAtualizaCustos = true
   }
 
   tipoCustosAcabado = "-1"
-  loadingCustosAcabado = false
+  loadingCustos = false
   totalProgressBar = 0
   currentProgressBar = 0
   
   atualizaCustosAcabado(){
-    this.loadingCustosAcabado = true
+    this.loadingCustos = true
     this.totalProgressBar = this.analise.produtos.length
     this.cdRef.detectChanges()
     
 
     if(this.tipoCustosAcabado == "-1"){
-      this.loadingCustosAcabado = false
+      this.loadingCustos = false
       return this.alertService.error("Informe um tipo de custo")
     }
 
     const requests: Observable<LastPrice[]>[] = this.analise.produtos.map(produto =>
-      this.service.getLastPrice(produto.ItemCode).pipe(
+      this.service.getLastPrice(produto.ItemCode,produto.DefaultWareHouse).pipe(
         tap((result: LastPrice[]) => {
-          if(this.tipoCustosAcabado == 'precoAnalisado'){
-            produto.CustoMateriaPrimaCurrency = result[0]?.LstEvlPric ?? 0; 
-          }
-          else if(this.tipoCustosAcabado == 'precoCompra'){
-            produto.CustoMateriaPrimaCurrency = result[0]?.LastPurPrc ?? 0;
-          }
+          produto.CustoMateriaPrimaCurrency = this.getByTipoCustosAcabado(result[0])
+          this.currentProgressBar++;
+        })
+      )
+    );
+
+    concat(...requests)
+      .pipe(
+        finalize(() => {
+          this.loadingCustos = false;
+          this.showModalAtualizaCustos = false
+          this.currentProgressBar = 0
+        })
+      )
+      .subscribe();
+  }
+
+  atualizaCustosMateriaPrima(){
+    this.loadingCustos = true
+    const ingredientes = this.getArrayUniqueIngredients();
+    this.totalProgressBar = ingredientes.length
+    this.cdRef.detectChanges()
+    
+
+    if(this.tipoCustosAcabado == "-1"){
+      this.loadingCustos = false
+      return this.alertService.error("Informe um tipo de custo")
+    }
+
+    const requests: Observable<LastPrice[]>[] = ingredientes.map(produto =>
+      this.service.getLastPrice(produto.ItemCode, produto.DefaultWareHouse).pipe(
+        tap((result: LastPrice[]) => {
+          this.analise.produtos.forEach(acabado => {
+            acabado.Ingredientes
+              .filter(ingrediente => ingrediente.ItemCode == produto.ItemCode).forEach(ingrediente =>{
+                ingrediente._custoMateriaPrimaEditable = this.getByTipoCustosAcabado(result[0])
+            })
+          })
             this.currentProgressBar++;
         })
       )
@@ -99,22 +137,28 @@ export class FormacaoPrecoStatementComponent implements OnInit {
     concat(...requests)
       .pipe(
         finalize(() => {
-          this.loadingCustosAcabado = false;
-          this.showModalAtualizaCustosAcabado = false
+          this.loadingCustos = false;
+          this.showModalAtualizaCustos = false
           this.currentProgressBar = 0
+          this.groupUniqueIngredients()
+          this.cdRef.detectChanges()
+          this.custoModal.forceDetectChanges()
+          this.table.forceDetectChanges()
         })
       )
-      .subscribe({
-        next: result => {
-          // caso precise processar o resultado de cada requisição
-        },
-        error: err => {
-          console.error('Erro ao buscar preços', err);
-          this.loadingCustosAcabado = false;
-        }
-      });
+      .subscribe();
   }
 
+
+  getByTipoCustosAcabado(lastPrice : LastPrice | undefined) : number{
+    if(this.tipoCustosAcabado == 'precoAnalisado'){
+      return lastPrice?.LstEvlPric ?? 0; 
+    }
+    else if(this.tipoCustosAcabado == 'precoCompra'){
+      return lastPrice?.LastPurPrc ?? 0;
+    }
+    return lastPrice?.AvgPrice ?? 0;
+  }
 
   
   changePage($event){
@@ -131,19 +175,18 @@ export class FormacaoPrecoStatementComponent implements OnInit {
   groupUniqueIngredients(){
     this.analise.produtos.forEach(produto => {
       produto.Ingredientes.forEach(ingrediente => {
-        if (!this.uniqueIngredients.has(ingrediente.ItemCode)) {
           let produto = new Produto()
           produto.ItemCode = ingrediente.ItemCode
           produto.Descricao = ingrediente.Descricao
           produto.custoMateriaPrimaCurrencyEditable = ingrediente.custoMateriaPrimaCurrencyEditable
+          produto.DefaultWareHouse = ingrediente.DefaultWareHouse
           this.uniqueIngredients.set(ingrediente.ItemCode, produto);
-        }
       });
     });
   }
 
-  getArrayUniqueIngredients(){
-    return Array.from(this.uniqueIngredients.values());
+  getArrayUniqueIngredients() : Array<Produto>{
+    return [...Array.from(this.uniqueIngredients.values())];
   }
 
   changeCustoAllProdutos(){

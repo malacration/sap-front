@@ -9,7 +9,7 @@ import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
 import { AlertService } from '../../../service/alert.service';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
-import { delay, of } from 'rxjs';
+import { Observable, delay, of } from 'rxjs';
 
 
 
@@ -201,3 +201,4 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Total', 'totalLinhaCurrency'),
   ];
 }
+

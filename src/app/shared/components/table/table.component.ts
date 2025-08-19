@@ -192,4 +192,8 @@ export class TableComponent implements OnInit {
     return Number.isFinite(n) ? n : null;
   }
 
+  forceDetectChanges(){
+    this.cdr.detectChanges()
+  }
+
 }

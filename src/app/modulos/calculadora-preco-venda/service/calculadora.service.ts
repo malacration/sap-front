@@ -66,8 +66,8 @@ import { LastPrice } from "../models/last-price"
       }
   }
 
-  getLastPrice(itemCode) : Observable<Array<LastPrice>>{
+  getLastPrice(itemCode, DefaultWareHouse) : Observable<Array<LastPrice>>{
     return this.hppCliente
-      .get<Array<LastPrice>>(this.url+"/last-price/"+itemCode)
+      .get<Array<LastPrice>>(this.url+"/last-price/"+itemCode+"/"+DefaultWareHouse)
   }
 }
