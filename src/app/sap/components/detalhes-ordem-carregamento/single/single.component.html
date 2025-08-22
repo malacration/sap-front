@@ -197,6 +197,7 @@
                     <th>Ordem</th>
                     <th>Núm. Pedido</th>
                     <th>Cliente</th>
+                    <th>Endereço</th>
                     <th>Localidade</th>
                     <th>Item</th>
                     <th>Quantidade</th>
@@ -214,6 +215,7 @@
                     <td>{{i + 1}}</td>
                     <td>{{pedido.DocNum}}</td>
                     <td>{{pedido.CardName}}</td>
+                    <td>{{pedido.Address2}}</td>
                     <td>{{localidadesMap.get(pedido.CardCode) || 'Não informado'}}</td>
                     <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
                     <td>{{pedido.Quantity}}</td>

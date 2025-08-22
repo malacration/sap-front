@@ -267,6 +267,7 @@ export class PedidoVenda{
   UomCode : string
   ClosingRemarks : string
   AttachmentEntry : number
+  Address2 : string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
