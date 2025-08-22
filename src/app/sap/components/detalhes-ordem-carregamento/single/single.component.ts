@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Column } from '../../../../shared/components/table/column.model';
 import { AlertService } from '../../../service/alert.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
@@ -10,6 +10,7 @@ import { PedidosVendaService } from '../../../service/document/pedidos-venda.ser
 import { InvoiceGenerationService } from '../../../service/invoice-generation.service';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { LinhasPedido, PedidoVenda } from '../../document/documento.statement.component';
+import { ItinerarioPdfComponent } from '../itinerario-pdf/itinerario-pdf.component';
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -49,6 +50,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   currentPedido: PedidoVenda | LinhasPedido | null = null;
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
   localidadesMap: Map<string, string> = new Map();
+
+  @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
 
   definition = [
       new Column('Núm. do Pedido', 'DocNum'),
@@ -205,9 +208,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     });
   }
 
-  // Modal
-
-async abrirModalItinerario() {
+  async abrirModalItinerario() {
     if (this.pedidos.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
         return;
@@ -239,7 +240,7 @@ async abrirModalItinerario() {
     } finally {
         this.loading = false;
     }
-}
+  }
 
   onDragStart(event: DragEvent, index: number) {
     this.draggedItemIndex = index;
@@ -281,9 +282,8 @@ async abrirModalItinerario() {
     this.pedidosOrdenados = [...this.pedidos];
   }
 
-  gerarPDFItinerario() {
-    console.log('Itinerário ordenado:', this.pedidosOrdenados);
-    this.alertService.confirm('PDF gerado com sucesso (simulado)');
-    this.showItinerarioModal = false;
+  gerarPDF() {
+    const headContent = document.head.innerHTML;
+    this.itinerarioPdfComponent.gerarPdf(headContent);
   }
 }
