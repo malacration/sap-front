@@ -46,6 +46,23 @@
         >
           Gerar Itinerário
         </button>
+
+        <button
+          (click)="abrirModalAdicionarPedidos()"
+          type="button"
+          class="btn btn-warning btn-sm"
+          style="margin-left: 8px;"
+          [disabled]="selected.U_Status === 'Fechado' || selected.U_Status === 'Cancelado'"
+          [title]="
+            selected.U_Status === 'Fechado'
+              ? 'Esta ordem já foi fechada'
+              : selected.U_Status === 'Cancelado'
+              ? 'Esta ordem foi cancelada'
+              : ''
+          "
+        >
+          Adicionar Pedidos
+        </button>
       </div>
     </div>
     <div class="card-body">
@@ -367,6 +384,160 @@
     >
       <span *ngIf="!loadingCancelamento">Cancelar Pedidos Selecionados</span>
       <span *ngIf="loadingCancelamento"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
+    </button>
+  </div>
+</app-modal>
+<!--- Pedidos a Ordem -->
+<!-- Adicionar este modal após os outros modais existentes -->
+<app-modal [(show)]="showAdicionarPedidosModal" [title]="'Adicionar Pedidos à Ordem'" [modalSize]="'xl'">
+  <div class="modal-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> Selecione os pedidos que deseja adicionar a esta ordem de carregamento.
+    </div>
+    
+    <!-- Filtros -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <div class="form-group">
+          <label>Data Inicial</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroDataInicial">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label>Data Final</label>
+          <input type="date" class="form-control" [(ngModel)]="filtroDataFinal">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label>Filial</label>
+          <app-branch-select (selectedOut)="selectBranchFiltro($event)"></app-branch-select>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-group">
+          <label>Localidade</label>
+          <app-localidade-search (selected)="selectLocalidadeFiltro($event)"></app-localidade-search>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Pesquisar por número do pedido, cliente ou item..." 
+            [(ngModel)]="filtroPesquisaAdicionar"
+            (input)="filtrarPedidosDisponiveis()"
+          >
+          <button 
+            class="btn btn-outline-secondary" 
+            type="button" 
+            (click)="limparFiltroAdicionar()"
+            [disabled]="!filtroPesquisaAdicionar"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="selectAllDisponiveis" 
+                 [(ngModel)]="selectAllDisponiveis" 
+                 (change)="toggleSelectAllDisponiveis()"
+                 [disabled]="pedidosDisponiveisFiltrados.length === 0">
+          <label class="form-check-label" for="selectAllDisponiveis">
+            Selecionar Todos os Pedidos Visíveis
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th width="50px"></th>
+            <th>Núm. Pedido</th>
+            <th>Cliente</th>
+            <th>Localidade</th>
+            <th>Item</th>
+            <th>Quantidade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pedido of pedidosDisponiveisFiltrados" 
+              [class.table-active]="pedido.selected"
+              (click)="toggleSelecaoPedidoDisponivel(pedido, $event)">
+            <td (click)="$event.stopPropagation()">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="pedido.selected" 
+                (change)="verificarSelecaoTotalDisponiveis()"
+                (click)="$event.stopPropagation()"
+              >
+            </td>
+            <td>
+              <span class="badge bg-primary">{{ pedido.DocNum }}</span>
+            </td>
+            <td>{{ pedido.CardName }}</td>
+            <td>{{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</td>
+            <td>{{ pedido.ItemCode }} - {{ pedido.Dscription }}</td>
+            <td>{{ pedido.Quantity }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': pedido.U_Status === 'Aberto',
+                'badge-danger': pedido.U_Status === 'Cancelado',
+                'badge-warning': pedido.U_Status === 'Faturado'
+              }">
+                {{ pedido.U_Status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="pedidosDisponiveisFiltrados.length === 0" class="text-center text-muted p-4">
+      <i class="fas fa-search fa-2x mb-2"></i>
+      <p>Nenhum pedido encontrado para os filtros aplicados</p>
+    </div>
+
+    <div *ngIf="pedidosSelecionadosAdicionar.length > 0" class="alert alert-warning mt-3">
+      <strong>{{ pedidosSelecionadosAdicionar.length }} pedido(s) selecionado(s) para adicionar</strong>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <div class="me-auto">
+      <span class="text-muted">
+        {{ pedidosDisponiveisFiltrados.length }} de {{ pedidosDisponiveis.length }} pedidos visíveis
+      </span>
+    </div>
+    <button type="button" class="btn btn-secondary" (click)="fecharModalAdicionarPedidos()">Fechar</button>
+    <button 
+      type="button" 
+      class="btn btn-success" 
+      (click)="aplicarFiltros()"
+      [disabled]="!isFiltroValido()"
+    >
+      Aplicar Filtros
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-primary" 
+      (click)="confirmarAdicaoPedidos()"
+      [disabled]="pedidosSelecionadosAdicionar.length === 0 || loadingAdicionarPedidos"
+    >
+      <span *ngIf="!loadingAdicionarPedidos">Adicionar Pedidos Selecionados</span>
+      <span *ngIf="loadingAdicionarPedidos"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
     </button>
   </div>
 </app-modal>

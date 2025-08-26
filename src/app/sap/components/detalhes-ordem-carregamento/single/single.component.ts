@@ -11,6 +11,11 @@ import { InvoiceGenerationService } from '../../../service/invoice-generation.se
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { LinhasPedido, PedidoVenda } from '../../document/documento.statement.component';
 import { ItinerarioPdfComponent } from '../itinerario-pdf/itinerario-pdf.component';
+import { Branch } from '../../../model/branch';
+import { Localidade } from '../../../model/localidade/localidade';
+import { NextLink } from '../../../model/next-link';
+import { OrderSalesService } from '../../../service/document/order-sales.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -24,7 +29,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     private invoiceGenerationService: InvoiceGenerationService,
     private businessPartnerService: BusinessPartnerService,
     private pedidosVendaService: PedidosVendaService,
-    private carregamentoService: OrdemCarregamentoService
+    private carregamentoService: OrdemCarregamentoService,
+    private OrderSalesService: OrderSalesService
   ) {}
 
   @Input()
@@ -59,6 +65,19 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   selectAllPedidos = false;
   loadingCancelamento = false;
   filtroPesquisa = '';
+
+  // Adicionar Pedidos
+  showAdicionarPedidosModal = false;
+  pedidosDisponiveis: any[] = [];
+  pedidosDisponiveisFiltrados: any[] = [];
+  pedidosSelecionadosAdicionar: any[] = [];
+  selectAllDisponiveis = false;
+  loadingAdicionarPedidos = false;
+  filtroPesquisaAdicionar = '';
+  filtroDataInicial: string = '';
+  filtroDataFinal: string = '';
+  branchFiltro: Branch = null;
+  localidadeFiltro: Localidade = null;
 
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
 
@@ -404,4 +423,158 @@ executarCancelamento() {
     const headContent = document.head.innerHTML;
     this.itinerarioPdfComponent.gerarPdf(headContent);
   }
+
+  // Adicionar Pedidos
+
+  abrirModalAdicionarPedidos() {
+  if (this.selected.U_Status === 'Fechado' || this.selected.U_Status === 'Cancelado') {
+    this.alertService.error('Não é possível adicionar pedidos a uma ordem fechada ou cancelada.');
+    return;
+  }
+
+  this.showAdicionarPedidosModal = true;
+  this.pedidosDisponiveis = [];
+  this.pedidosDisponiveisFiltrados = [];
+  this.pedidosSelecionadosAdicionar = [];
+  this.selectAllDisponiveis = false;
+  this.filtroPesquisaAdicionar = '';
+  this.filtroDataInicial = '';
+  this.filtroDataFinal = '';
+  this.branchFiltro = null;
+  this.localidadeFiltro = null;
+}
+
+fecharModalAdicionarPedidos() {
+  this.showAdicionarPedidosModal = false;
+}
+
+selectBranchFiltro(branch: Branch) {
+  this.branchFiltro = branch;
+}
+
+selectLocalidadeFiltro(localidade: Localidade) {
+  this.localidadeFiltro = localidade;
+}
+
+isFiltroValido(): boolean {
+  return !!this.branchFiltro && !!this.localidadeFiltro;
+}
+
+aplicarFiltros() {
+  if (!this.isFiltroValido()) {
+    this.alertService.error('Selecione uma filial e uma localidade para aplicar os filtros.');
+    return;
+  }
+
+  this.loadingAdicionarPedidos = true;
+
+  const startDate = this.filtroDataInicial || '';
+  const endDate = this.filtroDataFinal || '';
+
+  this.OrderSalesService
+    .search(startDate, endDate, this.branchFiltro.bplid, this.localidadeFiltro.Code)
+    .subscribe({
+      next: (result: NextLink<PedidoVenda>) => {
+        // Filtrar apenas pedidos que não estão na ordem atual
+        this.pedidosDisponiveis = result.content.filter(
+          pedido => !this.pedidos.some(p => p.DocEntry === pedido.DocEntry)
+        );
+        
+        this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
+        this.loadingAdicionarPedidos = false;
+      },
+      error: (err) => {
+        this.alertService.error('Erro ao buscar pedidos: ' + err.message);
+        this.loadingAdicionarPedidos = false;
+      }
+    });
+}
+
+filtrarPedidosDisponiveis() {
+  if (!this.filtroPesquisaAdicionar) {
+    this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
+  } else {
+    const termo = this.filtroPesquisaAdicionar.toLowerCase().trim();
+    this.pedidosDisponiveisFiltrados = this.pedidosDisponiveis.filter(pedido =>
+      pedido.DocNum.toString().toLowerCase().includes(termo) ||
+      pedido.CardName.toLowerCase().includes(termo) ||
+      pedido.ItemCode.toLowerCase().includes(termo) ||
+      pedido.Dscription.toLowerCase().includes(termo)
+    );
+  }
+  this.verificarSelecaoTotalDisponiveis();
+}
+
+limparFiltroAdicionar() {
+  this.filtroPesquisaAdicionar = '';
+  this.filtrarPedidosDisponiveis();
+}
+
+toggleSelectAllDisponiveis() {
+  this.pedidosDisponiveisFiltrados.forEach(pedido => {
+    pedido.selected = this.selectAllDisponiveis;
+  });
+  this.verificarSelecaoTotalDisponiveis();
+}
+
+verificarSelecaoTotalDisponiveis() {
+  this.pedidosSelecionadosAdicionar = this.pedidosDisponiveis.filter(p => p.selected);
+  this.selectAllDisponiveis = this.pedidosDisponiveisFiltrados.length > 0 && 
+                             this.pedidosDisponiveisFiltrados.every(p => p.selected);
+}
+
+toggleSelecaoPedidoDisponivel(pedido: any, event: MouseEvent) {
+  pedido.selected = !pedido.selected;
+  this.verificarSelecaoTotalDisponiveis();
+  event.stopPropagation();
+}
+
+confirmarAdicaoPedidos() {
+  if (this.pedidosSelecionadosAdicionar.length === 0) {
+    this.alertService.error('Nenhum pedido selecionado para adicionar.');
+    return;
+  }
+
+  const pedidosNumeros = this.pedidosSelecionadosAdicionar.map(p => p.DocNum).join(', ');
+  
+  this.alertService.confirm(
+    `Tem certeza que deseja adicionar ${this.pedidosSelecionadosAdicionar.length} pedido(s) a esta ordem?<br>
+    <strong>Pedidos: ${pedidosNumeros}</strong>`
+  ).then(result => {
+    if (result.isConfirmed) {
+      this.executarAdicaoPedidos();
+    }
+  });
+}
+
+executarAdicaoPedidos() {
+  this.loadingAdicionarPedidos = true;
+
+  const docNumsParaAdicionar = this.pedidosSelecionadosAdicionar.map(p => p.DocNum);
+
+  // Atualizar cada pedido com o DocEntry da ordem de carregamento
+  const updateRequests = this.pedidosSelecionadosAdicionar.map(pedido => {
+    return this.OrderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), this.selected.DocEntry);
+  });
+
+  forkJoin(updateRequests).subscribe({
+    next: () => {
+      this.alertService.confirm('Pedidos adicionados com sucesso!');
+      
+      // Adicionar os pedidos à lista atual
+      this.pedidos = [...this.pedidos, ...this.pedidosSelecionadosAdicionar];
+      
+      // Fechar o modal e limpar seleções
+      this.showAdicionarPedidosModal = false;
+      this.pedidosSelecionadosAdicionar = [];
+    },
+    error: (err) => {
+      this.alertService.error('Erro ao adicionar pedidos: ' + err.message);
+      this.loadingAdicionarPedidos = false;
+    },
+    complete: () => {
+      this.loadingAdicionarPedidos = false;
+    }
+  });
+}
 }
