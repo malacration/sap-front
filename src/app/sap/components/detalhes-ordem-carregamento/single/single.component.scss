@@ -70,3 +70,52 @@
   .draggable-item:hover .fa-grip-vertical {
     opacity: 1;
   }
+
+  /* Adicione ao seu arquivo SCSS */
+.modal-lg {
+  max-width: 1000px;
+}
+
+.table-responsive {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.badge {
+  font-size: 0.85em;
+  padding: 0.35em 0.65em;
+}
+
+.form-check-input:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+}
+
+/* Estilo para o badge do número do pedido */
+.badge.bg-primary {
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+/* Estilo para a mensagem de nenhum resultado */
+.text-muted i {
+  opacity: 0.5;
+}
+
+/* Melhorar a usabilidade do checkbox */
+.form-check-input {
+  cursor: pointer;
+}
+
+/* Highlight nos resultados da pesquisa */
+.table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}

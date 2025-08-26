@@ -51,6 +51,15 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
   localidadesMap: Map<string, string> = new Map();
 
+  // Cancelamento
+  showCancelamentoModal = false;
+  pedidosParaCancelamento: any[] = [];
+  pedidosFiltrados: any[] = [];
+  pedidosSelecionados: any[] = [];
+  selectAllPedidos = false;
+  loadingCancelamento = false;
+  filtroPesquisa = '';
+
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
 
   definition = [
@@ -171,26 +180,135 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     });
   }
 
-  confirmarCancelamento(docEntry: number) {
-    this.alertService.confirm('Tem certeza que deseja cancelar este documento? Uma vez cancelado, não poderá ser revertido.')
-      .then(it => {
-        if (it.isConfirmed) {
-          this.loading = true;
-          this.ordemCarregamentoService.cancel(docEntry).subscribe({
-            next: () => {
-              this.alertService.confirm('Documento cancelado com sucesso!');
-              this.selected.U_Status = 'Cancelado';
-            },
-            error: (err) => {
-              this.alertService.error('Erro ao cancelar documento: ' + err.message);
-            },
-            complete: () => {
-              this.loading = false;
-            }
-          });
-        }
-      });
+    abrirModalCancelamento() {
+    if (this.pedidos.length === 0) {
+      this.alertService.error('Nenhum pedido disponível para cancelamento.');
+      return;
+    }
+
+    // Prepara os dados para o modal de cancelamento
+    this.pedidosParaCancelamento = this.pedidos.map(pedido => ({
+      ...pedido,
+      selected: false,
+      U_Status: pedido.U_Status || 'Aberto'
+    }));
+
+    this.pedidosFiltrados = [...this.pedidosParaCancelamento];
+    this.pedidosSelecionados = [];
+    this.selectAllPedidos = false;
+    this.filtroPesquisa = '';
+    this.showCancelamentoModal = true;
   }
+
+  filtrarPedidos() {
+    if (!this.filtroPesquisa) {
+      this.pedidosFiltrados = [...this.pedidosParaCancelamento];
+    } else {
+      const termo = this.filtroPesquisa.toLowerCase().trim();
+      this.pedidosFiltrados = this.pedidosParaCancelamento.filter(pedido =>
+        pedido.DocNum.toString().toLowerCase().includes(termo)
+      );
+    }
+    this.verificarSelecaoTotal();
+  }
+
+    limparFiltro() {
+    this.filtroPesquisa = '';
+    this.filtrarPedidos();
+  }
+
+  fecharModalCancelamento() {
+    this.showCancelamentoModal = false;
+    this.pedidosParaCancelamento = [];
+    this.pedidosFiltrados = [];
+    this.pedidosSelecionados = [];
+    this.filtroPesquisa = '';
+  }
+
+    toggleSelectAll() {
+    this.pedidosFiltrados.forEach(pedido => {
+      // Só permite selecionar pedidos que não estão cancelados
+      if (pedido.U_Status !== 'Cancelado') {
+        pedido.selected = this.selectAllPedidos;
+      }
+    });
+    this.verificarSelecaoTotal();
+  }
+
+  verificarSelecaoTotal() {
+    // Atualiza a lista de pedidos selecionados considerando todos os pedidos
+    this.pedidosSelecionados = this.pedidosParaCancelamento.filter(p => p.selected);
+    
+    // Verifica se todos os pedidos não-cancelados visíveis estão selecionados
+    const pedidosNaoCanceladosVisiveis = this.pedidosFiltrados.filter(p => p.U_Status !== 'Cancelado');
+    this.selectAllPedidos = pedidosNaoCanceladosVisiveis.length > 0 && 
+                           pedidosNaoCanceladosVisiveis.every(p => p.selected);
+  }
+
+  confirmarCancelamentoSelecionados() {
+    if (this.pedidosSelecionados.length === 0) {
+      this.alertService.error('Nenhum pedido selecionado para cancelamento.');
+      return;
+    }
+
+    const pedidosNumeros = this.pedidosSelecionados.map(p => p.DocNum).join(', ');
+    
+    this.alertService.confirm(
+      `Tem certeza que deseja cancelar ${this.pedidosSelecionados.length} pedido(s)?<br>
+      <strong>Pedidos: ${pedidosNumeros}</strong><br>
+      Esta ação não pode ser desfeita.`
+    ).then(result => {
+      if (result.isConfirmed) {
+        this.executarCancelamento();
+      }
+    });
+  }
+
+    toggleSelecaoPedido(pedido: any, event: MouseEvent) {
+    if (pedido.U_Status === 'Cancelado') {
+      return;
+    }
+
+    pedido.selected = !pedido.selected;
+    
+    this.verificarSelecaoTotal();
+    
+    event.stopPropagation();
+  }
+
+executarCancelamento() {
+  this.loadingCancelamento = true;
+
+  const docNumsParaCancelar = this.pedidosSelecionados.map(p => p.DocNum);
+
+  this.ordemCarregamentoService.cancelarPedidos(this.selected.DocEntry, docNumsParaCancelar)
+    .subscribe({
+      next: (response) => {
+        this.alertService.confirm('Pedidos cancelados com sucesso!');
+
+        // Remove os pedidos cancelados da lista principal
+        this.pedidos = this.pedidos.filter(pedido => !docNumsParaCancelar.includes(pedido.DocNum));
+
+        // Atualiza o status dos pedidos no modal de cancelamento
+        this.pedidosParaCancelamento.forEach(pedido => {
+          if (pedido.selected) {
+            pedido.U_Status = 'Cancelado';
+            pedido.selected = false;
+          }
+        });
+
+        this.pedidosSelecionados = [];
+        this.selectAllPedidos = false;
+        this.filtrarPedidos(); // Atualiza a lista filtrada
+      },
+      error: (error) => {
+        this.alertService.error('Erro ao cancelar pedidos: ' + error.message);
+      },
+      complete: () => {
+        this.loadingCancelamento = false;
+      }
+    });
+}
 
   finalizarDocumento(docEntry: number) {
     this.loading = true;

@@ -63,9 +63,9 @@ export class OrdemCarregamentoService{
     return this.http.post<any>(this.url+"/angular",body)
     }
 
-    cancel(id: number): Observable<any> {
-    const url = `${this.url}/${id}/cancel`;
-    return this.http.post(url, {});
+    cancelarPedidos(docEntryOrdem: number, docNumsPedidos: number[]): Observable<any> {
+      const url = `${this.url}/${docEntryOrdem}/cancelar-pedidos`;
+      return this.http.post(url, { pedidos: docNumsPedidos });
     }
 
     finalizar(id: number): Observable<any> {
