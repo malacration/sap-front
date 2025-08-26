@@ -21,11 +21,25 @@ export class ItinerarioPdfComponent {
       console.error('Elemento PDF content não encontrado.');
       return;
     }
-
-    // Chama o serviço para gerar e exibir o PDF em uma nova aba
     this.pdfService.gerarPdfDoElemento(
       this.pdfContent.nativeElement,
       `itinerario_${this.ordemCarregamento?.DocEntry}.pdf`
     );
+  }
+
+  getUniqueLocalidades(): string[] {
+    const uniqueLocalidades = new Set<string>();
+    this.pedidosOrdenados.forEach(pedido => {
+      const localidade = this.localidadesMap.get(pedido.CardCode) || 'Não informado';
+      uniqueLocalidades.add(localidade);
+    });
+    return Array.from(uniqueLocalidades);
+  }
+
+  filterByLocalidade(pedidos: any[], localidade: string): any[] {
+    return pedidos.filter(pedido => {
+      const pedidoLocalidade = this.localidadesMap.get(pedido.CardCode) || 'Não informado';
+      return pedidoLocalidade === localidade;
+    });
   }
 }
