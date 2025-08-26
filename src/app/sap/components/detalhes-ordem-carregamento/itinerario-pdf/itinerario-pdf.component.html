@@ -1,11 +1,6 @@
 <div class="pdf-container" #pdfContent>
   <div class="header">
-    <a href="/" class="navbar-brand">
-      <img src="logo.png" alt="Logo" class="logo">
-    </a>
-  </div>
-
-  <div class="title-container">
+    <img src="logo.png" alt="Logo" class="logo">
     <h1>ITINERÁRIO DE CARREGAMENTO</h1>
   </div>
 
@@ -46,14 +41,15 @@
           </tbody>
         </table>
       </div>
-      <!-- Divisor entre localidade, exceto no último item -->
+
+      <!-- Divisor entre localidades -->
       <div *ngIf="i < getUniqueLocalidades().length - 1" class="divider"></div>
     </ng-container>
   </div>
 
   <div class="footer">
-    <div class="footer-right" style="flex: 2; text-align: center;">
-      <p>ASSINATURA: __________________________</p>
+    <div class="assinatura">
+      ASSINATURA
     </div>
   </div>
-</div>
+</div> 

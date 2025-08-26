@@ -1,118 +1,120 @@
 .pdf-container {
-  font-family: Arial, sans-serif;
-  width: 794px;
-  height: auto;
-  background-color: #fff;
-  padding: 30px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  width: 210mm;             /* A4 largura real */
+  min-height: 297mm;        /* A4 altura mínima */
+  background: #fff;
+  padding: 20mm;            /* margens internas */
   margin: 0 auto;
-  line-height: 1.6;
-}
+  box-sizing: border-box;
+  color: #333;
+  line-height: 1.5;
 
-.pdf-container .info-section p,
-.pdf-container .table-container th,
-.pdf-container .table-container td {
-  margin-bottom: 10px;
-}
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #1ba13f;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
 
-.pdf-container .table-container th,
-.pdf-container .table-container td {
-  padding: 8px;
-  font-size: 0.85rem;
-  border: 1px solid #ccc;
-}
-
-.pdf-container .table-container th {
-  background: #f2f2f2;
-  font-weight: bold;
-  text-align: left;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 20px;
-
-  .logo {
-    max-width: 200px;
-    height: auto;
-  }
-}
-
-.title-container {
-  text-align: center;
-  margin-bottom: 20px;
-
-  h1 {
-    font-size: 2rem;
-    color: #1ba13f;
-    margin: 0;
-    font-weight: bold;
-  }
-}
-
-.info-section {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-
-  p {
-    margin: 5px 0;
-    font-size: 0.95rem;
-    display: inline-block;
-    margin-right: 20px;
-  }
-}
-
-.table-container {
-  overflow-x: auto;
-  margin-bottom: 20px;
-}
-
-.localidade-section {
-  margin-bottom: 20px;
-
-  h2 {
-    font-size: 1.2rem;
-    color: #1ba13f;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-
-  .product-table {
-    width: 100%;
-    border-collapse: collapse;
-
-    th, td {
-      text-align: left;
+    .logo {
+      max-width: 150px;
+      height: auto;
     }
 
-    th:nth-child(5), /* Localidade */
-    td:nth-child(5) {
-      width: 15%; /* Ajuste proporcional para a coluna Localidade */
+    h1 {
+      flex: 1;
+      text-align: center;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      font-weight: bold;
+      color: #1ba13f;
+      margin: 0;
     }
   }
-}
 
-.divider {
-  height: 2px;
-  background-color: #ccc;
-  margin: 20px 0;
-}
+  .info-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f5f7f6;
+    border: 1px solid #ddd;
+    border-radius: 6px;
 
-.footer {
-  display: flex;
-  justify-content: center; /* Centraliza o conteúdo */
-  margin-top: 30px;
-  font-size: 0.9rem;
-  border-top: 1px solid #ccc;
-  padding-top: 10px;
+    p {
+      margin: 0;
+      font-size: 0.95rem;
 
-  .footer-right {
-    flex: 2; /* Ocupa mais espaço */
-    text-align: center; /* Centraliza o texto da assinatura */
+      strong {
+        color: #1ba13f;
+      }
+    }
+  }
+
+  .localidade-section {
+    margin-bottom: 25px;
+
+    h2 {
+      background: #e9f7ef;
+      padding: 8px 12px;
+      border-left: 4px solid #1ba13f;
+      font-size: 1.1rem;
+      margin: 0 0 10px;
+      font-weight: bold;
+    }
+
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        background: #1ba13f;
+        color: #fff;
+        padding: 10px;
+        font-size: 0.85rem;
+        text-align: left;
+      }
+
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+        font-size: 0.85rem;
+      }
+
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+
+      td:last-child {
+        text-align: right;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .divider {
+    height: 2px;
+    background-color: #ccc;
+    margin: 25px 0;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 15px;
+    border-top: 1px solid #ccc;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+
+    .assinatura {
+      margin-top: 30px;
+      border-top: 1px dashed #333;
+      width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-top: 5px;
+    }
   }
 }
