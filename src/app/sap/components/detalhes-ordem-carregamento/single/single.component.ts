@@ -30,7 +30,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     private businessPartnerService: BusinessPartnerService,
     private pedidosVendaService: PedidosVendaService,
     private carregamentoService: OrdemCarregamentoService,
-    private OrderSalesService: OrderSalesService
+    private orderSalesService: OrderSalesService
   ) {}
 
   @Input()
@@ -78,18 +78,19 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   filtroDataFinal: string = '';
   branchFiltro: Branch = null;
   localidadeFiltro: Localidade = null;
+  groupedPedidosDisponiveis: { DocNum: string, CardName: string, items: any[], isCollapsed: boolean, allSelected: boolean }[] = [];
 
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
 
   definition = [
-      new Column('Núm. do Pedido', 'DocNum'),
-      new Column('Cód. Cliente', 'CardCode'),
-      new Column('Nome Cliente', 'CardName'),
-      new Column('Localidade', 'Localidade'), 
-      new Column('Cód. Item', 'ItemCode'),
-      new Column('Dsc. Item', 'Dscription'),
-      new Column('Quantidade', 'Quantity'),
-      new Column('Un. Medida', 'UomCode')
+    new Column('Núm. do Pedido', 'DocNum'),
+    new Column('Cód. Cliente', 'CardCode'),
+    new Column('Nome Cliente', 'CardName'),
+    new Column('Localidade', 'Localidade'), 
+    new Column('Cód. Item', 'ItemCode'),
+    new Column('Dsc. Item', 'Dscription'),
+    new Column('Quantidade', 'Quantity'),
+    new Column('Un. Medida', 'UomCode')
   ];
 
   ngOnInit(): void {
@@ -102,21 +103,18 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.loadingPedidos = true;
     this.pedidosVendaService.search2(docEntry).subscribe({
       next: (response: any) => {
-        // Agrupar pedidos por ItemCode e somar Quantity
         const groupedPedidos = response.content.reduce((acc, pedido) => {
           const itemCode = pedido.ItemCode;
           if (!acc[itemCode]) {
             acc[itemCode] = {
               ...pedido,
               Quantity: 0,
-              DocNum: pedido.DocNum // Preserva DocNum, mas pode ser ajustado se necessário
+              DocNum: pedido.DocNum
             };
           }
           acc[itemCode].Quantity += pedido.Quantity;
           return acc;
         }, {});
-
-        // Converter o objeto agrupado em array
         this.pedidos = Object.values(groupedPedidos);
         this.loadingPedidos = false;
       },
@@ -166,9 +164,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.alertService.error('Nenhum lote selecionado para confirmar nota verde.');
       return;
     }
-
     this.loading = true;
-
     const lotesToSave = Array.from(this.lotesSelecionadosPorItem.entries()).map(([itemCode, lotes]) => ({
       ItemCode: itemCode,
       Batches: lotes.map(lote => ({
@@ -181,7 +177,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
         WhsCode: lote.WhsCode
       }))
     }));
-
     this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
       next: (response) => {
         this.alertService.confirm('Nota verde confirmada com sucesso!');
@@ -199,19 +194,16 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     });
   }
 
-    abrirModalCancelamento() {
+  abrirModalCancelamento() {
     if (this.pedidos.length === 0) {
       this.alertService.error('Nenhum pedido disponível para cancelamento.');
       return;
     }
-
-    // Prepara os dados para o modal de cancelamento
     this.pedidosParaCancelamento = this.pedidos.map(pedido => ({
       ...pedido,
       selected: false,
       U_Status: pedido.U_Status || 'Aberto'
     }));
-
     this.pedidosFiltrados = [...this.pedidosParaCancelamento];
     this.pedidosSelecionados = [];
     this.selectAllPedidos = false;
@@ -231,7 +223,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.verificarSelecaoTotal();
   }
 
-    limparFiltro() {
+  limparFiltro() {
     this.filtroPesquisa = '';
     this.filtrarPedidos();
   }
@@ -244,9 +236,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.filtroPesquisa = '';
   }
 
-    toggleSelectAll() {
+  toggleSelectAll() {
     this.pedidosFiltrados.forEach(pedido => {
-      // Só permite selecionar pedidos que não estão cancelados
       if (pedido.U_Status !== 'Cancelado') {
         pedido.selected = this.selectAllPedidos;
       }
@@ -255,10 +246,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   verificarSelecaoTotal() {
-    // Atualiza a lista de pedidos selecionados considerando todos os pedidos
     this.pedidosSelecionados = this.pedidosParaCancelamento.filter(p => p.selected);
-    
-    // Verifica se todos os pedidos não-cancelados visíveis estão selecionados
     const pedidosNaoCanceladosVisiveis = this.pedidosFiltrados.filter(p => p.U_Status !== 'Cancelado');
     this.selectAllPedidos = pedidosNaoCanceladosVisiveis.length > 0 && 
                            pedidosNaoCanceladosVisiveis.every(p => p.selected);
@@ -269,9 +257,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.alertService.error('Nenhum pedido selecionado para cancelamento.');
       return;
     }
-
     const pedidosNumeros = this.pedidosSelecionados.map(p => p.DocNum).join(', ');
-    
     this.alertService.confirm(
       `Tem certeza que deseja cancelar ${this.pedidosSelecionados.length} pedido(s)?<br>
       <strong>Pedidos: ${pedidosNumeros}</strong><br>
@@ -283,51 +269,41 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     });
   }
 
-    toggleSelecaoPedido(pedido: any, event: MouseEvent) {
+  toggleSelecaoPedido(pedido: any, event: MouseEvent) {
     if (pedido.U_Status === 'Cancelado') {
       return;
     }
-
     pedido.selected = !pedido.selected;
-    
     this.verificarSelecaoTotal();
-    
     event.stopPropagation();
   }
 
-executarCancelamento() {
-  this.loadingCancelamento = true;
-
-  const docNumsParaCancelar = this.pedidosSelecionados.map(p => p.DocNum);
-
-  this.ordemCarregamentoService.cancelarPedidos(this.selected.DocEntry, docNumsParaCancelar)
-    .subscribe({
-      next: (response) => {
-        this.alertService.confirm('Pedidos cancelados com sucesso!');
-
-        // Remove os pedidos cancelados da lista principal
-        this.pedidos = this.pedidos.filter(pedido => !docNumsParaCancelar.includes(pedido.DocNum));
-
-        // Atualiza o status dos pedidos no modal de cancelamento
-        this.pedidosParaCancelamento.forEach(pedido => {
-          if (pedido.selected) {
-            pedido.U_Status = 'Cancelado';
-            pedido.selected = false;
-          }
-        });
-
-        this.pedidosSelecionados = [];
-        this.selectAllPedidos = false;
-        this.filtrarPedidos(); // Atualiza a lista filtrada
-      },
-      error: (error) => {
-        this.alertService.error('Erro ao cancelar pedidos: ' + error.message);
-      },
-      complete: () => {
-        this.loadingCancelamento = false;
-      }
-    });
-}
+  executarCancelamento() {
+    this.loadingCancelamento = true;
+    const docNumsParaCancelar = this.pedidosSelecionados.map(p => p.DocNum);
+    this.ordemCarregamentoService.cancelarPedidos(this.selected.DocEntry, docNumsParaCancelar)
+      .subscribe({
+        next: (response) => {
+          this.alertService.confirm('Pedidos cancelados com sucesso!');
+          this.pedidos = this.pedidos.filter(pedido => !docNumsParaCancelar.includes(pedido.DocNum));
+          this.pedidosParaCancelamento.forEach(pedido => {
+            if (pedido.selected) {
+              pedido.U_Status = 'Cancelado';
+              pedido.selected = false;
+            }
+          });
+          this.pedidosSelecionados = [];
+          this.selectAllPedidos = false;
+          this.filtrarPedidos();
+        },
+        error: (error) => {
+          this.alertService.error('Erro ao cancelar pedidos: ' + error.message);
+        },
+        complete: () => {
+          this.loadingCancelamento = false;
+        }
+      });
+  }
 
   finalizarDocumento(docEntry: number) {
     this.loading = true;
@@ -347,35 +323,26 @@ executarCancelamento() {
 
   async abrirModalItinerario() {
     if (this.pedidos.length === 0) {
-        this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
-        return;
+      this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
+      return;
     }
-    
-    // Carrega as localidades primeiro
     this.loading = true;
     try {
-        // Criar um array de promessas para todas as localidades
-        const promises = this.pedidos.map(pedido => 
-            this.pedidosVendaService.searchLocalidade(20).toPromise()
-        );
-        
-        // Esperar todas as requisições terminarem
-        const results = await Promise.all(promises);
-        
-        // Mapear os resultados
-        results.forEach((res, index) => {
-            if (res.content && res.content.length > 0) {
-                this.localidadesMap.set(this.pedidos[index].CardCode, res.content[0].Name);
-            }
-        });
-        
-        // Agora pode abrir o modal
-        this.pedidosOrdenados = [...this.pedidos];
-        this.showItinerarioModal = true;
+      const promises = this.pedidos.map(pedido => 
+        this.pedidosVendaService.searchLocalidade(20).toPromise()
+      );
+      const results = await Promise.all(promises);
+      results.forEach((res, index) => {
+        if (res.content && res.content.length > 0) {
+          this.localidadesMap.set(this.pedidos[index].CardCode, res.content[0].Name);
+        }
+      });
+      this.pedidosOrdenados = [...this.pedidos];
+      this.showItinerarioModal = true;
     } catch (error) {
-        this.alertService.error('Erro ao carregar localidades: ' + error.message);
+      this.alertService.error('Erro ao carregar localidades: ' + error.message);
     } finally {
-        this.loading = false;
+      this.loading = false;
     }
   }
 
@@ -390,7 +357,6 @@ executarCancelamento() {
   onDragOver(event: DragEvent, index: number) {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    
     const element = event.target as HTMLElement;
     if (element.nodeName === 'TR') {
       element.classList.add('drag-over');
@@ -405,9 +371,7 @@ executarCancelamento() {
 
   onDrop(event: DragEvent, targetIndex: number) {
     event.preventDefault();
-    
     if (this.draggedItemIndex === undefined) return;
-    
     const movedItem = this.pedidosOrdenados[this.draggedItemIndex];
     this.pedidosOrdenados.splice(this.draggedItemIndex, 1);
     this.pedidosOrdenados.splice(targetIndex, 0, movedItem);
@@ -424,157 +388,200 @@ executarCancelamento() {
     this.itinerarioPdfComponent.gerarPdf(headContent);
   }
 
-  // Adicionar Pedidos
-
   abrirModalAdicionarPedidos() {
-  if (this.selected.U_Status === 'Fechado' || this.selected.U_Status === 'Cancelado') {
-    this.alertService.error('Não é possível adicionar pedidos a uma ordem fechada ou cancelada.');
-    return;
+    if (this.selected.U_Status === 'Fechado' || this.selected.U_Status === 'Cancelado') {
+      this.alertService.error('Não é possível adicionar pedidos a uma ordem fechada ou cancelada.');
+      return;
+    }
+    this.showAdicionarPedidosModal = true;
+    this.pedidosDisponiveis = [];
+    this.pedidosDisponiveisFiltrados = [];
+    this.pedidosSelecionadosAdicionar = [];
+    this.selectAllDisponiveis = false;
+    this.filtroPesquisaAdicionar = '';
+    this.filtroDataInicial = '';
+    this.filtroDataFinal = '';
+    this.branchFiltro = null;
+    this.localidadeFiltro = null;
+    this.groupedPedidosDisponiveis = [];
   }
 
-  this.showAdicionarPedidosModal = true;
-  this.pedidosDisponiveis = [];
-  this.pedidosDisponiveisFiltrados = [];
-  this.pedidosSelecionadosAdicionar = [];
-  this.selectAllDisponiveis = false;
-  this.filtroPesquisaAdicionar = '';
-  this.filtroDataInicial = '';
-  this.filtroDataFinal = '';
-  this.branchFiltro = null;
-  this.localidadeFiltro = null;
-}
-
-fecharModalAdicionarPedidos() {
-  this.showAdicionarPedidosModal = false;
-}
-
-selectBranchFiltro(branch: Branch) {
-  this.branchFiltro = branch;
-}
-
-selectLocalidadeFiltro(localidade: Localidade) {
-  this.localidadeFiltro = localidade;
-}
-
-isFiltroValido(): boolean {
-  return !!this.branchFiltro && !!this.localidadeFiltro;
-}
-
-aplicarFiltros() {
-  if (!this.isFiltroValido()) {
-    this.alertService.error('Selecione uma filial e uma localidade para aplicar os filtros.');
-    return;
+  fecharModalAdicionarPedidos() {
+    this.showAdicionarPedidosModal = false;
   }
 
-  this.loadingAdicionarPedidos = true;
+  selectBranchFiltro(branch: Branch) {
+    this.branchFiltro = branch;
+  }
 
-  const startDate = this.filtroDataInicial || '';
-  const endDate = this.filtroDataFinal || '';
+  selectLocalidadeFiltro(localidade: Localidade) {
+    this.localidadeFiltro = localidade;
+  }
 
-  this.OrderSalesService
-    .search(startDate, endDate, this.branchFiltro.bplid, this.localidadeFiltro.Code)
-    .subscribe({
-      next: (result: NextLink<PedidoVenda>) => {
-        // Filtrar apenas pedidos que não estão na ordem atual
-        this.pedidosDisponiveis = result.content.filter(
-          pedido => !this.pedidos.some(p => p.DocEntry === pedido.DocEntry)
-        );
-        
-        this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
-        this.loadingAdicionarPedidos = false;
+  isFiltroValido(): boolean {
+    return !!this.branchFiltro && !!this.localidadeFiltro;
+  }
+
+  aplicarFiltros() {
+    if (!this.isFiltroValido()) {
+      this.alertService.error('Selecione uma filial e uma localidade para aplicar os filtros.');
+      return;
+    }
+    this.loadingAdicionarPedidos = true;
+    const startDate = this.filtroDataInicial || '';
+    const endDate = this.filtroDataFinal || '';
+    this.orderSalesService
+      .search(startDate, endDate, this.branchFiltro.bplid, this.localidadeFiltro.Code)
+      .subscribe({
+        next: (result: NextLink<PedidoVenda>) => {
+          this.pedidosDisponiveis = result.content.filter(
+            pedido => !this.pedidos.some(p => p.DocEntry === pedido.DocEntry)
+          );
+          this.groupPedidosDisponiveis();
+          this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
+          this.filtrarPedidosDisponiveis();
+          this.loadingAdicionarPedidos = false;
+        },
+        error: (err) => {
+          this.alertService.error('Erro ao buscar pedidos: ' + err.message);
+          this.loadingAdicionarPedidos = false;
+        }
+      });
+  }
+
+  groupPedidosDisponiveis() {
+    const grouped = this.pedidosDisponiveis.reduce((acc, pedido) => {
+      const docNum = pedido.DocNum;
+      if (!acc[docNum]) {
+        acc[docNum] = {
+          DocNum: docNum,
+          CardName: pedido.CardName,
+          items: [],
+          isCollapsed: true,
+          allSelected: false
+        };
+      }
+      acc[docNum].items.push({ ...pedido, selected: false });
+      return acc;
+    }, {});
+    this.groupedPedidosDisponiveis = Object.values(grouped);
+  }
+
+  filtrarPedidosDisponiveis() {
+    if (!this.filtroPesquisaAdicionar) {
+      this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
+      this.groupedPedidosDisponiveis = this.groupedPedidosDisponiveis.map(group => ({
+        ...group,
+        items: group.items.map(item => ({ ...item }))
+      }));
+    } else {
+      const termo = this.filtroPesquisaAdicionar.toLowerCase().trim();
+      this.pedidosDisponiveisFiltrados = this.pedidosDisponiveis.filter(pedido =>
+        pedido.DocNum.toString().toLowerCase().includes(termo) ||
+        pedido.CardName.toLowerCase().includes(termo) ||
+        pedido.ItemCode.toLowerCase().includes(termo) ||
+        pedido.Dscription.toLowerCase().includes(termo)
+      );
+      const filteredGrouped = this.pedidosDisponiveisFiltrados.reduce((acc, pedido) => {
+        const docNum = pedido.DocNum;
+        if (!acc[docNum]) {
+          acc[docNum] = {
+            DocNum: docNum,
+            CardName: pedido.CardName,
+            items: [],
+            isCollapsed: true,
+            allSelected: false
+          };
+        }
+        acc[docNum].items.push({ ...pedido, selected: false });
+        return acc;
+      }, {});
+      this.groupedPedidosDisponiveis = Object.values(filteredGrouped);
+    }
+    this.verificarSelecaoTotalDisponiveis();
+  }
+
+  limparFiltroAdicionar() {
+    this.filtroPesquisaAdicionar = '';
+    this.filtrarPedidosDisponiveis();
+  }
+
+  toggleSelectAllDisponiveis() {
+    this.groupedPedidosDisponiveis.forEach(group => {
+      group.allSelected = this.selectAllDisponiveis;
+      group.items.forEach(item => {
+        item.selected = this.selectAllDisponiveis;
+      });
+    });
+    this.verificarSelecaoTotalDisponiveis();
+  }
+
+  toggleGroupSelect(group: any) {
+    group.allSelected = !group.allSelected;
+    group.items.forEach(item => {
+      item.selected = group.allSelected;
+    });
+    this.verificarSelecaoTotalDisponiveis();
+  }
+
+  toggleSelecaoPedidoDisponivel(pedido: any, event: MouseEvent) {
+    pedido.selected = !pedido.selected;
+    const group = this.groupedPedidosDisponiveis.find(g => g.DocNum === pedido.DocNum);
+    group.allSelected = group.items.every(item => item.selected);
+    this.verificarSelecaoTotalDisponiveis();
+    event.stopPropagation();
+  }
+
+  toggleCollapse(group: any) {
+    group.isCollapsed = !group.isCollapsed;
+  }
+
+  verificarSelecaoTotalDisponiveis() {
+    this.pedidosSelecionadosAdicionar = this.pedidosDisponiveisFiltrados.filter(p => p.selected);
+    this.selectAllDisponiveis = this.pedidosDisponiveisFiltrados.length > 0 && 
+                               this.pedidosDisponiveisFiltrados.every(p => p.selected);
+    this.groupedPedidosDisponiveis.forEach(group => {
+      group.allSelected = group.items.every(item => item.selected);
+    });
+  }
+
+  confirmarAdicaoPedidos() {
+    if (this.pedidosSelecionadosAdicionar.length === 0) {
+      this.alertService.error('Nenhum pedido selecionado para adicionar.');
+      return;
+    }
+    const pedidosNumeros = this.pedidosSelecionadosAdicionar.map(p => p.DocNum).join(', ');
+    this.alertService.confirm(
+      `Tem certeza que deseja adicionar ${this.pedidosSelecionadosAdicionar.length} item(s) a esta ordem?<br>
+      <strong>Pedidos: ${pedidosNumeros}</strong>`
+    ).then(result => {
+      if (result.isConfirmed) {
+        this.executarAdicaoPedidos();
+      }
+    });
+  }
+
+  executarAdicaoPedidos() {
+    this.loadingAdicionarPedidos = true;
+    const docNumsParaAdicionar = [...new Set(this.pedidosSelecionadosAdicionar.map(p => p.DocNum))];
+    const updateRequests = docNumsParaAdicionar.map(docNum => {
+      return this.orderSalesService.updateOrdemCarregamento(docNum.toString(), this.selected.DocEntry);
+    });
+    forkJoin(updateRequests).subscribe({
+      next: () => {
+        this.alertService.confirm('Pedidos adicionados com sucesso!');
+        this.pedidos = [...this.pedidos, ...this.pedidosSelecionadosAdicionar];
+        this.showAdicionarPedidosModal = false;
+        this.pedidosSelecionadosAdicionar = [];
+        this.groupedPedidosDisponiveis = [];
       },
       error: (err) => {
-        this.alertService.error('Erro ao buscar pedidos: ' + err.message);
+        this.alertService.error('Erro ao adicionar pedidos: ' + err.message);
+        this.loadingAdicionarPedidos = false;
+      },
+      complete: () => {
         this.loadingAdicionarPedidos = false;
       }
     });
-}
-
-filtrarPedidosDisponiveis() {
-  if (!this.filtroPesquisaAdicionar) {
-    this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
-  } else {
-    const termo = this.filtroPesquisaAdicionar.toLowerCase().trim();
-    this.pedidosDisponiveisFiltrados = this.pedidosDisponiveis.filter(pedido =>
-      pedido.DocNum.toString().toLowerCase().includes(termo) ||
-      pedido.CardName.toLowerCase().includes(termo) ||
-      pedido.ItemCode.toLowerCase().includes(termo) ||
-      pedido.Dscription.toLowerCase().includes(termo)
-    );
   }
-  this.verificarSelecaoTotalDisponiveis();
-}
-
-limparFiltroAdicionar() {
-  this.filtroPesquisaAdicionar = '';
-  this.filtrarPedidosDisponiveis();
-}
-
-toggleSelectAllDisponiveis() {
-  this.pedidosDisponiveisFiltrados.forEach(pedido => {
-    pedido.selected = this.selectAllDisponiveis;
-  });
-  this.verificarSelecaoTotalDisponiveis();
-}
-
-verificarSelecaoTotalDisponiveis() {
-  this.pedidosSelecionadosAdicionar = this.pedidosDisponiveis.filter(p => p.selected);
-  this.selectAllDisponiveis = this.pedidosDisponiveisFiltrados.length > 0 && 
-                             this.pedidosDisponiveisFiltrados.every(p => p.selected);
-}
-
-toggleSelecaoPedidoDisponivel(pedido: any, event: MouseEvent) {
-  pedido.selected = !pedido.selected;
-  this.verificarSelecaoTotalDisponiveis();
-  event.stopPropagation();
-}
-
-confirmarAdicaoPedidos() {
-  if (this.pedidosSelecionadosAdicionar.length === 0) {
-    this.alertService.error('Nenhum pedido selecionado para adicionar.');
-    return;
-  }
-
-  const pedidosNumeros = this.pedidosSelecionadosAdicionar.map(p => p.DocNum).join(', ');
-  
-  this.alertService.confirm(
-    `Tem certeza que deseja adicionar ${this.pedidosSelecionadosAdicionar.length} pedido(s) a esta ordem?<br>
-    <strong>Pedidos: ${pedidosNumeros}</strong>`
-  ).then(result => {
-    if (result.isConfirmed) {
-      this.executarAdicaoPedidos();
-    }
-  });
-}
-
-executarAdicaoPedidos() {
-  this.loadingAdicionarPedidos = true;
-
-  const docNumsParaAdicionar = this.pedidosSelecionadosAdicionar.map(p => p.DocNum);
-
-  // Atualizar cada pedido com o DocEntry da ordem de carregamento
-  const updateRequests = this.pedidosSelecionadosAdicionar.map(pedido => {
-    return this.OrderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), this.selected.DocEntry);
-  });
-
-  forkJoin(updateRequests).subscribe({
-    next: () => {
-      this.alertService.confirm('Pedidos adicionados com sucesso!');
-      
-      // Adicionar os pedidos à lista atual
-      this.pedidos = [...this.pedidos, ...this.pedidosSelecionadosAdicionar];
-      
-      // Fechar o modal e limpar seleções
-      this.showAdicionarPedidosModal = false;
-      this.pedidosSelecionadosAdicionar = [];
-    },
-    error: (err) => {
-      this.alertService.error('Erro ao adicionar pedidos: ' + err.message);
-      this.loadingAdicionarPedidos = false;
-    },
-    complete: () => {
-      this.loadingAdicionarPedidos = false;
-    }
-  });
-}
 }
