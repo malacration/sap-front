@@ -122,3 +122,22 @@
 .table-warning:hover {
   background-color: #fff3cd !important;
 }
+
+/* Adições para feedback visual */
+.is-valid {
+  border-color: #28a745 !important;
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+  display: none;
+  color: #dc3545;
+  font-size: 0.8rem;
+}
+
+.is-invalid ~ .invalid-feedback {
+  display: block;
+}

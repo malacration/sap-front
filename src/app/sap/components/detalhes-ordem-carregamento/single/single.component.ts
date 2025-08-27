@@ -42,6 +42,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   placa: string = '';
   nomeMotorista: string = '';
+  placaValida: boolean = true; // Para validação da placa
+  formTouched: boolean = false; // Para feedback visual
   transportadora: string = '';
   nomeOrdem: string = '';
   loading = false;
@@ -81,24 +83,10 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   localidadeFiltro: Localidade = null;
   groupedPedidosDisponiveis: { DocNum: string, CardName: string, items: any[], isCollapsed: boolean, allSelected: boolean }[] = [];
 
-showRomaneioModal = false;
+  showRomaneioModal = false;
 
-// Adicione esta ViewChild
   @ViewChild('romaneioPdfComponent') romaneioPdfComponent: RomaneioPdfComponent;
 
-// Adicione este método para abrir o modal
-abrirModalRomaneio() {
-  if (this.pedidos.length === 0) {
-    this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
-    return;
-  }
-  this.showRomaneioModal = true;
-}
-
-// Adicione este método para gerar o PDF
-gerarRomaneioPDF() {
-  this.romaneioPdfComponent.gerarPdf();
-}
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
 
   definition = [
@@ -115,7 +103,30 @@ gerarRomaneioPDF() {
   ngOnInit(): void {
     if (this.selected?.DocEntry) {
       this.loadPedidos(this.selected.DocEntry);
+      // Carregar valores do localStorage
+      this.placa = localStorage.getItem(`placa_${this.selected.DocEntry}`) || '';
+      this.nomeMotorista = localStorage.getItem(`nomeMotorista_${this.selected.DocEntry}`) || '';
+      this.validarPlaca(); // Validar placa carregada
     }
+  }
+
+  updateLocalStorage() {
+    if (this.selected?.DocEntry) {
+      localStorage.setItem(`placa_${this.selected.DocEntry}`, this.placa);
+      localStorage.setItem(`nomeMotorista_${this.selected.DocEntry}`, this.nomeMotorista);
+    }
+  }
+
+  validarPlaca() {
+    const placaRegex = /^[A-Z]{3}-?[0-9]{4}$|^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
+    this.placaValida = !this.placa || placaRegex.test(this.placa.toUpperCase());
+    if (this.placa && !this.placaValida) {
+      this.alertService.error('Formato da placa inválido. Use ABC-1234 ou ABC1D23.');
+    }
+  }
+
+  onFormChange() {
+    this.formTouched = true;
   }
 
   loadPedidos(docEntry: number) {
@@ -152,6 +163,13 @@ gerarRomaneioPDF() {
   }
 
   voltar() {
+    // Limpar variáveis e localStorage ao voltar
+    if (this.selected?.DocEntry) {
+      localStorage.removeItem(`placa_${this.selected.DocEntry}`);
+      localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
+    }
+    this.placa = '';
+    this.nomeMotorista = '';
     this.close.emit();
   }
 
@@ -330,6 +348,13 @@ gerarRomaneioPDF() {
       next: () => {
         this.alertService.confirm('Documento finalizado com sucesso!');
         this.selected.U_Status = 'Fechado';
+        // Limpar localStorage ao finalizar
+        if (this.selected?.DocEntry) {
+          localStorage.removeItem(`placa_${this.selected.DocEntry}`);
+          localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
+        }
+        this.placa = '';
+        this.nomeMotorista = '';
       },
       error: (err) => {
         this.alertService.error('Erro ao finalizar documento: ' + err.message);
@@ -602,5 +627,25 @@ gerarRomaneioPDF() {
         this.loadingAdicionarPedidos = false;
       }
     });
+  }
+
+  abrirModalRomaneio() {
+    if (this.pedidos.length === 0) {
+      this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
+      return;
+    }
+    if (!this.placa || !this.nomeMotorista || !this.placaValida) {
+      this.alertService.error('Preencha corretamente os campos de Placa do Veículo e Nome do Motorista na aba Logística antes de gerar o romaneio.');
+      return;
+    }
+    this.showRomaneioModal = true;
+  }
+
+  gerarRomaneioPDF() {
+    if (!this.placa || !this.nomeMotorista || !this.placaValida) {
+      this.alertService.error('Preencha corretamente os campos de Placa do Veículo e Nome do Motorista na aba Logística.');
+      return;
+    }
+    this.romaneioPdfComponent.gerarPdf();
   }
 }

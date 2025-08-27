@@ -75,21 +75,39 @@
         padding: 10px;
         font-size: 0.85rem;
         text-align: left;
+
+        &.text-center {
+          text-align: center;
+        }
       }
 
       td {
         padding: 8px;
         border-bottom: 1px solid #eee;
         font-size: 0.85rem;
+
+        &.text-center {
+          text-align: center;
+        }
       }
 
       tr:nth-child(even) {
         background: #f9f9f9;
       }
 
-      td:last-child {
-        text-align: right;
-        font-weight: bold;
+      tfoot {
+        .total-row {
+          background: #e9f7ef;
+          font-weight: bold;
+          td {
+            padding: 10px;
+            border-top: 2px solid #1ba13f;
+
+            &.text-center {
+              text-align: center;
+            }
+          }
+        }
       }
     }
   }

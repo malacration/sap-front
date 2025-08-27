@@ -9,6 +9,8 @@
     <p><strong>Descrição da Ordem:</strong> {{ ordemCarregamento?.U_nameOrdem }}</p>
     <p><strong>Data de Criação:</strong> {{ ordemCarregamento?.dataCriacao }}</p>
     <p><strong>Status:</strong> {{ ordemCarregamento?.U_Status }}</p>
+    <p><strong>Placa do Veículo:</strong> {{ placa || 'Não informado' }}</p>
+    <p><strong>Nome do Motorista:</strong> {{ nomeMotorista || 'Não informado' }}</p>
   </div>
 
   <div class="table-container">
@@ -18,20 +20,25 @@
         <tr>
           <th>Item</th>
           <th>Descrição</th>
-          <th>Quantidade Total</th> 
-          <th>Placa</th> 
-          <th>Motorista</th> 
+          <th class="text-center">Quantidade Total</th>
+          <th class="text-center">Peso Total</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of getItensAgrupados(); let i = index">
           <td>{{ item.ItemCode }}</td>
           <td>{{ item.Dscription }}</td>
-          <td>{{ item.Quantity }}</td>
-          <td>{{ item.Placa }}</td>
-          <td>{{ item.Motorista }}</td>
+          <td class="text-center">{{ item.Quantity }}</td>
+          <td class="text-center">{{ item.Peso }}</td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="2"><strong>Totais:</strong></td>
+          <td class="text-center"><strong>{{ getTotalQuantidade() }}</strong></td>
+          <td class="text-center"><strong>{{ getTotalPeso() }}</strong></td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 
