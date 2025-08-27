@@ -1,32 +1,32 @@
 .pdf-container {
   font-family: 'Segoe UI', Arial, sans-serif;
-  width: 210mm;             /* A4 largura real */
-  min-height: 297mm;        /* A4 altura mínima */
+  width: 210mm; /* A4 largura real */
+  min-height: 297mm; /* A4 altura mínima */
   background: #fff;
-  padding: 20mm;            /* margens internas */
+  padding: 15mm; /* Margens internas reduzidas para economizar espaço */
   margin: 0 auto;
   box-sizing: border-box;
   color: #333;
-  line-height: 1.5;
+  line-height: 1.4; /* Reduzido para maior compactação */
 
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid #1ba13f;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
 
     .logo {
-      max-width: 150px;
+      max-width: 120px; /* Logo reduzido para economizar espaço */
       height: auto;
     }
 
     h1 {
       flex: 1;
       text-align: center;
-      font-size: 1.8rem;
-      letter-spacing: 2px;
+      font-size: 1.5rem; /* Título menor */
+      letter-spacing: 1.5px;
       font-weight: bold;
       color: #1ba13f;
       margin: 0;
@@ -36,16 +36,16 @@
   .info-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 15px;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
     background: #f5f7f6;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 5px;
 
     p {
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 0.9rem; /* Fonte menor */
 
       strong {
         color: #1ba13f;
@@ -54,64 +54,77 @@
   }
 
   .localidade-section {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 
     h2 {
       background: #e9f7ef;
-      padding: 8px 12px;
-      border-left: 4px solid #1ba13f;
-      font-size: 1.1rem;
-      margin: 0 0 10px;
+      padding: 6px 10px;
+      border-left: 3px solid #1ba13f;
+      font-size: 1rem; /* Título da localidade menor */
+      margin: 0 0 8px;
       font-weight: bold;
     }
 
-    .product-table {
-      width: 100%;
-      border-collapse: collapse;
-
-      th {
-        background: #1ba13f;
-        color: #fff;
-        padding: 10px;
-        font-size: 0.85rem;
-        text-align: left;
-      }
-
-      td {
-        padding: 8px;
-        border-bottom: 1px solid #eee;
-        font-size: 0.85rem;
-      }
-
-      tr:nth-child(even) {
+    .pedido-list {
+      .pedido-item {
         background: #f9f9f9;
-      }
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 8px;
+        margin-bottom: 8px;
 
-      td:last-child {
-        text-align: right;
-        font-weight: bold;
+        .pedido-columns {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+
+          .column-left,
+          .column-right {
+            flex: 1;
+            p {
+              margin: 3px 0;
+              font-size: 0.8rem; /* Fonte reduzida para compactação */
+
+              strong {
+                color: #1ba13f;
+                display: inline-block;
+                width: 100px; /* Ajustado para alinhamento mais compacto */
+              }
+            }
+          }
+
+          .column-right {
+            p:last-child {
+              font-weight: bold; /* Quantidade em negrito para destaque */
+            }
+          }
+        }
+
+        &:nth-child(even) {
+          background: #fff;
+        }
       }
     }
   }
 
   .divider {
-    height: 2px;
+    height: 1px; /* Divisor mais fino */
     background-color: #ccc;
-    margin: 25px 0;
+    margin: 15px 0;
   }
 
   .footer {
-    margin-top: 40px;
-    padding-top: 15px;
+    margin-top: 30px;
+    padding-top: 10px;
     border-top: 1px solid #ccc;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #666;
 
     .assinatura {
-      margin-top: 30px;
+      margin-top: 20px;
       border-top: 1px dashed #333;
-      width: 300px;
+      width: 250px; /* Assinatura menor */
       margin-left: auto;
       margin-right: auto;
       padding-top: 5px;

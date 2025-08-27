@@ -16,30 +16,24 @@
     <ng-container *ngFor="let localidade of getUniqueLocalidades(); let i = index">
       <div class="localidade-section">
         <h2>{{ localidade || 'Não informado' }}</h2>
-        <table class="product-table">
-          <thead>
-            <tr>
-              <th>Ordem</th>
-              <th>Núm. Pedido</th>
-              <th>Cliente</th>
-              <th>Endereço</th>
-              <th>Localidade</th>
-              <th>Item</th>
-              <th>Quantidade</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let pedido of filterByLocalidade(pedidosOrdenados, localidade); let j = index">
-              <td>{{ i * pedidosOrdenados.length + j + 1 }}</td>
-              <td>{{ pedido.DocNum }}</td>
-              <td>{{ pedido.CardName }}</td>
-              <td>{{ pedido.Address2 || 'Não informado' }}</td>
-              <td>{{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</td>
-              <td>{{ pedido.ItemCode }} - {{ pedido.Dscription }}</td>
-              <td>{{ pedido.Quantity }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="pedido-list">
+          <div *ngFor="let pedido of filterByLocalidade(pedidosOrdenados, localidade); let j = index" class="pedido-item">
+            <div class="pedido-columns">
+              <div class="column-left">
+                <p><strong>Ordem:</strong> {{ i * pedidosOrdenados.length + j + 1 }}</p>
+                <p><strong>Núm. Pedido:</strong> {{ pedido.DocNum }}</p>
+                <p><strong>Cliente:</strong> {{ pedido.CardName }}</p>
+                <p><strong>Endereço:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
+                <p><strong>Observação:</strong> {{ pedido.Comments || 'Sem observações' }}</p>
+              </div>
+              <div class="column-right">
+                <p><strong>Localidade:</strong> {{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</p>
+                <p><strong>Item:</strong> {{ pedido.ItemCode }} - {{ pedido.Dscription }}</p>
+                <p><strong>Quantidade:</strong> {{ pedido.Quantity }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Divisor entre localidades -->
@@ -52,4 +46,4 @@
       ASSINATURA
     </div>
   </div>
-</div> 
+</div>
