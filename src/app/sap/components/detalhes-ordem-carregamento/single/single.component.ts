@@ -16,6 +16,7 @@ import { Localidade } from '../../../model/localidade/localidade';
 import { NextLink } from '../../../model/next-link';
 import { OrderSalesService } from '../../../service/document/order-sales.service';
 import { forkJoin } from 'rxjs';
+import { RomaneioPdfComponent } from '../romaneio-pdf/romaneio-pdf.component';
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -80,6 +81,24 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   localidadeFiltro: Localidade = null;
   groupedPedidosDisponiveis: { DocNum: string, CardName: string, items: any[], isCollapsed: boolean, allSelected: boolean }[] = [];
 
+showRomaneioModal = false;
+
+// Adicione esta ViewChild
+  @ViewChild('romaneioPdfComponent') romaneioPdfComponent: RomaneioPdfComponent;
+
+// Adicione este método para abrir o modal
+abrirModalRomaneio() {
+  if (this.pedidos.length === 0) {
+    this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
+    return;
+  }
+  this.showRomaneioModal = true;
+}
+
+// Adicione este método para gerar o PDF
+gerarRomaneioPDF() {
+  this.romaneioPdfComponent.gerarPdf();
+}
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
 
   definition = [

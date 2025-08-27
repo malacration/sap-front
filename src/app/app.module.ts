@@ -115,6 +115,7 @@ import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-orde
 import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 import { ItinerarioPdfComponent } from './sap/components/detalhes-ordem-carregamento/itinerario-pdf/itinerario-pdf.component';
 import { Pdf2Service } from './sap/service/pdf-2.service';
+import { RomaneioPdfComponent } from './sap/components/detalhes-ordem-carregamento/romaneio-pdf/romaneio-pdf.component';
 
 
 registerLocaleData(localeBr);
@@ -188,7 +189,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DualListBoxComponent,
     OrdemCarregamentoStatementComponent,
     OrdemCarregamentoSingleComponent,
-    ItinerarioPdfComponent
+    ItinerarioPdfComponent,
+    RomaneioPdfComponent
   ],
   imports: [
     NgxPaginationModule,

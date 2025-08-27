@@ -39,15 +39,6 @@
         </button>
 
         <button
-          (click)="abrirModalItinerario()"
-          type="button"
-          class="btn btn-warning btn-sm"
-          style="margin-left: 8px;"
-        >
-          Gerar Itinerário
-        </button>
-
-        <button
           (click)="abrirModalAdicionarPedidos()"
           type="button"
           class="btn btn-warning btn-sm"
@@ -62,6 +53,23 @@
           "
         >
           Adicionar Pedidos
+        </button>
+
+        <button
+          (click)="abrirModalItinerario()"
+          type="button"
+          class="btn btn-warning btn-sm"
+          style="margin-left: 8px;"
+        >
+        Itinerário
+        </button>
+
+        <button
+          (click)="abrirModalRomaneio()"
+          type="button"
+          class="btn btn-warning btn-sm"
+          style="margin-left: 8px;">
+          Romaneio
         </button>
       </div>
     </div>
@@ -557,4 +565,33 @@
       </button>
     </div>
   </app-modal>
+
+  <!--- Romaneio  -->
+<app-modal [(show)]="showRomaneioModal" [title]="'Romaneio de Carregamento'">
+  <div class="modal-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> Visualização do romaneio com todos os itens da ordem de carregamento.
+    </div>
+    
+    <div class="pdf-preview-container" style="height: 80vh; padding: 10px;">
+      <div class="pdf-toolbar">
+        <button (click)="gerarRomaneioPDF()" class="btn btn-success btn-sm">Gerar PDF</button>
+      </div>
+      <div class="pdf-preview" style="overflow-y: auto; height: calc(100% - 50px);">
+        <div class="pdf-preview-content">
+          <app-romaneio-pdf 
+            [pedidos]="pedidos" 
+            [ordemCarregamento]="selected" 
+            [businessPartner]="businesPartner" 
+            [localidadesMap]="localidadesMap"
+            #romaneioPdfComponent>
+          </app-romaneio-pdf>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="showRomaneioModal = false">Fechar</button>
+  </div>
+</app-modal>
 </section>

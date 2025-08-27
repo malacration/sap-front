@@ -1,0 +1,43 @@
+<div class="pdf-container" #pdfContent>
+  <div class="header">
+    <img src="logo.png" alt="Logo" class="logo">
+    <h1>ROMANEIO DE CARREGAMENTO</h1>
+  </div>
+
+  <div class="info-section">
+    <p><strong>Número da Ordem:</strong> {{ ordemCarregamento?.DocEntry }}</p>
+    <p><strong>Descrição da Ordem:</strong> {{ ordemCarregamento?.U_nameOrdem }}</p>
+    <p><strong>Data de Criação:</strong> {{ ordemCarregamento?.dataCriacao }}</p>
+    <p><strong>Status:</strong> {{ ordemCarregamento?.U_Status }}</p>
+  </div>
+
+  <div class="table-container">
+    <h2>Itens do Romaneio</h2>
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Descrição</th>
+          <th>Quantidade Total</th> 
+          <th>Placa</th> 
+          <th>Motorista</th> 
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of getItensAgrupados(); let i = index">
+          <td>{{ item.ItemCode }}</td>
+          <td>{{ item.Dscription }}</td>
+          <td>{{ item.Quantity }}</td>
+          <td>{{ item.Placa }}</td>
+          <td>{{ item.Motorista }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <div class="assinatura">
+      ASSINATURA
+    </div>
+  </div>
+</div>

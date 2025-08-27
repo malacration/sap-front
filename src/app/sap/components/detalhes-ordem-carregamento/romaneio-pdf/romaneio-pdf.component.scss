@@ -1,0 +1,114 @@
+.pdf-container {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  width: 210mm;             /* A4 largura real */
+  min-height: 297mm;        /* A4 altura mínima */
+  background: #fff;
+  padding: 20mm;            /* margens internas */
+  margin: 0 auto;
+  box-sizing: border-box;
+  color: #333;
+  line-height: 1.5;
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #1ba13f;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+
+    .logo {
+      max-width: 150px;
+      height: auto;
+    }
+
+    h1 {
+      flex: 1;
+      text-align: center;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      font-weight: bold;
+      color: #1ba13f;
+      margin: 0;
+    }
+  }
+
+  .info-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f5f7f6;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+
+      strong {
+        color: #1ba13f;
+      }
+    }
+  }
+
+  .table-container, .details-section {
+    margin-bottom: 25px;
+
+    h2 {
+      background: #e9f7ef;
+      padding: 8px 12px;
+      border-left: 4px solid #1ba13f;
+      font-size: 1.1rem;
+      margin: 0 0 10px;
+      font-weight: bold;
+    }
+
+    .product-table, .details-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        background: #1ba13f;
+        color: #fff;
+        padding: 10px;
+        font-size: 0.85rem;
+        text-align: left;
+      }
+
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+        font-size: 0.85rem;
+      }
+
+      tr:nth-child(even) {
+        background: #f9f9f9;
+      }
+
+      td:last-child {
+        text-align: right;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 15px;
+    border-top: 1px solid #ccc;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+
+    .assinatura {
+      margin-top: 30px;
+      border-top: 1px dashed #333;
+      width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-top: 5px;
+    }
+  }
+}
