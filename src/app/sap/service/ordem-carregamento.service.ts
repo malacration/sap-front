@@ -9,6 +9,13 @@ import { OrdemCarregamento } from "../model/ordem-carregamento";
 import { LinhaItem } from "../model/venda/venda-futura";
 import { BatchStock } from "../../modulos/sap-shared/_models/BatchStock.model";
 
+export interface CarregamentoDetalhes {
+  DocEntry: number;
+  Quantity: number;
+  Weight1: number;
+  docEntryQuantity: number;
+}
+
 @Injectable({
     providedIn: 'root'
   })
@@ -81,4 +88,9 @@ export class OrdemCarregamentoService{
       const url = `${this.url}/generate-from-loading-order/${docEntry}`;
       return this.http.post(url, lote);
   }
+
+  getDetalhes(id: number): Observable<CarregamentoDetalhes[]> {
+  return this.http.get<CarregamentoDetalhes[]>(`${this.url}/${id}/detalhes`);
+  }
+
 }

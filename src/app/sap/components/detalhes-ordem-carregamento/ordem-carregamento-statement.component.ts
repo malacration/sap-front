@@ -4,7 +4,7 @@ import { Page } from '../../model/page.model';
 import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { forkJoin, map, Subscription } from 'rxjs';
 import { ParameterService } from '../../../shared/service/parameter.service';
 import { AlertService } from '../../service/alert.service';
 import { OrdemCarregamento } from '../../model/ordem-carregamento';
@@ -57,29 +57,41 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     })
   }
 
-pageChange($event){
-    this.loading = true
-    this.service.getAll($event,this.all).subscribe({
-        next : (it: Page<any>) => {
-            it.content = it.content.map(ordem => {
-                if (ordem.ORD_CRG_LINHACollection) {
-                    const pedidosUnicos = new Set();
-                    ordem.ORD_CRG_LINHACollection.forEach(linha => {
-                        if (linha.U_numDocPedido) {
-                            pedidosUnicos.add(linha.U_numDocPedido);
-                        }
-                    });
-                    ordem.quantidadePedidos = pedidosUnicos.size;
-                } else {
-                    ordem.quantidadePedidos = 0;
-                }
-                return ordem;
-            });
-            this.pageContent = it;
-        },
-        complete : () => {this.loading = false}
+  pageChange($event) {
+    this.loading = true;
+    
+    // Primeiro busca as ordens principais
+    this.service.getAll($event, this.all).subscribe({
+      next: (it: Page<any>) => {
+        // Para cada ordem, busca os detalhes para calcular totais
+        const detalhesRequests = it.content.map(ordem => 
+          this.service.getDetalhes(ordem.DocEntry).pipe(
+            map(detalhes => ({ ordem, detalhes }))
+          )
+        );
+
+        // Espera todas as requisições de detalhes terminarem
+        forkJoin(detalhesRequests).subscribe(results => {
+          results.forEach(({ ordem, detalhes }) => {
+            // Calcula quantidade de pedidos únicos
+            const docEntriesUnicos = new Set(detalhes.map(d => d.DocEntry));
+            ordem.quantidadePedidos = docEntriesUnicos.size;
+
+            // Calcula peso total (soma de Quantity * Weight1)
+            ordem.U_pesoTotal2 = detalhes.reduce((total, detalhe) => {
+              return total + (detalhe.Quantity * detalhe.Weight1);
+            }, 0);
+          });
+
+          this.pageContent = it;
+          this.loading = false;
+        });
+      },
+      error: () => {
+        this.loading = false;
+      }
     });
-}
+  }
 
   action(event : ActionReturn){
     if(event.type == "selected"){

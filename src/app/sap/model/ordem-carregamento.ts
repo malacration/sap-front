@@ -7,6 +7,7 @@ export class OrdemCarregamento {
     U_Status: string
     U_filial3: string
     CreateDate: string;
+    Weight1: string;
 
     get dataCriacao() {
         return moment.utc(this.CreateDate).format('DD/MM/YYYY');
