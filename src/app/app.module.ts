@@ -116,6 +116,7 @@ import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 import { ItinerarioPdfComponent } from './sap/components/detalhes-ordem-carregamento/itinerario-pdf/itinerario-pdf.component';
 import { Pdf2Service } from './sap/service/pdf-2.service';
 import { RomaneioPdfComponent } from './sap/components/detalhes-ordem-carregamento/romaneio-pdf/romaneio-pdf.component';
+import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
 
 
 registerLocaleData(localeBr);
@@ -190,7 +191,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     OrdemCarregamentoStatementComponent,
     OrdemCarregamentoSingleComponent,
     ItinerarioPdfComponent,
-    RomaneioPdfComponent
+    RomaneioPdfComponent,
+    TransportadoraSearchComponent
   ],
   imports: [
     NgxPaginationModule,
