@@ -110,12 +110,12 @@
                     <input
                       type="text"
                       class="form-control"
-                      [ngClass]="{'is-valid': placa && placaValida, 'is-invalid': formTouched && (!placa || !placaValida)}"
+                      [ngClass]="{'is-valid': placa, 'is-invalid': formTouched && !placa}"
                       [(ngModel)]="placa"
-                      (ngModelChange)="validarPlaca(); updateLocalStorage(); onFormChange()"
-                      placeholder="Ex: ABC-1234 ou ABC1D23"
+                      (ngModelChange)="updateLocalStorage(); onFormChange()"
+                      placeholder="Ex: ABC-1234"
                     />
-                    <div class="invalid-feedback">A placa do veículo é obrigatória e deve seguir o formato válido (ex: ABC-1234 ou ABC1D23).</div>
+                    <div class="invalid-feedback">A placa do veículo é obrigatória.</div>
                   </div>
                 </div>
                 <div class="col-md-6">

@@ -42,7 +42,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   placa: string = '';
   nomeMotorista: string = '';
-  placaValida: boolean = true; // Para validação da placa
   formTouched: boolean = false; // Para feedback visual
   transportadora: string = '';
   nomeOrdem: string = '';
@@ -106,7 +105,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       // Carregar valores do localStorage
       this.placa = localStorage.getItem(`placa_${this.selected.DocEntry}`) || '';
       this.nomeMotorista = localStorage.getItem(`nomeMotorista_${this.selected.DocEntry}`) || '';
-      this.validarPlaca(); // Validar placa carregada
     }
   }
 
@@ -114,14 +112,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     if (this.selected?.DocEntry) {
       localStorage.setItem(`placa_${this.selected.DocEntry}`, this.placa);
       localStorage.setItem(`nomeMotorista_${this.selected.DocEntry}`, this.nomeMotorista);
-    }
-  }
-
-  validarPlaca() {
-    const placaRegex = /^[A-Z]{3}-?[0-9]{4}$|^[A-Z]{3}[0-9][A-Z][0-9]{2}$/;
-    this.placaValida = !this.placa || placaRegex.test(this.placa.toUpperCase());
-    if (this.placa && !this.placaValida) {
-      this.alertService.error('Formato da placa inválido. Use ABC-1234 ou ABC1D23.');
     }
   }
 
@@ -634,16 +624,18 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
       return;
     }
-    if (!this.placa || !this.nomeMotorista || !this.placaValida) {
-      this.alertService.error('Preencha corretamente os campos de Placa do Veículo e Nome do Motorista na aba Logística antes de gerar o romaneio.');
+    if (!this.placa || !this.nomeMotorista) {
+      this.formTouched = true; // Trigger form validation feedback
+      this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return;
     }
     this.showRomaneioModal = true;
   }
 
   gerarRomaneioPDF() {
-    if (!this.placa || !this.nomeMotorista || !this.placaValida) {
-      this.alertService.error('Preencha corretamente os campos de Placa do Veículo e Nome do Motorista na aba Logística.');
+    if (!this.placa || !this.nomeMotorista) {
+      this.formTouched = true; // Trigger form validation feedback
+      this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return;
     }
     this.romaneioPdfComponent.gerarPdf();
