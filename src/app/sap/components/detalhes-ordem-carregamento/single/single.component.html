@@ -257,20 +257,16 @@
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar Ordem</button>
-      <div class="pdf-preview-container" style="height: 80vh; padding: 10px;">
-        <div class="pdf-toolbar">
-          <button (click)="gerarPDF()" class="btn btn-success btn-sm">Gerar PDF</button>
-        </div>
-        <div class="pdf-preview" style="overflow-y: auto; height: calc(100% - 50px);">
-          <div class="pdf-preview-content">
-            <app-itinerario-pdf 
-              [pedidosOrdenados]="pedidosOrdenados" 
-              [ordemCarregamento]="selected" 
-              [businessPartner]="businesPartner" 
-              [localidadesMap]="localidadesMap">
-            </app-itinerario-pdf>
-          </div>
-        </div>
+      <!-- AJUSTE: Removido o container de preview visível. Agora só o botão fica visível. -->
+      <button (click)="gerarPDF()" class="btn btn-success btn-sm">Gerar PDF</button>
+      <!-- AJUSTE: Componente PDF renderizado off-screen para captura sem exibição visual. -->
+      <div style="position: absolute; left: -9999px; width: 794px;">
+        <app-itinerario-pdf 
+          [pedidosOrdenados]="pedidosOrdenados" 
+          [ordemCarregamento]="selected" 
+          [businessPartner]="businesPartner" 
+          [localidadesMap]="localidadesMap">
+        </app-itinerario-pdf>
       </div>
     </div>
   </app-modal>
