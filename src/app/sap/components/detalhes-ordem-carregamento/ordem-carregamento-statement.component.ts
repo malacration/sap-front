@@ -19,21 +19,22 @@ import { OrdemCarregamentoService } from '../../service/ordem-carregamento.servi
 })
 export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
-  nomeUsuario : string
+  nomeUsuario: string
   loading = false
-  pageContent : Page<OrdemCarregamento> = new Page()
-  selected : OrdemCarregamento = null
+  calculatingTotals = false // Nova flag para o loading dos cálculos
+  pageContent: Page<OrdemCarregamento> = new Page()
+  selected: OrdemCarregamento = null
   all = false
 
   routeSubscriptions : Array<Subscription> = new Array()
 
   definition = [
-      new Column('ID', 'DocEntry'),
-      new Column('Nome', 'U_nameOrdem'),
-      new Column('Peso Total (Kg)', 'U_pesoTotal2'),
-      new Column('Qtd. Pedidos', 'quantidadePedidos'), // Nova coluna
-      new Column('Status', 'U_Status'),
-      new Column('Criado em', 'dataCriacao')
+    new Column('ID', 'DocEntry'),
+    new Column('Nome', 'U_nameOrdem'),
+    new Column('Peso Total (Kg)', 'U_pesoTotal2'),
+    new Column('Qtd. Pedidos', 'quantidadePedidos'),
+    new Column('Status', 'U_Status'),
+    new Column('Criado em', 'dataCriacao')
   ]
 
   constructor(
@@ -58,40 +59,61 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   pageChange($event) {
-    this.loading = true;
-    
-    // Primeiro busca as ordens principais
-    this.service.getAll($event, this.all).subscribe({
-      next: (it: Page<any>) => {
-        // Para cada ordem, busca os detalhes para calcular totais
-        const detalhesRequests = it.content.map(ordem => 
-          this.service.getDetalhes(ordem.DocEntry).pipe(
-            map(detalhes => ({ ordem, detalhes }))
-          )
-        );
+      this.loading = true;
+      this.calculatingTotals = true; // Ativa o loading dos cálculos
+      
+      // Primeiro busca as ordens principais
+      this.service.getAll($event, this.all).subscribe({
+        next: (it: Page<any>) => {
+          // Para cada ordem, busca os detalhes para calcular totais
+          const detalhesRequests = it.content.map(ordem => 
+            this.service.getDetalhes(ordem.DocEntry).pipe(
+              map(detalhes => ({ ordem, detalhes }))
+            )
+          );
 
-        // Espera todas as requisições de detalhes terminarem
-        forkJoin(detalhesRequests).subscribe(results => {
-          results.forEach(({ ordem, detalhes }) => {
-            // Calcula quantidade de pedidos únicos
-            const docEntriesUnicos = new Set(detalhes.map(d => d.DocEntry));
-            ordem.quantidadePedidos = docEntriesUnicos.size;
+          // Espera todas as requisições de detalhes terminarem
+          forkJoin(detalhesRequests).subscribe({
+            next: (results) => {
+              results.forEach(({ ordem, detalhes }) => {
+                // Calcula quantidade de pedidos únicos
+                const docEntriesUnicos = new Set(detalhes.map(d => d.DocEntry));
+                ordem.quantidadePedidos = docEntriesUnicos.size;
 
-            // Calcula peso total (soma de Quantity * Weight1)
-            ordem.U_pesoTotal2 = detalhes.reduce((total, detalhe) => {
-              return total + (detalhe.Quantity * detalhe.Weight1);
-            }, 0);
+                // Calcula peso total (soma de Quantity * Weight1)
+                const pesoTotal = detalhes.reduce((total, detalhe) => {
+                  return total + (detalhe.Quantity * detalhe.Weight1);
+                }, 0);
+                
+                // Formata o peso total com separadores de milhar e duas casas decimais
+                ordem.U_pesoTotal2 = this.formatarPeso(pesoTotal);
+              });
+
+              this.pageContent = it;
+              this.loading = false;
+              this.calculatingTotals = false;
+            },
+            error: () => {
+              this.loading = false;
+              this.calculatingTotals = false;
+            }
           });
-
-          this.pageContent = it;
+        },
+        error: () => {
           this.loading = false;
-        });
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
-  }
+          this.calculatingTotals = false;
+        }
+      });
+    }
+
+    // Função para formatar o peso
+    formatarPeso(peso: number): string {
+      return peso.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
 
   action(event : ActionReturn){
     if(event.type == "selected"){
