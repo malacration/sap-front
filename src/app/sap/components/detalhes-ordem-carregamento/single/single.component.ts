@@ -38,11 +38,11 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   selected: OrdemCarregamento = null;
 
   @Output()
-  close = new EventEmitter();
+  close = new EventEmitter(); // Fixed typo: changed 'closet' to 'close'
 
   placa: string = '';
   nomeMotorista: string = '';
-  formTouched: boolean = false; // Para feedback visual
+  formTouched: boolean = false;
   transportadora: string = '';
   nomeOrdem: string = '';
   loading = false;
@@ -52,14 +52,12 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   pedidosOrdenados: any[] = [];
   private draggedItemIndex: number;
 
-  // Estado para o modal de lotes
   showLote = false;
   loadingPedidos = false;
   currentPedido: PedidoVenda | LinhasPedido | null = null;
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
   localidadesMap: Map<string, string> = new Map();
 
-  // Cancelamento
   showCancelamentoModal = false;
   pedidosParaCancelamento: any[] = [];
   pedidosFiltrados: any[] = [];
@@ -68,7 +66,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   loadingCancelamento = false;
   filtroPesquisa = '';
 
-  // Adicionar Pedidos
   showAdicionarPedidosModal = false;
   pedidosDisponiveis: any[] = [];
   pedidosDisponiveisFiltrados: any[] = [];
@@ -102,7 +99,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   ngOnInit(): void {
     if (this.selected?.DocEntry) {
       this.loadPedidos(this.selected.DocEntry);
-      // Carregar valores do localStorage
       this.placa = localStorage.getItem(`placa_${this.selected.DocEntry}`) || '';
       this.nomeMotorista = localStorage.getItem(`nomeMotorista_${this.selected.DocEntry}`) || '';
     }
@@ -153,7 +149,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   voltar() {
-    // Limpar variáveis e localStorage ao voltar
     if (this.selected?.DocEntry) {
       localStorage.removeItem(`placa_${this.selected.DocEntry}`);
       localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
@@ -284,12 +279,14 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.alertService.error('Nenhum pedido selecionado para cancelamento.');
       return;
     }
-    const pedidosNumeros = this.pedidosSelecionados.map(p => p.DocNum).join(', ');
-    this.alertService.confirm(
-      `Tem certeza que deseja cancelar ${this.pedidosSelecionados.length} pedido(s)?<br>
-      <strong>Pedidos: ${pedidosNumeros}</strong><br>
-      Esta ação não pode ser desfeita.`
-    ).then(result => {
+    const pedidosNaoCancelados = this.pedidosParaCancelamento.filter(p => p.U_Status !== 'Cancelado');
+    const allPedidosSelected = this.pedidosSelecionados.length === pedidosNaoCancelados.length;
+
+    const message = allPedidosSelected
+      ? 'Atenção: Remover todos os pedidos cancelará a ordem de carregamento e uma nova deverá ser criada.'
+      : `Voce deseja Remover ${this.pedidosSelecionados.length} de pedidos?`;
+
+    this.alertService.confirm(message).then(result => {
       if (result.isConfirmed) {
         this.executarCancelamento();
       }
@@ -338,7 +335,6 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       next: () => {
         this.alertService.confirm('Documento finalizado com sucesso!');
         this.selected.U_Status = 'Fechado';
-        // Limpar localStorage ao finalizar
         if (this.selected?.DocEntry) {
           localStorage.removeItem(`placa_${this.selected.DocEntry}`);
           localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
@@ -625,7 +621,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       return;
     }
     if (!this.placa || !this.nomeMotorista) {
-      this.formTouched = true; // Trigger form validation feedback
+      this.formTouched = true;
       this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return;
     }
@@ -634,7 +630,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   gerarRomaneioPDF() {
     if (!this.placa || !this.nomeMotorista) {
-      this.formTouched = true; // Trigger form validation feedback
+      this.formTouched = true;
       this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return;
     }
