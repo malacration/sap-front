@@ -1,3 +1,5 @@
+// dual-list-box.component.ts
+
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SweetAlertResult } from 'sweetalert2';
 import { PedidoVenda } from '../document/documento.statement.component';
@@ -22,7 +24,7 @@ export class DualListBoxComponent {
   isLoading: { [itemCode: string]: boolean } = {};
   searchTermAvailable: string = '';
   searchTermSelected: string = '';
-  carregamentoPorPedido: boolean = false;
+  carregamentoPorPedido: boolean = true;
   isSelectedListCollapsed: boolean = false;
 
   constructor(
@@ -121,10 +123,6 @@ export class DualListBoxComponent {
           });
       }
     });
-  }
-
-  toggleCarregamentoPorPedido(): void {
-    this.carregamentoPorPedido = !this.carregamentoPorPedido;
   }
 
   toggleSelectedList(): void {

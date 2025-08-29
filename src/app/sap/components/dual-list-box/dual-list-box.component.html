@@ -1,11 +1,4 @@
-<div class="toggle-container">
-  <button 
-    class="btn btn-sm btn-toggle" 
-    [ngClass]="{'btn-primary': carregamentoPorPedido, 'btn-outline-primary': !carregamentoPorPedido}"
-    (click)="toggleCarregamentoPorPedido()">
-    {{ carregamentoPorPedido ? 'Carregamento por Pedido: Ativado' : 'Carregamento por Pedido: Desativado' }}
-  </button>
-</div>
+<!-- dual-list-box.component.html -->
 
 <div class="dual-list-container" [ngClass]="{'collapsed-right': isSelectedListCollapsed}">
   <div class="list-box left-list">
