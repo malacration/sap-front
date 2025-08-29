@@ -20,7 +20,7 @@
           <div *ngFor="let pedido of filterByLocalidade(pedidosOrdenados, localidade); let j = index" class="pedido-item">
             <div class="pedido-columns">
               <div class="column-left">
-                <p><strong>Ordem:</strong> {{ i * pedidosOrdenados.length + j + 1 }}</p>
+                <p><strong>Linha:</strong> {{ i * pedidosOrdenados.length + j + 1 }}</p>
                 <p><strong>Núm. Pedido:</strong> {{ pedido.DocNum }}</p>
                 <p><strong>Cliente:</strong> {{ pedido.CardName }}</p>
                 <p><strong>Endereço:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
