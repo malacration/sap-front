@@ -21,7 +21,7 @@
           <th>Item</th>
           <th>Descrição</th>
           <th class="text-center">Quantidade Total</th>
-          <th class="text-center">Peso Total</th>
+          <th class="text-center">Peso Total (kg)</th>
         </tr>
       </thead>
       <tbody>
@@ -29,14 +29,14 @@
           <td>{{ item.ItemCode }}</td>
           <td>{{ item.Dscription }}</td>
           <td class="text-center">{{ item.Quantity }}</td>
-          <td class="text-center">{{ item.Peso }}</td>
+          <td class="text-center">{{ item.Peso | number: '1.0-2' : 'pt-BR' }} kg</td>
         </tr>
       </tbody>
       <tfoot>
         <tr class="total-row">
           <td colspan="2"><strong>Totais:</strong></td>
           <td class="text-center"><strong>{{ getTotalQuantidade() }}</strong></td>
-          <td class="text-center"><strong>{{ getTotalPeso() }}</strong></td>
+          <td class="text-center"><strong>{{ getTotalPeso() | number: '1.0-2' : 'pt-BR' }} kg</strong></td>
         </tr>
       </tfoot>
     </table>

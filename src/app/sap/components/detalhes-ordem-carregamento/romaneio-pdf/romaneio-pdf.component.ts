@@ -37,14 +37,14 @@ export class RomaneioPdfComponent {
       if (itensAgrupados.has(key)) {
         const existing = itensAgrupados.get(key);
         existing.Quantity += pedido.Quantity;
-        existing.Peso += pedido.Quantity; // Por enquanto, Peso = Quantity; altere para pedido.Weight depois
+        existing.Peso += (pedido.Quantity * (pedido.Weight1 || 0)); // Calcula Peso como Quantity * Weight1
         existing.pedidos.push(pedido.DocNum);
       } else {
         itensAgrupados.set(key, {
           ItemCode: pedido.ItemCode,
           Dscription: pedido.Dscription,
           Quantity: pedido.Quantity,
-          Peso: pedido.Quantity, // Por enquanto, Peso = Quantity
+          Peso: pedido.Quantity * (pedido.Weight1 || 0), // Calcula Peso como Quantity * Weight1
           pedidos: [pedido.DocNum]
         });
       }
