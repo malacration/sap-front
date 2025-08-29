@@ -144,7 +144,7 @@ import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-o
       {
         path: 'detalhes',
         title: 'Detalhes',
-        data: ["icon:fas fa-box"],
+        data: ["icon:fas fa-file-alt"],
         canActivate: [authGuard],
         component: OrdemCarregamentoStatementComponent
       },
