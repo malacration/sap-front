@@ -31,7 +31,7 @@
                 class="list-item" 
                 (click)="selectItem(item)">
               <div class="item-details">
-                <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} <i class="fas fa-weight-hanging"></i>
+                <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <i class="fas fa-weight-hanging"></i>
               </div>
               <div class="stock-info" *ngIf="showStock">
                 <span class="stock-green">Estoque: {{ item.OnHand }}</span>
@@ -71,7 +71,7 @@
       <h5>Selecionados</h5>
       <div class="total-weight-info mb-2">
         <span class="btn btn-sm btn-primary">
-          Peso Total Selecionado: {{ totalSelectedWeight | number:'1.2-2' }}
+          Peso Total Selecionado: {{ totalSelectedWeight | number:'1.2-2' }} KG
         </span>
       </div>
       <button class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
@@ -94,7 +94,7 @@
                   class="list-item" 
                   (click)="removeItem(item)">
                 <div class="item-details">
-                  <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} <i class="fas fa-weight-hanging"></i>
+                  <i class="fas fa-barcode"></i> {{ item.ItemCode }} - <i class="fas fa-tag"></i> {{ item.Dscription }} - <i class="fas fa-dolly"></i> {{ item.Quantity }} - Peso Total: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <i class="fas fa-weight-hanging"></i>
                 </div>
               </li>
             </ul>
@@ -104,7 +104,7 @@
       </ng-container>
       <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
         <button class="btn btn-sm btn-success maximize-btn" (click)="toggleSelectedList()">
-          {{ groupedSelectedItems.length }} Pedidos Selecionados - Peso Total: {{ totalSelectedWeight | number:'1.2-2' }}
+          {{ groupedSelectedItems.length }} Pedidos Selecionados - Peso Total: {{ totalSelectedWeight | number:'1.2-2' }} KG
         </button>
       </div>
     </div>
