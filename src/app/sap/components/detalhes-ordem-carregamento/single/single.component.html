@@ -35,7 +35,7 @@
               : ''
           "
         >
-          Remover
+          Remover Pedidos
         </button>
 
         <button
@@ -388,7 +388,7 @@
         (click)="confirmarCancelamentoSelecionados()"
         [disabled]="pedidosSelecionados.length === 0 || loadingCancelamento"
       >
-        <span *ngIf="!loadingCancelamento">Cancelar Pedidos Selecionados</span>
+        <span *ngIf="!loadingCancelamento">Remover Pedidos Selecionados</span>
         <span *ngIf="loadingCancelamento"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
       </button>
     </div>
