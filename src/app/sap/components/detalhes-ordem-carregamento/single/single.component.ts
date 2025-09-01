@@ -206,12 +206,14 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
         this.lotesSelecionadosPorItem.clear();
         this.currentPedido = null;
         this.selected.U_Status = 'Nota fiscal Confirmada';
+        this.loading = false; // Garante que o loading seja resetado no sucesso
       },
       error: (error) => {
         this.alertService.error('Erro ao confirmar nota fiscal: ' + (error.error?.message || error.message));
+        this.loading = false; // Reseta o loading em caso de erro
       },
       complete: () => {
-        this.loading = false;
+        this.loading = false; // Já existe, mas mantemos para consistência
       }
     });
   }
