@@ -183,7 +183,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   confirmarNotaVerde() {
     if (this.lotesSelecionadosPorItem.size === 0) {
-      this.alertService.error('Nenhum lote selecionado para confirmar nota verde.');
+      this.alertService.error('Nenhum lote selecionado para confirmar nota fiscal.');
       return;
     }
     this.loading = true;
@@ -201,14 +201,14 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }));
     this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
       next: (response) => {
-        this.alertService.confirm('Nota verde confirmada com sucesso!');
+        this.alertService.confirm('Nota fiscal confirmada com sucesso!');
         this.showLote = false;
         this.lotesSelecionadosPorItem.clear();
         this.currentPedido = null;
-        this.selected.U_Status = 'Nota Verde Confirmada';
+        this.selected.U_Status = 'Nota fiscal Confirmada';
       },
       error: (error) => {
-        this.alertService.error('Erro ao confirmar nota verde: ' + (error.error?.message || error.message));
+        this.alertService.error('Erro ao confirmar nota fiscal: ' + (error.error?.message || error.message));
       },
       complete: () => {
         this.loading = false;
