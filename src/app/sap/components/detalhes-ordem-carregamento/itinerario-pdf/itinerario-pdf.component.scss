@@ -91,11 +91,28 @@
                 width: 100px; /* Ajustado para alinhamento mais compacto */
               }
             }
-          }
 
-          .column-right {
-            p:last-child {
-              font-weight: bold; /* Quantidade em negrito para destaque */
+            .column-right {
+              p:last-child {
+                /* Removido font-weight: bold para Quantidade */
+                strong {
+                  color: #1ba13f;
+                }
+              }
+            }
+          }
+        }
+
+        .full-width {
+          margin-top: 8px;
+          p {
+            margin: 3px 0;
+            font-size: 0.8rem;
+
+            strong {
+              color: #1ba13f;
+              display: inline-block;
+              width: 100px;
             }
           }
         }

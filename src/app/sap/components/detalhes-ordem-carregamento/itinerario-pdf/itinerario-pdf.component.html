@@ -23,14 +23,16 @@
                 <p><strong>Linha:</strong> {{ i * pedidosOrdenados.length + j + 1 }}</p>
                 <p><strong>Núm. Pedido:</strong> {{ pedido.DocNum }}</p>
                 <p><strong>Cliente:</strong> {{ pedido.CardName }}</p>
-                <p><strong>Endereço:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
-                <p><strong>Observação:</strong> {{ pedido.Comments || 'Sem observações' }}</p>
               </div>
               <div class="column-right">
                 <p><strong>Localidade:</strong> {{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</p>
                 <p><strong>Item:</strong> {{ pedido.ItemCode }} - {{ pedido.Dscription }}</p>
                 <p><strong>Quantidade:</strong> {{ pedido.Quantity }}</p>
               </div>
+            </div>
+            <div class="full-width">
+              <p><strong>Endereço:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
+              <p><strong>Observação:</strong> {{ pedido.Comments || 'Sem observações' }}</p>
             </div>
           </div>
         </div>
