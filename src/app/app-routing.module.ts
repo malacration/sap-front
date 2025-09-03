@@ -183,6 +183,12 @@ import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-o
     component: CalculadoraStatementComponent,
   },
   {
+    path: 'ordem-carregamento/:id',
+    title: 'Editar Ordem de Carregamento',
+    data: ["hidden"],
+    component: OrdemCarregamentoComponent,
+  },
+  {
     path: '**',
     title: 'Não encontrado',
     data: ["hidden"],

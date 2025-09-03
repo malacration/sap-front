@@ -93,4 +93,7 @@ export class OrdemCarregamentoService{
   return this.http.get<CarregamentoDetalhes[]>(`${this.url}/${id}/detalhes`);
   }
 
+  update(body: OrdemCarregamento, id: string): Observable<any> {
+    return this.http.patch<any>(`${this.url}/${id}`, body);
+  }
 }

@@ -17,6 +17,7 @@ import { NextLink } from '../../../model/next-link';
 import { OrderSalesService } from '../../../service/document/order-sales.service';
 import { forkJoin } from 'rxjs';
 import { RomaneioPdfComponent } from '../romaneio-pdf/romaneio-pdf.component';
+import { Router } from '@angular/router'; // AJUSTE: Importado Router para navegação
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -31,7 +32,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     private businessPartnerService: BusinessPartnerService,
     private pedidosVendaService: PedidosVendaService,
     private carregamentoService: OrdemCarregamentoService,
-    private orderSalesService: OrderSalesService
+    private orderSalesService: OrderSalesService,
+    private router: Router // AJUSTE: Injetado Router
   ) {}
 
   @Input()
@@ -58,26 +60,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
   localidadesMap: Map<string, string> = new Map();
 
-  showCancelamentoModal = false;
-  pedidosParaCancelamento: any[] = [];
-  pedidosFiltrados: any[] = [];
-  pedidosSelecionados: any[] = [];
-  selectAllPedidos = false;
-  loadingCancelamento = false;
-  filtroPesquisa = '';
-
-  showAdicionarPedidosModal = false;
-  pedidosDisponiveis: any[] = [];
-  pedidosDisponiveisFiltrados: any[] = [];
-  pedidosSelecionadosAdicionar: any[] = [];
-  selectAllDisponiveis = false;
-  loadingAdicionarPedidos = false;
-  filtroPesquisaAdicionar = '';
-  filtroDataInicial: string = '';
-  filtroDataFinal: string = '';
-  branchFiltro: Branch = null;
-  localidadeFiltro: Localidade = null;
-  groupedPedidosDisponiveis: { DocNum: string, CardName: string, items: any[], isCollapsed: boolean, allSelected: boolean }[] = [];
+  // AJUSTE: Removidas variáveis de modais adicionar/remover
 
   showRomaneioModal = false;
 
@@ -218,117 +201,13 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     });
   }
 
-  abrirModalCancelamento() {
-    if (this.pedidos.length === 0) {
-      this.alertService.error('Nenhum pedido disponível para cancelamento.');
+  // AJUSTE: Novo método para editar ordem (navega para rota com ID)
+  editarOrdem() {
+    if (this.selected.U_Status === 'Fechado' || this.selected.U_Status === 'Cancelado') {
+      this.alertService.error('Não é possível editar uma ordem fechada ou cancelada.');
       return;
     }
-    this.pedidosParaCancelamento = this.pedidos.map(pedido => ({
-      ...pedido,
-      selected: false,
-      U_Status: pedido.U_Status || 'Aberto'
-    }));
-    this.pedidosFiltrados = [...this.pedidosParaCancelamento];
-    this.pedidosSelecionados = [];
-    this.selectAllPedidos = false;
-    this.filtroPesquisa = '';
-    this.showCancelamentoModal = true;
-  }
-
-  filtrarPedidos() {
-    if (!this.filtroPesquisa) {
-      this.pedidosFiltrados = [...this.pedidosParaCancelamento];
-    } else {
-      const termo = this.filtroPesquisa.toLowerCase().trim();
-      this.pedidosFiltrados = this.pedidosParaCancelamento.filter(pedido =>
-        pedido.DocNum.toString().toLowerCase().includes(termo)
-      );
-    }
-    this.verificarSelecaoTotal();
-  }
-
-  limparFiltro() {
-    this.filtroPesquisa = '';
-    this.filtrarPedidos();
-  }
-
-  fecharModalCancelamento() {
-    this.showCancelamentoModal = false;
-    this.pedidosParaCancelamento = [];
-    this.pedidosFiltrados = [];
-    this.pedidosSelecionados = [];
-    this.filtroPesquisa = '';
-  }
-
-  toggleSelectAll() {
-    this.pedidosFiltrados.forEach(pedido => {
-      if (pedido.U_Status !== 'Cancelado') {
-        pedido.selected = this.selectAllPedidos;
-      }
-    });
-    this.verificarSelecaoTotal();
-  }
-
-  verificarSelecaoTotal() {
-    this.pedidosSelecionados = this.pedidosParaCancelamento.filter(p => p.selected);
-    const pedidosNaoCanceladosVisiveis = this.pedidosFiltrados.filter(p => p.U_Status !== 'Cancelado');
-    this.selectAllPedidos = pedidosNaoCanceladosVisiveis.length > 0 && 
-                           pedidosNaoCanceladosVisiveis.every(p => p.selected);
-  }
-
-  confirmarCancelamentoSelecionados() {
-    if (this.pedidosSelecionados.length === 0) {
-      this.alertService.error('Nenhum pedido selecionado para cancelamento.');
-      return;
-    }
-    const pedidosNaoCancelados = this.pedidosParaCancelamento.filter(p => p.U_Status !== 'Cancelado');
-    const allPedidosSelected = this.pedidosSelecionados.length === pedidosNaoCancelados.length;
-
-    const message = allPedidosSelected
-      ? 'Atenção: Remover todos os pedidos cancelará a ordem de carregamento e uma nova deverá ser criada.'
-      : `Voce deseja Remover ${this.pedidosSelecionados.length} de pedidos?`;
-
-    this.alertService.confirm(message).then(result => {
-      if (result.isConfirmed) {
-        this.executarCancelamento();
-      }
-    });
-  }
-
-  toggleSelecaoPedido(pedido: any, event: MouseEvent) {
-    if (pedido.U_Status === 'Cancelado') {
-      return;
-    }
-    pedido.selected = !pedido.selected;
-    this.verificarSelecaoTotal();
-    event.stopPropagation();
-  }
-
-  executarCancelamento() {
-    this.loadingCancelamento = true;
-    const docNumsParaCancelar = this.pedidosSelecionados.map(p => p.DocNum);
-    this.ordemCarregamentoService.cancelarPedidos(this.selected.DocEntry, docNumsParaCancelar)
-      .subscribe({
-        next: (response) => {
-          this.alertService.confirm('Pedidos cancelados com sucesso!');
-          this.pedidos = this.pedidos.filter(pedido => !docNumsParaCancelar.includes(pedido.DocNum));
-          this.pedidosParaCancelamento.forEach(pedido => {
-            if (pedido.selected) {
-              pedido.U_Status = 'Cancelado';
-              pedido.selected = false;
-            }
-          });
-          this.pedidosSelecionados = [];
-          this.selectAllPedidos = false;
-          this.filtrarPedidos();
-        },
-        error: (error) => {
-          this.alertService.error('Erro ao cancelar pedidos: ' + error.message);
-        },
-        complete: () => {
-          this.loadingCancelamento = false;
-        }
-      });
+    this.router.navigate(['/ordem-carregamento', this.selected.DocEntry]);
   }
 
   finalizarDocumento(docEntry: number) {
@@ -420,202 +299,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.itinerarioPdfComponent.gerarPdf(headContent);
   }
 
-  abrirModalAdicionarPedidos() {
-    if (this.selected.U_Status === 'Fechado' || this.selected.U_Status === 'Cancelado') {
-      this.alertService.error('Não é possível adicionar pedidos a uma ordem fechada ou cancelada.');
-      return;
-    }
-    this.showAdicionarPedidosModal = true;
-    this.pedidosDisponiveis = [];
-    this.pedidosDisponiveisFiltrados = [];
-    this.pedidosSelecionadosAdicionar = [];
-    this.selectAllDisponiveis = false;
-    this.filtroPesquisaAdicionar = '';
-    this.filtroDataInicial = '';
-    this.filtroDataFinal = '';
-    this.branchFiltro = null;
-    this.localidadeFiltro = null;
-    this.groupedPedidosDisponiveis = [];
-  }
-
-  fecharModalAdicionarPedidos() {
-    this.showAdicionarPedidosModal = false;
-  }
-
-  selectBranchFiltro(branch: Branch) {
-    this.branchFiltro = branch;
-  }
-
-  selectLocalidadeFiltro(localidade: Localidade) {
-    this.localidadeFiltro = localidade;
-  }
-
-  isFiltroValido(): boolean {
-    return !!this.branchFiltro && !!this.localidadeFiltro;
-  }
-
-  aplicarFiltros() {
-    if (!this.isFiltroValido()) {
-      this.alertService.error('Selecione uma filial e uma localidade para aplicar os filtros.');
-      return;
-    }
-    this.loadingAdicionarPedidos = true;
-    const startDate = this.filtroDataInicial || '';
-    const endDate = this.filtroDataFinal || '';
-    this.orderSalesService
-      .search(startDate, endDate, this.branchFiltro.bplid, this.localidadeFiltro.Code)
-      .subscribe({
-        next: (result: NextLink<PedidoVenda>) => {
-          this.pedidosDisponiveis = result.content.filter(
-            pedido => !this.pedidos.some(p => p.DocEntry === pedido.DocEntry)
-          );
-          this.groupPedidosDisponiveis();
-          this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
-          this.filtrarPedidosDisponiveis();
-          this.loadingAdicionarPedidos = false;
-        },
-        error: (err) => {
-          this.alertService.error('Erro ao buscar pedidos: ' + err.message);
-          this.loadingAdicionarPedidos = false;
-        }
-      });
-  }
-
-  groupPedidosDisponiveis() {
-    const grouped = this.pedidosDisponiveis.reduce((acc, pedido) => {
-      const docNum = pedido.DocNum;
-      if (!acc[docNum]) {
-        acc[docNum] = {
-          DocNum: docNum,
-          CardName: pedido.CardName,
-          items: [],
-          isCollapsed: true,
-          allSelected: false
-        };
-      }
-      acc[docNum].items.push({ ...pedido, selected: false });
-      return acc;
-    }, {});
-    this.groupedPedidosDisponiveis = Object.values(grouped);
-  }
-
-  filtrarPedidosDisponiveis() {
-    if (!this.filtroPesquisaAdicionar) {
-      this.pedidosDisponiveisFiltrados = [...this.pedidosDisponiveis];
-      this.groupedPedidosDisponiveis = this.groupedPedidosDisponiveis.map(group => ({
-        ...group,
-        items: group.items.map(item => ({ ...item }))
-      }));
-    } else {
-      const termo = this.filtroPesquisaAdicionar.toLowerCase().trim();
-      this.pedidosDisponiveisFiltrados = this.pedidosDisponiveis.filter(pedido =>
-        pedido.DocNum.toString().toLowerCase().includes(termo) ||
-        pedido.CardName.toLowerCase().includes(termo) ||
-        pedido.ItemCode.toLowerCase().includes(termo) ||
-        pedido.Dscription.toLowerCase().includes(termo)
-      );
-      const filteredGrouped = this.pedidosDisponiveisFiltrados.reduce((acc, pedido) => {
-        const docNum = pedido.DocNum;
-        if (!acc[docNum]) {
-          acc[docNum] = {
-            DocNum: docNum,
-            CardName: pedido.CardName,
-            items: [],
-            isCollapsed: true,
-            allSelected: false
-          };
-        }
-        acc[docNum].items.push({ ...pedido, selected: false });
-        return acc;
-      }, {});
-      this.groupedPedidosDisponiveis = Object.values(filteredGrouped);
-    }
-    this.verificarSelecaoTotalDisponiveis();
-  }
-
-  limparFiltroAdicionar() {
-    this.filtroPesquisaAdicionar = '';
-    this.filtrarPedidosDisponiveis();
-  }
-
-  toggleSelectAllDisponiveis() {
-    this.groupedPedidosDisponiveis.forEach(group => {
-      group.allSelected = this.selectAllDisponiveis;
-      group.items.forEach(item => {
-        item.selected = this.selectAllDisponiveis;
-      });
-    });
-    this.verificarSelecaoTotalDisponiveis();
-  }
-
-  toggleGroupSelect(group: any) {
-    group.allSelected = !group.allSelected;
-    group.items.forEach(item => {
-      item.selected = group.allSelected;
-    });
-    this.verificarSelecaoTotalDisponiveis();
-  }
-
-  toggleSelecaoPedidoDisponivel(pedido: any, event: MouseEvent) {
-    pedido.selected = !pedido.selected;
-    const group = this.groupedPedidosDisponiveis.find(g => g.DocNum === pedido.DocNum);
-    group.allSelected = group.items.every(item => item.selected);
-    this.verificarSelecaoTotalDisponiveis();
-    event.stopPropagation();
-  }
-
-  toggleCollapse(group: any) {
-    group.isCollapsed = !group.isCollapsed;
-  }
-
-  verificarSelecaoTotalDisponiveis() {
-    this.pedidosSelecionadosAdicionar = this.pedidosDisponiveisFiltrados.filter(p => p.selected);
-    this.selectAllDisponiveis = this.pedidosDisponiveisFiltrados.length > 0 && 
-                               this.pedidosDisponiveisFiltrados.every(p => p.selected);
-    this.groupedPedidosDisponiveis.forEach(group => {
-      group.allSelected = group.items.every(item => item.selected);
-    });
-  }
-
-  confirmarAdicaoPedidos() {
-    if (this.pedidosSelecionadosAdicionar.length === 0) {
-      this.alertService.error('Nenhum pedido selecionado para adicionar.');
-      return;
-    }
-    const pedidosNumeros = this.pedidosSelecionadosAdicionar.map(p => p.DocNum).join(', ');
-    this.alertService.confirm(
-      `Tem certeza que deseja adicionar ${this.pedidosSelecionadosAdicionar.length} item(s) a esta ordem?<br>
-      <strong>Pedidos: ${pedidosNumeros}</strong>`
-    ).then(result => {
-      if (result.isConfirmed) {
-        this.executarAdicaoPedidos();
-      }
-    });
-  }
-
-  executarAdicaoPedidos() {
-    this.loadingAdicionarPedidos = true;
-    const docNumsParaAdicionar = [...new Set(this.pedidosSelecionadosAdicionar.map(p => p.DocNum))];
-    const updateRequests = docNumsParaAdicionar.map(docNum => {
-      return this.orderSalesService.updateOrdemCarregamento(docNum.toString(), this.selected.DocEntry);
-    });
-    forkJoin(updateRequests).subscribe({
-      next: () => {
-        this.alertService.confirm('Pedidos adicionados com sucesso!');
-        this.pedidos = [...this.pedidos, ...this.pedidosSelecionadosAdicionar];
-        this.showAdicionarPedidosModal = false;
-        this.pedidosSelecionadosAdicionar = [];
-        this.groupedPedidosDisponiveis = [];
-      },
-      error: (err) => {
-        this.alertService.error('Erro ao adicionar pedidos: ' + err.message);
-        this.loadingAdicionarPedidos = false;
-      },
-      complete: () => {
-        this.loadingAdicionarPedidos = false;
-      }
-    });
-  }
+  // AJUSTE: Removidas funções de adicionar/remover modais
 
   abrirModalRomaneio() {
     if (this.pedidos.length === 0) {

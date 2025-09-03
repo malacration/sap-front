@@ -2,8 +2,9 @@
 <section class="content">
   <div class="card card-primary">
     <div class="card-header d-flex justify-content-between align-items-center">
+      <!-- AJUSTE: Título dinâmico com ID se for edição -->
       <h5 class="card-title mb-0">
-        <b>Ordem de Carregamento</b>
+        <b>Ordem de Carregamento {{ ordemId ? '#' + ordemId : '' }}</b>
       </h5>
     </div>
     <div class="card-body">
@@ -88,8 +89,9 @@
       <!-- Confirmar -->
       <div class="row">
         <div class="col">
-          <button *ngIf="!loading" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Criar Ordem</button>
-          <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Criando...</button>
+          <!-- AJUSTE: Botão dinâmico para Criar ou Atualizar -->
+          <button *ngIf="!loading" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">{{ ordemId ? 'Atualizar Ordem' : 'Criar Ordem' }}</button>
+          <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Processando...</button>
         </div>
       </div>
     </div>
