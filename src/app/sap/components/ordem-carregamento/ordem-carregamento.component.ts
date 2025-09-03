@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
 import { forkJoin, Observable } from 'rxjs';
 import { AlertService } from '../../service/alert.service';
-import { Router, ActivatedRoute } from '@angular/router'; // AJUSTE: Importado ActivatedRoute para params
+import { Router, ActivatedRoute } from '@angular/router';
 import { Branch } from '../../model/branch';
 import { Localidade } from '../../model/localidade/localidade';
 import { OrderSalesService } from '../../service/document/order-sales.service';
@@ -21,7 +21,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   nameOrdInput: string = '';
   dtInicial: string;
   dtFinal: string;
-  branchId: string = "11";
+  branchId: string = "11"; // Valor padrão, pode ser mantido ou removido
   selectedBranch: Branch = null;
   localidade: Localidade = null;
   showStock: boolean = false;
@@ -31,12 +31,12 @@ export class OrdemCarregamentoComponent implements OnInit {
   nextLink: string = '';
   private previousBranchId: string = null;
   private previousLocalidadeCode: string = null;
-  loading = false
+  loading = false;
   isLoadingOrders = false;
 
-  // AJUSTE: Variáveis para edição
+  // Variáveis para edição
   ordemId: number | null = null;
-  initialSelectedOrders: PedidoVenda[] = []; // Para comparar mudanças
+  initialSelectedOrders: PedidoVenda[] = [];
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -44,11 +44,10 @@ export class OrdemCarregamentoComponent implements OnInit {
     private router: Router,
     private orderSalesService: OrderSalesService,
     private ordemCarregamentoService: OrdemCarregamentoService,
-    private route: ActivatedRoute // AJUSTE: Injetado para ler params
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    // AJUSTE: Ler ID da rota se for edição
     this.route.params.subscribe(params => {
       this.ordemId = params['id'] ? +params['id'] : null;
       if (this.ordemId) {
@@ -57,16 +56,15 @@ export class OrdemCarregamentoComponent implements OnInit {
     });
   }
 
-  // AJUSTE: Novo método para carregar dados da ordem existente
+  // AJUSTE: Carregar dados da ordem sem chamar criarAnalise automaticamente
   carregarOrdemParaEdicao() {
     this.loading = true;
     this.ordemCarregamentoService.get(this.ordemId.toString()).subscribe({
       next: (ordem: OrdemCarregamento) => {
         this.nameOrdInput = ordem.U_nameOrdem;
-        this.branchId = ordem.U_filial3.toString();
-        // Carregar filial e localidade (assumindo que você tem métodos para buscar por ID)
-        // Exemplo: this.selectedBranch = ... (buscar por branchId)
-        // this.localidade = ... (buscar por localidade associada)
+        this.branchId = ordem.U_filial3?.toString() || ''; // Define apenas se existir
+        // Não preenchemos selectedBranch ou localidade automaticamente
+        // Carregar pedidos selecionados
         this.carregarPedidosExistentes();
       },
       error: (err) => {
@@ -76,15 +74,14 @@ export class OrdemCarregamentoComponent implements OnInit {
     });
   }
 
-  // AJUSTE: Carregar pedidos selecionados (da ordem) e disponíveis
+  // AJUSTE: Carregar pedidos existentes sem chamar criarAnalise
   carregarPedidosExistentes() {
-    // Pedidos selecionados: os já na ordem
     this.orderSalesService.getPedidosBy(this.ordemId).subscribe({
       next: (pedidos: PedidoVenda[]) => {
         this.selectedOrders = pedidos;
-        this.initialSelectedOrders = [...pedidos]; // Copia inicial para comparação
-        this.criarAnalise(); // Carrega disponíveis filtrados
+        this.initialSelectedOrders = [...pedidos];
         this.loading = false;
+        // Não chamamos criarAnalise() aqui para evitar o erro
       },
       error: (err) => {
         this.alertService.error('Erro ao carregar pedidos: ' + err.message);
@@ -125,11 +122,11 @@ export class OrdemCarregamentoComponent implements OnInit {
       return;
     }
 
-    this.isLoadingOrders = true; // Ativar o loading
+    this.isLoadingOrders = true;
 
     const branchChanged = this.previousBranchId !== this.branchId;
     this.previousBranchId = this.branchId;
-    this.previousLocalidadeCode = this.localidade.Code;
+    this.previousLocalidadeCode = this.localidade?.Code;
 
     const startDate = this.dtInicial || '';
     const endDate = this.dtFinal || '';
@@ -140,16 +137,15 @@ export class OrdemCarregamentoComponent implements OnInit {
         next: (result: NextLink<PedidoVenda>) => {
           this.availableOrders = result.content;
           this.nextLink = result.nextLink;
-          // AJUSTE: Filtrar pedidos já selecionados (para edição)
           this.availableOrders = this.availableOrders.filter(
             order => !this.selectedOrders.some(selected => selected.DocEntry == order.DocEntry)
           );
-          this.isLoadingOrders = false; // Desativar o loading
+          this.isLoadingOrders = false;
         },
         error: (err) => {
           this.alertService.error('Erro ao buscar pedidos');
           console.error(err);
-          this.isLoadingOrders = false; // Desativar o loading em caso de erro
+          this.isLoadingOrders = false;
         }
       });
   }
@@ -210,7 +206,6 @@ export class OrdemCarregamentoComponent implements OnInit {
 
     this.loading = true;
 
-    // AJUSTE: Verificar se é criação ou edição
     if (this.ordemId) {
       this.updateOrder();
     } else {
@@ -218,7 +213,6 @@ export class OrdemCarregamentoComponent implements OnInit {
     }
   }
 
-  // AJUSTE: Novo método para criar ordem (lógica antiga)
   createOrder() {
     const ordemCarregamento = new OrdemCarregamento();
     ordemCarregamento.U_nameOrdem = this.nameOrdInput;
@@ -227,7 +221,7 @@ export class OrdemCarregamentoComponent implements OnInit {
 
     this.ordemCarregamentoService.save(ordemCarregamento).subscribe({
       next: (response: any) => {
-        const ordemCriada = response; 
+        const ordemCriada = response;
         const docEntryOrdem = ordemCriada.DocEntry;
         const updateRequests = this.selectedOrders.map(pedido => {
           return this.orderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), docEntryOrdem);
@@ -252,26 +246,22 @@ export class OrdemCarregamentoComponent implements OnInit {
     });
   }
 
-  // AJUSTE: Novo método para atualizar ordem
   updateOrder() {
-    // Comparar initialSelectedOrders com selectedOrders atuais
-    const toRemove = this.initialSelectedOrders.filter(initial => 
+    const toRemove = this.initialSelectedOrders.filter(initial =>
       !this.selectedOrders.some(current => current.DocEntry === initial.DocEntry)
-    ).map(p => p.DocNum); // DocNums para remover
+    ).map(p => p.DocNum);
 
-    const toAdd = this.selectedOrders.filter(current => 
+    const toAdd = this.selectedOrders.filter(current =>
       !this.initialSelectedOrders.some(initial => initial.DocEntry === current.DocEntry)
-    ).map(p => p.DocNum); // DocNums para adicionar
+    ).map(p => p.DocNum);
 
-    // Atualizar nome da ordem
     const ordemUpdate = new OrdemCarregamento();
     ordemUpdate.U_nameOrdem = this.nameOrdInput;
-    ordemUpdate.U_Status = 'Aberto'; // Ou o status atual
+    ordemUpdate.U_Status = 'Aberto';
     ordemUpdate.U_filial3 = this.branchId;
 
     this.ordemCarregamentoService.update(ordemUpdate, this.ordemId.toString()).subscribe({
       next: () => {
-        // Remover pedidos
         if (toRemove.length > 0) {
           this.ordemCarregamentoService.cancelarPedidos(this.ordemId, toRemove).subscribe({
             next: () => {},
@@ -279,8 +269,7 @@ export class OrdemCarregamentoComponent implements OnInit {
           });
         }
 
-        // Adicionar pedidos
-        const addRequests = toAdd.map(docNum => 
+        const addRequests = toAdd.map(docNum =>
           this.orderSalesService.updateOrdemCarregamento(docNum.toString(), this.ordemId)
         );
 
