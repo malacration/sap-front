@@ -1,7 +1,4 @@
-// dual-list-box.component.ts
-
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { SweetAlertResult } from 'sweetalert2';
 import { PedidoVenda } from '../document/documento.statement.component';
 import { AlertService } from '../../service/alert.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
@@ -16,11 +13,11 @@ export class DualListBoxComponent {
   @Input() selectedItems: PedidoVenda[] = [];
   @Input() showStock: boolean = false;
   @Input() nextLink: string = '';
+  @Input() isLoadingOrders: boolean = false;
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
   @Output() loadMore = new EventEmitter<void>();
-  @Input() isLoadingOrders: boolean = false;
 
-  quantidadesEmCarregamento: { [itemCode: string]: number | undefined } = {};
+  quantidadesEmCarregamento: { [itemCode: string]: number } = {};
   isLoading: { [itemCode: string]: boolean } = {};
   searchTermAvailable: string = '';
   searchTermSelected: string = '';
@@ -33,7 +30,7 @@ export class DualListBoxComponent {
   ) {}
 
   ngOnChanges(): void {
-    if (this.showStock) {
+    if (this.showStock && this.availableItems.length > 0) {
       this.loadQuantidadesEmCarregamento();
     }
   }
@@ -42,44 +39,16 @@ export class DualListBoxComponent {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
   }
 
-  calculateCarregamento(item: PedidoVenda, isSelected: boolean): number {
-    const stock = (item.OnHand || 0) - (item.IsCommited || 0) + (item.OnOrder || 0);
-    return isSelected ? stock - (item.Quantity || 0) : stock;
-  }
-
-  private sortItems(items: PedidoVenda[]): PedidoVenda[] {
-    return items.sort((a, b) => {
-      if (a.DocNum !== b.DocNum) {
-        return a.DocNum - b.DocNum;
-      }
-      return a.ItemCode.localeCompare(b.ItemCode);
-    });
-  }
-
   get groupedAvailableItems(): { docNum: number; items: PedidoVenda[] }[] {
-    const grouped = (this.availableItems || []).reduce((acc, item) => {
-      const docNum = item.DocNum;
-      if (!acc[docNum]) {
-        acc[docNum] = { docNum, items: [] };
-      }
-      acc[docNum].items.push(item);
-      return acc;
-    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
-
-    return Object.values(grouped)
-      .filter(group => group.items.length > 0)
-      .filter(group =>
-        group.items.some(item =>
-          `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
-            .toLowerCase()
-            .includes(this.searchTermAvailable.toLowerCase())
-        )
-      )
-      .sort((a, b) => a.docNum - b.docNum);
+    return this.groupItems(this.availableItems, this.searchTermAvailable);
   }
 
   get groupedSelectedItems(): { docNum: number; items: PedidoVenda[] }[] {
-    const grouped = (this.selectedItems || []).reduce((acc, item) => {
+    return this.groupItems(this.selectedItems, this.searchTermSelected);
+  }
+
+  private groupItems(items: PedidoVenda[], searchTerm: string): { docNum: number; items: PedidoVenda[] }[] {
+    const grouped = items.reduce((acc, item) => {
       const docNum = item.DocNum;
       if (!acc[docNum]) {
         acc[docNum] = { docNum, items: [] };
@@ -89,38 +58,48 @@ export class DualListBoxComponent {
     }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
 
     return Object.values(grouped)
-      .filter(group => group.items.length > 0)
-      .filter(group =>
-        group.items.some(item =>
-          `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
-            .toLowerCase()
-            .includes(this.searchTermSelected.toLowerCase())
-        )
-      )
+      .filter(group => group.items.some(item =>
+        `${item.ItemCode || ''} ${item.Dscription || ''} ${item.Name || ''} ${group.docNum}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      ))
       .sort((a, b) => a.docNum - b.docNum);
   }
 
-  getQuantidadeEmCarregamento(item: PedidoVenda): number {
-    return this.quantidadesEmCarregamento[item.ItemCode] ?? 0;
+  private sortItems(items: PedidoVenda[]): PedidoVenda[] {
+    return items.sort((a, b) => a.DocNum - b.DocNum || a.ItemCode.localeCompare(b.ItemCode));
   }
 
-  loadQuantidadesEmCarregamento() {
-    this.availableItems.forEach(item => {
-      if (item.ItemCode && !this.isLoading[item.ItemCode]) {
-        this.isLoading[item.ItemCode] = true;
-        this.quantidadesEmCarregamento[item.ItemCode] = undefined;
-        this.ordemCarregamentoService.getEstoqueEmCarregamento(item.ItemCode)
-          .subscribe({
-            next: (quantidade) => {
-              this.quantidadesEmCarregamento[item.ItemCode] = quantidade;
-              this.isLoading[item.ItemCode] = false;
-            },
-            error: (err) => {
-              console.error(`Error loading quantidade for ${item.ItemCode}:`, err);
-              this.quantidadesEmCarregamento[item.ItemCode] = 0;
-              this.isLoading[item.ItemCode] = false;
-            }
-          });
+  selectItem(item: PedidoVenda): void {
+    const itemsToMove = this.carregamentoPorPedido
+      ? this.availableItems.filter(i => i.DocNum === item.DocNum)
+      : [item];
+    this.selectedItems = this.sortItems([...this.selectedItems, ...itemsToMove]);
+    this.availableItems = this.sortItems(this.availableItems.filter(i => !itemsToMove.includes(i)));
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
+  removeItem(item: PedidoVenda): void {
+    const itemsToRemove = this.carregamentoPorPedido
+      ? this.selectedItems.filter(i => i.DocNum === item.DocNum)
+      : [item];
+    this.availableItems = this.sortItems([...this.availableItems, ...itemsToRemove]);
+    this.selectedItems = this.sortItems(this.selectedItems.filter(i => !itemsToRemove.includes(i)));
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
+  selectAll(): void {
+    this.selectedItems = this.sortItems([...this.selectedItems, ...this.availableItems]);
+    this.availableItems = [];
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
+  removeAll(): void {
+    this.alertService.confirm('Deseja realmente remover todos os itens selecionados?').then(result => {
+      if (result.isConfirmed) {
+        this.availableItems = this.sortItems([...this.availableItems, ...this.selectedItems]);
+        this.selectedItems = [];
+        this.selectedItemsChange.emit(this.selectedItems);
       }
     });
   }
@@ -129,47 +108,29 @@ export class DualListBoxComponent {
     this.isSelectedListCollapsed = !this.isSelectedListCollapsed;
   }
 
-  selectItem(item: PedidoVenda): void {
-    if (this.carregamentoPorPedido) {
-      const itemsToMove = this.availableItems.filter(i => i.DocNum === item.DocNum);
-      this.selectedItems = this.sortItems([...(this.selectedItems || []), ...itemsToMove]);
-      this.availableItems = this.sortItems((this.availableItems || []).filter(i => i.DocNum !== item.DocNum));
-    } else {
-      this.selectedItems = this.sortItems([...(this.selectedItems || []), item]);
-      this.availableItems = this.sortItems((this.availableItems || []).filter(i => i !== item));
-    }
-    this.selectedItemsChange.emit(this.selectedItems);
+  loadMoreOrders(): void {
+    this.loadMore.emit();
   }
 
-  removeItem(item: PedidoVenda): void {
-    if (this.carregamentoPorPedido) {
-      const itemsToRemove = this.selectedItems.filter(i => i.DocNum === item.DocNum);
-      this.availableItems = this.sortItems([...(this.availableItems || []), ...itemsToRemove]);
-      this.selectedItems = this.sortItems((this.selectedItems || []).filter(i => i.DocNum !== item.DocNum));
-    } else {
-      this.availableItems = this.sortItems([...(this.availableItems || []), item]);
-      this.selectedItems = this.sortItems((this.selectedItems || []).filter(i => i !== item));
-    }
-    this.selectedItemsChange.emit(this.selectedItems);
-  }
-
-  selectAll(): void {
-    this.selectedItems = this.sortItems([...(this.selectedItems || []), ...(this.availableItems || [])]);
-    this.availableItems = [];
-    this.selectedItemsChange.emit(this.selectedItems);
-  }
-
-  removeAll(): void {
-    this.alertService.confirm('Deseja realmente remover todos os itens selecionados?').then((result: SweetAlertResult) => {
-      if (result.isConfirmed) {
-        this.availableItems = this.sortItems([...(this.availableItems || []), ...(this.selectedItems || [])]);
-        this.selectedItems = [];
-        this.selectedItemsChange.emit(this.selectedItems);
+  private loadQuantidadesEmCarregamento(): void {
+    this.availableItems.forEach(item => {
+      if (item.ItemCode && !this.isLoading[item.ItemCode]) {
+        this.fetchQuantidadeEmCarregamento(item);
       }
     });
   }
 
-  loadMoreOrders(): void {
-    this.loadMore.emit();
+  private fetchQuantidadeEmCarregamento(item: PedidoVenda): void {
+    this.isLoading[item.ItemCode] = true;
+    this.ordemCarregamentoService.getEstoqueEmCarregamento(item.ItemCode).subscribe({
+      next: (quantidade) => {
+        this.quantidadesEmCarregamento[item.ItemCode] = quantidade;
+        this.isLoading[item.ItemCode] = false;
+      },
+      error: () => {
+        this.quantidadesEmCarregamento[item.ItemCode] = 0;
+        this.isLoading[item.ItemCode] = false;
+      }
+    });
   }
 }

@@ -1,21 +1,31 @@
-import * as moment from "moment";
-import { Action, ActionReturn } from "../../shared/components/action/action.model";
+import { Action, ActionReturn } from '../../shared/components/action/action.model';
 
 export class OrdemCarregamento {
-    DocEntry: number;
-    U_nameOrdem: string;
-    U_Status: string
-    U_filial3: string
-    CreateDate: string;
-    Weight1: string;
+  DocEntry: number;
+  U_nameOrdem: string;
+  U_Status: string;
+  U_filial3: string;
+  CreateDate: string;
+  Weight1: string;
+  quantidadePedidos: number;
+  U_pesoTotal2: string;
+  Ord_CRG_LINHACollection: any[] = [];
 
-    get dataCriacao() {
-        return moment.utc(this.CreateDate).format('DD/MM/YYYY');
-    }
+  get dataCriacao(): string {
+    return new Date(this.CreateDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
 
-    getActions(): Action[] {
-        return [
-            new Action("", new ActionReturn("selected",this), "far fa-eye")
-        ]
-    }
+  get pesoTotalFormatted(): string {
+    const peso = parseFloat(this.U_pesoTotal2) || 0;
+    return peso.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  getActions(): Action[] {
+    return [
+      new Action('', new ActionReturn('selected', this), 'far fa-eye')
+    ];
+  }
 }

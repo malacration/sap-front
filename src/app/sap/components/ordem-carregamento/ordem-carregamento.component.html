@@ -1,33 +1,28 @@
-<br/>
 <section class="content">
   <div class="card card-primary">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <!-- AJUSTE: Título dinâmico com ID se for edição -->
       <h5 class="card-title mb-0">
         <b>Ordem de Carregamento {{ ordemId ? '#' + ordemId : '' }}</b>
       </h5>
     </div>
     <div class="card-body">
       <div class="form-group">
-        <label for="cpfCnpj">Nome da Ordem de Carregamento</label>
+        <label for="nameOrdInput">Nome da Ordem de Carregamento</label>
         <input
           type="text"
-          placeholder=""
           class="form-control"
-          id="cpfCnpj"
+          id="nameOrdInput"
           [(ngModel)]="nameOrdInput"
           (ngModelChange)="onNameInputChange()"
+          placeholder="Digite o nome da ordem"
         >
       </div>
-    </div>
-
-    <div class="card-body">
       <div class="row">
         <div class="col-sm-2">
           <div class="form-group">
             <label for="dataInicial">Data Inicial</label>
             <div class="input-group">
-              <input type="date" class="form-control" name="dataInicial" [(ngModel)]="dtInicial">
+              <input type="date" class="form-control" id="dataInicial" [(ngModel)]="dtInicial">
               <div class="input-group-append" *ngIf="dtInicial">
                 <button (click)="clearDataInicial()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
               </div>
@@ -38,7 +33,7 @@
           <div class="form-group">
             <label for="dataFinal">Data Final</label>
             <div class="input-group">
-              <input type="date" class="form-control" name="dataFinal" [(ngModel)]="dtFinal">
+              <input type="date" class="form-control" id="dataFinal" [(ngModel)]="dtFinal">
               <div class="input-group-append" *ngIf="dtFinal">
                 <button (click)="clearDataFinal()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
               </div>
@@ -47,7 +42,7 @@
         </div>
         <div class="col-sm-2">
           <div class="form-group">
-            <app-branch-select #branch (selectedOut)="selectBranch($event)"></app-branch-select>
+            <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
           </div>
         </div>
         <div class="col-sm-2">
@@ -55,45 +50,55 @@
             <app-localidade-search (selected)="selectLocalidade($event)"></app-localidade-search>
           </div>
         </div>
-
-        <!-- Btn Filtrar -->
-        <div class="form-group">
-          <button [disabled]="!isnotNullFiltrar()" (click)="criarAnalise()" class="btn btn-primary btnFiltrar">Filtrar</button>
-        </div>
-        <!-- Btn Consultar Estoque -->
-        <div class="form-group">
-          <button (click)="criarAnalise()" class="btn btn-primary btnEstoque"><i class="fas fa-arrow-up"></i> Análise de Logística</button>
-        </div>
-        <!-- Btn Estoque -->
-        <div class="form-group">
-          <button (click)="toggleEstoque()" class="btn btn-primary btnEstoque">Carregar Estoque</button>
+        <div class="col-sm-4 d-flex align-items-end">
+          <div class="form-group mr-2">
+            <button
+              class="btn btn-primary"
+              [disabled]="!canFilter()"
+              (click)="criarAnalise()"
+            >
+              Filtrar
+            </button>
+          </div>
+          <div class="form-group mr-2">
+            <button class="btn btn-primary" (click)="criarAnalise()">
+              <i class="fas fa-arrow-up"></i> Análise de Logística
+            </button>
+          </div>
+          <div class="form-group">
+            <button class="btn btn-primary" (click)="toggleEstoque()">
+              Carregar Estoque
+            </button>
+          </div>
         </div>
       </div>
     </div>
-
-    <!--- Região da Lista -->
-    <div class="card card-primary">
-      <div class="card-body">
+    <div class="card-body">
       <app-dual-list-box
-        [availableItems]="availableOrders || []"
-        [selectedItems]="selectedOrders || []"
+        [availableItems]="availableOrders"
+        [selectedItems]="selectedOrders"
         [showStock]="showStock"
         [nextLink]="nextLink"
         [isLoadingOrders]="isLoadingOrders"
         (selectedItemsChange)="onSelectedOrdersChange($event)"
         (loadMore)="loadMoreOrders()"
+      ></app-dual-list-box>
+    </div>
+    <div class="card-footer">
+      <button
+        *ngIf="!loading"
+        class="btn btn-success btn-block"
+        (click)="sendOrder()"
       >
-      </app-dual-list-box>
-      </div>
-
-      <!-- Confirmar -->
-      <div class="row">
-        <div class="col">
-          <!-- AJUSTE: Botão dinâmico para Criar ou Atualizar -->
-          <button *ngIf="!loading" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">{{ ordemId ? 'Atualizar Ordem' : 'Criar Ordem' }}</button>
-          <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Processando...</button>
-        </div>
-      </div>
+        {{ ordemId ? 'Atualizar Ordem' : 'Criar Ordem' }}
+      </button>
+      <button
+        *ngIf="loading"
+        class="btn btn-success btn-block"
+        disabled
+      >
+        <i class="fas fa-spinner fa-spin"></i> Processando...
+      </button>
     </div>
     <div *ngIf="loading" class="overlay">
       <i class="fas fa-2x fa-sync-alt fa-spin"></i>

@@ -3,14 +3,12 @@ import { AuthService } from '../../../shared/service/auth.service';
 import { Page } from '../../model/page.model';
 import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
-import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin, map, Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription, forkJoin, map } from 'rxjs';
 import { ParameterService } from '../../../shared/service/parameter.service';
 import { AlertService } from '../../service/alert.service';
 import { OrdemCarregamento } from '../../model/ordem-carregamento';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
-
-
 
 @Component({
   selector: 'app-ordem-carregamento-statement',
@@ -18,121 +16,101 @@ import { OrdemCarregamentoService } from '../../service/ordem-carregamento.servi
   styleUrls: ['./ordem-carregamento-statement.component.scss']
 })
 export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
+  nomeUsuario: string;
+  loading = false;
+  pageContent: Page<OrdemCarregamento> = new Page<OrdemCarregamento>();
+  selected: OrdemCarregamento | null = null;
+  all = false;
 
-  nomeUsuario: string
-  loading = false
-  calculatingTotals = false // Nova flag para o loading dos cálculos
-  pageContent: Page<OrdemCarregamento> = new Page()
-  selected: OrdemCarregamento = null
-  all = false
+  private routeSubscriptions: Subscription[] = [];
 
-  routeSubscriptions : Array<Subscription> = new Array()
-
-  definition = [
+  definition: Column[] = [
     new Column('ID', 'DocEntry'),
     new Column('Nome', 'U_nameOrdem'),
     new Column('Peso Total (Kg)', 'U_pesoTotal2'),
     new Column('Qtd. Pedidos', 'quantidadePedidos'),
     new Column('Status', 'U_Status'),
     new Column('Criado em', 'dataCriacao')
-  ]
+  ];
 
   constructor(
-    private auth : AuthService,
+    private auth: AuthService,
     private route: ActivatedRoute,
-    private alertService : AlertService,
-    private parameterService : ParameterService,
-    private service :  OrdemCarregamentoService){
-    this.nomeUsuario = auth.getUser()
+    private alertService: AlertService,
+    private parameterService: ParameterService,
+    private service: OrdemCarregamentoService
+  ) {
+    this.nomeUsuario = this.auth.getUser();
   }
 
   ngOnInit(): void {
-    this.pageChange(0)
-
-    this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, "id", id => {
-      if(id) {
-        this.service.get(id).subscribe(it => {
-          this.selected = it
-        })
+    this.pageChange(0);
+    this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, 'id', (id: string) => {
+      if (id) {
+        this.service.get(id).subscribe({
+          next: (ordem: OrdemCarregamento) => {
+            this.selected = ordem;
+          },
+          error: () => {
+            this.alertService.error('Erro ao carregar a ordem de carregamento.');
+          }
+        });
       }
-    })
+    });
   }
 
-  pageChange($event) {
-      this.loading = true;
-      this.calculatingTotals = true; // Ativa o loading dos cálculos
-      
-      // Primeiro busca as ordens principais
-      this.service.getAll($event, this.all).subscribe({
-        next: (it: Page<any>) => {
-          // Para cada ordem, busca os detalhes para calcular totais
-          const detalhesRequests = it.content.map(ordem => 
-            this.service.getDetalhes(ordem.DocEntry).pipe(
-              map(detalhes => ({ ordem, detalhes }))
-            )
-          );
+  pageChange(page: number): void {
+    this.loading = true;
+    this.service.getAll(page, this.all).subscribe({
+      next: (pageData: Page<OrdemCarregamento>) => {
+        const detalhesRequests = pageData.content.map(ordem =>
+          this.service.getDetalhes(ordem.DocEntry).pipe(
+            map(detalhes => ({ ordem, detalhes }))
+          )
+        );
 
-          // Espera todas as requisições de detalhes terminarem
-          forkJoin(detalhesRequests).subscribe({
-            next: (results) => {
-              results.forEach(({ ordem, detalhes }) => {
-                // Calcula quantidade de pedidos únicos
-                const docEntriesUnicos = new Set(detalhes.map(d => d.DocEntry));
-                ordem.quantidadePedidos = docEntriesUnicos.size;
+        forkJoin(detalhesRequests).subscribe({
+          next: (results) => {
+            results.forEach(({ ordem, detalhes }) => {
+              const docEntriesUnicos = new Set(detalhes.map(d => d.DocEntry));
+              ordem.quantidadePedidos = docEntriesUnicos.size;
+              ordem.U_pesoTotal2 = detalhes.reduce((total, detalhe) => {
+                return total + (detalhe.Quantity * detalhe.Weight1);
+              }, 0).toString();
+            });
+            this.pageContent = pageData;
+            this.loading = false;
+          },
+          error: () => {
+            this.alertService.error('Erro ao carregar os detalhes das ordens.');
+            this.loading = false;
+          }
+        });
+      },
+      error: () => {
+        this.alertService.error('Erro ao carregar as ordens de carregamento.');
+        this.loading = false;
+      }
+    });
+  }
 
-                // Calcula peso total (soma de Quantity * Weight1)
-                const pesoTotal = detalhes.reduce((total, detalhe) => {
-                  return total + (detalhe.Quantity * detalhe.Weight1);
-                }, 0);
-                
-                // Formata o peso total com separadores de milhar e duas casas decimais
-                ordem.U_pesoTotal2 = this.formatarPeso(pesoTotal);
-              });
-
-              this.pageContent = it;
-              this.loading = false;
-              this.calculatingTotals = false;
-            },
-            error: () => {
-              this.loading = false;
-              this.calculatingTotals = false;
-            }
-          });
-        },
-        error: () => {
-          this.loading = false;
-          this.calculatingTotals = false;
-        }
-      });
-    }
-
-    // Função para formatar o peso
-    formatarPeso(peso: number): string {
-      return peso.toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    }
-
-
-  action(event : ActionReturn){
-    if(event.type == "selected"){
-      this.parameterService.setParam(this.route,"id",event.data.DocEntry)
+  action(event: ActionReturn): void {
+    if (event.type === 'selected') {
+      this.parameterService.setParam(this.route, 'id', event.data.DocEntry);
     }
   }
 
   close(): void {
-    this.selected = null
-    this.parameterService.removeParam(this.route,"id")
+    this.selected = null;
+    this.parameterService.removeParam(this.route, 'id');
   }
 
-  onToggleAll(){
-    this.all = !this.all
-    this.pageChange(0)
+  onToggleAll(): void {
+    this.all = !this.all;
+    this.pageChange(0);
   }
 
   ngOnDestroy(): void {
-    this.routeSubscriptions.forEach(it => it.unsubscribe)
+    this.routeSubscriptions.forEach(sub => sub.unsubscribe());
   }
-
 }

@@ -1,13 +1,11 @@
-import { Injectable } from "@angular/core";
-import { ConfigService } from "../../core/services/config.service";
-import { HttpClient } from "@angular/common/http";
-import { Page } from "../model/page.model";
-import { Observable, map } from "rxjs";
-import { PedidoRetirada } from "../model/venda/pedido-retirada";
-import { PedidoTroca } from "../model/venda/pedido-troca";
-import { OrdemCarregamento } from "../model/ordem-carregamento";
-import { LinhaItem } from "../model/venda/venda-futura";
-import { BatchStock } from "../../modulos/sap-shared/_models/BatchStock.model";
+import { Injectable } from '@angular/core';
+import { ConfigService } from '../../core/services/config.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { Page } from '../model/page.model';
+import { OrdemCarregamento } from '../model/ordem-carregamento';
+import { LinhaItem } from '../model/venda/venda-futura';
+import { BatchStock } from '../../modulos/sap-shared/_models/BatchStock.model';
 
 export interface CarregamentoDetalhes {
   DocEntry: number;
@@ -17,83 +15,73 @@ export interface CarregamentoDetalhes {
 }
 
 @Injectable({
-    providedIn: 'root'
-  })
-export class OrdemCarregamentoService{
+  providedIn: 'root'
+})
+export class OrdemCarregamentoService {
+  private url: string;
 
-    url = "http://localhost:8080/carregamento"
+  constructor(private config: ConfigService, private http: HttpClient) {
+    this.url = `${this.config.getHost()}/carregamento`;
+  }
 
-    constructor(private config : ConfigService, private http : HttpClient){
-      this.url = config.getHost()+"/carregamento"
-    }
+  get(id: string): Observable<OrdemCarregamento> {
+    return this.http.get<OrdemCarregamento>(`${this.url}/${id}`).pipe(
+      map((ordem) => this.ordemCarregamentoAssign(ordem))
+    );
+  }
 
-    get(id : string): Observable<OrdemCarregamento> {
-      let url = this.url+"/"+id
-      return this.http.get<OrdemCarregamento>(url).pipe(
-        map((venda) => {
-          return this.vendaFuturaAssing(venda);
-        })
-      );
-    }
+  getAll(page: number, allVendedores: boolean = false): Observable<Page<OrdemCarregamento>> {
+    const endpoint = allVendedores ? `${this.url}/all` : this.url;
+    return this.http.get<Page<OrdemCarregamento>>(`${endpoint}?page=${page}`).pipe(
+      map((page) => {
+        page.content = page.content.map((ordem) => this.ordemCarregamentoAssign(ordem));
+        return page;
+      })
+    );
+  }
 
-    getAll(page, allVendedores : boolean = false): Observable<Page<OrdemCarregamento>> {
-      let url = allVendedores ? this.url+"/all" : this.url
-      url = url+"?page="+page
-      return this.http.get<Page<OrdemCarregamento>>(url).pipe(
-        map((page) => {
-          page.content = page.content.map((venda) => {
-            return this.vendaFuturaAssing(venda);
-          });
-          return page;
-        })
-      );
-    }
+  save(body: OrdemCarregamento): Observable<any> {
+    return this.http.post<any>(`${this.url}/angular`, body);
+  }
 
-    private vendaFuturaAssing(it) : OrdemCarregamento{
-      const ordemCarregamento = Object.assign(new OrdemCarregamento(), it);
-      ordemCarregamento.Ord_CRG_LINHACollection = (it.ORD_CRG_LINHACollection || []).map(item => 
-        Object.assign(new LinhaItem(), {
-          DocEntry: item.docEntry,
-          LineId: item.LineId,
-          U_orderDocEntry: item.u_orderDocEntry,
-          U_docNumPedido: item.u_docNumPedido,
-          U_cardCode: item.u_cardCode,
-          U_cardName: item.u_cardName,
-          U_quantidade: item.u_quantidade,
-          U_pesoItem: item.u_pesoItem
-        })
-      );
-      return ordemCarregamento;
-    }
+  cancelarPedidos(docEntryOrdem: number, docNumsPedidos: number[]): Observable<any> {
+    return this.http.post(`${this.url}/${docEntryOrdem}/cancelar-pedidos`, { pedidos: docNumsPedidos });
+  }
 
-    save(body : OrdemCarregamento) : Observable<any>{
-    return this.http.post<any>(this.url+"/angular",body)
-    }
+  finalizar(id: number): Observable<any> {
+    return this.http.post(`${this.url}/${id}/finalizar`, {});
+  }
 
-    cancelarPedidos(docEntryOrdem: number, docNumsPedidos: number[]): Observable<any> {
-      const url = `${this.url}/${docEntryOrdem}/cancelar-pedidos`;
-      return this.http.post(url, { pedidos: docNumsPedidos });
-    }
+  getEstoqueEmCarregamento(itemCode: string): Observable<number> {
+    return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
+  }
 
-    finalizar(id: number): Observable<any> {
-    const url = `${this.url}/${id}/finalizar`;
-    return this.http.post(url, {});
-    }
-
-    getEstoqueEmCarregamento(itemCode: string): Observable<number> {
-      return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
-    }
-
-  saveSelectedLotes(docEntry: number, lote: any): Observable<any> {
-      const url = `${this.url}/generate-from-loading-order/${docEntry}`;
-      return this.http.post(url, lote);
+  saveSelectedLotes(docEntry: number, lotes: any): Observable<any> {
+    return this.http.post(`${this.url}/generate-from-loading-order/${docEntry}`, lotes);
   }
 
   getDetalhes(id: number): Observable<CarregamentoDetalhes[]> {
-  return this.http.get<CarregamentoDetalhes[]>(`${this.url}/${id}/detalhes`);
+    return this.http.get<CarregamentoDetalhes[]>(`${this.url}/${id}/detalhes`);
   }
 
   update(body: OrdemCarregamento, id: string): Observable<any> {
     return this.http.patch<any>(`${this.url}/${id}`, body);
+  }
+
+  private ordemCarregamentoAssign(it: any): OrdemCarregamento {
+    const ordemCarregamento = Object.assign(new OrdemCarregamento(), it);
+    ordemCarregamento.Ord_CRG_LINHACollection = (it.ORD_CRG_LINHACollection || []).map(item =>
+      Object.assign(new LinhaItem(), {
+        DocEntry: item.docEntry,
+        LineId: item.LineId,
+        U_orderDocEntry: item.u_orderDocEntry,
+        U_docNumPedido: item.u_docNumPedido,
+        U_cardCode: item.u_cardCode,
+        U_cardName: item.u_cardName,
+        U_quantidade: item.u_quantidade,
+        U_pesoItem: item.u_pesoItem
+      })
+    );
+    return ordemCarregamento;
   }
 }
