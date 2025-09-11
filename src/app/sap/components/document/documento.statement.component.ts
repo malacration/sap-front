@@ -219,6 +219,8 @@ export class DocumentStatementComponent implements OnInit {
 }
 
 export class PedidoVenda{
+  DocEntry: number
+  CardName: string
   CardCode: string
   DocNum: number
   DocDate: string
@@ -236,6 +238,37 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
+
+  // Ordem de Carregamento
+  DflWhs : string
+
+  // Dual List
+  U_Localidade : number
+  Name : string
+  Dscription : string
+  Quantity : number
+  Weight1 : number
+  OnHand : number
+  IsCommited : number
+  OnOrder : number   
+  UnitPrice : number
+  PrecoNegociado : number
+  PrecoBase : number
+  Comentario : string
+  FretePorLinha : number
+  WarehouseCode : string
+  Usage : number
+  TaxCode : string
+  CostingCode : string
+  CostingCode2 : string
+  BaseType : number
+  BaseEntry : number
+  BaseLine : number
+  quantidadeEmCarregamento?: number;
+  UomCode : string
+  ClosingRemarks : string
+  AttachmentEntry : number
+  Address2 : string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
@@ -256,6 +289,7 @@ export class LinhasPedido{
   ItemDescription
   MeasureUnit
   SalUnitMsr
+  DflWhs
 }
 
 export class TaxExtension{
