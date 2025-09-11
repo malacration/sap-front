@@ -1,0 +1,51 @@
+<div class="pdf-container" #pdfContent>
+  <div class="header">
+    <img src="logo.png" alt="Logo" class="logo">
+    <h1>ITINERÁRIO DE CARREGAMENTO</h1>
+  </div>
+
+  <div class="info-section">
+    <p><strong>Número da Ordem:</strong> {{ ordemCarregamento?.DocEntry }}</p>
+    <p><strong>Descrição da Ordem:</strong> {{ ordemCarregamento?.U_nameOrdem }}</p>
+    <p><strong>Data de Criação:</strong> {{ ordemCarregamento?.dataCriacao }}</p>
+    <p><strong>Status:</strong> {{ ordemCarregamento?.U_Status }}</p>
+  </div>
+
+  <div class="table-container">
+    <!-- Agrupar e exibir pedidos por localidade -->
+    <ng-container *ngFor="let localidade of getUniqueLocalidades(); let i = index">
+      <div class="localidade-section">
+        <h2>{{ localidade || 'Não informado' }}</h2>
+        <div class="pedido-list">
+          <div *ngFor="let pedido of filterByLocalidade(pedidosOrdenados, localidade); let j = index" class="pedido-item">
+            <div class="pedido-columns">
+              <div class="column-left">
+                <p><strong>Linha:</strong> {{ i * pedidosOrdenados.length + j + 1 }}</p>
+                <p><strong>Núm. Pedido:</strong> {{ pedido.DocNum }}</p>
+                <p><strong>Cliente:</strong> {{ pedido.CardName }}</p>
+              </div>
+              <div class="column-right">
+                <p><strong>Localidade:</strong> {{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</p>
+                <p><strong>Item:</strong> {{ pedido.ItemCode }} - {{ pedido.Dscription }}</p>
+                <p><strong>Quantidade:</strong> {{ pedido.Quantity }}</p>
+              </div>
+            </div>
+            <div class="full-width">
+              <p><strong>Endereço:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
+              <p><strong>Observação:</strong> {{ pedido.Comments || 'Sem observações' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divisor entre localidades -->
+      <div *ngIf="i < getUniqueLocalidades().length - 1" class="divider"></div>
+    </ng-container>
+  </div>
+
+  <div class="footer">
+    <div class="assinatura">
+      ASSINATURA
+    </div>
+  </div>
+</div>
