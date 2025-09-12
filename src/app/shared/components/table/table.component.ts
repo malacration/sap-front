@@ -154,7 +154,7 @@ export class TableComponent implements OnInit {
     return index;
   }
 
-  teste(column: Column) {
+  atualizaColuna(column: Column) {
     this.alertService
       .confirmWithInput('Atenção, editando todos os valores da coluna '+column.label, 'text')
       .then((res) => {
@@ -165,7 +165,6 @@ export class TableComponent implements OnInit {
         const val: number | string =
           parsed !== null ? parsed : String(raw ?? '');
   
-        alert(this.content.length)
         for (const item of this.content) {
           this.processInputChange(item, column, val);
         }

@@ -6,7 +6,7 @@
           <th *ngFor="let def of definition" scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
             
             {{def.label}} 
-            <button *ngIf="isEditable(def)" class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="teste(def)">
+            <button *ngIf="isEditable(def)" class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="atualizaColuna(def)">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
           </th>
