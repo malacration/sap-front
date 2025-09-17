@@ -62,11 +62,10 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   ngOnInit(): void {
     if (this.selected?.DocEntry) {
       this.loadPedidos(this.selected.DocEntry);
-      this.placa = localStorage.getItem(`placa_${this.selected.DocEntry}`) || '';
-      this.nomeMotorista = localStorage.getItem(`nomeMotorista_${this.selected.DocEntry}`) || '';
+      this.placa = this.selected.U_placa || '';
+      this.nomeMotorista = this.selected.U_motorista || '';
     }
   }
-
   private validateForm(): boolean {
     this.formTouched = true;
     if (!this.placa || !this.nomeMotorista) {
@@ -118,11 +117,35 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     });
   }
 
-  voltar(): void {
-    if (this.selected?.DocEntry) {
-      localStorage.removeItem(`placa_${this.selected.DocEntry}`);
-      localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
+  salvarLogistica(): void {
+    if (!this.validateForm()) {
+        return;
     }
+    this.loading = true;
+    const dados = {
+        U_placa: this.placa,
+        U_motorista: this.nomeMotorista
+    };
+
+    this.ordemCarregamentoService.atualizarLogistica(this.selected.DocEntry, dados).subscribe({
+        next: () => {
+            this.alertService.confirm('Dados de logística salvos com sucesso!');
+            // Atualiza o objeto local para refletir a mudança
+            if(this.selected) {
+                this.selected.U_placa = this.placa;
+                this.selected.U_motorista = this.nomeMotorista;
+            }
+        },
+        error: (err) => {
+            this.alertService.error('Erro ao salvar dados de logística: ' + (err.error?.message || err.message));
+        },
+        complete: () => {
+            this.loading = false;
+        }
+    });
+  }
+
+  voltar(): void {
     this.close.emit();
   }
 

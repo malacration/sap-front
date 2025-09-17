@@ -10,6 +10,8 @@ export class OrdemCarregamento {
   quantidadePedidos: number;
   U_pesoTotal2: string;
   Ord_CRG_LINHACollection: any[] = [];
+  U_placa: string 
+  U_motorista: string 
 
   get dataCriacao(): string {
     return new Date(this.CreateDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
