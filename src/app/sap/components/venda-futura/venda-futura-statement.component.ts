@@ -32,7 +32,9 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   definition = [
     new Column('ID', 'DocEntry'),
     new Column('Nome', 'routerLinkPn'),
-    new Column('Produtos', 'produtosCurrency'),
+    new Column('Vendedor', 'SalesEmployeeName'),
+    new Column('Filial', 'replaceFilial'),
+    new Column('Produtos', 'TotalProdutosCalculadoCurrency'),
     new Column('Frete', 'frete'),
     new Column('Valor Total', 'totalCurrency'),
     new Column('Valor Entregue', 'valorEntregue'),
@@ -55,9 +57,18 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
 
     this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, "id", id => {
       if(id) {
-        this.service.get(id).subscribe(it => {
-          this.selected = it
-        })
+        let contrato = this.pageContent.content.find(it => it.DocEntry.toString() == id)
+        if(contrato){
+          this.selected = contrato
+          this.service.getAllItens(contrato.DocEntry).subscribe(it => {
+            contrato.AR_CF_LINHACollection = it
+          })
+        }
+        else{
+          this.service.get(id).subscribe(it => {
+            this.selected = it
+          })
+        }
       }
     })
   }
@@ -69,6 +80,15 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
         this.pageContent = it
       },
       complete : () => {this.loading = false}
+    })
+  }
+
+  changePageFunction(nextLink){
+    this.loading = true
+    this.service.getNextLink(nextLink).subscribe(it => {
+      it.content = [...this.pageContent.content,...it.content]
+      this.pageContent = it
+      this.loading = false
     })
   }
   

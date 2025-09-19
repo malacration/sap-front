@@ -28,6 +28,9 @@ export class TrocaComponent implements OnInit {
   @Output()
   closeModal = new EventEmitter<any>();
 
+  @Output()
+  eventoTrocou = new EventEmitter<any>();
+
   loadingSalvar = false
   selectedItem: LinhaItem | null = null;
   quantity: number | null = null;
@@ -91,6 +94,7 @@ export class TrocaComponent implements OnInit {
         this.alertService.info("Pedido de troca foi feito com sucesso").then(it =>{
           this.clearForm()
           this.closeModal.emit()
+          this.eventoTrocou.emit()
         })
       }, 
       complete: () => {

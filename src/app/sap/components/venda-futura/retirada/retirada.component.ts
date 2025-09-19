@@ -26,6 +26,9 @@ export class RetiradaComponent implements OnInit {
 
   @Output()
   retirados = new EventEmitter<Array<any>>();
+  
+  @Output()
+  eventoRetirou = new EventEmitter<void>();
 
   loadingSalvar = false
   selectedItem: LinhaItem | null = null;
@@ -46,9 +49,9 @@ export class RetiradaComponent implements OnInit {
   get filteredItems(): Array<Option> {
     // Filtra os itens que já foram retirados
     const retiradosCodes = this.itensRetirados.map(it => it.itemCode);
-    return this.vendaFutura.AR_CF_LINHACollection.filter(
+    return this.vendaFutura?.AR_CF_LINHACollection?.filter(
       item => !retiradosCodes.includes(item.U_itemCode)
-    ).map(it => new Option(it,it.U_description+" - Qtd: "+it.U_quantity));
+    )?.map(it => new Option(it,it.U_description+" - Qtd: "+it.U_quantity));
   }
 
   selecionado($event){
@@ -83,6 +86,7 @@ export class RetiradaComponent implements OnInit {
       next : documento => {
         this.alertService.info("Cotação de venda gerada com sucesso.").then(it => {
           this.retirados.emit(this.itensRetirados)
+          this.eventoRetirou.emit()
           this.clearForm()
         })
       },

@@ -19,11 +19,12 @@
             </app-table>
         </div>
         <div class="card-footer clearfix">
-            <app-paginacao
-                (pageChange)="pageChange($event)" 
-                [totalItens]="pageContent?.totalElements" 
-                [pageSize]="pageContent?.size">
-            </app-paginacao>
+            <div *ngIf="!loading && pageContent.nextLink" class="col text-center">
+                <button class="btn btn-primary" (click)="changePageFunction(pageContent.nextLink)">
+                    Carregar Mais
+                    <i class="far fa-plus-square"></i>
+                </button>
+            </div> 
         </div>
         <div *ngIf="loading" class="overlay">
             <i class="fas fa-2x fa-sync-alt fa-spin"></i>
