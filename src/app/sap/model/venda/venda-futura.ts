@@ -11,7 +11,7 @@ import Big from 'big.js';
 export class VendaFutura {
     U_orderDocEntry: number;
     U_cardCode: string;
-    AR_CF_LINHACollection: LinhaItem[];
+    AR_CF_LINHACollection: LinhaItem[] = Array();
     U_vendedor: number;
     U_cardName: string;
     U_valorFrete: number;
@@ -20,6 +20,11 @@ export class VendaFutura {
     DocNum: number;
     U_filial
     U_status
+
+    SalesEmployeeName : string
+    OrderDocNum : string
+    Bplname : string
+    TotalProdutosCalculado : number
     
     entregas : Array<FutureDeliverySales> = null
     entregaLoading = false
@@ -60,8 +65,14 @@ export class VendaFutura {
         return moment(this.U_dataCriacao).format('DD/MM/YYYY'); 
     }
 
+    get replaceFilial(){
+        return this.Bplname
+            .replace("SUSTENNUTRI NUTRICAO ANIMAL LTDA","")
+            .replace("SUSTENNUTRI NUTRIÇAO ANIMAL LTDA","").replace("- ","").trim()
+    }
+
     get totalCurrency() {
-        return formatCurrency(this.U_valorFrete + this.totalProdutos, 'pt', 'R$');
+        return formatCurrency(this.U_valorFrete + this.TotalProdutosCalculado, 'pt', 'R$');
     }
 
     /**
@@ -75,12 +86,19 @@ export class VendaFutura {
         return formatCurrency(this.U_valorFrete, 'pt', 'R$');
     }
 
+    get TotalProdutosCalculadoCurrency(){
+        return this.TotalProdutosCalculado
+    }
+
     get produtosCurrency() {
         return this.totalProdutos;
     }
 
     get totalProdutos() {
-        return this.AR_CF_LINHACollection.reduce((acc, it) => acc + it.total, 0);
+        if(this.AR_CF_LINHACollection)
+            return this.AR_CF_LINHACollection.reduce((acc, it) => acc + it.total, 0);
+        else   
+            return undefined
     }
 
     getPedidoRetirada(itens : Array<ItemRetirada>,dataEntrega : Date){

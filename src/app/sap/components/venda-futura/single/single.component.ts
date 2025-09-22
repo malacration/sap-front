@@ -62,7 +62,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     });
 
 
-    this.selected.AR_CF_LINHACollection.forEach(it => {
+    this.selected?.AR_CF_LINHACollection.forEach(it => {
       it.entregue = 0
       it.produtoEntregueLoading = true;
     });
@@ -107,7 +107,8 @@ export class VendaFuturaSingleComponent implements OnInit {
             this.alertService.info("Boleto Criado com sucesso")
           },
           complete() {
-            this.loadingCriaBoletos = false    
+            this.loadingCriaBoletos = false
+            this.OnInit()
           }
         })
       }else{

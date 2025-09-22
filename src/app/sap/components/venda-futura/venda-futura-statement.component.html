@@ -5,13 +5,83 @@
             <h5 class="card-title mb-0">
                 <b>Venda Futura - {{nomeUsuario}}</b>
             </h5>
-            <!-- TODO adicionar condicional que ocuta o botao -->
-            <div class="custom-switch ml-auto">
-                <input class="custom-control-input" type="checkbox" id="all" [checked]="all" (change)="onToggleAll()">
-                <label class="custom-control-label" for="all">Ver todos os vendedores</label>
-            </div>
         </div>
-        <div class="card-body">                
+        <div class="card-body">
+            <form class="container-fluid" (ngSubmit)="loadInicial()" autocomplete="off">
+                <div class="form-row align-items-end">
+                  <!-- FILIAL -->
+                  <div class="col-auto">
+                    <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
+                  </div>
+              
+                  <!-- ID CONTRATO -->
+                  <div class="col-auto">
+                    <label for="idContrato" class="col-form-label">ID Contrato</label>
+                    <input
+                      id="idContrato"
+                      name="idContrato"
+                      class="form-control"
+                      type="number"
+                      [(ngModel)]="idContrato"
+                      min="0"
+                      placeholder="Ex.: 12345"
+                    />
+                  </div>
+              
+                  <!-- STATUS (RADIO) -->
+                  <div class="col-auto">
+                    <label class="col-form-label d-block">Status</label>
+                    <div class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusAberto"
+                        [(ngModel)]="status"
+                        [value]="'aberto'"
+                      />
+                      <label class="form-check-label" for="statusAberto">Aberto</label>
+                    </div>
+              
+                    <div class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusConcluido"
+                        [(ngModel)]="status"
+                        [value]="'concluido'"
+                      />
+                      <label class="form-check-label" for="statusConcluido">Concluído</label>
+                    </div>
+              
+                    <div class="form-check form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusCancelado"
+                        [(ngModel)]="status"
+                        [value]="'cancelado'"
+                      />
+                      <label class="form-check-label" for="statusCancelado">Cancelado</label>
+                    </div>
+                  </div>
+              
+                  <!-- AÇÕES -->
+                  <div class="col-auto">
+                    <div class="btn-group">
+                      <button type="submit" [disabled]="loading" class="btn btn-success">
+                        {{ loading ? 'Filtrando...' : 'Filtrar' }}
+                      </button>
+                      <button type="button" (click)="limpar()" [disabled]="loading" class="btn btn-outline-secondary">
+                        Limpar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            <hr>
             <app-table
                 [content]="pageContent?.content" 
                 [definition]="definition" 
@@ -19,11 +89,12 @@
             </app-table>
         </div>
         <div class="card-footer clearfix">
-            <app-paginacao
-                (pageChange)="pageChange($event)" 
-                [totalItens]="pageContent?.totalElements" 
-                [pageSize]="pageContent?.size">
-            </app-paginacao>
+            <div *ngIf="!loading && pageContent.nextLink" class="col text-center">
+                <button class="btn btn-primary" (click)="changePageFunction(pageContent.nextLink)">
+                    Carregar Mais
+                    <i class="far fa-plus-square"></i>
+                </button>
+            </div> 
         </div>
         <div *ngIf="loading" class="overlay">
             <i class="fas fa-2x fa-sync-alt fa-spin"></i>

@@ -25,16 +25,24 @@
         <div class="card-body">
             <dl class="row">
                 <dt class="col-sm-3">Número do Contrato:</dt>
-                <dd class="col-sm-9">{{ selected.DocEntry }}</dd>
+                <dd class="col-sm-3">{{ selected.DocEntry }}</dd>
+                <dt class="col-sm-3">Filial:</dt>
+                <dd class="col-sm-3">{{ selected.Bplname }}</dd>
 
                 <dt class="col-sm-3">Número do Pedido:</dt>
-                <dd class="col-sm-9">{{ selected.U_orderDocEntry }}</dd>
+                <dd class="col-sm-3">{{ selected.OrderDocNum }}</dd>
+                <dt class="col-sm-3">Entry Pedido:</dt>
+                <dd class="col-sm-3">{{ selected.U_orderDocEntry }}</dd>
 
                 <dt class="col-sm-3">Código do Cliente:</dt>
-                <dd class="col-sm-9">{{ selected.U_cardCode }}</dd>
-
+                <dd class="col-sm-3">{{ selected.U_cardCode }}</dd>
                 <dt class="col-sm-3">Nome do Cliente:</dt>
-                <dd class="col-sm-9">{{ selected.U_cardName }}</dd>
+                <dd class="col-sm-3">{{ selected.U_cardName }}</dd>
+
+                <dt class="col-sm-3">Vendedor:</dt>
+                <dd class="col-sm-9">{{ selected.SalesEmployeeName }}</dd>
+
+                
 
                 <dt class="col-sm-3">Valor do Frete:</dt>
                 <dd class="col-sm-9">{{ selected.frete }}</dd>
@@ -103,14 +111,16 @@
 <app-modal #retirada [title]="'Retirada de Produtos'">
     <app-venda-futura-retirada 
         [vendaFutura]="selected" 
-        (retirados)="closeModal($event)">
+        (retirados)="closeModal($event)"
+        (eventoRetirou)="ngOnInit()">
     </app-venda-futura-retirada>
 </app-modal>
 
 <app-modal #troca [title]="'Troca de Produtos'">
     <app-venda-futura-troca 
         [vendaFutura]="selected" 
-        (closeModal)="closeModal($event)">
+        (closeModal)="closeModal($event)"
+        (eventoTrocou)="ngOnInit()">
     </app-venda-futura-troca>
 </app-modal>
 

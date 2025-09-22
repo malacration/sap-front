@@ -103,6 +103,7 @@ export class Item{
         doc.UnitPrice = this.unitPriceLiquid()
         doc.ItemDescription = this.ItemDescription
         doc.MeasureUnit = this.MeasureUnit == undefined ? this.SalUnitMsr : this.MeasureUnit
+        doc.DiscountPercent = this.descontoVendedorPorcentagem
         return doc
     }
 
