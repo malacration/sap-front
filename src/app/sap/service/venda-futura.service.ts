@@ -40,10 +40,15 @@ export class VendaFuturaService{
       );
     }
     
-    getAll(page, allVendedores : boolean = false): Observable<Page<VendaFutura>> {
-      let url = allVendedores ? this.url+"/all" : this.url
-      url = url+"?page="+page
-      return this.http.get<Page<VendaFutura>>(url).pipe(
+    getAll(filialSelecionada : string, idContrato : string, status : string): Observable<Page<VendaFutura>> {
+      const parans = { params: 
+        { 
+          'filial' : filialSelecionada, 
+          'idContrato' : idContrato,
+          'status' : status,
+        },
+      }
+      return this.http.get<Page<VendaFutura>>(this.url,parans).pipe(
         map((page) => {
           page.content = page.content.map((venda) => {
             return this.vendaFuturaAssing(venda);

@@ -27,6 +27,12 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   selected : VendaFutura = null
   all = false
 
+  filialSelecioanda = "-1"
+  idContrato = ""
+  
+  status: 'aberto' | 'concluido' | 'cancelado' = 'aberto'
+
+
   routeSubscriptions : Array<Subscription> = new Array()
 
   definition = [
@@ -53,7 +59,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.pageChange(0)
+    this.loadInicial()
 
     this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, "id", id => {
       if(id) {
@@ -73,9 +79,10 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     })
   }
 
-  pageChange($event){
+  loadInicial(){
     this.loading = true
-    this.service.getAll($event,this.all).subscribe({
+    const idContrato = this.idContrato == "" ? "-1" : this.idContrato
+    this.service.getAll(this.filialSelecioanda,idContrato,this.status).subscribe({
       next : (it: Page<any>) => {
         this.pageContent = it
       },
@@ -114,13 +121,19 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     this.parameterService.removeParam(this.route,"id")
   }
 
-  onToggleAll(){
-    this.all = !this.all
-    this.pageChange(0)
-  }
-
   ngOnDestroy(): void {
     this.routeSubscriptions.forEach(it => it.unsubscribe)
+  }
+
+  selectBranch($event){
+    this.filialSelecioanda = $event.Bplid
+  }
+
+  limpar(){
+    this.filialSelecioanda = "-1"
+    this.idContrato = ""
+    this.status = 'aberto'
+    this.ngOnInit()
   }
 
 }
