@@ -96,7 +96,7 @@ export class VendaFutura {
 
     get totalProdutos() {
         if(this.AR_CF_LINHACollection)
-            return this.AR_CF_LINHACollection.reduce((acc, it) => acc + it.total, 0);
+            return this.AR_CF_LINHACollection?.reduce((acc, it) => acc + it.total, 0);
         else   
             return undefined
     }

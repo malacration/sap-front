@@ -49,7 +49,7 @@ export class TrocaComponent implements OnInit {
 
   get filteredItems(): Array<Option> {
     const retiradosCodes = this.itensRetirados.map(it => it.itemCode);
-    return this.vendaFutura.AR_CF_LINHACollection.filter(
+    return this.vendaFutura?.AR_CF_LINHACollection.filter(
       item => !retiradosCodes.includes(item.U_itemCode)
     ).filter(it => it.qtdDisponivel > 0).map(it => new Option(it,it.U_description+" - Qtd: "+it.qtdDisponivel));
   }
