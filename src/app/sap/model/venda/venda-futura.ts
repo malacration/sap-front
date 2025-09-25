@@ -72,7 +72,8 @@ export class VendaFutura {
     }
 
     get totalCurrency() {
-        return formatCurrency(this.U_valorFrete + this.TotalProdutosCalculado, 'pt', 'R$');
+        
+        return formatCurrency(this.U_valorFrete + this.totalProdutos ? this.totalProdutos : this.TotalProdutosCalculado, 'pt', 'R$');
     }
 
     /**
@@ -87,7 +88,7 @@ export class VendaFutura {
     }
 
     get TotalProdutosCalculadoCurrency(){
-        return this.TotalProdutosCalculado
+        return this.totalProdutos ? this.totalProdutos : this.TotalProdutosCalculado
     }
 
     get produtosCurrency() {
