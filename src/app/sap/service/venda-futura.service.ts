@@ -90,7 +90,7 @@ export class VendaFuturaService{
     private vendaFuturaAssing(it) : VendaFutura{
       const vendaFutura = Object.assign(new VendaFutura(), it);
       if(vendaFutura.AR_CF_LINHACollection){
-        vendaFutura.AR_CF_LINHACollection = vendaFutura.AR_CF_LINHACollection.map(item => 
+        vendaFutura.AR_CF_LINHACollection = vendaFutura?.AR_CF_LINHACollection?.map(item => 
           Object.assign(new LinhaItem(), item)
         );
       }
