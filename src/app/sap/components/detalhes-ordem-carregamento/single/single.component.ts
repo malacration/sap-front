@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+// single.component.ts
+
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ElementRef } from '@angular/core';
 import { Column } from '../../../../shared/components/table/column.model';
 import { AlertService } from '../../../service/alert.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
@@ -36,7 +38,10 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   businessPartner: BusinessPartner | null = null;
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
   localidadesMap: Map<string, string> = new Map();
+  draggedIndex: number | null = null;
+  placeholder: HTMLTableRowElement | null = null;
 
+  @ViewChild('tableResponsive') tableResponsive: ElementRef;
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
   @ViewChild(RomaneioPdfComponent) romaneioPdfComponent: RomaneioPdfComponent;
 
@@ -272,33 +277,75 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   onDragStart(event: DragEvent, index: number): void {
+    this.draggedIndex = index;
     event.dataTransfer!.setData('text/plain', index.toString());
     event.dataTransfer!.effectAllowed = 'move';
     (event.target as HTMLElement).classList.add('dragging');
+
+    // Cria o placeholder (linha indicadora)
+    this.placeholder = document.createElement('tr');
+    this.placeholder.classList.add('placeholder');
+    this.placeholder.innerHTML = '<td colspan="8"></td>';
   }
 
-  onDragOver(event: DragEvent, index: number): void {
+  onDragOver(event: DragEvent): void {
     event.preventDefault();
     event.dataTransfer!.dropEffect = 'move';
-    const element = event.target as HTMLElement;
-    if (element.nodeName === 'TR') {
-      element.classList.add('drag-over');
+
+    // Auto-scroll
+    const container = this.tableResponsive.nativeElement;
+    const containerRect = container.getBoundingClientRect();
+    const y = event.clientY - containerRect.top;
+    const scrollSpeed = 10;
+    if (y < 50) {
+      container.scrollTop -= scrollSpeed;
+    } else if (y > containerRect.height - 50) {
+      container.scrollTop += scrollSpeed;
+    }
+
+    // Posiciona o placeholder
+    const tbody = event.currentTarget as HTMLTableSectionElement;
+    const rows = Array.from(tbody.querySelectorAll('tr:not(.placeholder)')) as HTMLTableRowElement[];
+    let insertBeforeRow: HTMLTableRowElement | null = null;
+
+    for (const row of rows) {
+      const box = row.getBoundingClientRect();
+      if (event.clientY < box.top + box.height / 2) {
+        insertBeforeRow = row;
+        break;
+      }
+      if (event.clientY < box.bottom) {
+        insertBeforeRow = row.nextSibling as HTMLTableRowElement;
+      }
+    }
+
+    if (insertBeforeRow) {
+      tbody.insertBefore(this.placeholder, insertBeforeRow);
+    } else {
+      tbody.appendChild(this.placeholder);
     }
   }
 
   onDragEnd(event: DragEvent): void {
     (event.target as HTMLElement).classList.remove('dragging');
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    if (this.placeholder) {
+      this.placeholder.remove();
+      this.placeholder = null;
+    }
   }
 
-  onDrop(event: DragEvent, targetIndex: number): void {
+  onDrop(event: DragEvent): void {
     event.preventDefault();
-    const draggedIndex = parseInt(event.dataTransfer!.getData('text/plain'), 10);
-    const movedItem = this.pedidosOrdenados[draggedIndex];
-    this.pedidosOrdenados.splice(draggedIndex, 1);
-    this.pedidosOrdenados.splice(targetIndex, 0, movedItem);
-    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    (event.target as HTMLElement).classList.remove('drag-over');
+    if (this.draggedIndex === null || !this.placeholder) return;
+
+    const tbody = event.currentTarget as HTMLTableSectionElement;
+    const movedItem = this.pedidosOrdenados.splice(this.draggedIndex, 1)[0];
+    const placeholderIndex = Array.from(tbody.children).indexOf(this.placeholder);
+    this.pedidosOrdenados.splice(placeholderIndex, 0, movedItem);
+
+    this.placeholder.remove();
+    this.placeholder = null;
+    this.draggedIndex = null;
   }
 
   resetarOrdem(): void {

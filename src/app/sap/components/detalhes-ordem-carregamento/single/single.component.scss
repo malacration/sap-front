@@ -1,3 +1,5 @@
+/* single.component.scss */
+
 .col-sm {
   padding-left: 2px;
   padding-right: 2px;
@@ -76,4 +78,9 @@
 
 .is-invalid ~ .invalid-feedback {
   display: block;
+}
+
+.placeholder td {
+  height: 5px;
+  background-color: blue; /* Linha azul para indicar posição de drop; pode mudar para black se preferir */
 }
