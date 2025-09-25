@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { PdfCarregamentoService } from '../../../service/pdf-carregamento.service';
 
 @Component({
@@ -6,40 +6,54 @@ import { PdfCarregamentoService } from '../../../service/pdf-carregamento.servic
   templateUrl: './itinerario-pdf.component.html',
   styleUrls: ['./itinerario-pdf.component.scss']
 })
-export class ItinerarioPdfComponent {
+export class ItinerarioPdfComponent implements OnChanges {
   @Input() pedidosOrdenados: any[] = [];
   @Input() ordemCarregamento: any;
   @Input() businessPartner: any;
   @Input() localidadesMap: Map<string, string> = new Map();
 
-  @ViewChild('pdfContent', { static: false }) pdfContent: ElementRef;
+  @ViewChild('pdfPagesContainer', { static: false }) pdfPagesContainer: ElementRef;
+
+  // LINHA ADICIONADA PARA CORRIGIR O ERRO
+  paginatedPedidos: any[][] = [];
+
+  // Reduzido para 4 para ter uma margem de segurança maior para o conteúdo
+  itemsPerPage = 4;
 
   constructor(private pdfService: PdfCarregamentoService) {}
 
-  gerarPdf(header: string): void {
-    if (!this.pdfContent?.nativeElement) {
-      console.error('Elemento PDF content não encontrado.');
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pedidosOrdenados'] && this.pedidosOrdenados?.length > 0) {
+      this.paginatePedidos();
+    }
+  }
+
+  private paginatePedidos(): void {
+    const pages = [];
+    for (let i = 0; i < this.pedidosOrdenados.length; i += this.itemsPerPage) {
+      pages.push(this.pedidosOrdenados.slice(i, i + this.itemsPerPage));
+    }
+    // Agora esta linha vai funcionar corretamente
+    this.paginatedPedidos = pages;
+  }
+  
+  public gerarPdf(): void {
+    if (!this.pdfPagesContainer?.nativeElement) {
+      console.error('Elemento container do PDF não encontrado.');
       return;
     }
-    this.pdfService.gerarPdfDoElemento(
-      this.pdfContent.nativeElement,
-      `itinerario_${this.ordemCarregamento?.DocEntry}.pdf`
-    );
-  }
 
-  getUniqueLocalidades(): string[] {
-    const uniqueLocalidades = new Set<string>();
-  this.pedidosOrdenados.forEach(pedido => {
-      const localidade = this.localidadesMap.get(pedido.CardCode) || 'Não informado';
-      uniqueLocalidades.add(localidade);
-    });
-    return Array.from(uniqueLocalidades);
-  }
-
-  filterByLocalidade(pedidos: any[], localidade: string): any[] {
-    return pedidos.filter(pedido => {
-      const pedidoLocalidade = this.localidadesMap.get(pedido.CardCode) || 'Não informado';
-      return pedidoLocalidade == localidade;
-    });
+    setTimeout(async () => {
+      const pageNodes = this.pdfPagesContainer.nativeElement.querySelectorAll('.pdf-page');
+      if (pageNodes.length === 0) {
+        console.error('Nenhuma página para gerar PDF foi encontrada no DOM.');
+        return;
+      }
+      
+      await this.pdfService.gerarPdfMultiPagina(
+        pageNodes,
+        `itinerario_${this.ordemCarregamento?.DocEntry}.pdf`
+      );
+    }, 100);
   }
 }

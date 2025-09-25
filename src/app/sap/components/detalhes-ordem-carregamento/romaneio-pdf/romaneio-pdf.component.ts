@@ -23,7 +23,7 @@ export class RomaneioPdfComponent {
       console.error('Elemento PDF content não encontrado.');
       return;
     }
-    this.pdfService.gerarPdfDoElemento(
+    this.pdfService.gerarPdfMultiPagina(
       this.pdfContent.nativeElement,
       `romaneio_${this.ordemCarregamento?.DocEntry}.pdf`
     );

@@ -306,8 +306,12 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   gerarPDF(): void {
-    const headContent = document.head.innerHTML;
-    this.itinerarioPdfComponent.gerarPdf(headContent);
+    if (!this.itinerarioPdfComponent) {
+      this.alertService.error("Componente de PDF não está pronto. Tente novamente.");
+      return;
+    }
+    // A chamada agora é simples e não precisa de parâmetros
+    this.itinerarioPdfComponent.gerarPdf();
   }
 
   abrirModalRomaneio(): void {

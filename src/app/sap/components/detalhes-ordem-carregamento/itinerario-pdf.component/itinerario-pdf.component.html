@@ -1,51 +1,49 @@
-<div class="pdf-container" #pdfContent>
-  <div class="header">
-    <img src="logo.png" alt="Logo" class="logo">
-    <h1>ITINERÁRIO DE CARREGAMENTO</h1>
-  </div>
+<div class="pdf-pages-wrapper" #pdfPagesContainer>
+  
+  <ng-container *ngFor="let page of paginatedPedidos; let pageIndex = index">
+    <div class="pdf-page">
 
-  <div class="info-section">
-    <p><strong>Número da Ordem:</strong> {{ ordemCarregamento?.DocEntry }}</p>
-    <p><strong>Descrição da Ordem:</strong> {{ ordemCarregamento?.U_nameOrdem }}</p>
-    <p><strong>Data de Criação:</strong> {{ ordemCarregamento?.dataCriacao }}</p>
-    <p><strong>Status:</strong> {{ ordemCarregamento?.U_Status }}</p>
-  </div>
+      <div class="page-content">
+        <div class="header">
+          <img src="assets/logo.png" alt="Logo da Empresa" class="logo">
+          <h1>ITINERÁRIO DE CARREGAMENTO</h1>
+        </div>
 
-  <div class="table-container">
-    <!-- Agrupar e exibir pedidos por localidade -->
-    <ng-container *ngFor="let localidade of getUniqueLocalidades(); let i = index">
-      <div class="localidade-section">
-        <h2>{{ localidade || 'Não informado' }}</h2>
-        <div class="pedido-list">
-          <div *ngFor="let pedido of filterByLocalidade(pedidosOrdenados, localidade); let j = index" class="pedido-item">
-            <div class="pedido-columns">
-              <div class="column-left">
-                <p><strong>Linha:</strong> {{ i * pedidosOrdenados.length + j + 1 }}</p>
-                <p><strong>Núm. Pedido:</strong> {{ pedido.DocNum }}</p>
-                <p><strong>Cliente:</strong> {{ pedido.CardName }}</p>
-              </div>
-              <div class="column-right">
-                <p><strong>Localidade:</strong> {{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</p>
-                <p><strong>Item:</strong> {{ pedido.ItemCode }} - {{ pedido.Dscription }}</p>
-                <p><strong>Quantidade:</strong> {{ pedido.Quantity }}</p>
-              </div>
+        <div class="info-section">
+          <p><strong>Número da Ordem:</strong> {{ ordemCarregamento?.DocEntry }}</p>
+          <p><strong>Descrição:</strong> {{ ordemCarregamento?.U_nameOrdem }}</p>
+          <p><strong>Data de Criação:</strong> {{ ordemCarregamento?.dataCriacao | date: 'dd/MM/yyyy' }}</p>
+          <p><strong>Status:</strong> {{ ordemCarregamento?.U_Status }}</p>
+        </div>
+
+        <div class="pedidos-container">
+          <div *ngFor="let pedido of page; let itemIndex = index" class="pedido-item">
+            <div class="pedido-header">
+              <span class="pedido-sequencia">Sequência: {{ (pageIndex * itemsPerPage) + itemIndex + 1 }}</span>
+              <span class="pedido-numero">Pedido SAP: {{ pedido.DocNum }}</span>
             </div>
-            <div class="full-width">
-              <p><strong>Endereço:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
-              <p><strong>Observação:</strong> {{ pedido.Comments || 'Sem observações' }}</p>
+            <div class="pedido-body">
+              <p><strong>Cliente:</strong> {{ pedido.CardName }} ({{ pedido.CardCode }})</p>
+              <p><strong>Localidade:</strong> {{ localidadesMap.get(pedido.CardCode) || 'Não informado' }}</p>
+              <p><strong>Endereço de Entrega:</strong> {{ pedido.Address2 || 'Não informado' }}</p>
+              <div class="item-details">
+                <p><strong>Item:</strong> {{ pedido.ItemCode }} - {{ pedido.Dscription }}</p>
+                <p><strong>Quantidade:</strong> {{ pedido.Quantity }} {{ pedido.UomCode }}</p>
+              </div>
+              <p *ngIf="pedido.Comments"><strong>Observação:</strong> {{ pedido.Comments }}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Divisor entre localidades -->
-      <div *ngIf="i < getUniqueLocalidades().length - 1" class="divider"></div>
-    </ng-container>
-  </div>
-
-  <div class="footer">
-    <div class="assinatura">
-      ASSINATURA
+      <div class="footer">
+        <div class="assinatura">
+          ASSINATURA DO MOTORISTA
+        </div>
+        <div class="page-number">
+          Página {{ pageIndex + 1 }} de {{ paginatedPedidos.length }}
+        </div>
+      </div>
     </div>
-  </div>
+  </ng-container>
 </div>
