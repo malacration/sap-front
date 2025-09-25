@@ -7,68 +7,72 @@ import html2canvas from 'html2canvas';
 })
 export class PdfCarregamentoService {
 
-  /**
-   * Gera um PDF de múltiplas páginas a partir de uma lista de elementos HTML.
-   * Cada elemento da lista será renderizado em uma página separada do PDF.
-   * @param elements Uma NodeListOf<HTMLElement> contendo os elementos de cada página.
-   * @param fileName O nome do ficheiro PDF a ser gerado.
-   */
   async gerarPdfMultiPagina(elements: NodeListOf<HTMLElement>, fileName: string): Promise<void> {
-    const a4Width = 794; // Largura A4 em pixels (aproximadamente 210mm a 96dpi)
-    const a4Height = 1122; // Altura A4 em pixels (aproximadamente 297mm a 96dpi)
-    const margin = 40; // Margem em pixels
-
-    const pdf = new jsPDF('p', 'px', [a4Width, a4Height]);
-
-    const options = {
-      scale: 2, // Aumenta a resolução da captura
-      useCORS: true,
-      backgroundColor: '#ffffff',
-    };
-
-    // Usamos um loop for...of com await para garantir que as páginas sejam processadas em ordem
-    for (let i = 0; i < elements.length; i++) {
-      const pageElement = elements[i];
-      const canvas = await html2canvas(pageElement, options);
-
-      // Adiciona uma nova página APÓS a primeira iteração
-      if (i > 0) {
-        pdf.addPage();
-      }
-
-      const imgData = canvas.toDataURL('image/png', 0.9); // Qualidade da imagem
-      const imgWidth = a4Width - 2 * margin;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Adiciona a imagem capturada à página atual do PDF
-      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
-    }
-
-    const pdfBlob = pdf.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-
-    const newWindow = window.open('about:blank', '_blank');
+    
+    // PASSO 1: Abrir a janela IMEDIATAMENTE, antes de qualquer operação demorada.
+    const newWindow = window.open('', '_blank');
     if (!newWindow) {
-      console.error('Não foi possível abrir uma nova janela. Verifique bloqueadores de pop-up.');
       alert('Não foi possível abrir a pré-visualização do PDF. Verifique se o seu navegador está a bloquear pop-ups.');
       return;
     }
 
-    // Exibe o PDF na nova aba
+    // Escreve uma mensagem de "loading" na nova janela.
     newWindow.document.write(`
       <html>
-        <head>
-          <title>Preview: ${fileName}</title>
-          <style>
-            body { margin: 0; overflow: hidden; }
-            embed { position: absolute; top: 0; left: 0; width: 100%; height: 100vh; }
-          </style>
-        </head>
-        <body>
-          <embed src="${pdfUrl}" type="application/pdf">
+        <head><title>A Gerar PDF...</title></head>
+        <body style="font-family: sans-serif; text-align: center; padding-top: 50px; color: #333;">
+          <h2>Aguarde, a processar o seu documento...</h2>
+          <p>Este processo pode demorar alguns segundos.</p>
+          <p style="font-size: 2rem;">&#8987;</p>
         </body>
       </html>
     `);
-    newWindow.document.close();
+
+    try {
+      // PASSO 2: Iniciar o processo demorado de gerar o PDF.
+      const a4Width = 794;
+      const a4Height = 1122;
+      const margin = 40;
+
+      const pdf = new jsPDF('p', 'px', [a4Width, a4Height]);
+      const options = {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      };
+
+      for (let i = 0; i < elements.length; i++) {
+        const pageElement = elements[i];
+        const canvas = await html2canvas(pageElement, options);
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        const imgData = canvas.toDataURL('image/png', 0.9);
+        const imgWidth = a4Width - 2 * margin;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      }
+
+      // PASSO 3: Quando o PDF estiver pronto, criar a URL e carregar na janela já aberta.
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      // Atualiza a localização da janela para exibir o PDF.
+      newWindow.location.href = pdfUrl;
+
+    } catch (error) {
+      // Em caso de erro, exibe uma mensagem na janela de pop-up.
+      newWindow.document.body.innerHTML = `
+        <div style="color: red; border: 2px solid red; padding: 20px;">
+          <h2>Ocorreu um erro ao gerar o PDF.</h2>
+          <p>Por favor, feche esta janela e tente novamente. Detalhes do erro:</p>
+          <pre>${(error as Error).message}</pre>
+        </div>
+      `;
+      console.error("Erro ao gerar PDF:", error);
+    }
   }
 }
