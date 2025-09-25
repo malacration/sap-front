@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { PdfCarregamentoService } from '../../../service/pdf-carregamento.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { PdfCarregamentoService } from '../../../service/pdf-carregamento.servic
   templateUrl: './romaneio-pdf.component.html',
   styleUrls: ['./romaneio-pdf.component.scss']
 })
-export class RomaneioPdfComponent {
+export class RomaneioPdfComponent implements OnChanges {
   @Input() pedidos: any[] = [];
   @Input() ordemCarregamento: any;
   @Input() businessPartner: any;
@@ -14,50 +14,75 @@ export class RomaneioPdfComponent {
   @Input() placa: string = '';
   @Input() nomeMotorista: string = '';
 
-  @ViewChild('pdfContent', { static: false }) pdfContent: ElementRef;
+  // O @ViewChild agora aponta para o container das páginas
+  @ViewChild('pdfPagesContainer', { static: false }) pdfPagesContainer: ElementRef;
+
+  // Propriedades para agrupar e paginar os dados
+  itensAgrupados: any[] = [];
+  paginatedItens: any[][] = [];
+  itemsPerPage: number = 25; // Defina aqui quantas linhas da tabela cabem por página
 
   constructor(private pdfService: PdfCarregamentoService) {}
 
-  gerarPdf(): void {
-    if (!this.pdfContent?.nativeElement) {
-      console.error('Elemento PDF content não encontrado.');
-      return;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pedidos'] && this.pedidos?.length > 0) {
+      this.agruparEpaginarItens();
     }
-    this.pdfService.gerarPdfMultiPagina(
-      this.pdfContent.nativeElement,
-      `romaneio_${this.ordemCarregamento?.DocEntry}.pdf`
-    );
   }
 
-  getItensAgrupados(): any[] {
-    const itensAgrupados = new Map();
+  private agruparEpaginarItens(): void {
+    const itensMap = new Map();
 
     this.pedidos.forEach(pedido => {
-      const key = `${pedido.ItemCode}-${pedido.Dscription}`;
-      if (itensAgrupados.has(key)) {
-        const existing = itensAgrupados.get(key);
+      const key = pedido.ItemCode;
+      if (itensMap.has(key)) {
+        const existing = itensMap.get(key);
         existing.Quantity += pedido.Quantity;
-        existing.Peso += (pedido.Quantity * (pedido.Weight1 || 0)); // Calcula Peso como Quantity * Weight1
-        existing.pedidos.push(pedido.DocNum);
+        // Usando o campo 'Weight1' como no seu código original
+        existing.Peso += (pedido.Quantity * (pedido.Weight1 || 0));
       } else {
-        itensAgrupados.set(key, {
+        itensMap.set(key, {
           ItemCode: pedido.ItemCode,
           Dscription: pedido.Dscription,
           Quantity: pedido.Quantity,
-          Peso: pedido.Quantity * (pedido.Weight1 || 0), // Calcula Peso como Quantity * Weight1
-          pedidos: [pedido.DocNum]
+          Peso: pedido.Quantity * (pedido.Weight1 || 0),
         });
       }
     });
+    this.itensAgrupados = Array.from(itensMap.values());
 
-    return Array.from(itensAgrupados.values());
+    // Pagina o resultado
+    const pages = [];
+    for (let i = 0; i < this.itensAgrupados.length; i += this.itemsPerPage) {
+      pages.push(this.itensAgrupados.slice(i, i + this.itemsPerPage));
+    }
+    this.paginatedItens = pages;
+  }
+  
+  public gerarPdf(): void {
+    if (!this.pdfPagesContainer?.nativeElement) {
+      console.error('Elemento container do PDF não encontrado.');
+      return;
+    }
+
+    setTimeout(async () => {
+      const pageNodes = this.pdfPagesContainer.nativeElement.querySelectorAll('.pdf-page');
+      if (pageNodes.length === 0) {
+        console.error('Nenhuma página para gerar PDF foi encontrada.');
+        return;
+      }
+      await this.pdfService.gerarPdfMultiPagina(
+        pageNodes,
+        `romaneio_${this.ordemCarregamento?.DocEntry}.pdf`
+      );
+    }, 100);
   }
 
   getTotalQuantidade(): number {
-    return this.getItensAgrupados().reduce((total, item) => total + item.Quantity, 0);
+    return this.itensAgrupados.reduce((total, item) => total + item.Quantity, 0);
   }
 
   getTotalPeso(): number {
-    return this.getItensAgrupados().reduce((total, item) => total + item.Peso, 0);
+    return this.itensAgrupados.reduce((total, item) => total + item.Peso, 0);
   }
 }
