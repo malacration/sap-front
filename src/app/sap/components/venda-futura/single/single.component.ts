@@ -56,11 +56,13 @@ export class VendaFuturaSingleComponent implements OnInit {
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
 
   ngOnInit(): void {
+    this.loadingBoletos= true; 
+    this.loadingEntregas= true; 
+    this.loadingPedidos= true;
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
       this.loadingBoletos = false;
     });
-
 
     this.selected?.AR_CF_LINHACollection?.forEach(it => {
       it.entregue = 0
