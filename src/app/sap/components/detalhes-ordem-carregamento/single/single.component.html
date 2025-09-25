@@ -248,32 +248,38 @@
     </div>
   </app-modal>
 
-  <app-modal [(show)]="showRomaneioModal" [title]="'Romaneio de Carregamento'">
-    <div class="modal-body">
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> Visualização do romaneio com todos os itens da ordem de carregamento.
-      </div>
-      <div class="pdf-preview-container">
-        <div class="pdf-toolbar">
-          <button (click)="gerarRomaneioPDF()" class="btn btn-success">Gerar PDF</button>
-        </div>
-        <div class="pdf-preview">
-          <div class="pdf-preview-content">
-            <app-romaneio-pdf
-              [pedidos]="pedidos"
-              [ordemCarregamento]="selected"
-              [businessPartner]="businessPartner"
-              [localidadesMap]="localidadesMap"
-              [placa]="placa"
-              [nomeMotorista]="nomeMotorista"
-              #romaneioPdfComponent
-            ></app-romaneio-pdf>
-          </div>
-        </div>
-      </div>
+<app-modal [(show)]="showRomaneioModal" [title]="'Romaneio de Carregamento'">
+  
+  <div class="modal-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> Visualização do romaneio com todos os itens da ordem de carregamento.
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="showRomaneioModal = false">Fechar</button>
-    </div>
-  </app-modal>
+  </div>
+
+  <div class="modal-footer">
+    <button (click)="gerarRomaneioPDF()" class="btn btn-success">
+      <i class="fas fa-file-pdf"></i> Gerar PDF
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="showRomaneioModal = false">Fechar</button>
+  </div>
+
+</app-modal>
 </section>
+
+<app-romaneio-pdf
+  [pedidos]="pedidos"
+  [ordemCarregamento]="selected"
+  [businessPartner]="businessPartner"
+  [localidadesMap]="localidadesMap"
+  [placa]="placa"
+  [nomeMotorista]="nomeMotorista"
+  #romaneioPdfComponent
+></app-romaneio-pdf>
+
+<app-itinerario-pdf
+  [pedidosOrdenados]="pedidosOrdenados"
+  [ordemCarregamento]="selected"
+  [businessPartner]="businessPartner"
+  [localidadesMap]="localidadesMap"
+  #itinerarioPdfComponent 
+></app-itinerario-pdf>
