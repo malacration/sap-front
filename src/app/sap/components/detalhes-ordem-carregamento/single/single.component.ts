@@ -25,11 +25,11 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   placa: string = '';
   nomeMotorista: string = '';
   formTouched: boolean = false;
-  loading = false;
-  loadingPedidos = false;
-  showItinerarioModal = false;
-  showRomaneioModal = false;
-  showLote = false;
+  loading: boolean = false;
+  loadingPedidos: boolean = false;
+  showItinerarioModal: boolean = false;
+  showRomaneioModal: boolean = false;
+  showLote: boolean = false;
   currentPedido: PedidoVenda | LinhasPedido | null = null;
   pedidos: any[] = [];
   pedidosOrdenados: any[] = [];
@@ -66,6 +66,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.nomeMotorista = this.selected.U_motorista || '';
     }
   }
+
   private validateForm(): boolean {
     this.formTouched = true;
     if (!this.placa || !this.nomeMotorista) {
@@ -86,7 +87,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.loadingPedidos = true;
     this.pedidosVendaService.search2(docEntry).subscribe({
       next: (response: any) => {
-        const groupedPedidos = response.content.reduce((acc, pedido) => {
+        const groupedPedidos = response.content.reduce((acc: any, pedido: any) => {
           const itemCode = pedido.ItemCode;
           if (!acc[itemCode]) {
             acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
@@ -119,29 +120,30 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   salvarLogistica(): void {
     if (!this.validateForm()) {
-        return;
+      return;
     }
     this.loading = true;
     const dados = {
-        U_placa: this.placa,
-        U_motorista: this.nomeMotorista
+      U_placa: this.placa,
+      U_motorista: this.nomeMotorista
     };
 
-    this.ordemCarregamentoService.atualizarLogistica(this.selected.DocEntry, dados).subscribe({
-        next: () => {
-            this.alertService.confirm('Dados de logística salvos com sucesso!');
-            // Atualiza o objeto local para refletir a mudança
-            if(this.selected) {
-                this.selected.U_placa = this.placa;
-                this.selected.U_motorista = this.nomeMotorista;
-            }
-        },
-        error: (err) => {
-            this.alertService.error('Erro ao salvar dados de logística: ' + (err.error?.message || err.message));
-        },
-        complete: () => {
-            this.loading = false;
+    this.ordemCarregamentoService.atualizarLogistica(this.selected!.DocEntry, dados).subscribe({
+      next: () => {
+        this.alertService.confirm('Dados de logística salvos com sucesso!');
+        if (this.selected) {
+          this.selected.U_placa = this.placa;
+          this.selected.U_motorista = this.nomeMotorista;
         }
+        this.updateLocalStorage();
+      },
+      error: (err) => {
+        this.alertService.error('Erro ao salvar dados de logística: ' + (err.error?.message || err.message));
+        this.loading = false; // Garante que loading seja desativado em caso de erro
+      },
+      complete: () => {
+        this.loading = false;
+      }
     });
   }
 
@@ -149,16 +151,19 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.close.emit();
   }
 
-  action(event: ActionReturn): void {}
+  action(event: ActionReturn): void {
+    // Implementar conforme necessário
+  }
 
   gerarNotaFiscal(): void {
-    if (this.pedidos.length == 0) {
+    if (this.pedidos.length === 0) {
       this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
       return;
     }
     this.lotesSelecionadosPorItem.clear();
     this.currentPedido = this.pedidos[0];
     this.showLote = true;
+    this.loading = false; // Garante que loading esteja desativado ao abrir o modal
   }
 
   selecionarPedido(pedido: PedidoVenda | LinhasPedido): void {
@@ -172,7 +177,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   confirmarNotaVerde(): void {
-    if (this.lotesSelecionadosPorItem.size == 0) {
+    if (this.lotesSelecionadosPorItem.size === 0) {
       this.alertService.error('Nenhum lote selecionado para confirmar nota fiscal.');
       return;
     }
@@ -189,16 +194,20 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
         WhsCode: lote.WhsCode
       }))
     }));
-    this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
+
+    this.ordemCarregamentoService.saveSelectedLotes(this.selected!.DocEntry, lotesToSave).subscribe({
       next: () => {
         this.alertService.confirm('Nota fiscal confirmada com sucesso!');
         this.showLote = false;
         this.lotesSelecionadosPorItem.clear();
         this.currentPedido = null;
-        this.selected.U_Status = 'Nota fiscal Confirmada';
+        if (this.selected) {
+          this.selected.U_Status = 'Nota fiscal Confirmada';
+        }
       },
       error: (error) => {
         this.alertService.error('Erro ao confirmar nota fiscal: ' + (error.error?.message || error.message));
+        this.loading = false; 
       },
       complete: () => {
         this.loading = false;
@@ -207,11 +216,11 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   editarOrdem(): void {
-    if (this.selected.U_Status == 'Fechado' || this.selected.U_Status == 'Cancelado') {
+    if (this.selected?.U_Status === 'Fechado' || this.selected?.U_Status === 'Cancelado') {
       this.alertService.error('Não é possível editar uma ordem fechada ou cancelada.');
       return;
     }
-    this.router.navigate(['/ordem-carregamento', this.selected.DocEntry]);
+    this.router.navigate(['/ordem-carregamento', this.selected!.DocEntry]);
   }
 
   finalizarDocumento(docEntry: number): void {
@@ -219,8 +228,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.ordemCarregamentoService.finalizar(docEntry).subscribe({
       next: () => {
         this.alertService.confirm('Documento finalizado com sucesso!');
-        this.selected.U_Status = 'Fechado';
-        if (this.selected?.DocEntry) {
+        if (this.selected) {
+          this.selected.U_Status = 'Fechado';
           localStorage.removeItem(`placa_${this.selected.DocEntry}`);
           localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
         }
@@ -228,7 +237,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
         this.nomeMotorista = '';
       },
       error: (err) => {
-        this.alertService.error('Erro ao finalizar documento: ' + err.message);
+        this.alertService.error('Erro ao finalizar documento: ' + (err.error?.message || err.message));
+        this.loading = false; // Garante que loading seja desativado em caso de erro
       },
       complete: () => {
         this.loading = false;
@@ -237,7 +247,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   async abrirModalItinerario(): Promise<void> {
-    if (this.pedidos.length == 0) {
+    if (this.pedidos.length === 0) {
       this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
       return;
     }
@@ -255,23 +265,23 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.pedidosOrdenados = [...this.pedidos];
       this.showItinerarioModal = true;
     } catch (error) {
-      this.alertService.error('Erro ao carregar localidades: ' + error.message);
+      this.alertService.error('Erro ao carregar localidades: ' + (error.message || 'Erro desconhecido'));
     } finally {
       this.loading = false;
     }
   }
 
   onDragStart(event: DragEvent, index: number): void {
-    event.dataTransfer.setData('text/plain', index.toString());
-    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer!.setData('text/plain', index.toString());
+    event.dataTransfer!.effectAllowed = 'move';
     (event.target as HTMLElement).classList.add('dragging');
   }
 
   onDragOver(event: DragEvent, index: number): void {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer!.dropEffect = 'move';
     const element = event.target as HTMLElement;
-    if (element.nodeName == 'TR') {
+    if (element.nodeName === 'TR') {
       element.classList.add('drag-over');
     }
   }
@@ -283,7 +293,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
   onDrop(event: DragEvent, targetIndex: number): void {
     event.preventDefault();
-    const draggedIndex = parseInt(event.dataTransfer.getData('text/plain'), 10);
+    const draggedIndex = parseInt(event.dataTransfer!.getData('text/plain'), 10);
     const movedItem = this.pedidosOrdenados[draggedIndex];
     this.pedidosOrdenados.splice(draggedIndex, 1);
     this.pedidosOrdenados.splice(targetIndex, 0, movedItem);
@@ -301,7 +311,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   abrirModalRomaneio(): void {
-    if (this.pedidos.length == 0) {
+    if (this.pedidos.length === 0) {
       this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
       return;
     }

@@ -23,7 +23,7 @@
           (click)="editarOrdem()"
           type="button"
           class="btn btn-warning"
-          [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
           [title]="
             selected?.U_Status == 'Fechado'
               ? 'Esta ordem já foi fechada'
@@ -75,42 +75,43 @@
               ></app-table>
             </app-tab>
             <app-tab tabTitle="Logística">
-            <div class="row">
+              <div class="row">
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Placa do Veículo</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            [ngClass]="{'is-valid': placa, 'is-invalid': formTouched && !placa}"
-                            [(ngModel)]="placa"
-                            placeholder="Ex: ABC-1234"
-                        />
-                        <div class="invalid-feedback">A placa do veículo é obrigatória.</div>
-                    </div>
+                  <div class="form-group">
+                    <label>Placa do Veículo</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [ngClass]="{'is-valid': placa, 'is-invalid': formTouched && !placa}"
+                      [(ngModel)]="placa"
+                      placeholder="Ex: ABC-1234"
+                    />
+                    <div class="invalid-feedback">A placa do veículo é obrigatória.</div>
+                  </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Nome do Motorista</label>
-                        <input
-                            type="text"
-                            class="form-control"
-                            [ngClass]="{'is-valid': nomeMotorista, 'is-invalid': formTouched && !nomeMotorista}"
-                            [(ngModel)]="nomeMotorista"
-                            placeholder="Ex: João Silva"
-                        />
-                        <div class="invalid-feedback">O nome do motorista é obrigatório.</div>
-                    </div>
+                  <div class="form-group">
+                    <label>Nome do Motorista</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      [ngClass]="{'is-valid': nomeMotorista, 'is-invalid': formTouched && !nomeMotorista}"
+                      [(ngModel)]="nomeMotorista"
+                      placeholder="Ex: João Silva"
+                    />
+                    <div class="invalid-feedback">O nome do motorista é obrigatório.</div>
+                  </div>
                 </div>
-                </div>
-            <div class="row">
+              </div>
+              <div class="row">
                 <div class="col-12 text-right">
-                    <button 
-                        class="btn btn-primary" 
-                        (click)="salvarLogistica()"
-                        [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
-                        <i class="fas fa-save"></i> Salvar Logística
-                    </button>
+                  <button 
+                    class="btn btn-primary" 
+                    (click)="salvarLogistica()"
+                    [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
+                  >
+                    <i class="fas fa-save"></i> Salvar Logística
+                  </button>
                 </div>
                 <div class="col-md-6">
                   <div class="form-group">
