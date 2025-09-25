@@ -1,6 +1,6 @@
 <div class="dual-list-container" [ngClass]="{'collapsed-right': isSelectedListCollapsed}">
   <div class="list-box left-list">
-    <h5 class="titulo">Disponíveis</h5>
+    <h5 class="titulo">Disponíveis <span class="order-count">{{ availableOrdersCount }} Pedidos</span></h5>
     <input
       type="text"
       class="form-control mb-2"
@@ -60,7 +60,7 @@
   </div>
   <div class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
     <div class="list-header">
-      <h5>Selecionados</h5>
+      <h5>Selecionados <span class="order-count">{{ selectedOrdersCount }} Pedidos</span></h5>
       <div class="total-weight-info mb-2">
         <span class="btn btn-sm btn-primary">
           Peso Total Selecionado: {{ totalSelectedWeight | number:'1.2-2' }} KG

@@ -39,6 +39,16 @@ export class DualListBoxComponent {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
   }
 
+  get availableOrdersCount(): number {
+    const uniqueDocNums = new Set(this.availableItems.map(item => item.DocNum));
+    return uniqueDocNums.size;
+  }
+
+  get selectedOrdersCount(): number {
+    const uniqueDocNums = new Set(this.selectedItems.map(item => item.DocNum));
+    return uniqueDocNums.size;
+  }
+
   get groupedAvailableItems(): { docNum: number; items: PedidoVenda[] }[] {
     return this.groupItems(this.availableItems, this.searchTermAvailable);
   }
