@@ -40,9 +40,9 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     new Column('Nome', 'routerLinkPn'),
     new Column('Vendedor', 'SalesEmployeeName'),
     new Column('Filial', 'replaceFilial'),
-    new Column('Produtos', 'TotalProdutosCalculadoCurrency'),
-    new Column('Frete', 'frete'),
-    new Column('Valor Total', 'totalCurrency'),
+    // new Column('Produtos', 'TotalProdutosCalculadoCurrency'),
+    // new Column('Frete', 'frete'),
+    // new Column('Valor Total', 'totalCurrency'),
     new Column('Valor Entregue', 'valorEntregue'),
     new Column('Criado em', 'dataCriacao'),
     new Column('Status', 'U_status')
