@@ -396,6 +396,10 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
       return;
     }
+    if (this.nextLinkPedidos !== null) {
+      this.alertService.error('Por favor, carregue todos os pedidos antes de gerar o romaneio.');
+      return;
+    }
     if (!this.validateForm()) {
       return;
     }
