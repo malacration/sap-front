@@ -14,13 +14,11 @@ export class RomaneioPdfComponent implements OnChanges {
   @Input() placa: string = '';
   @Input() nomeMotorista: string = '';
 
-  // O @ViewChild agora aponta para o container das páginas
   @ViewChild('pdfPagesContainer', { static: false }) pdfPagesContainer: ElementRef;
 
-  // Propriedades para agrupar e paginar os dados
   itensAgrupados: any[] = [];
   paginatedItens: any[][] = [];
-  itemsPerPage: number = 25; // Defina aqui quantas linhas da tabela cabem por página
+  itemsPerPage: number = 20; // Ajustado para 20 itens por página
 
   constructor(private pdfService: PdfCarregamentoService) {}
 
@@ -38,7 +36,6 @@ export class RomaneioPdfComponent implements OnChanges {
       if (itensMap.has(key)) {
         const existing = itensMap.get(key);
         existing.Quantity += pedido.Quantity;
-        // Usando o campo 'Weight1' como no seu código original
         existing.Peso += (pedido.Quantity * (pedido.Weight1 || 0));
       } else {
         itensMap.set(key, {
@@ -51,7 +48,7 @@ export class RomaneioPdfComponent implements OnChanges {
     });
     this.itensAgrupados = Array.from(itensMap.values());
 
-    // Pagina o resultado
+    // Paginação com 20 itens por página
     const pages = [];
     for (let i = 0; i < this.itensAgrupados.length; i += this.itemsPerPage) {
       pages.push(this.itensAgrupados.slice(i, i + this.itemsPerPage));
