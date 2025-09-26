@@ -1,5 +1,3 @@
-// single.component.ts
-
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ElementRef } from '@angular/core';
 import { Column } from '../../../../shared/components/table/column.model';
 import { AlertService } from '../../../service/alert.service';
@@ -30,7 +28,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   formTouched: boolean = false;
   loading: boolean = false;
   loadingPedidos: boolean = false;
-  loadingMore: boolean = false; // Novo: Indicador de loading para "Carregar Mais"
+  loadingMore: boolean = false;
   showItinerarioModal: boolean = false;
   showRomaneioModal: boolean = false;
   showLote: boolean = false;
@@ -42,7 +40,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   localidadesMap: Map<string, string> = new Map();
   draggedIndex: number | null = null;
   placeholder: HTMLTableRowElement | null = null;
-  nextLinkPedidos: string | null = null; // Novo: Armazena o nextLink para paginação
+  nextLinkPedidos: string | null = null;
 
   @ViewChild('tableResponsive') tableResponsive: ElementRef;
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
@@ -108,7 +106,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     if (this.nextLinkPedidos === '') {
       observable = this.pedidosVendaService.search2(this.selected!.DocEntry);
     } else {
-      observable = this.OrderSalesService.search2All(this.nextLinkPedidos); // Novo método no serviço
+      observable = this.OrderSalesService.search2All(this.nextLinkPedidos);
     }
 
     observable.subscribe({
@@ -116,7 +114,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
         const grouped = this.groupPedidos(response.content);
         this.pedidos = [...this.pedidos, ...grouped];
         this.pedidosOrdenados = [...this.pedidos];
-        this.nextLinkPedidos = response.nextLink || null; // Null se não houver mais
+        this.nextLinkPedidos = response.nextLink || null;
         this.loadingPedidos = false;
         this.loadingMore = false;
       },
@@ -173,7 +171,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       },
       error: (err) => {
         this.alertService.error('Erro ao salvar dados de logística: ' + (err.error?.message || err.message));
-        this.loading = false; // Garante que loading seja desativado em caso de erro
+        this.loading = false;
       },
       complete: () => {
         this.loading = false;
@@ -197,7 +195,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     this.lotesSelecionadosPorItem.clear();
     this.currentPedido = this.pedidos[0];
     this.showLote = true;
-    this.loading = false; // Garante que loading esteja desativado ao abrir o modal
+    this.loading = false;
   }
 
   selecionarPedido(pedido: PedidoVenda | LinhasPedido): void {
@@ -241,7 +239,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       },
       error: (error) => {
         this.alertService.error('Erro ao confirmar nota fiscal: ' + (error.error?.message || error.message));
-        this.loading = false; 
+        this.loading = false;
       },
       complete: () => {
         this.loading = false;
@@ -272,7 +270,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
       },
       error: (err) => {
         this.alertService.error('Erro ao finalizar documento: ' + (err.error?.message || err.message));
-        this.loading = false; // Garante que loading seja desativado em caso de erro
+        this.loading = false;
       },
       complete: () => {
         this.loading = false;
@@ -382,11 +380,14 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   }
 
   gerarPDF(): void {
-    if (!this.itinerarioPdfComponent) {
-      this.alertService.error("Componente de PDF não está pronto. Tente novamente.");
+    if (this.nextLinkPedidos !== null) {
+      this.alertService.error('Por favor, carregue todos os pedidos antes de gerar o PDF.');
       return;
     }
-    // A chamada agora é simples e não precisa de parâmetros
+    if (!this.itinerarioPdfComponent) {
+      this.alertService.error('Componente de PDF não está pronto. Tente novamente.');
+      return;
+    }
     this.itinerarioPdfComponent.gerarPdf();
   }
 
