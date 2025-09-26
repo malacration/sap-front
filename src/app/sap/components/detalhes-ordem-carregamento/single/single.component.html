@@ -75,6 +75,16 @@
                 [definition]="definition"
                 (actionOutput)="action($event)"
               ></app-table>
+              <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLinkPedidos">
+                <button class="btn btn-primary" (click)="loadMorePedidos()" [disabled]="loadingMore">
+                  <ng-container *ngIf="!loadingMore">
+                    Carregar Mais
+                  </ng-container>
+                  <ng-container *ngIf="loadingMore">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando...
+                  </ng-container>
+                </button>
+              </div>
             </app-tab>
             <app-tab tabTitle="Logística">
               <div class="row">

@@ -76,5 +76,9 @@ export class OrderSalesService  implements DocumentAngularSave{
           return of([]); // Retorna array vazio em caso de erro
         })
       );
-    }
+  }
+
+  search2All(nextLink: string): Observable<any> {
+    return this.hppCliente.post(`${this.url}/search2All`, nextLink);
+  }
 }

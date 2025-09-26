@@ -14,6 +14,7 @@ import { RomaneioPdfComponent } from '../romaneio-pdf/romaneio-pdf.component';
 import { Router } from '@angular/router';
 import { ItinerarioPdfComponent } from '../itinerario-pdf.component/itinerario-pdf.component';
 import { OrdemCarregamentoService } from '../../../service/ordem-carregamento.service';
+import { OrderSalesService } from '../../../service/document/order-sales.service';
 
 @Component({
   selector: 'app-ordem-carregamento-single',
@@ -29,6 +30,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   formTouched: boolean = false;
   loading: boolean = false;
   loadingPedidos: boolean = false;
+  loadingMore: boolean = false; // Novo: Indicador de loading para "Carregar Mais"
   showItinerarioModal: boolean = false;
   showRomaneioModal: boolean = false;
   showLote: boolean = false;
@@ -40,6 +42,7 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
   localidadesMap: Map<string, string> = new Map();
   draggedIndex: number | null = null;
   placeholder: HTMLTableRowElement | null = null;
+  nextLinkPedidos: string | null = null; // Novo: Armazena o nextLink para paginação
 
   @ViewChild('tableResponsive') tableResponsive: ElementRef;
   @ViewChild(ItinerarioPdfComponent) itinerarioPdfComponent: ItinerarioPdfComponent;
@@ -61,14 +64,15 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     private ordemCarregamentoService: OrdemCarregamentoService,
     private businessPartnerService: BusinessPartnerService,
     private pedidosVendaService: PedidosVendaService,
+    private OrderSalesService: OrderSalesService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     if (this.selected?.DocEntry) {
-      this.loadPedidos(this.selected.DocEntry);
       this.placa = this.selected.U_placa || '';
       this.nomeMotorista = this.selected.U_motorista || '';
+      this.loadPedidos();
     }
   }
 
@@ -88,27 +92,52 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }
   }
 
-  loadPedidos(docEntry: number): void {
+  loadPedidos(): void {
     this.loadingPedidos = true;
-    this.pedidosVendaService.search2(docEntry).subscribe({
+    this.pedidos = [];
+    this.nextLinkPedidos = ''; // Inicializa para a primeira chamada
+    this.loadMorePedidos();
+  }
+
+  loadMorePedidos(): void {
+    if (this.nextLinkPedidos === null) return; // Não há mais páginas
+
+    this.loadingMore = true;
+
+    let observable;
+    if (this.nextLinkPedidos === '') {
+      observable = this.pedidosVendaService.search2(this.selected!.DocEntry);
+    } else {
+      observable = this.OrderSalesService.search2All(this.nextLinkPedidos); // Novo método no serviço
+    }
+
+    observable.subscribe({
       next: (response: any) => {
-        const groupedPedidos = response.content.reduce((acc: any, pedido: any) => {
-          const itemCode = pedido.ItemCode;
-          if (!acc[itemCode]) {
-            acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
-          }
-          acc[itemCode].Quantity += pedido.Quantity;
-          return acc;
-        }, {});
-        this.pedidos = Object.values(groupedPedidos);
+        const grouped = this.groupPedidos(response.content);
+        this.pedidos = [...this.pedidos, ...grouped];
         this.pedidosOrdenados = [...this.pedidos];
+        this.nextLinkPedidos = response.nextLink || null; // Null se não houver mais
         this.loadingPedidos = false;
+        this.loadingMore = false;
       },
       error: () => {
-        this.alertService.error('Erro ao carregar pedidos.');
+        this.alertService.error('Erro ao carregar mais pedidos.');
         this.loadingPedidos = false;
+        this.loadingMore = false;
       }
     });
+  }
+
+  private groupPedidos(content: any[]): any[] {
+    const groupedPedidos = content.reduce((acc: any, pedido: any) => {
+      const itemCode = pedido.ItemCode;
+      if (!acc[itemCode]) {
+        acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
+      }
+      acc[itemCode].Quantity += pedido.Quantity;
+      return acc;
+    }, {});
+    return Object.values(groupedPedidos);
   }
 
   selectBp(event: BusinessPartner): void {
