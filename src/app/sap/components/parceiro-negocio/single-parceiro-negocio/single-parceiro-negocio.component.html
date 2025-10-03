@@ -37,6 +37,20 @@
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
+                    <app-tab tabTitle="Contas a Receber" [active]="false">
+                <div *ngIf="contasReceberLoading" class="text-center p-3">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando contas a receber...
+                </div>
+                <div *ngIf="!contasReceberLoading && contasReceberEmpty" class="text-center p-3 text-muted">
+                    Nenhuma conta em aberto encontrada.
+                </div>
+                <app-table
+                    *ngIf="!contasReceberLoading && !contasReceberEmpty"
+                    [content]="contasReceber" 
+                    [definition]="contasReceberDefinition" 
+                    (actionOutput)="action($event)">
+                </app-table>
+                </app-tab>   
 
                     </app-tabs>
                 </dd>

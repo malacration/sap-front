@@ -5,6 +5,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { Column } from '../../../../shared/components/table/column.model';
 import { OrderSalesService } from '../../../service/document/order-sales.service';
 import { PedidoVenda } from '../../document/documento.statement.component';
+import { ContaReceber } from '../../../model/contas-receber.model';
 
 
 
@@ -26,7 +27,9 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   selected: BusinessPartner = null;
 
   pedidoVenda = Array()
-
+  contasReceber = Array()
+  contasReceberLoading = false;
+  contasReceberEmpty = false;
   @Output()
   close = new EventEmitter();
 
@@ -43,7 +46,32 @@ export class ParceiroNegocioSingleComponent implements OnInit {
       });
       this.pedidoVenda = this.pedidoVenda.map(pedidoVenda => Object.assign(new PedidoVenda(), pedidoVenda));
     });
+     this.contasReceberLoading = true;
+  this.businessPartnerService.getContasReceberBP(this.selected.CardCode).subscribe({
+    next: (response) => {
+      this.contasReceber = response.map(c => Object.assign(new ContaReceber(), {
+        TransId: c.TransId,
+        Documento:c.documento,
+        Ref1: c.Ref1,
+        RefDate: c.RefDate,
+        DueDate: c.DueDate,
+        Debit: c.Debit,
+        Credit: c.Credit,
+        LineMemo: c.LineMemo,
+        BPLName: c.BPLName,
+        TransType: c.TransType
+      }));
+      this.contasReceberEmpty = this.contasReceber.length === 0;
+    },
+    error: () => {
+      this.contasReceberEmpty = true;
+    },
+    complete: () => {
+      this.contasReceberLoading = false;
+    }
+  });
   }
+  
 
   voltar(){
     this.close.emit()
@@ -80,4 +108,14 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     new Column('Data do Pedido', 'dataCriacao'),
     new Column('Total do Pedido', 'totalCurrency'),
   ];
+
+contasReceberDefinition = [
+  new Column('Nota', 'Ref1'),
+   new Column('Tipo de documento', 'Documento'),
+  new Column('Data de Lançamento', 'refDateFormat'),
+  new Column('Data de Vencimento', 'dueDateFormat'),
+  new Column('Filial', 'BPLName'),
+  new Column('Histórico', 'LineMemo'),
+  new Column('Valor', 'totalCurrency'),
+];
 }
