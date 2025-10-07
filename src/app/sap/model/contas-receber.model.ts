@@ -1,3 +1,5 @@
+import { ReplaceFilial } from '../../utils/replaceFilial';
+
 export class ContaReceber {
   TransId: number;
   Ref1: string;
@@ -8,7 +10,7 @@ export class ContaReceber {
   LineMemo: string;
   BPLName: string;
   TransType: number;
-  documento:string;
+  documento: string;
 
   // formatar data dd/MM/yyyy
   get refDateFormat(): string {
@@ -18,13 +20,15 @@ export class ContaReceber {
   get dueDateFormat(): string {
     return this.formatDate(this.DueDate);
   }
-
+  get filialFormatada(): string {
+    return ReplaceFilial.limparFilial(this.BPLName);
+  }
   // valor consolidado (só exibe se > 0)
   get total(): number {
     if (this.Debit && this.Debit > 0) {
       return this.Debit;
     } else if (this.Credit && this.Credit > 0) {
-      return this.Credit * -1;  // crédito vira negativo
+      return this.Credit * -1; // crédito vira negativo
     }
     return 0;
   }
@@ -32,7 +36,10 @@ export class ContaReceber {
   // valor formatado em moeda brasileira
   get totalCurrency(): string {
     const valor = this.total ?? 0;
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
   }
 
   private formatDate(value: string): string {

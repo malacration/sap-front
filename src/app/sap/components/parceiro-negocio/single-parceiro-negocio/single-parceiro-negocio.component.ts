@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { BusinessPartnerService } from '../../../service/business-partners.service';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -7,88 +14,95 @@ import { OrderSalesService } from '../../../service/document/order-sales.service
 import { PedidoVenda } from '../../document/documento.statement.component';
 import { ContaReceber } from '../../../model/contas-receber.model';
 
-
-
 @Component({
   selector: 'app-parceiro-negocio-single',
   templateUrl: './single-parceiro-negocio.component.html',
-  styleUrls: ['./single-parceiro-negocio.component.scss']
+  styleUrls: ['./single-parceiro-negocio.component.scss'],
 })
 export class ParceiroNegocioSingleComponent implements OnInit {
-
-
   constructor(
-    private businessPartnerService : BusinessPartnerService, 
-    private orderSales : OrderSalesService ){
+    private businessPartnerService: BusinessPartnerService,
+    private orderSales: OrderSalesService
+  ) {}
 
-  }
-
-  @Input() 
+  @Input()
   selected: BusinessPartner = null;
 
-  pedidoVenda = Array()
-  contasReceber = Array()
+  pedidoVenda = Array();
+  contasReceber = Array();
   contasReceberLoading = false;
   contasReceberEmpty = false;
   @Output()
   close = new EventEmitter();
 
-  @ViewChild('retirada', {static: true}) buscaModal: ModalComponent;
+  @ViewChild('retirada', { static: true }) buscaModal: ModalComponent;
 
   ngOnInit(): void {
-    this.businessPartnerService.getPedidodeVendaBP(this.selected.CardCode).subscribe(response => {
-      this.pedidoVenda = response.map(pedidoVenda => {
-        return {
-          DocNum: pedidoVenda.DocNum,
-          DocDate: pedidoVenda.DocDate,
-          DocTotal: pedidoVenda.DocTotal
-        }; 
+    this.businessPartnerService
+      .getPedidodeVendaBP(this.selected.CardCode)
+      .subscribe((response) => {
+        this.pedidoVenda = response.map((pedidoVenda) => {
+          return {
+            DocNum: pedidoVenda.DocNum,
+            DocDate: pedidoVenda.DocDate,
+            DocTotal: pedidoVenda.DocTotal,
+          };
+        });
+        this.pedidoVenda = this.pedidoVenda.map((pedidoVenda) =>
+          Object.assign(new PedidoVenda(), pedidoVenda)
+        );
       });
-      this.pedidoVenda = this.pedidoVenda.map(pedidoVenda => Object.assign(new PedidoVenda(), pedidoVenda));
-    });
-     this.contasReceberLoading = true;
-  this.businessPartnerService.getContasReceberBP(this.selected.CardCode).subscribe({
-    next: (response) => {
-      this.contasReceber = response.map(c => Object.assign(new ContaReceber(), {
-        TransId: c.TransId,
-        Documento:c.documento,
-        Ref1: c.Ref1,
-        RefDate: c.RefDate,
-        DueDate: c.DueDate,
-        Debit: c.Debit,
-        Credit: c.Credit,
-        LineMemo: c.LineMemo,
-        BPLName: c.BPLName,
-        TransType: c.TransType
-      }));
-      this.contasReceberEmpty = this.contasReceber.length === 0;
-    },
-    error: () => {
-      this.contasReceberEmpty = true;
-    },
-    complete: () => {
-      this.contasReceberLoading = false;
-    }
-  });
-  }
-  
-
-  voltar(){
-    this.close.emit()
+    this.contasReceberLoading = true;
+    this.businessPartnerService
+      .getContasReceberBP(this.selected.CardCode)
+      .subscribe({
+        next: (response) => {
+          this.contasReceber = response.map((c) =>
+            Object.assign(new ContaReceber(), {
+              TransId: c.TransId,
+              Documento: c.documento,
+              Ref1: c.Ref1,
+              RefDate: c.RefDate,
+              DueDate: c.DueDate,
+              Debit: c.Debit,
+              Credit: c.Credit,
+              LineMemo: c.LineMemo,
+              BPLName: c.BPLName,
+              TransType: c.TransType,
+            })
+          );
+          this.contasReceberEmpty = this.contasReceber.length === 0;
+        },
+        error: () => {
+          this.contasReceberEmpty = true;
+        },
+        complete: () => {
+          this.contasReceberLoading = false;
+        },
+      });
   }
 
-  action($event){
-
+  voltar() {
+    this.close.emit();
   }
 
-  openModal(){
-    this.buscaModal.classeModal = "modal-xl"
-    this.buscaModal.openModal()
+  action($event) {}
+
+  openModal() {
+    this.buscaModal.classeModal = 'modal-xl';
+    this.buscaModal.openModal();
   }
 
+  closeModal($event) {
+    this.buscaModal.closeModal();
+  }
 
-  closeModal($event){
-    this.buscaModal.closeModal()
+  get totalContasReceber(): number {
+    if (!this.contasReceber || this.contasReceber.length === 0) return 0;
+
+    return this.contasReceber
+      .map((c) => Number(c.Debit || 0) - Number(c.Credit || 0)) // se existir crédito, desconta
+      .reduce((acc, val) => acc + val, 0);
   }
 
   definition = [
@@ -109,13 +123,13 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     new Column('Total do Pedido', 'totalCurrency'),
   ];
 
-contasReceberDefinition = [
-  new Column('Nota', 'Ref1'),
-   new Column('Tipo de documento', 'Documento'),
-  new Column('Data de Lançamento', 'refDateFormat'),
-  new Column('Data de Vencimento', 'dueDateFormat'),
-  new Column('Filial', 'BPLName'),
-  new Column('Histórico', 'LineMemo'),
-  new Column('Valor', 'totalCurrency'),
-];
+  contasReceberDefinition = [
+    new Column('Nota', 'Ref1'),
+    new Column('Tipo de documento', 'Documento'),
+    new Column('Data de Lançamento', 'refDateFormat'),
+    new Column('Data de Vencimento', 'dueDateFormat'),
+    new Column('Filial', 'filialFormatada'),
+    new Column('Histórico', 'LineMemo'),
+    new Column('Valor', 'totalCurrency'),
+  ];
 }
