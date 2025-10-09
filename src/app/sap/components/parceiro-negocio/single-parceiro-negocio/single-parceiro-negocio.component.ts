@@ -13,6 +13,7 @@ import { Column } from '../../../../shared/components/table/column.model';
 import { OrderSalesService } from '../../../service/document/order-sales.service';
 import { PedidoVenda } from '../../document/documento.statement.component';
 import { ContaReceber } from '../../../model/contas-receber.model';
+import { Page } from '../../../model/page.model';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -27,7 +28,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
 
   @Input()
   selected: BusinessPartner = null;
-
+  pageContent: Page<ContaReceber> = { content: [] } as Page<ContaReceber>;
+  loading = false;
   pedidoVenda = Array();
   contasReceber = Array();
   contasReceberLoading = false;
@@ -52,27 +54,19 @@ export class ParceiroNegocioSingleComponent implements OnInit {
           Object.assign(new PedidoVenda(), pedidoVenda)
         );
       });
+    this.loadContasReceber();
+  }
+
+  loadContasReceber() {
     this.contasReceberLoading = true;
     this.businessPartnerService
       .getContasReceberBP(this.selected.CardCode)
       .subscribe({
         next: (response) => {
-          this.contasReceber = response.map((c) =>
-            Object.assign(new ContaReceber(), {
-              TransId: c.TransId,
-              Documento: c.documento,
-              Ref1: c.Ref1,
-              RefDate: c.RefDate,
-              DueDate: c.DueDate,
-              Debit: c.Debit,
-              Credit: c.Credit,
-              LineMemo: c.LineMemo,
-              BPLName: c.BPLName,
-              TransType: c.TransType,
-            })
-          );
-          this.contasReceberEmpty = this.contasReceber.length === 0;
-        },
+        this.pageContent = response;
+        this.contasReceber = response.content.map(it => Object.assign(new ContaReceber(), it));
+        this.contasReceberEmpty = this.contasReceber.length === 0;
+      },
         error: () => {
           this.contasReceberEmpty = true;
         },
@@ -81,6 +75,25 @@ export class ParceiroNegocioSingleComponent implements OnInit {
         },
       });
   }
+
+changePageFunction(nextLink: string) {
+  this.loading = true;
+
+  this.businessPartnerService
+    .getContasReceberNextLink(nextLink)
+    .subscribe({
+      next: (it) => {
+        const novos = it.content.map(x => Object.assign(new ContaReceber(), x));
+        this.pageContent.nextLink = it.nextLink;
+        this.contasReceber = [...this.contasReceber, ...novos];
+
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
+    });
+}
 
   voltar() {
     this.close.emit();
@@ -125,7 +138,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
 
   contasReceberDefinition = [
     new Column('Nota', 'Ref1'),
-    new Column('Tipo de documento', 'Documento'),
+    new Column('Tipo de documento', 'documento'),
     new Column('Data de Lançamento', 'refDateFormat'),
     new Column('Data de Vencimento', 'dueDateFormat'),
     new Column('Filial', 'filialFormatada'),

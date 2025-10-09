@@ -85,7 +85,13 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     return this.hppCliente.get<Array<PedidoVenda>>(this.url + "/pedido-venda-parceiro/", { params: { CardCode } });
   }
 
-    getContasReceberBP(CardCode: string): Observable<Array<ContaReceber>> {
-    return this.hppCliente.get<Array<ContaReceber>>(this.url + "/contas-receber/", { params: { CardCode } });
+  getContasReceberBP(CardCode: string): Observable<Page<ContaReceber>> {
+    return this.hppCliente.get<Page<ContaReceber>>(this.url + "/contas-receber/", { params: { CardCode } });
   }
+  getContasReceberNextLink(nextLink: string): Observable<Page<ContaReceber>> {
+    const url = this.url + '/contas-receber/nextlink';
+    return this.hppCliente.post<Page<ContaReceber>>(url, nextLink);
+}
+
+  
 }
