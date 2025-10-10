@@ -1,49 +1,96 @@
-<br>
+<br />
 <section class="content">
-    <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title"><b>Detalhes do Parceiro de Négocios</b></h3>
-            <div class="card-tools">
-            </div>
-        </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">Número do Parceiro:</dt>
-                <dd class="col-sm-9">{{ selected.CardCode }}</dd>
-
-                <dt class="col-sm-3">Nome do Parceiro:</dt>
-                <dd class="col-sm-9">{{ selected.CardName }}</dd>
-
-                <dt class="col-sm-3">Telefone:</dt>
-                <dd class="col-sm-9">{{ selected.Phone1 }}</dd>
-
-                <dt class="col-sm-3">Email:</dt>
-                <dd class="col-sm-9">{{ selected.EmailAddress }}</dd>
-
-                <dd class="col-sm">
-                    <app-tabs>
-                        <app-tab tabTitle="Endereço" [active]="true">
-                            <app-table
-                                [content]="selected?.BPAddresses" 
-                                [definition]="definition" 
-                                (actionOutput)="action($event)">
-                            </app-table>
-                        </app-tab>
-
-                        <app-tab tabTitle="Pedido de Venda" [active]="false">
-                            <app-table
-                                [content]="pedidoVenda" 
-                                [definition]="pedidoVendaDefinition" 
-                                (actionOutput)="action($event)">
-                            </app-table>
-                        </app-tab>
-
-                    </app-tabs>
-                </dd>
-            </dl>
-        </div>
-        <div class="card-footer">
-            <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
-        </div>
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Detalhes do Parceiro de Négocios</b></h3>
+      <div class="card-tools"></div>
     </div>
+    <div class="card-body">
+      <dl class="row">
+        <dt class="col-sm-3">Número do Parceiro:</dt>
+        <dd class="col-sm-9">{{ selected.CardCode }}</dd>
+
+        <dt class="col-sm-3">Nome do Parceiro:</dt>
+        <dd class="col-sm-9">{{ selected.CardName }}</dd>
+
+        <dt class="col-sm-3">Telefone:</dt>
+        <dd class="col-sm-9">{{ selected.Phone1 }}</dd>
+
+        <dt class="col-sm-3">Email:</dt>
+        <dd class="col-sm-9">{{ selected.EmailAddress }}</dd>
+
+        <dd class="col-sm">
+          <app-tabs>
+            <app-tab tabTitle="Endereço" [active]="true">
+              <app-table
+                [content]="selected?.BPAddresses"
+                [definition]="definition"
+                (actionOutput)="action($event)"
+              >
+              </app-table>
+            </app-tab>
+
+            <app-tab tabTitle="Pedido de Venda" [active]="false">
+              <app-table
+                [content]="pedidoVenda"
+                [definition]="pedidoVendaDefinition"
+                (actionOutput)="action($event)"
+              >
+              </app-table>
+            </app-tab>
+            <app-tab tabTitle="Contas a Receber" [active]="false">
+              <div *ngIf="contasReceberLoading" class="text-center p-3">
+                <i class="fas fa-spinner fa-spin"></i> Carregando contas a
+                receber...
+              </div>
+              <div
+                *ngIf="!contasReceberLoading && contasReceberEmpty"
+                class="text-center p-3 text-muted"
+              >
+                Nenhuma valor em aberto encontrado.
+              </div>
+              <app-table
+                *ngIf="!contasReceberLoading && !contasReceberEmpty"
+                [content]="contasReceber"
+                [definition]="contasReceberDefinition"
+                (actionOutput)="action($event)"
+              >
+              </app-table>
+              <div
+                *ngIf="!contasReceberEmpty && !contasReceberLoading"
+                class="text-right p-3"
+              >
+                <strong>Total:</strong>
+                {{ totalContasReceber | currency : "BRL" : "symbol" : "1.2-2" }}
+              </div>
+               <div class="card-footer clearfix">
+              <div
+                *ngIf="!loading && pageContent.nextLink"
+                class="col text-center"
+              >
+                <button
+                  class="btn btn-primary"
+                  (click)="changePageFunction(pageContent.nextLink)"
+                >
+                  Carregar Mais
+                  <i class="far fa-plus-square"></i>
+                </button>
+              </div>
+
+              <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+              </div>
+            </div>
+            </app-tab>
+           
+          </app-tabs>
+        </dd>
+      </dl>
+    </div>
+    <div class="card-footer">
+      <button type="button" class="btn btn-secondary" (click)="voltar()">
+        Voltar
+      </button>
+    </div>
+  </div>
 </section>
