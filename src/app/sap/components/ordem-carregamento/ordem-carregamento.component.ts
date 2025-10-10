@@ -6,10 +6,11 @@ import { OrderSalesService } from '../../service/document/order-sales.service';
 import { Branch } from '../../model/branch';
 import { Localidade } from '../../model/localidade/localidade';
 import { NextLink } from '../../model/next-link';
-import { OrdemCarregamento } from '../../model/ordem-carregamento';
+import { OrdemCarregamento } from '../../model/logistica/ordem-carregamento';
 import { PedidoVenda } from '../document/documento.statement.component';
 import { LocalidadeService } from '../../service/localidade.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
+import { OrdemCarregamentoDto } from '../../model/logistica/ordem-carregamento-dto';
 
 @Component({
   selector: 'app-ordem-carregamento',
@@ -205,37 +206,45 @@ export class OrdemCarregamentoComponent implements OnInit {
     if (!this.validateForm()) {
       return;
     }
-
-    this.loading = true;
     this.ordemId ? this.updateOrder() : this.createOrder();
   }
 
   private createOrder(): void {
+    this.loading = true;
     const ordemCarregamento = new OrdemCarregamento();
     ordemCarregamento.U_nameOrdem = this.nameOrdInput;
     ordemCarregamento.U_Status = 'Aberto';
     ordemCarregamento.U_filial3 = this.branchId;
 
-    this.ordemCarregamentoService.save(ordemCarregamento).subscribe({
-      next: (response: any) => {
-        const docEntryOrdem = response.DocEntry;
-        const updateRequests = this.selectedOrders.map(pedido =>
-          this.orderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), docEntryOrdem)
-        );
+    const dto = new OrdemCarregamentoDto(
+      ordemCarregamento,
+      this.selectedOrders.map(pedido => pedido.DocEntry)
+    )
+    this.ordemCarregamentoService.save2(dto).subscribe(it =>
+      alert("savei")
+    )
 
-        forkJoin(updateRequests).subscribe({
-          next: () => this.concluirEnvio(),
-          error: () => {
-            this.alertService.error('Erro ao atualizar pedidos com a ordem de carregamento.');
-            this.loading = false;
-          }
-        });
-      },
-      error: () => {
-        this.alertService.error('Erro ao criar ordem de carregamento.');
-        this.loading = false;
-      }
-    });
+    this.loading = false;
+    // this.ordemCarregamentoService.save(ordemCarregamento).subscribe({
+    //   next: (response: any) => {
+    //     const docEntryOrdem = response.DocEntry;
+    //     const updateRequests = this.selectedOrders.map(pedido =>
+    //       this.orderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), docEntryOrdem)
+    //     );
+
+    //     forkJoin(updateRequests).subscribe({
+    //       next: () => this.concluirEnvio(),
+    //       error: () => {
+    //         this.alertService.error('Erro ao atualizar pedidos com a ordem de carregamento.');
+    //         this.loading = false;
+    //       }
+    //     });
+    //   },
+    //   error: () => {
+    //     this.alertService.error('Erro ao criar ordem de carregamento.');
+    //     this.loading = false;
+    //   }
+    // });
   }
 
   private updateOrder(): void {

@@ -1,4 +1,4 @@
-import { Action, ActionReturn } from '../../shared/components/action/action.model';
+import { Action, ActionReturn } from '../../../shared/components/action/action.model';
 
 export class OrdemCarregamento {
   DocEntry: number;

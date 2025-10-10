@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ElementRef }
 import { Column } from '../../../../shared/components/table/column.model';
 import { AlertService } from '../../../service/alert.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
-import { OrdemCarregamento } from '../../../model/ordem-carregamento';
+import { OrdemCarregamento } from '../../../model/logistica/ordem-carregamento';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { BusinessPartnerService } from '../../../service/business-partners.service';
 import { PedidosVendaService } from '../../../service/document/pedidos-venda.service';

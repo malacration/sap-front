@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription, forkJoin, map } from 'rxjs';
 import { ParameterService } from '../../../shared/service/parameter.service';
 import { AlertService } from '../../service/alert.service';
-import { OrdemCarregamento } from '../../model/ordem-carregamento';
+import { OrdemCarregamento } from '../../model/logistica/ordem-carregamento';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
 
 @Component({

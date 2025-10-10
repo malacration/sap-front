@@ -3,9 +3,10 @@ import { ConfigService } from '../../core/services/config.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Page } from '../model/page.model';
-import { OrdemCarregamento } from '../model/ordem-carregamento';
+import { OrdemCarregamento } from '../model/logistica/ordem-carregamento';
 import { LinhaItem } from '../model/venda/venda-futura';
 import { BatchStock } from '../../modulos/sap-shared/_models/BatchStock.model';
+import { OrdemCarregamentoDto } from '../model/logistica/ordem-carregamento-dto';
 
 export interface CarregamentoDetalhes {
   DocEntry: number;
@@ -38,6 +39,10 @@ export class OrdemCarregamentoService {
         return page;
       })
     );
+  }
+
+  save2(body: OrdemCarregamentoDto): Observable<any> {
+    return this.http.post<any>(`${this.url}`, body);
   }
 
   save(body: OrdemCarregamento): Observable<any> {
