@@ -18,10 +18,10 @@ import { OrdemCarregamentoDto } from '../../model/logistica/ordem-carregamento-d
   styleUrls: ['./ordem-carregamento.component.scss']
 })
 export class OrdemCarregamentoComponent implements OnInit {
-  nameOrdInput: string = '';
+  
   dtInicial: string | null = null;
   dtFinal: string | null = null;
-  branchId: string = '11';
+  
   selectedBranch: Branch | null = null;
   localidade: Localidade | null = null;
   showStock: boolean = false;
@@ -31,8 +31,14 @@ export class OrdemCarregamentoComponent implements OnInit {
   nextLink: string = '';
   loading = false;
   isLoadingOrders = false;
-  ordemId: number | null = null;
+  
+  // nameOrdInput: string = '';
+  // ordemId: number | null = null;
+  // branchId: string = '11';
+  
   initialSelectedOrders: PedidoVenda[] = [];
+
+  ordemCarregamento : OrdemCarregamento = new OrdemCarregamento()
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -45,19 +51,17 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.ordemId = params['id'] ? +params['id'] : null;
-      if (this.ordemId) {
-        this.carregarOrdemParaEdicao();
+      if (params['id']) {
+        this.carregarOrdemParaEdicao(params['id']);
       }
     });
   }
 
-  carregarOrdemParaEdicao(): void {
+  carregarOrdemParaEdicao(docEntry : string): void {
     this.loading = true;
-    this.ordemCarregamentoService.get(this.ordemId!.toString()).subscribe({
+    this.ordemCarregamentoService.get(docEntry).subscribe({
       next: (ordem: OrdemCarregamento) => {
-        this.nameOrdInput = ordem.U_nameOrdem;
-        this.branchId = ordem.U_filial3?.toString() || '11';
+        this.ordemCarregamento = ordem
         this.carregarPedidosExistentes();
       },
       error: () => {
@@ -67,8 +71,10 @@ export class OrdemCarregamentoComponent implements OnInit {
     });
   }
 
+
+  //TODO o back deveria voltar tudo no getOrdemCarregamento!
   carregarPedidosExistentes(): void {
-    this.orderSalesService.getPedidosBy(this.ordemId!).subscribe({
+    this.orderSalesService.getPedidosBy(this.ordemCarregamento.DocEntry).subscribe({
       next: (pedidos: PedidoVenda[]) => {
         this.selectedOrders = pedidos;
         this.initialSelectedOrders = [...pedidos];
@@ -83,7 +89,8 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   selectBranch(branch: Branch): void {
     this.selectedBranch = branch;
-    this.branchId = branch.bplid;
+    //TODO duvidoso esse cara
+    // this.ordemCarregamento.U_filial3 = branch.bplid
     this.updateOrderName();
   }
 
@@ -102,7 +109,7 @@ export class OrdemCarregamentoComponent implements OnInit {
 
   updateOrderName(): void {
     if (!this.isNameManuallyEdited && this.selectedBranch && this.localidade) {
-      this.nameOrdInput = `${this.selectedBranch.bplname || 'Filial'} Com Destino: ${this.localidade.Name || 'Localidade'}`;
+      this.ordemCarregamento.U_nameOrdem = `${this.selectedBranch.bplname || 'Filial'} Com Destino: ${this.localidade.Name || 'Localidade'}`;
     }
   }
 
@@ -111,7 +118,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   canFilter(): boolean {
-    return !!this.branchId && !!this.localidade;
+    return !!this.selectedBranch?.bplid && !!this.localidade;
   }
 
   criarAnalise(): void {
@@ -122,7 +129,7 @@ export class OrdemCarregamentoComponent implements OnInit {
 
     this.isLoadingOrders = true;
     this.orderSalesService
-      .search(this.dtInicial || '', this.dtFinal || '', this.branchId, this.localidade!.Code)
+      .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.bplid, this.localidade!.Code)
       .subscribe({
         next: (result: NextLink<PedidoVenda>) => {
           this.availableOrders = result.content.filter(
@@ -195,7 +202,7 @@ export class OrdemCarregamentoComponent implements OnInit {
   }
 
   validateForm(): boolean {
-    if (!this.nameOrdInput || this.selectedOrders.length == 0) {
+    if (!this.ordemCarregamento.U_nameOrdem || this.selectedOrders.length == 0) {
       this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido.');
       return false;
     }
@@ -206,89 +213,32 @@ export class OrdemCarregamentoComponent implements OnInit {
     if (!this.validateForm()) {
       return;
     }
-    this.ordemId ? this.updateOrder() : this.createOrder();
+    this.createOrUpdate()
   }
 
-  private createOrder(): void {
+  private createOrUpdate(): void {
     this.loading = true;
-    const ordemCarregamento = new OrdemCarregamento();
-    ordemCarregamento.U_nameOrdem = this.nameOrdInput;
-    ordemCarregamento.U_Status = 'Aberto';
-    ordemCarregamento.U_filial3 = this.branchId;
-
-    const dto = new OrdemCarregamentoDto(
-      ordemCarregamento,
-      this.selectedOrders.map(pedido => pedido.DocEntry)
-    )
-    this.ordemCarregamentoService.save2(dto).subscribe(it =>
-      alert("savei")
-    )
-
-    this.loading = false;
-    // this.ordemCarregamentoService.save(ordemCarregamento).subscribe({
-    //   next: (response: any) => {
-    //     const docEntryOrdem = response.DocEntry;
-    //     const updateRequests = this.selectedOrders.map(pedido =>
-    //       this.orderSalesService.updateOrdemCarregamento(pedido.DocEntry.toString(), docEntryOrdem)
-    //     );
-
-    //     forkJoin(updateRequests).subscribe({
-    //       next: () => this.concluirEnvio(),
-    //       error: () => {
-    //         this.alertService.error('Erro ao atualizar pedidos com a ordem de carregamento.');
-    //         this.loading = false;
-    //       }
-    //     });
-    //   },
-    //   error: () => {
-    //     this.alertService.error('Erro ao criar ordem de carregamento.');
-    //     this.loading = false;
-    //   }
-    // });
-  }
-
-  private updateOrder(): void {
+    
     const toRemove = this.initialSelectedOrders
       .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
-      .map(p => p.DocNum);
-    const toAdd = this.selectedOrders
-      .filter(current => !this.initialSelectedOrders.some(initial => initial.DocEntry == current.DocEntry))
-      .map(p => p.DocNum);
+      .map(p => p.DocEntry);
 
-    const ordemUpdate = new OrdemCarregamento();
-    ordemUpdate.U_nameOrdem = this.nameOrdInput;
-    ordemUpdate.U_Status = 'Aberto';
-    ordemUpdate.U_filial3 = this.branchId;
-
-    this.ordemCarregamentoService.update(ordemUpdate, this.ordemId!.toString()).subscribe({
-      next: () => {
-        if (toRemove.length > 0) {
-          this.ordemCarregamentoService.cancelarPedidos(this.ordemId!, toRemove).subscribe({
-            error: () => this.alertService.error('Erro ao remover pedidos.')
-          });
-        }
-
-        const addRequests = toAdd.map(docNum =>
-          this.orderSalesService.updateOrdemCarregamento(docNum.toString(), this.ordemId!)
-        );
-
-        forkJoin(addRequests).subscribe({
-          next: () => this.concluirEnvio(),
-          error: () => {
-            this.alertService.error('Erro ao adicionar pedidos.');
-            this.loading = false;
-          }
-        });
-      },
-      error: () => {
-        this.alertService.error('Erro ao atualizar ordem de carregamento.');
-        this.loading = false;
-      }
-    });
+    const dto = new OrdemCarregamentoDto(
+      this.ordemCarregamento,
+      this.selectedOrders.map(pedido => pedido.DocEntry),
+      toRemove
+    )
+    this.ordemCarregamentoService.save2(dto).subscribe(it => {
+      this.concluirEnvio()
+      // this.ordemCarregamento = it
+      //vincula a ordem ao objeto do estado - aqui vai ter que manter os pedidos selecionados
+      // this.ordemcarregamento.pedidos
+      this.loading = false;
+    })
   }
 
   private concluirEnvio(): void {
-    this.alertService.info(`Ordem de carregamento ${this.ordemId ? 'atualizada' : 'criada'} com sucesso.`).then(() => {
+    this.alertService.info(`Ordem de carregamento ${this.ordemCarregamento.DocEntry ? 'atualizada' : 'criada'} com sucesso.`).then(() => {
       this.loading = false;
       this.router.navigate(['ordem-carregamento/detalhes']);
     });
