@@ -126,6 +126,7 @@ export class TableComponent implements OnInit {
   }
 
   processInputChange(item: any, definition: Column, value: any): void {
+    const newVal = Number.isFinite(Number(value)) ? Number(value) : value; 
     // 1) atualiza o "model"
     if (typeof item[definition.property] === 'function') {
       item[definition.property](value);
