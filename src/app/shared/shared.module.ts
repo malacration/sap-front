@@ -16,11 +16,12 @@ import { SelectComponent } from '../sap/components/form/select/select.component'
 import { ParameterService } from './service/parameter.service';
 import { AuthService } from './service/auth.service';
 import { PercentageDirective } from './directives/percentage.directive';
-import { CurrencyDirective } from './directives/curency.directive copy';
+import { CurrencyDirective } from './directives/curency.directive';
 import { PaginacaoComponent } from './components/paginacao/paginacao.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { ChangePassowrd } from './components/change-password/change-password.component';
 import { ProgressBarComponent } from './components/progress-bar/progress-bar.component';
+import { NormalTextDirective } from './directives/normalText.directive';
 
 @NgModule({
   providers: [
@@ -37,6 +38,7 @@ import { ProgressBarComponent } from './components/progress-bar/progress-bar.com
     SelectComponent,
     PercentageDirective,
     CurrencyDirective,
+    NormalTextDirective,
     PaginacaoComponent,
     ModalComponent,
     ChangePassowrd
@@ -60,6 +62,7 @@ import { ProgressBarComponent } from './components/progress-bar/progress-bar.com
     SelectComponent,
     PercentageDirective,
     CurrencyDirective,
+    NormalTextDirective,
     PaginacaoComponent,
     ModalComponent,
     ReactiveFormsModule,
