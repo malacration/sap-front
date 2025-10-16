@@ -12,9 +12,4 @@ export class InvoiceGenerationService {
   constructor(private config: ConfigService, private http: HttpClient) {
     this.url = config.getHost() + "/invoice";
   }
-
-  generateInvoiceFromLoadingOrder(docEntry: number): Observable<any> {
-      // Enviar apenas o DocEntry do pedido como parâmetro
-      return this.http.post(`${this.url}/generate-from-loading-order/${docEntry}`, {});
-    }
 }

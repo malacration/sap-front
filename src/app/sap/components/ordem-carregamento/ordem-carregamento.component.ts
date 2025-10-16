@@ -228,7 +228,7 @@ export class OrdemCarregamentoComponent implements OnInit {
       this.selectedOrders.map(pedido => pedido.DocEntry),
       toRemove
     )
-    this.ordemCarregamentoService.save2(dto).subscribe(it => {
+    this.ordemCarregamentoService.save(dto).subscribe(it => {
       this.concluirEnvio()
       // this.ordemCarregamento = it
       //vincula a ordem ao objeto do estado - aqui vai ter que manter os pedidos selecionados

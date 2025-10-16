@@ -44,23 +44,6 @@ export class OrderSalesService  implements DocumentAngularSave{
       );
   }
 
-  searchAll(nextLink: string): Observable<NextLink<PedidoVenda>> {
-    return this.hppCliente
-      .post<NextLink<PedidoVenda>>(`${this.url}/searchAll`, nextLink)
-      .pipe(
-        map((response) => {
-          response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
-          return response;
-        })
-      );
-  }
-
-  updateOrdemCarregamento(pedidoId: string, ordemCarregamentoId: number): Observable<any> {
-    return this.hppCliente.get(
-      `${this.url}/pedido/all/${pedidoId}/${ordemCarregamentoId}/order-id`
-    );
-  }
-
   getPedidosBy(ordemId: number): Observable<PedidoVenda[]> {
     return this.hppCliente
       .get<NextLink<PedidoVenda>>(`${this.url}/search2`, {
@@ -78,7 +61,7 @@ export class OrderSalesService  implements DocumentAngularSave{
       );
   }
 
-  search2All(nextLink: string): Observable<any> {
+  searchAll(nextLink: string): Observable<any> {
     return this.hppCliente.post(`${this.url}/search2All`, nextLink);
   }
 }

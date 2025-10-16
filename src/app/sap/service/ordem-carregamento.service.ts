@@ -43,16 +43,8 @@ export class OrdemCarregamentoService {
     );
   }
 
-  save2(body: OrdemCarregamentoDto): Observable<any> {
+  save(body: OrdemCarregamentoDto): Observable<any> {
     return this.http.post<any>(`${this.url}`, body);
-  }
-
-  save(body: OrdemCarregamento): Observable<any> {
-    return this.http.post<any>(`${this.url}/angular`, body);
-  }
-
-  cancelarPedidos(docEntryOrdem: number, docNumsPedidos: number[]): Observable<any> {
-    return this.http.post(`${this.url}/${docEntryOrdem}/cancelar-pedidos`, { pedidos: docNumsPedidos });
   }
 
   finalizar(id: number): Observable<any> {
@@ -69,10 +61,6 @@ export class OrdemCarregamentoService {
 
   getDetalhes(id: number): Observable<CarregamentoDetalhes[]> {
     return this.http.get<CarregamentoDetalhes[]>(`${this.url}/${id}/detalhes`);
-  }
-
-  update(body: OrdemCarregamento, id: string): Observable<any> {
-    return this.http.patch<any>(`${this.url}/${id}`, body);
   }
 
   private ordemCarregamentoAssign(it: any): OrdemCarregamento {

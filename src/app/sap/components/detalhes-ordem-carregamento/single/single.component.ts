@@ -104,9 +104,9 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
 
     let observable;
     if (this.nextLinkPedidos === '') {
-      observable = this.pedidosVendaService.search2(this.selected!.DocEntry);
+      observable = this.pedidosVendaService.search(this.selected!.DocEntry);
     } else {
-      observable = this.OrderSalesService.search2All(this.nextLinkPedidos);
+      observable = this.OrderSalesService.searchAll(this.nextLinkPedidos);
     }
 
     observable.subscribe({
