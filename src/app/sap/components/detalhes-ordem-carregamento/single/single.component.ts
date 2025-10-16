@@ -208,44 +208,63 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }
   }
 
-  confirmarNotaVerde(): void {
-    if (this.lotesSelecionadosPorItem.size === 0) {
-      this.alertService.error('Nenhum lote selecionado para confirmar nota fiscal.');
-      return;
-    }
-    this.loading = true;
-    const lotesToSave = Array.from(this.lotesSelecionadosPorItem.entries()).map(([itemCode, lotes]) => ({
-      ItemCode: itemCode,
-      Batches: lotes.map(lote => ({
-        BatchNumber: lote.DistNumber,
-        ExpDate: lote.ExpDate,
-        InDate: lote.InDate,
-        ItemName: lote.ItemName,
-        MnfDate: lote.MnfDate,
-        Quantity: lote.quantitySelecionadaEditable || lote.Quantity,
-        WhsCode: lote.WhsCode
-      }))
-    }));
+  private atualizarStatusParaFechado(): void {
+  this.loading = true;
+  const dados = { U_Status: 'Fechado' };
 
-    this.ordemCarregamentoService.saveSelectedLotes(this.selected!.DocEntry, lotesToSave).subscribe({
-      next: () => {
-        this.alertService.confirm('Nota fiscal confirmada com sucesso!');
-        this.showLote = false;
-        this.lotesSelecionadosPorItem.clear();
-        this.currentPedido = null;
-        if (this.selected) {
-          this.selected.U_Status = 'Nota fiscal Confirmada';
-        }
-      },
-      error: (error) => {
-        this.alertService.error('Erro ao confirmar nota fiscal: ' + (error.error?.message || error.message));
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
+  this.ordemCarregamentoService.atualizarStatus(this.selected!.DocEntry, dados).subscribe({
+    next: () => {
+      if (this.selected) {
+        this.selected.U_Status = 'Fechado';
       }
-    });
+      // Limpa localStorage quando fechar
+      localStorage.removeItem(`placa_${this.selected!.DocEntry}`);
+      localStorage.removeItem(`nomeMotorista_${this.selected!.DocEntry}`);
+    },
+    error: (err) => {
+      this.alertService.error('Erro ao atualizar status: ' + (err.error?.message || err.message));
+    },
+    complete: () => {
+      this.loading = false;
+    }
+  });
   }
+
+confirmarNotaVerde(): void {
+  if (this.lotesSelecionadosPorItem.size === 0) {
+    this.alertService.error('Nenhum lote selecionado para confirmar nota fiscal.');
+    return;
+  }
+  this.loading = true;
+  const lotesToSave = Array.from(this.lotesSelecionadosPorItem.entries()).map(([itemCode, lotes]) => ({
+    ItemCode: itemCode,
+    Batches: lotes.map(lote => ({
+      BatchNumber: lote.DistNumber,
+      ExpDate: lote.ExpDate,
+      InDate: lote.InDate,
+      ItemName: lote.ItemName,
+      MnfDate: lote.MnfDate,
+      Quantity: lote.quantitySelecionadaEditable || lote.Quantity,
+      WhsCode: lote.WhsCode
+    }))
+  }));
+
+  this.ordemCarregamentoService.saveSelectedLotes(this.selected!.DocEntry, lotesToSave).subscribe({
+    next: () => {
+      this.alertService.confirm('Nota fiscal confirmada com sucesso!');
+      
+      this.atualizarStatusParaFechado();
+      
+      this.showLote = false;
+      this.lotesSelecionadosPorItem.clear();
+      this.currentPedido = null;
+    },
+    error: (error) => {
+      this.alertService.error('Erro ao confirmar nota fiscal: ' + (error.error?.message || error.message));
+      this.loading = false;
+    }
+  });
+}
 
   editarOrdem(): void {
     if (this.selected?.U_Status === 'Fechado' || this.selected?.U_Status === 'Cancelado') {
@@ -405,6 +424,8 @@ export class OrdemCarregamentoSingleComponent implements OnInit {
     }
     this.showRomaneioModal = true;
   }
+
+
 
   gerarRomaneioPDF(): void {
     if (!this.validateForm()) {
