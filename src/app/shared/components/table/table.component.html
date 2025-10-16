@@ -6,7 +6,7 @@
           <th *ngFor="let def of definition" scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
             
             {{def.label}} 
-            <button *ngIf="isEditable(def)" class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="teste(def)">
+            <button *ngIf="isEditable(def)" class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="atualizaColuna(def)">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
           </th>
@@ -28,18 +28,20 @@
                 app-percentage
                 type="text"
                 [formControl]="formControlFactory(item,def)"/>
+
               <input *ngIf="isCurrency(def)"
                 [attr.size]="getInputSize(item, def)"
                 class="table-input"
                 app-currency
                 type="text"
                 [formControl]="formControlFactory(item,def)"/>
+              
               <input *ngIf="isNormalEditable(def)"
                 [attr.size]="getInputSize(item, def)"
                 class="table-input"
                 type="text"
-                [formControl]="formControlFactory(item,def)" 
-                (blur)="onInputBlur(item,def)" />
+                normalText
+                [formControl]="formControlFactory(item,def)" />
             </div>
           </td>
           <td *ngIf="item.getActions">

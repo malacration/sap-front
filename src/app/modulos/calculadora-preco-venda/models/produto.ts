@@ -86,17 +86,13 @@ export class Produto{
       .toNumber()
   }
 
-  getCustoGgfToneladaCurrency() : number{
-    return this.TONELADA.times(this.CustoGgf).toNumber()
-  }
-  
   custoGgfTonelada = null
 
   get custoGgfToneladaEditable() : number{
     if(this.custoGgfTonelada)
       return this.custoGgfTonelada
     else
-      return this.getCustoGgfToneladaCurrency()
+      return this.TONELADA.times(this.CustoGgf).toNumber()
     
   }
 
@@ -106,23 +102,41 @@ export class Produto{
 
 
   getMargemCurrency() : number{
+    console.log(this.margemPercentEditable,"margemPercentEditable")
+    console.log(this.getCustoMateriaTonCurrency(),"getCustoMateriaTonCurrency")
+    console.log(this.custoGgfToneladaEditable,"custoGgfToneladaEditable")
+    console.log(this.getPerdasCurrency(),"getPerdasCurrency")
     return this.margemPercentEditable*(
       this.getCustoMateriaTonCurrency()+
-      this.getCustoGgfToneladaCurrency()+
+      this.custoGgfToneladaEditable+
       this.getPerdasCurrency()
     )
   }
 
-  basePisCofinsCurrency() : number{
-    let creditoPisConfins = this.debitoTaxaPisCofinsPercentEditable > 0 ? this.getCreditoPisCofinsCurrency() : 0
-    let mutiplicador = (1+this.financeiroPercentEditable)*(1+this.marketingPercentEditable)*(1+this.tabelaPercentEditable)
-    return (
-      ((this.getMargemCurrency()+this.getCustoMateriaTonCurrency())*mutiplicador)+
-      this.caridadeCurrencyEditable+
-      this.getCustoGgfToneladaCurrency()+
-      this.premiacaoCurrencyEditable
-      -creditoPisConfins
-      )/(1-this.debitoTaxaPisCofinsPercentEditable);
+  basePisCofinsCurrency(): number {
+    const debitoPct = Number(this.debitoTaxaPisCofinsPercentEditable ?? 0);
+  
+    const creditoPisCofins =
+      debitoPct > 0 ? Number(this.getCreditoPisCofinsCurrency?.() ?? 0) : 0;
+
+      const multiplicador =
+      (1 + Number(this.financeiroPercentEditable ?? 0)) *
+      (1 + Number(this.marketingPercentEditable ?? 0)) *
+      (1 + Number(this.tabelaPercentEditable ?? 0));
+  
+    const margem = Number(this.getMargemCurrency?.() ?? 0);
+    const custo  = Number(this.getCustoMateriaTonCurrency?.() ?? 0);
+  
+    const caridade  = Number(this.caridadeCurrencyEditable ?? 0);
+    const ggf       = Number(this.custoGgfToneladaEditable ?? 0);
+    const premiacao = Number(this.premiacaoCurrencyEditable ?? 0);
+  
+    const base =
+      (margem + custo) * multiplicador +
+      caridade + ggf + premiacao -
+      creditoPisCofins;
+  
+    return base * (1 - debitoPct);
   }
 
   debitoPisCofinsCurrency() : number{
@@ -158,7 +172,7 @@ export class Produto{
   getResultadoCurrency() : number {
     return (this.getPrecoTonCurrency()-
       (-this.getLiquidoPisCofinsCurrency())-
-      this.getCustoGgfToneladaCurrency()-
+      this.custoGgfToneladaEditable-
       this.getCustoMateriaTonCurrency())
   }
 

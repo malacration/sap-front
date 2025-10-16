@@ -27,16 +27,42 @@ export class VendaFuturaService{
         })
       );
     }
-    
-    getAll(page, allVendedores : boolean = false): Observable<Page<VendaFutura>> {
-      let url = allVendedores ? this.url+"/all" : this.url
-      url = url+"?page="+page
-      return this.http.get<Page<VendaFutura>>(url).pipe(
+
+    getNextLink(nextLink: string): Observable<Page<VendaFutura>> {
+      let url = this.url+"/nextlink"
+      return this.http.post<Page<VendaFutura>>(url,nextLink).pipe(
         map((page) => {
           page.content = page.content.map((venda) => {
             return this.vendaFuturaAssing(venda);
           });
           return page;
+        })
+      );
+    }
+    
+    getAll(filialSelecionada : string, idContrato : string, status : string): Observable<Page<VendaFutura>> {
+      const parans = { params: 
+        { 
+          'filial' : filialSelecionada, 
+          'idContrato' : idContrato,
+          'status' : status,
+        },
+      }
+      return this.http.get<Page<VendaFutura>>(this.url,parans).pipe(
+        map((page) => {
+          page.content = page.content.map((venda) => {
+            return this.vendaFuturaAssing(venda);
+          });
+          return page;
+        })
+      );
+    }
+
+    getAllItens(docEntry : number): Observable<Array<LinhaItem>> {
+      let url =  this.url+`/${docEntry}/produtos`
+      return this.http.get<Array<LinhaItem>>(url).pipe(
+        map((items) => {
+          return items.map(it => Object.assign(new LinhaItem(), it))
         })
       );
     }
@@ -63,9 +89,11 @@ export class VendaFuturaService{
 
     private vendaFuturaAssing(it) : VendaFutura{
       const vendaFutura = Object.assign(new VendaFutura(), it);
-      vendaFutura.AR_CF_LINHACollection = vendaFutura.AR_CF_LINHACollection.map(item => 
-        Object.assign(new LinhaItem(), item)
-      );
+      if(vendaFutura.AR_CF_LINHACollection){
+        vendaFutura.AR_CF_LINHACollection = vendaFutura?.AR_CF_LINHACollection?.map(item => 
+          Object.assign(new LinhaItem(), item)
+        );
+      }
       return vendaFutura
     }
 

@@ -56,13 +56,15 @@ export class VendaFuturaSingleComponent implements OnInit {
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
 
   ngOnInit(): void {
+    this.loadingBoletos= true; 
+    this.loadingEntregas= true; 
+    this.loadingPedidos= true;
     this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
       this.boletos = it;
       this.loadingBoletos = false;
     });
 
-
-    this.selected.AR_CF_LINHACollection.forEach(it => {
+    this.selected?.AR_CF_LINHACollection?.forEach(it => {
       it.entregue = 0
       it.produtoEntregueLoading = true;
     });
@@ -74,14 +76,14 @@ export class VendaFuturaSingleComponent implements OnInit {
         }));
         
         this.entregas.forEach(item => {
-          let produto = this.selected.AR_CF_LINHACollection.find(it => it.U_itemCode == item.ItemCode.toString());
+          let produto = this.selected?.AR_CF_LINHACollection?.find(it => it.U_itemCode == item.ItemCode.toString());
           if(produto)
             produto.entregue += item.formattedQuantityInvoice | 0
         });
 
         this.loadingEntregas = false; 
         
-        this.selected.AR_CF_LINHACollection.forEach(it => {
+        this.selected?.AR_CF_LINHACollection?.forEach(it => {
           it.produtoEntregueLoading = false;
         });
     })
@@ -107,7 +109,8 @@ export class VendaFuturaSingleComponent implements OnInit {
             this.alertService.info("Boleto Criado com sucesso")
           },
           complete() {
-            this.loadingCriaBoletos = false    
+            this.loadingCriaBoletos = false
+            this.OnInit()
           }
         })
       }else{

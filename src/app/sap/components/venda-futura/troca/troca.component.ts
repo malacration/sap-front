@@ -28,6 +28,9 @@ export class TrocaComponent implements OnInit {
   @Output()
   closeModal = new EventEmitter<any>();
 
+  @Output()
+  eventoTrocou = new EventEmitter<any>();
+
   loadingSalvar = false
   selectedItem: LinhaItem | null = null;
   quantity: number | null = null;
@@ -46,7 +49,7 @@ export class TrocaComponent implements OnInit {
 
   get filteredItems(): Array<Option> {
     const retiradosCodes = this.itensRetirados.map(it => it.itemCode);
-    return this.vendaFutura.AR_CF_LINHACollection.filter(
+    return this.vendaFutura?.AR_CF_LINHACollection.filter(
       item => !retiradosCodes.includes(item.U_itemCode)
     ).filter(it => it.qtdDisponivel > 0).map(it => new Option(it,it.U_description+" - Qtd: "+it.qtdDisponivel));
   }
@@ -91,6 +94,7 @@ export class TrocaComponent implements OnInit {
         this.alertService.info("Pedido de troca foi feito com sucesso").then(it =>{
           this.clearForm()
           this.closeModal.emit()
+          this.eventoTrocou.emit()
         })
       }, 
       complete: () => {
