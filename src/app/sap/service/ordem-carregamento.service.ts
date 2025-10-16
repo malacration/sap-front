@@ -35,7 +35,9 @@ export class OrdemCarregamentoService {
     const endpoint = allVendedores ? `${this.url}/all` : this.url;
     return this.http.get<Page<OrdemCarregamento>>(`${endpoint}?page=${page}`).pipe(
       map((page) => {
-        page.content = page.content.map((ordem) => this.ordemCarregamentoAssign(ordem));
+        page.content = page.content
+          .filter((ordem) => ordem.U_Status !== 'Falhou')
+          .map((ordem) => this.ordemCarregamentoAssign(ordem));
         return page;
       })
     );
