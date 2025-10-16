@@ -126,6 +126,7 @@ export class TableComponent implements OnInit {
   }
 
   processInputChange(item: any, definition: Column, value: any): void {
+    const newVal = Number.isFinite(Number(value)) ? Number(value) : value; 
     // 1) atualiza o "model"
     if (typeof item[definition.property] === 'function') {
       item[definition.property](value);
@@ -154,7 +155,7 @@ export class TableComponent implements OnInit {
     return index;
   }
 
-  teste(column: Column) {
+  atualizaColuna(column: Column) {
     this.alertService
       .confirmWithInput('Atenção, editando todos os valores da coluna '+column.label, 'text')
       .then((res) => {
@@ -165,7 +166,6 @@ export class TableComponent implements OnInit {
         const val: number | string =
           parsed !== null ? parsed : String(raw ?? '');
   
-        alert(this.content.length)
         for (const item of this.content) {
           this.processInputChange(item, column, val);
         }

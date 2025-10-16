@@ -109,7 +109,7 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   selectBranch(branch: Branch){
-    this.branchId = branch.bplid;
+    this.branchId = branch.Bplid;
     this.selectedBranch = branch; 
     this.changeOperacao();
   }
@@ -290,6 +290,7 @@ export class LinhasPedido{
   MeasureUnit
   SalUnitMsr
   DflWhs
+  DiscountPercent
 }
 
 export class TaxExtension{
