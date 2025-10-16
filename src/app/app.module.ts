@@ -109,6 +109,17 @@ import { ProducaoModule } from './modulos/producao/producao.module';
 import { LoadingBarModule } from '@ngx-loading-bar/core';
 import { LoadingBarRouterModule } from '@ngx-loading-bar/router';
 import { LoadingBarHttpClientModule } from '@ngx-loading-bar/http-client';
+import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
+import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
+import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
+import { ItinerarioPdfComponent } from './sap/components/detalhes-ordem-carregamento/itinerario-pdf.component/itinerario-pdf.component';
+import { RomaneioPdfComponent } from './sap/components/detalhes-ordem-carregamento/romaneio-pdf/romaneio-pdf.component';
+import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
+import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
+import { PdfCarregamentoService } from './sap/service/pdf-carregamento.service';
 
 
 registerLocaleData(localeBr);
@@ -176,7 +187,15 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DescontoComponent,
     TabsComponent,
     TabComponent,
-    TrocaComponent
+    TrocaComponent,
+    OrdemCarregamentoComponent,
+    LocalidadeSearchComponent,
+    DualListBoxComponent,
+    OrdemCarregamentoStatementComponent,
+    OrdemCarregamentoSingleComponent,
+    ItinerarioPdfComponent,
+    RomaneioPdfComponent,
+    TransportadoraSearchComponent
   ],
   imports: [
     NgxPaginationModule,
@@ -188,6 +207,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
+    SapSharedModule,
     LoadingBarModule,
     LoadingBarRouterModule,      // barra em navegação de rotas
     LoadingBarHttpClientModule,  // barra em requisições HttpClient
@@ -228,6 +248,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CotacaoService,
     PedidosVendaService,
     CurrencyPipe,
+    InvoiceGenerationService,
+    PdfCarregamentoService,
     FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
