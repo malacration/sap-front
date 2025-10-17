@@ -22,6 +22,8 @@ import { ModalComponent } from './components/modal/modal.component';
 import { ChangePassowrd } from './components/change-password/change-password.component';
 import { ProgressBarComponent } from './components/progress-bar/progress-bar.component';
 import { NormalTextDirective } from './directives/normalText.directive';
+import { TabsComponent } from './components/tabs/tabs.component';
+import { TabComponent } from './components/tabs/tab/tab.component';
 
 @NgModule({
   providers: [
@@ -40,6 +42,8 @@ import { NormalTextDirective } from './directives/normalText.directive';
     CurrencyDirective,
     NormalTextDirective,
     PaginacaoComponent,
+    TabsComponent,
+    TabComponent,
     ModalComponent,
     ChangePassowrd
   ],
@@ -67,6 +71,8 @@ import { NormalTextDirective } from './directives/normalText.directive';
     ModalComponent,
     ReactiveFormsModule,
     ProgressBarComponent,
+    TabsComponent,
+    TabComponent,
     ChangePassowrd
   ]
 })

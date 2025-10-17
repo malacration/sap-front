@@ -260,7 +260,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
     new Column('Sacaria', 'UnidadeMedida'),
     
     new Column('Custo Saco (receita)', 'getCustoReceitaCurrency'),
-    new Column('Custo Saco (media)', 'CustoMateriaPrimaCurrency'),
+    new Column('Custo Saco (contabil)', 'CustoMateriaPrimaCurrency'),
     new Column('Qtd Saco/ton', 'getSacoTon'),
     new Column('Custo por ton', 'getCustoMateriaTonCurrency'),
 
@@ -271,34 +271,33 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
     new Column('(%) Perdas', 'perdasPercentEditable'),
     new Column('Perdas', 'getPerdasCurrency'), //Reduzido pelo percentual de credito do pis e cofins
 
-    new Column('GGF/TON', 'custoGgfToneladaEditable'),
-    //Margem
-    new Column('(%) Margem', 'margemPercentEditable'),
-    new Column('Margem', 'getMargemCurrency'),
+    new Column('(R$) GGF/TON', 'custoGgfToneladaEditable'),
 
     //Absolutos
     new Column('(R$) Filantropia/ton', 'caridadeCurrencyEditable'),
-    new Column('(R$) Premiação/ton', 'premiacaoCurrencyEditable'),
+    new Column('(R$) Despesas/ton', 'despesasCurrencyEditable'),
 
-    // Financeiro
-    new Column('(%) Financeiro', 'financeiroPercentEditable'),
-    new Column('(%) Marketing', 'marketingPercentEditable'),
-    new Column('(%) Tabela', 'tabelaPercentEditable'),
+    new Column('(%) Juros', 'financeiroPercentEditable'),
+    new Column('Juros', 'getJurosCurrency'),
+
 
     //Impostos na venda
     new Column('(%) PIS/COFINS (Venda)', 'debitoTaxaPisCofinsPercentEditable'),
-    new Column('Base PIS/COFINS', 'basePisCofinsCurrency'),
-    
     new Column('PIS/COFINS', 'debitoPisCofinsCurrency'),
-    new Column('PIS/COFINS Liquido', 'getLiquidoPisCofinsCurrency'),
 
+    new Column('(%) Comissão', 'tabelaPercentEditable'),
+    new Column('Comissão', 'custoComissaoCurrency'),
+
+    //Margem
+    new Column('(%) Margem', 'margemPercentEditable'),
+    new Column('Margem (Ton)', 'maregemPorToneladaCurrency'),
     
     //Preco recomendado para venda
-    new Column('Preço Por Ton', 'getPrecoTonCurrency'),
-    new Column('Preço Por SC', 'getPrecoSacoCurrency'),
+    new Column('Preço Ton', 'precoComRepasseCurrency'),
+    new Column('Preço SC', 'getPrecoSacoCurrency'),
 
     //Lucro bruto?
-    new Column('Resultado por Ton', 'getResultadoCurrency'),
+    new Column('Resultado SC', 'mergemLiquidaSacoCurrency'),
   ]
 
   action(action : ActionReturn){

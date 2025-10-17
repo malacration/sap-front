@@ -112,7 +112,7 @@ export class TableComponent implements OnInit {
   formControlFactory(item : any, definition : Column) : FormControl{
     let key = "formControlFactory"+definition.property
     if(item[key] == null || item[key] == undefined) {
-      item[key] = new FormControl(this.getValue(item,definition))
+      item[key] = new FormControl(this.getValue(item,definition),{updateOn: 'blur'})
       item[key].valueChanges.subscribe(value => {
         this.processInputChange(item,definition,value);
       });

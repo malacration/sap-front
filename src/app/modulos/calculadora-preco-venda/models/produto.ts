@@ -20,7 +20,7 @@ export class Produto{
   perdasPercentEditable = 0
   caridadeCurrencyEditable = 0
   margemPercentEditable = 0
-  premiacaoCurrencyEditable : number = 0
+  despesasCurrencyEditable : number = 0
   financeiroPercentEditable = 0 
   marketingPercentEditable = 0
   tabelaPercentEditable = 0
@@ -86,77 +86,25 @@ export class Produto{
       .toNumber()
   }
 
-  custoGgfTonelada = null
+  private _custoGgfTonelada: number | null = null;
 
   get custoGgfToneladaEditable() : number{
-    if(this.custoGgfTonelada)
-      return this.custoGgfTonelada
+    if(this._custoGgfTonelada !== null && this._custoGgfTonelada !== undefined)
+      return this._custoGgfTonelada
     else
       return this.TONELADA.times(this.CustoGgf).toNumber()
-    
   }
 
-  set custoGgfToneladaEditable(valor : number){
-    this.custoGgfTonelada = valor
+  set custoGgfToneladaEditable(valor: number) {this._custoGgfTonelada = Number(valor) || 0;
   }
 
-
-  getMargemCurrency() : number{
-    console.log(this.margemPercentEditable,"margemPercentEditable")
-    console.log(this.getCustoMateriaTonCurrency(),"getCustoMateriaTonCurrency")
-    console.log(this.custoGgfToneladaEditable,"custoGgfToneladaEditable")
-    console.log(this.getPerdasCurrency(),"getPerdasCurrency")
-    return this.margemPercentEditable*(
-      this.getCustoMateriaTonCurrency()+
-      this.custoGgfToneladaEditable+
-      this.getPerdasCurrency()
-    )
-  }
-
-  basePisCofinsCurrency(): number {
-    const debitoPct = Number(this.debitoTaxaPisCofinsPercentEditable ?? 0);
-  
-    const creditoPisCofins =
-      debitoPct > 0 ? Number(this.getCreditoPisCofinsCurrency?.() ?? 0) : 0;
-
-      const multiplicador =
-      (1 + Number(this.financeiroPercentEditable ?? 0)) *
-      (1 + Number(this.marketingPercentEditable ?? 0)) *
-      (1 + Number(this.tabelaPercentEditable ?? 0));
-  
-    const margem = Number(this.getMargemCurrency?.() ?? 0);
-    const custo  = Number(this.getCustoMateriaTonCurrency?.() ?? 0);
-  
-    const caridade  = Number(this.caridadeCurrencyEditable ?? 0);
-    const ggf       = Number(this.custoGgfToneladaEditable ?? 0);
-    const premiacao = Number(this.premiacaoCurrencyEditable ?? 0);
-  
-    const base =
-      (margem + custo) * multiplicador +
-      caridade + ggf + premiacao -
-      creditoPisCofins;
-  
-    return base * (1 - debitoPct);
-  }
 
   debitoPisCofinsCurrency() : number{
     return this.debitoTaxaPisCofinsPercentEditable*this.basePisCofinsCurrency()
   }
 
-  getPrecoTonCurrency() : number{
-    return this.basePisCofinsCurrency()
-  }
-
-  getPrecoSacoCurrency(){
-    return this.getPrecoTonCurrency()/this.getSacoTon()
-  }
-
   getCustoReceitaCurrency(){
     return this.Ingredientes.reduce((acc,it) => acc+it.getTotalMateriaPrimaCurrency(),0)
-  }
-
-  getLiquidoPisCofinsCurrency(){
-    return this.getCreditoPisCofinsCurrency()-this.debitoPisCofinsCurrency()
   }
 
   getTotalMateriaPrimaCurrency() : number{
@@ -169,16 +117,108 @@ export class Produto{
       .times(new Big(this.custoMateriaPrimaCurrencyEditable)).toNumber()
   }
 
-  getResultadoCurrency() : number {
-    return (this.getPrecoTonCurrency()-
-      (-this.getLiquidoPisCofinsCurrency())-
-      this.custoGgfToneladaEditable-
-      this.getCustoMateriaTonCurrency())
-  }
-
   getActions(): Action[] {
     return [
         new Action("", new ActionReturn("delete",this), "fas fa-trash")
     ]
+  }
+
+  subTotalPisCofinsCompra() : number{
+    return this.getCustoMateriaTonCurrency()-this.getCreditoPisCofinsCurrency()
+  }
+
+  subTotalPerdas() : number{
+    return this.subTotalPisCofinsCompra()+this.getPerdasCurrency()
+  }
+
+  subTotalGGF() : number{
+    return this.subTotalPerdas()+this.custoGgfToneladaEditable
+  }
+  
+  subTotalCaridade() : number{
+    return this.subTotalGGF()+this.caridadeCurrencyEditable
+  }
+
+  subTotalDespesas() : number{
+    return this.subTotalCaridade()+this.despesasCurrencyEditable
+  }
+
+  periodoJuros = 120 //120 dias
+  calculoJuros : 'mes' | 'dia' = 'mes'
+
+  getJurosCurrency(){
+    return this.getJurosFinanceiro()
+  }
+
+  custoComissaoCurrency(){
+    return this.custoComissao()
+  }
+
+  getJurosFinanceiro(): number {
+    const valorBase = new Big(this.subTotalDespesas() ?? 0);
+    const taxaDecimal = new Big(this.financeiroPercentEditable ?? 0);
+    let taxaDia: Big;
+  
+    if (this.calculoJuros === 'mes') {
+      const base = 1 + Number(taxaDecimal); // usar Number apenas para a raiz fracionária
+      const iDiaNum = Math.pow(base, 1 / 30) - 1;
+      taxaDia = new Big(iDiaNum < 0 ? 0 : iDiaNum); // proteção mínima contra numéricos ruins
+    } else {
+      taxaDia = taxaDecimal;
+    }
+  
+    const dias = Math.max(0, Math.trunc(this.periodoJuros || 0)); // expoente inteiro para Big.pow
+    if (dias === 0 || taxaDia.eq(0) || valorBase.eq(0)) return 0;
+  
+    const fator = Big(1).plus(taxaDia).pow(dias);
+  
+    // montante e juros
+    const montante = fator.times(valorBase);
+    const jurosApenas = montante.minus(valorBase);
+  
+    return Number(jurosApenas.toFixed(10));
+  }
+
+  subTotalFinanceiro() : number{
+    return this.subTotalDespesas()+this.getJurosFinanceiro()
+  }
+
+  precoComRepasseCurrency() {
+    const c = this.tabelaPercentEditable;
+    const t = this.debitoTaxaPisCofinsPercentEditable;
+    const m = this.margemPercentEditable;
+  
+    if (c + t >= 1) throw new Error('Soma de comissão+impostos deve ser < 100%.');
+  
+    // P = base * (1 + margem) / (1 - (comissao + impostos))
+    return this.subTotalFinanceiro() * (1 + m) / (1 - (c + t));
+  }
+
+  basePisCofinsCurrency(): number {
+    return this.precoComRepasseCurrency()
+  }
+
+  custoComissao() : number{
+    return this.precoComRepasseCurrency()*this.tabelaPercentEditable
+  }
+
+  totalCustos() : number{
+    return this.custoComissao()+this.debitoPisCofinsCurrency()
+  }
+
+  maregemPorToneladaCurrency(){
+    return this.maregemPorTonelada()
+  }
+
+  maregemPorTonelada(){
+    return this.precoComRepasseCurrency()-this.totalCustos()-this.subTotalFinanceiro()
+  }
+
+  getPrecoSacoCurrency() : number{
+    return this.precoComRepasseCurrency()/this.getSacoTon()
+  }
+
+  mergemLiquidaSacoCurrency() : number{
+    return this.maregemPorTonelada()/this.getSacoTon()
   }
 }

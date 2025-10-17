@@ -8,7 +8,7 @@
                 <div class="col-sm">
                     <div class="custom-switch ml-auto">
                         <input class="custom-control-input" type="checkbox" id="all" [checked]="isCustoSap()" (change)="onToggleCustoSap()">
-                        <label class="custom-control-label" for="all">Custo Saco (media)?</label>
+                        <label class="custom-control-label" for="all">Custo Saco, receita ou contabil? {{isCustoSap() ? 'Contabil' : 'Receita'}}</label>
                     </div>
                 </div>
                 <div class="col-auto">
