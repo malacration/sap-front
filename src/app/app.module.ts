@@ -51,7 +51,6 @@ import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
 import { FaturasService } from './sap/service/fatura/faturas.service';
 
-import { ActionComponent } from './shared/components/action/action.component';
 import { CpfCnpjPipe } from './shared/directives/pipes/cpf-cnpj-pipe';
 import { MomentPipe } from './shared/directives/pipes/moment-pipe';
 import localeBr from '@angular/common/locales/pt';
@@ -64,7 +63,6 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
 import { DatasComponent } from './sap/components/filters/datas/datas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { ItensComponent } from './sap/components/document/itens/itens.component';
-import { ModalComponent } from './shared/components/modal/modal.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { BusinesPartnerSearchComponent } from './sap/components/search/busines-partner-search/busines-partner-search.component';
 import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
@@ -86,8 +84,6 @@ import { DocumentCoreComponent } from './sap/components/marketing-document/core/
 import { CotacaoService } from './sap/service/document/cotacao.service';
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 import { VendaFuturaSingleComponent } from './sap/components/venda-futura/single/single.component';
-import { TabComponent } from './shared/components/tabs/tab/tab.component';
-import { TabsComponent } from './shared/components/tabs/tabs.component';
 import { PedidosVendaService } from './sap/service/document/pedidos-venda.service';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
 import { DocumentListSingleComponent } from './sap/components/marketing-document/core/single-document-list/single-document-list.component';
@@ -174,8 +170,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DocumentListSingleComponent,
     PedidosVendaStatementComponent,
     DescontoComponent,
-    TabsComponent,
-    TabComponent,
     TrocaComponent
   ],
   imports: [

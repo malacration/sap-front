@@ -1,33 +1,273 @@
-
-<br>
 <div class="card card-primary">
     <div class="card-header">
-        <h3 class="card-title"><b>Custo de Produção</b> - <small>{{receita.Descricao}}</small></h3>
+        <h3 class="card-title"><b>Seleção do produto</b> - <small>{{receita.Descricao}}</small></h3>
         <div class="card-tools float-right">
             <button name="voltar" class="btn btn-warning btn-sm" (click)="voltar()">voltar</button> 
         </div>
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label for="qtdPlanejada">Quantidade planejada</label>
-                    <input class="form-control" id="qtdPlanejada" (input)="changeQtdPlanejuada($event)" type="number" [(ngModel)]="qtdPlanejada">
+        <app-tabs>
+            <app-tab tabTitle="Preço" [active]="true">
+                <div class="card card-primary d-block mx-auto mt-2" style="width: fit-content;">
+                    <div class="card-body p-2">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody>
+                            <tr>
+                                <td class="" colspan="6">Custo Saco, receita ou contabil? {{receita.useCustoSap ? 'Contabil' : 'Receita'}}</td>
+                            </tr>
+                            <tr>
+                                <th class="pr-3 text-nowrap">Custo Saco</th>
+                                <td class="px-2">|</td>
+                                <td colspan="4" class="text-right">
+                                    {{ (true ? receita.getCustoReceitaCurrency() : receita.CustoMateriaPrimaCurrency) | currency}} 
+                                </td>
+                            </tr>
+                                <tr>
+                                <th class="pr-3 text-nowrap">Unidade Medida</th>
+                                <td class="px-2">|</td>
+                                <td colspan="4" class="text-right">{{ receita.UnidadeMedida }}</td>
+                            </tr>
+                            
+                            <tr>
+                                <th class="pr-3 text-nowrap">Custo por Tonelada</th>
+                                <td class="px-2">|</td>
+                                <td colspan="4" class="text-right">{{ receita.getCustoMateriaTonCurrency() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="6">
+                                    <div class="d-flex align-items-center my-3">
+                                        <div class="flex-grow-1 border-top"></div>
+                                        <span class="mx-3 text-muted">Composição Custos</span>
+                                        <div class="flex-grow-1 border-top"></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Descrição</th>
+                                <td></td>
+                                <th>Variavel</th>
+                                <th>Resultado</th>
+                                <td></td>
+                                <th>Custo Atual</th>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(%) PIS/COFINS (Compra)</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.creditoTaxaPisCofinsPercentEditable" app-percentage >
+                                </td>
+                                <td>{{receita.getCreditoPisCofinsCurrency() | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.subTotalPisCofinsCompra() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(%) Perdas</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.perdasPercentEditable" app-percentage >
+                                </td>
+                                <td>{{receita.getPerdasCurrency() | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.subTotalPerdas() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">GGF/TON</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.custoGgfToneladaEditable" app-currency >
+                                </td>
+                                <td>{{receita.custoGgfToneladaEditable | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.subTotalGGF() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(R$) Filantropia/ton</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.caridadeCurrencyEditable" app-currency >
+                                </td>
+                                <td>{{receita.caridadeCurrencyEditable | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.subTotalCaridade() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(R$) Despesas/ton</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.despesasCurrencyEditable" app-currency >
+                                </td>
+                                <td>{{receita.despesasCurrencyEditable | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.subTotalDespesas() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(%) Juros ( {{receita.periodoJuros }} D)</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.financeiroPercentEditable" app-percentage >
+                                </td>
+                                <td>{{receita.getJurosFinanceiro() | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.subTotalFinanceiro() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="6">
+                                    <div class="d-flex align-items-center my-3">
+                                        <div class="flex-grow-1 border-top"></div>
+                                        <span class="mx-3 text-muted">Custos Sobre Preço de Venda</span>
+                                        <div class="flex-grow-1 border-top"></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap"></td>
+                                <td class="px-2"></td>
+                                <td class="text-right">
+                                </td>
+                                <th>Base de calculo</th>
+                                <td></td>
+                                <th>Custo liquido</th>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(%) PIS/COFINS (Venda)</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.debitoTaxaPisCofinsPercentEditable" app-percentage >
+                                </td>
+                                <td>{{receita.precoComRepasseCurrency() | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.debitoPisCofinsCurrency() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">(%) Tabela (Comissão)</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.tabelaPercentEditable" app-percentage >
+                                </td>
+                                <td>{{receita.precoComRepasseCurrency() | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.custoComissao() | currency}}</td>
+                            </tr>
+
+
+                            <tr>
+                                <th colspan="6" class="text-center">Totais</th>
+                            </tr>
+
+                            <tr>
+                                <th>Impostos + Comissão</th>
+                                <td>|</td>
+                                <td>{{receita.totalCustos() | currency}}</td>
+                                <th>Custo da Mercadoria</th>
+                                <td>|</td>
+                                <td>{{receita.subTotalFinanceiro() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="6">
+                                    <div class="d-flex align-items-center my-3">
+                                        <div class="flex-grow-1 border-top"></div>
+                                        <div class="flex-grow-1 border-top"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- -----final margem -->                            
+
+                            <tr>
+                                <td class="pr-3 text-nowrap"></td>
+                                <td class="px-2"></td>
+                                <td class="text-right">
+                                </td>
+                                <th>Preço Venda (tom)</th>
+                                <td></td>
+                                <th>Margem Liquida (tom)</th>
+                            </tr>
+
+                            <tr>
+                                <td class="pr-3 text-nowrap">Margem</td>
+                                <td></td>
+                                <td class="text-right">
+                                    <input [(ngModel)]="receita.margemPercentEditable" app-percentage >
+                                </td>
+                                <td>{{receita.precoComRepasseCurrency() | currency}}</td>
+                                <td> | </td>
+                                <td>{{receita.maregemPorTonelada() | currency}}</td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="6">
+                                    <div class="d-flex align-items-center my-3">
+                                        <div class="flex-grow-1 border-top"></div>
+                                        <span class="mx-3 text-muted">Resultado</span>
+                                        <div class="flex-grow-1 border-top"></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Preço (TON)</th>
+                                <th></th>
+                                <th>Margem (TON)</th>
+                                <th>Preço (SC)</th>
+                                <td></td>
+                                <th>Margem (SC)</th>
+                            </tr>
+
+                            <tr>
+                                <td>{{receita.precoComRepasseCurrency() | currency}}</td>
+                                <td></td>
+                                <td>
+                                    {{receita.maregemPorTonelada() | currency}}
+                                </td>
+                                <td>{{receita.getPrecoSacoCurrency() | currency}}</td>
+                                <td></td>
+                                <td>{{receita.mergemLiquidaSacoCurrency() | currency}}</td>
+                            </tr>
+                            
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        </div>
-            <div class="form-group">
-                <app-table 
-                    [content]="receita?.Ingredientes" 
-                    [definition]="definition">
-                </app-table>
-            </div>
+                  
+                  
+            </app-tab>
             
-        <div>
-            <h5>Resumo</h5>
-            
-            <p><b>Valor total da receita: {{ resumo() }}</b></p>
-        </div>
+            <app-tab tabTitle="Materia Prima">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="qtdPlanejada">Quantidade planejada</label>
+                            <input class="form-control" id="qtdPlanejada" (input)="changeQtdPlanejuada($event)" type="number" [(ngModel)]="qtdPlanejada">
+                        </div>
+                    </div>
+                </div>
+                    <div class="form-group">
+                        <app-table 
+                            [content]="receita?.Ingredientes" 
+                            [definition]="definition">
+                        </app-table>
+                    </div>
+                    
+                <div>
+                    <h5>Resumo</h5>
+                    
+                    <p><b>Valor total da receita: {{ resumo() }}</b></p>
+                </div>
+            </app-tab>
+        </app-tabs>
     </div>
     <div *ngIf="false" class="overlay">
         <i class="fas fa-2x fa-sync-alt fa-spin"></i>

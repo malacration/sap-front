@@ -31,7 +31,7 @@ export class CurrencyDirective implements ControlValueAccessor {
     return parseFloat(rawValue.replace(',', '.').replace("R$",""));
   }
 
-  @HostListener('keyup', ['$event'])
+  @HostListener('input', ['$event'])
   onKeyUp(event: KeyboardEvent): void {
     const inputEl = event.target as HTMLInputElement;
     const rawValue = inputEl.value;

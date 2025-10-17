@@ -19,7 +19,6 @@ export class PedidosVendaStatementComponent {
   }
   
   action(event : ActionReturn){
-    console.log(event)
     if(event.type == "selected"){
       this.selectedDocumentList = event.data
     }

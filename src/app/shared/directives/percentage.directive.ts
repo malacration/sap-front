@@ -30,7 +30,7 @@ export class PercentageDirective implements ControlValueAccessor {
    * Ao digitar, NÃO reescrevemos o valor do input.
    * Só tentamos converter para número e chamamos onChange (FormControl).
    */
-  @HostListener('keyup', ['$event'])
+  @HostListener('input', ['$event'])
   onKeyUp(event: KeyboardEvent): void {
     const inputEl = event.target as HTMLInputElement;
     const rawValue = inputEl.value;

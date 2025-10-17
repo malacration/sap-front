@@ -29,7 +29,6 @@ export class SelectComponent implements OnInit {
   selectedOut = new EventEmitter<any>();
 
   onChange($event){
-    console.log("Event",$event)
     this.initialSelect = this.selected
     this.selectedOut.emit(this.selected)
   }
