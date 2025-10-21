@@ -112,7 +112,7 @@ export class TableComponent implements OnInit {
   formControlFactory(item : any, definition : Column) : FormControl{
     let key = "formControlFactory"+definition.property
     if(item[key] == null || item[key] == undefined) {
-      item[key] = new FormControl(this.getValue(item,definition),{updateOn: 'blur'})
+      item[key] = new FormControl(this.getValue(item,definition))
       item[key].valueChanges.subscribe(value => {
         this.processInputChange(item,definition,value);
       });
@@ -126,12 +126,12 @@ export class TableComponent implements OnInit {
   }
 
   processInputChange(item: any, definition: Column, value: any): void {
-    const newVal = Number.isFinite(Number(value)) ? Number(value) : value; 
-    // 1) atualiza o "model"
+    const newVal = this.coerceValueForColumn(definition, value);
+    
     if (typeof item[definition.property] === 'function') {
-      item[definition.property](value);
+      item[definition.property](newVal);
     } else {
-      item[definition.property] = value;
+      item[definition.property] = newVal;
     }
     const key = 'formControlFactory' + definition.property;
     const fc = item[key] as FormControl | undefined;
@@ -141,6 +141,7 @@ export class TableComponent implements OnInit {
         fc.setValue(viewValue, { emitEvent: true });
       }
     }
+    this.cdr.markForCheck();
   }
   
   evento(retorno : any){
@@ -157,7 +158,11 @@ export class TableComponent implements OnInit {
 
   atualizaColuna(column: Column) {
     this.alertService
-      .confirmWithInput('Atenção, editando todos os valores da coluna '+column.label, 'text')
+      .confirmWithInput(
+        'Atenção, editando todos os valores da coluna ' + column.label,
+        'text',
+        { inputAttributes: this.getDirectiveAttributes(column) }
+      )
       .then((res) => {
         if (!res.isConfirmed) return;
   
@@ -196,4 +201,64 @@ export class TableComponent implements OnInit {
     this.cdr.detectChanges()
   }
 
+  private getDirectiveAttributes(definition: Column): Record<string, string> {
+    const attrs: Record<string, string> = {};
+    if (this.isPercent(definition)) {
+      attrs['app-percentage'] = '';
+    } else if (this.isCurrency(definition)) {
+      attrs['app-currency'] = '';
+    } else if (this.isEditable(definition)) {
+      attrs['normalText'] = '';
+    }
+    return attrs;
+  }
+
+  private coerceValueForColumn(definition: Column, value: any): any {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return this.isPercent(definition) ? null : value;
+    }
+
+    const hadPercent = trimmed.includes('%');
+    const numeric = this.parseLocalizedNumber(trimmed);
+    if (numeric === null) {
+      return value;
+    }
+
+    if (this.isPercent(definition) && hadPercent) {
+      return numeric / 100;
+    }
+
+    return numeric;
+  }
+
+  private parseLocalizedNumber(text: string): number | null {
+    let normalized = text.replace(/\s+/g, '');
+    normalized = normalized.replace(/R\$/gi, '');
+    normalized = normalized.replace(/[%]/g, '');
+
+    const hasComma = normalized.includes(',');
+    const hasDot = normalized.includes('.');
+
+    if (hasComma && hasDot) {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else {
+      normalized = normalized.replace(',', '.');
+    }
+
+    const result = Number(normalized);
+    return Number.isFinite(result) ? result : null;
+  }
 }

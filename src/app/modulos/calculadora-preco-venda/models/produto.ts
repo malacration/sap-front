@@ -139,6 +139,7 @@ export class Produto {
     return this._creditoTaxaPisCofinsPercentEditable;
   }
   set creditoTaxaPisCofinsPercentEditable(value: number) {
+    console.log("set funcionando")
     this._creditoTaxaPisCofinsPercentEditable = this.toNumber(value);
     this.bumpVersion();
   }
