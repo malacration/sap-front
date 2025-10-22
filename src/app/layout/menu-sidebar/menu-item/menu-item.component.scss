@@ -1,9 +1,28 @@
-// :host {
-//     cursor: pointer;
-// }
+:host {
+  display: block;
+}
 
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  transition: padding-left 200ms ease;
+}
 
+.nav-link .nav-icon {
+  width: 1.35rem;
+  text-align: center;
+  margin-right: 0.5rem;
+}
 
+.nav-link p {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .nav-link:hover,
 .nav-link.active:focus,
@@ -13,10 +32,15 @@
   color: var(--bs-primary-text) !important;
 }
 
-.nav-item.menu-open > a:not(.active){
+.nav-item.menu-open > a:not(.active) {
   background-color: transparent !important;
   border-top-color: var(--bs-primary);
   outline: 0.18rem solid var(--bs-primary);
   outline-offset: -1px;
   border-radius: 0.25rem;
+}
+
+.nav.nav-treeview {
+  margin-left: 0;
+  padding-left: 0;
 }

@@ -19,7 +19,7 @@ export class MenuSidebarComponent implements OnInit {
     public ui: Observable<UiState>;
     public user;
     title
-    menu
+    menu: MenuItem[] = []
     modoOperacao = "external"
 
     constructor(
@@ -56,8 +56,8 @@ export class MenuSidebarComponent implements OnInit {
     }
 
 
-    createMenu(routes: Route[], pai : string = '') : Array<MenuItem> {
-        let menu : Array<MenuItem> = new Array<MenuItem>()
+    createMenu(routes: Route[], parentSegments: string[] = []) : Array<MenuItem> {
+        const menu: MenuItem[] = [];
         routes.filter(it =>
             this.isTemTitulo(it) && !this.isHidden(it) && this.isShowGuard(it)
             && (
@@ -66,16 +66,13 @@ export class MenuSidebarComponent implements OnInit {
                 (this.modoOperacao != "internal" && !this.isRouteInternal(it))
             )
         )
-        .map(route =>{
-            let item = new MenuItem(route,pai)
+        .forEach(route => {
+            const item = new MenuItem(route, parentSegments);
             if (route.children) {
-                let stackPai = pai+"/"+route.path
-                item.children = this.createMenu(route.children,stackPai)
+                item.children = this.createMenu(route.children, item.childSegments);
             }
-            menu.push(item)
-            item
+            menu.push(item);
         })
-        this.menu = menu
         return menu
     }
 
@@ -98,4 +95,3 @@ export class MenuSidebarComponent implements OnInit {
     }
 
 }
-

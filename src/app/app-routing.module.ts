@@ -22,6 +22,7 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
 import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
 import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 import { ConfigService } from './core/services/config.service';
+import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 
  let routes: Routes = [
   {
@@ -133,6 +134,12 @@ import { ConfigService } from './core/services/config.service';
         data: ["icon:fas fa-file-contract"],
         canActivate: [authGuard],
         component: VendaFuturaStatementComponent
+      },
+      {
+        path: 'analise-pedidos ',
+        title: 'Análise Pedidos ',
+        canActivate: [authGuard],
+        component: PainelExpedicaoPedidosComponent
       },
     ]
   },

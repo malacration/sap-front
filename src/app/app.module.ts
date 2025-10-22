@@ -124,6 +124,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
 @NgModule({
   declarations: [
     CpfCnpjPipe,
+    MenuItemComponent,
     MomentPipe,
     AppComponent,
     HeaderComponent,

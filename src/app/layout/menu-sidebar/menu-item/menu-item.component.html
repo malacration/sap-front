@@ -1,31 +1,35 @@
-<li class="nav-item" 
-    [ngClass]="openClass()"
-    >
-    <a
-        (click)="handleMainMenuAction(menuItem.path)"
-        class="nav-link"
-        [ngClass]="{active: isMainActive}"
-    >
-        <i class="nav-icon {{ menuItem.iconClasses }}"></i>
-        <p>
-            {{ menuItem.name }}
-            <i *ngIf="isExpandable"
-                class="right fas fa-angle-right"
-                [@rotate]="isMenuExtended"
-            ></i>
-        </p>
-    </a>
-    <!-- sem subs menus -->
-    <ul class="nav nav-treeview" [@openClose]="isMenuExtended" *ngFor="let item of menuItem.children">
-        <li class="nav-item">
-            <a
-                (click)="handleMainMenuAction(item.path)"
-                class="nav-link"
-                [ngClass]="{active: isPath(item.path)}"
-            >
-                <i class="nav-icon {{ item.iconClasses }}"></i>
-                <p>{{ item.name }}</p>
-            </a>
-        </li>
-    </ul>
+<li [ngClass]="containerClasses">
+  <a
+    class="nav-link"
+    [class.active]="isMainActive || hasActiveChild"
+    [routerLink]="menuItem.routerLink || undefined"
+    [attr.href]="menuItem.routerLink ? null : '#'"
+    [attr.role]="menuItem.routerLink ? null : 'button'"
+    (click)="onMainClick($event)"
+    [attr.aria-expanded]="isExpandable ? expanded : null"
+    [style.paddingLeft.px]="linkPadding"
+  >
+    <i class="nav-icon" [ngClass]="iconClasses"></i>
+    <p>
+      {{ menuItem.name }}
+      <span *ngIf="isExpandable" class="right">
+        <i
+          class="fas fa-angle-left"
+          [@rotate]="expanded"
+          (click)="onToggleArrow($event)"
+        ></i>
+      </span>
+    </p>
+  </a>
+  <ul
+    *ngIf="isExpandable"
+    class="nav nav-treeview"
+    [@openClose]="expanded"
+  >
+    <app-menu-item
+      *ngFor="let child of menuItem.children; trackBy: trackByChild"
+      [menuItem]="child"
+      [depth]="depth + 1"
+    ></app-menu-item>
+  </ul>
 </li>
