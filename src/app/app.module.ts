@@ -11,7 +11,6 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 
 // NG Translate
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { AppComponent } from './app.component';
@@ -41,7 +40,6 @@ import { FilterNumeroNfComponent } from './sap/components/filters/numero-nf/filt
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
 import { EnderecoComponent } from './sap/components/cadastro/endereco/endereco.component';
 import { ReferenciaComponent } from './sap/components/cadastro/referencia-comercial/referencia.component';
-import { SelectComponent } from './sap/components/form/select/select.component';
 import { StateService } from './sap/service/addresses/state.service';
 import { CitySelectComponent } from './sap/components/form/select/city/city-select.component';
 import { CityService } from './sap/service/addresses/city.service';
@@ -66,8 +64,6 @@ import { ItensComponent } from './sap/components/document/itens/itens.component'
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { BusinesPartnerSearchComponent } from './sap/components/search/busines-partner-search/busines-partner-search.component';
 import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
-import { SearchComponent } from './shared/components/search/search.component';
-import { ModalSelectComponent } from './shared/components/modal/select/modal.select.component';
 import { ItemService } from './sap/service/item.service';
 import { BranchSelectComponent } from './sap/components/form/branch/branch-select.component';
 import { BranchService } from './sap/service/branch.service';
@@ -105,6 +101,18 @@ import { ProducaoModule } from './modulos/producao/producao.module';
 import { LoadingBarModule } from '@ngx-loading-bar/core';
 import { LoadingBarRouterModule } from '@ngx-loading-bar/router';
 import { LoadingBarHttpClientModule } from '@ngx-loading-bar/http-client';
+import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
+import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
+import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
+import { ItinerarioPdfComponent } from './sap/components/detalhes-ordem-carregamento/itinerario-pdf.component/itinerario-pdf.component';
+import { RomaneioPdfComponent } from './sap/components/detalhes-ordem-carregamento/romaneio-pdf/romaneio-pdf.component';
+import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
+import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
+import { PdfCarregamentoService } from './sap/service/pdf-carregamento.service';
+import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 
 
 registerLocaleData(localeBr);
@@ -116,6 +124,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
 @NgModule({
   declarations: [
     CpfCnpjPipe,
+    MenuItemComponent,
     MomentPipe,
     AppComponent,
     HeaderComponent,
@@ -144,9 +153,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DatasComponent,
     DocumentStatementComponent,
     ItensComponent,
-    ModalSelectComponent,
     BusinesPartnerSearchComponent,
-    SearchComponent,
     ItemSearchComponent,
     BranchSelectComponent,
     FormaPagamentoSelectComponent,
@@ -170,7 +177,16 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DocumentListSingleComponent,
     PedidosVendaStatementComponent,
     DescontoComponent,
-    TrocaComponent
+    TrocaComponent,
+    OrdemCarregamentoComponent,
+    LocalidadeSearchComponent,
+    DualListBoxComponent,
+    OrdemCarregamentoStatementComponent,
+    OrdemCarregamentoSingleComponent,
+    ItinerarioPdfComponent,
+    RomaneioPdfComponent,
+    TransportadoraSearchComponent,
+    PainelExpedicaoPedidosComponent,
   ],
   imports: [
     NgxPaginationModule,
@@ -182,6 +198,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
+    SapSharedModule,
     LoadingBarModule,
     LoadingBarRouterModule,      // barra em navegação de rotas
     LoadingBarHttpClientModule,  // barra em requisições HttpClient
@@ -222,6 +239,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CotacaoService,
     PedidosVendaService,
     CurrencyPipe,
+    InvoiceGenerationService,
+    PdfCarregamentoService,
     FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

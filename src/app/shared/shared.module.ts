@@ -24,6 +24,7 @@ import { ProgressBarComponent } from './components/progress-bar/progress-bar.com
 import { NormalTextDirective } from './directives/normalText.directive';
 import { TabsComponent } from './components/tabs/tabs.component';
 import { TabComponent } from './components/tabs/tab/tab.component';
+import { ModalSelectComponent } from './components/modal/select/modal.select.component';
 
 @NgModule({
   providers: [
@@ -31,7 +32,8 @@ import { TabComponent } from './components/tabs/tab/tab.component';
     AuthService,
   ],
   declarations: [
-    PageNotFoundComponent, 
+    PageNotFoundComponent,
+    ModalSelectComponent,
     ProgressBarComponent,
     WebviewDirective,
     TableComponent,
@@ -59,6 +61,7 @@ import { TabComponent } from './components/tabs/tab/tab.component';
   ],
   exports: [
     TranslateModule, 
+    ModalSelectComponent,
     WebviewDirective, 
     FormsModule,
     TableComponent,

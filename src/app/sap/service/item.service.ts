@@ -25,4 +25,17 @@ export class ItemService{
         return page
       }))
   }
+
+  searchItem(keyWord: string): Observable<Page<Item>> {
+    return this.hppCliente
+      .post<Page<Item>>(this.url + '/search', keyWord, { responseType: 'json' })
+      .pipe(
+        map((page) => {
+          page.content = page.content.map((ff) =>
+            Object.assign(new Item(), ff)
+          );
+          return page;
+        })
+      );
+  }
 }

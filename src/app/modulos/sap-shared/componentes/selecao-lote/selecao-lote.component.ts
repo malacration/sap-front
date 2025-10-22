@@ -24,9 +24,6 @@ export class SelecaoLoteComponent implements OnChanges, OnInit {
   @Output()
   lotesSelecionados : EventEmitter<Array<BatchStock>> = new EventEmitter<Array<BatchStock>>();
 
-  
-  
-
   lotes : Array<BatchStock> = new Array()
 
   definition = [

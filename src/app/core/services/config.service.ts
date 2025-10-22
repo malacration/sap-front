@@ -12,6 +12,7 @@ export class ConfigService {
   hmg = false
   primaryColor : string = '#25A246'
   successColor : string = '#198754'
+  disableTogglefeature: string[] = []
 
   getHost(){
     if(this.host)
