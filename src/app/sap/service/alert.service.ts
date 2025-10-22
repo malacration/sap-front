@@ -34,15 +34,28 @@ export class AlertService {
         input: SweetAlertInput = 'text',
         opts: Partial<SweetAlertOptions> = {}
       ): Promise<SweetAlertResult<string>> {
+        const {
+          inputLabel,
+          inputPlaceholder,
+          inputValue,
+          inputAttributes,
+          ...rest
+        } = opts ?? {};
+
+        const mergedInputAttributes = {
+          'aria-label': 'Campo de motivo',
+          ...(inputAttributes ?? {})
+        };
+
         return Swal.fire({
           title: 'Atenção',
           text,
           icon: 'question',
           input,                        // 'text' | 'textarea' | 'email' | 'number' | 'select' | 'radio' | 'password'
-          inputLabel: opts.inputLabel,
-          inputPlaceholder: opts.inputPlaceholder ?? 'Digite aqui...',
-          inputValue: opts.inputValue ?? '',
-          inputAttributes: { 'aria-label': 'Campo de motivo' },
+          inputLabel,
+          inputPlaceholder: inputPlaceholder ?? 'Digite aqui...',
+          inputValue: inputValue ?? '',
+          inputAttributes: mergedInputAttributes,
           showCancelButton: true,
           confirmButtonText: 'Confirmar',
           cancelButtonText: 'Cancelar',
@@ -55,7 +68,7 @@ export class AlertService {
             }
             return value as any; // value vai para result.value
           },
-          ...opts,
+          ...rest,
         });
       }
       

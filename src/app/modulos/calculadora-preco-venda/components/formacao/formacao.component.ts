@@ -126,7 +126,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
           this.analise.produtos.forEach(acabado => {
             acabado.Ingredientes
               .filter(ingrediente => ingrediente.ItemCode == produto.ItemCode).forEach(ingrediente =>{
-                ingrediente._custoMateriaPrimaEditable = this.getByTipoCustosAcabado(result[0])
+                ingrediente.custoMateriaPrimaCurrencyEditable = this.getByTipoCustosAcabado(result[0])
             })
           })
             this.currentProgressBar++;
@@ -308,4 +308,3 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   }
 
 }
-

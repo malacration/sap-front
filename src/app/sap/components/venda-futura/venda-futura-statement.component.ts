@@ -128,7 +128,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.routeSubscriptions.forEach((it) => it.unsubscribe);
+    this.routeSubscriptions.forEach((it) => it.unsubscribe());
   }
 
   selectBranch($event) {
