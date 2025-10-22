@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Router, Routes, RouterModule } from '@angular/router';
 import { PageNotFoundComponent } from './shared/components';
 import { HomeComponent } from './home/home.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
@@ -19,6 +19,9 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { ChangePassowrd } from './shared/components/change-password/change-password.component';
+import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
+import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
+import { ConfigService } from './core/services/config.service';
 
  let routes: Routes = [
   {
@@ -134,6 +137,28 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
     ]
   },
   {
+    title: 'Carregamento',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-truck"],
+    path: 'ordem-carregamento',
+    children: [ 
+      {
+        path: 'ordem',
+        title: 'Ordem',
+        data: ["icon:fas fa-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoComponent
+      },
+      {
+        path: 'detalhes',
+        title: 'Detalhes',
+        data: ["icon:fas fa-file-alt"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoStatementComponent
+      },
+    ]
+  },
+  {
     title: 'Administrador',
     canActivate: [authGuard],
     data: ["hidden","icon:fas fa-cog"],
@@ -167,6 +192,12 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
     component: CalculadoraStatementComponent,
   },
   {
+    path: 'ordem-carregamento/:id',
+    title: 'Editar Ordem de Carregamento',
+    data: ["hidden"],
+    component: OrdemCarregamentoComponent,
+  },
+  {
     path: '**',
     title: 'Não encontrado',
     data: ["hidden"],
@@ -180,4 +211,90 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
   ],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+  private readonly defaultHiddenPaths = new Set<string>();
+
+  constructor(private router: Router, private configService: ConfigService) {
+    this.collectDefaultHiddenPaths(routes);
+    this.applyToggleFeatures();
+  }
+
+  private applyToggleFeatures(): void {
+    const disabledPaths = new Set(this.configService.disableTogglefeature ?? []);
+    const updatedConfig = this.updateHiddenFlags(
+      this.router.config,
+      disabledPaths
+    );
+    this.router.resetConfig(updatedConfig);
+  }
+
+  private updateHiddenFlags(
+    routesConfig: Routes,
+    disabledPaths: Set<string>,
+    parentPath: string = ''
+  ): Routes {
+    routesConfig.forEach((route) => {
+      const routePath = route.path ?? '';
+      const fullPath =
+        parentPath && routePath
+          ? `${parentPath}/${routePath}`
+          : parentPath || routePath;
+      const shouldHide =
+        disabledPaths.has(routePath) ||
+        (fullPath ? disabledPaths.has(fullPath) : false);
+      const isDefaultHidden =
+        this.defaultHiddenPaths.has(routePath) ||
+        (fullPath ? this.defaultHiddenPaths.has(fullPath) : false);
+
+      if (Array.isArray(route.data)) {
+        const entries = [...route.data];
+        const hasHidden = entries.includes('hidden');
+
+        if (shouldHide && !hasHidden) {
+          entries.push('hidden');
+          route.data = entries;
+        } else if (!shouldHide && hasHidden && !isDefaultHidden) {
+          route.data = entries.filter((entry) => entry !== 'hidden');
+        } else if (shouldHide && hasHidden) {
+          route.data = entries;
+        }
+      } else if (route.data === undefined && shouldHide) {
+        route.data = ['hidden'];
+      } else if (route.data && !Array.isArray(route.data)) {
+        // leave non-array data untouched
+      }
+
+      if (route.children) {
+        this.updateHiddenFlags(route.children, disabledPaths, fullPath);
+      }
+    });
+
+    return routesConfig;
+  }
+
+  private collectDefaultHiddenPaths(
+    routesConfig: Routes,
+    parentPath: string = ''
+  ): void {
+    routesConfig.forEach((route) => {
+      const routePath = route.path ?? '';
+      const fullPath =
+        parentPath && routePath
+          ? `${parentPath}/${routePath}`
+          : parentPath || routePath;
+
+      if (Array.isArray(route.data) && route.data.includes('hidden')) {
+        if (routePath) {
+          this.defaultHiddenPaths.add(routePath);
+        }
+        if (fullPath) {
+          this.defaultHiddenPaths.add(fullPath);
+        }
+      }
+
+      if (route.children) {
+        this.collectDefaultHiddenPaths(route.children, fullPath);
+      }
+    });
+  }
+}

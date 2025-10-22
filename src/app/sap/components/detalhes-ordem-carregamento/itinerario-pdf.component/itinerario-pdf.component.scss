@@ -1,0 +1,138 @@
+/*
+ * Este seletor :host garante que o componente, quando usado,
+ * fique escondido fora da tela, servindo apenas para a geração do PDF.
+ */
+:host {
+  display: block;
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  z-index: -1;
+}
+
+/*
+ * Estilo para cada página individual do PDF.
+ * A altura fixa é essencial para a captura do html2canvas saber o tamanho da "foto".
+ */
+.pdf-page {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  padding: 12mm; /* Margens um pouco menores para mais espaço de conteúdo */
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  color: #333;
+  line-height: 1.3; /* Deixa o texto um pouco mais compacto */
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex-grow: 1; /* Faz esta área crescer, empurrando o rodapé para baixo */
+}
+
+/* --- Cores e Estilos -- */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #1ba13f; /* Verde */
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+
+  .logo { max-width: 120px; height: auto; }
+
+  h1 {
+    flex: 1;
+    text-align: center;
+    font-size: 1.4rem; /* Um pouco menor */
+    font-weight: bold;
+    color: #1ba13f; /* Verde */
+    margin: 0;
+  }
+}
+
+.info-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px; /* Espaçamento menor */
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #e9f7ef; /* Verde claro de fundo */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+
+  p {
+    margin: 0;
+    font-size: 0.85rem; /* Fonte menor */
+    strong {
+      color: #1ba13f; /* Destaque em Verde */
+    }
+  }
+}
+
+.pedidos-container {
+  .pedido-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 10px; /* Padding menor */
+    margin-bottom: 10px; /* Margem menor */
+    
+    /* INSTRUÇÃO ESSENCIAL PARA EVITAR A QUEBRA DOS CARDS */
+    break-inside: avoid;
+    page-break-inside: avoid;
+
+    .pedido-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #1ba13f; /* Verde */
+    }
+
+    .pedido-body {
+      p {
+        margin: 3px 0; /* Margem vertical menor */
+        font-size: 0.8rem; /* Fonte do conteúdo menor */
+      }
+      strong {
+        color: #333;
+        font-weight: 600;
+      }
+      .item-details {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px dotted #ccc;
+      }
+    }
+  }
+}
+
+.footer {
+  margin-top: auto; /* Empurra para o fundo da página */
+  padding-top: 15px;
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 0.8rem;
+  color: #666;
+
+  .assinatura {
+    border-top: 1px solid #333;
+    width: 220px;
+    padding-top: 5px;
+    text-align: center;
+  }
+  
+  .page-number {
+    text-align: right;
+    font-weight: bold;
+  }
+}

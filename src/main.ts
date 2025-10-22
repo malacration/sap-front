@@ -18,6 +18,7 @@ if (APP_CONFIG.production) {
 function bootstrapFailed() {
   document.querySelector('app-root')!.innerHTML = 'Não foi possível carregar as configurações. Por favor, tente novamente.';
 }
+
 function bootstrap() {
   platformBrowserDynamic()
     .bootstrapModule(AppModule, {preserveWhitespaces: false})
@@ -28,8 +29,8 @@ function bootstrap() {
 fetch('config')
   .then(response => response.json())
   .then(conf => {
-    bootstrap()
     // @ts-ignore
     window['app-config'] = conf;
+    bootstrap();
   })
   .catch(bootstrap);
