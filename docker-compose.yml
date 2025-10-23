@@ -10,7 +10,7 @@ services:
       logo: "https://drive.usercontent.google.com/u/0/uc?id=1BbcBeftDUH9eJDHb6arpm87leN9Hz4Q3&export=download"
       config: |
         {
-         "host": "http://sap-cadastro:8080"
+         "host": "http://localhost:8080/back"
         }
     ports:
       - 8082:80
