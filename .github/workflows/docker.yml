@@ -30,7 +30,7 @@ jobs:
       # tags and labels
       - name: Extract metadata (tags, labels) for image ${{ env.FULL_IMAGE_NAME }}
         id: meta
-        uses: docker/metadata-action@v5.0.0
+        uses: docker/metadata-action@v5.8.0
         with:
           images: |
             ${{ env.FULL_IMAGE_NAME }}
