@@ -2,8 +2,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { Page } from '../model/page.model';
-import Big from 'big.js';
+
 import { ConfigService } from '../../core/services/config.service';
+import { Localidade } from '../model/localidade/localidade';
+
 
 export interface PedidoCarregamento {
   content: any;
@@ -32,19 +34,13 @@ export class PedidosCarregamentoService {
     }
 
   getByFilters(
-    dataInicial: string,
-    dataFinal: string,
-    filial: number,
-    cliente?: string,
-    item?: string,
-    vendedor?: string,
-    agrupador?: string
-  ): Observable<Page<PedidoCarregamento>> {
+dataInicial: string, dataFinal: string, filial: number, cliente?: string, item?: string, vendedor?: string, agrupador?: string, localidade?: Localidade  ): Observable<Page<PedidoCarregamento>> {
     let params = new HttpParams()
       .set('dataInicial', dataInicial)
       .set('dataFinal', dataFinal)
       .set('filial', filial.toString())
-      .set('agrupador', agrupador || '');
+      .set('agrupador', agrupador || '')
+      .set('localidade', localidade?.Code ?? '');
 
     if (cliente) params = params.set('cliente', cliente);
     if (item) params = params.set('item', item);

@@ -45,6 +45,11 @@
           [name]="'Vendedor'"
         ></app-sales-person-search>
       </div>
+      <div class="form-group">
+        <app-localidade-search
+          (selected)="selectLocalidade($event)"
+        ></app-localidade-search>
+      </div>
       <div class="col-sm-4">
         <app-group-by-select
           [selected]="groupBy"

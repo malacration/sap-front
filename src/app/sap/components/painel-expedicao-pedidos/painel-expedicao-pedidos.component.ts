@@ -1,3 +1,5 @@
+import { AlertService } from './../../service/alert.service';
+import { LocalidadeService } from './../../service/localidade.service';
 import { Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
 
@@ -7,8 +9,12 @@ import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Item } from '../../model/item';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
-import { PedidoCarregamento, PedidosCarregamentoService } from '../../service/pedidos-carregamento.service';
+import {
+  PedidoCarregamento,
+  PedidosCarregamentoService,
+} from '../../service/pedidos-carregamento.service';
 import { NextLinkService } from '../../service/nextLink.service';
+import { Localidade } from '../../model/localidade/localidade';
 
 @Component({
   selector: 'painel-expedicao-pedidos',
@@ -31,10 +37,12 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   vendedor: any;
   item: string;
   groupBy: any;
-
+  localidade: Localidade | null = null;
   constructor(
     private pedidosService: PedidosCarregamentoService,
-    private nextLinkService: NextLinkService
+    private localidadeService: LocalidadeService,
+    private nextLinkService: NextLinkService,
+    private AlertService: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -106,7 +114,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         this.cliente,
         this.item,
         this.vendedor,
-        this.groupBy
+        this.groupBy,
+        this.localidade
       )
       .subscribe({
         next: (data) => {
@@ -122,7 +131,17 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         },
       });
   }
-
+  selectLocalidade(localidade: Localidade): void {
+    this.localidade = localidade;
+    this.localidadeService.get(localidade.Code).subscribe({
+      next: (loc: Localidade) => {
+        this.localidade = loc;
+      },
+      error: () => {
+        this.AlertService.error('Erro ao carregar localidade.');
+      },
+    });
+  }
   private formatDocDate(ymd: string): string {
     return moment(ymd, 'YYYYMMDD').format('DD/MM/YYYY');
   }
