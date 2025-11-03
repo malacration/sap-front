@@ -86,6 +86,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Descrição', 'Description'),
           new Column('Quantidade', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
+          new Column('Estoque minimo', 'EstoqueMinimo'),
           new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
       default:

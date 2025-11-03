@@ -22,6 +22,7 @@ export interface PedidoCarregamento {
   Quantity?: number;
   OnHand?: number;
   Localidade?: string;
+  EstoqueMinimo?: number;
   EmOrdemDeCarregamento?: string;
 }
 
