@@ -21,6 +21,7 @@ export interface PedidoCarregamento {
   DistribSum?: number;
   Quantity?: number;
   OnHand?: number;
+  Localidade?: string;
   EmOrdemDeCarregamento?: string;
 }
 

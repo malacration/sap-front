@@ -99,6 +99,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Qtd Imediata', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
           new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
+          new Column('Localidade', 'Localidade'),
         ];
     }
   }
@@ -133,14 +134,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   }
   selectLocalidade(localidade: Localidade): void {
     this.localidade = localidade;
-    this.localidadeService.get(localidade.Code).subscribe({
-      next: (loc: Localidade) => {
-        this.localidade = loc;
-      },
-      error: () => {
-        this.AlertService.error('Erro ao carregar localidade.');
-      },
-    });
+    this.getPedidos();
   }
   private formatDocDate(ymd: string): string {
     return moment(ymd, 'YYYYMMDD').format('DD/MM/YYYY');
