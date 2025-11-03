@@ -9,12 +9,10 @@ import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Item } from '../../model/item';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
-import {
-  PedidoCarregamento,
-  PedidosCarregamentoService,
-} from '../../service/pedidos-carregamento.service';
+import { PedidosCarregamentoService } from '../../service/pedidos-carregamento.service';
 import { NextLinkService } from '../../service/nextLink.service';
 import { Localidade } from '../../model/localidade/localidade';
+import { PainelExpedicaoPedidos } from '../../model/painel-expedicao-pedidos.model';
 
 @Component({
   selector: 'painel-expedicao-pedidos',
@@ -25,7 +23,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   endDate = '';
   carregando = false;
 
-  resultado: Page<PedidoCarregamento> = {
+  resultado: Page<PainelExpedicaoPedidos> = {
     content: [],
     nextLink: null,
     totalElements: 0,
@@ -51,12 +49,13 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     this.endDate = hoje;
     this.getPedidos();
   }
-  private formatPedido(p: PedidoCarregamento): PedidoCarregamento {
-    return {
-      ...p,
-      DocDate: this.formatDocDate(p.DocDate),
-      EmOrdemDeCarregamento: p.EmOrdemDeCarregamento != null ? 'Sim' : 'Não',
-    };
+  private formatPedido(p: PainelExpedicaoPedidos): PainelExpedicaoPedidos {
+     const m = new PainelExpedicaoPedidos();
+    Object.assign(m, p);
+    m.DocDate = this.formatDocDate(p.DocDate);
+    m.EmOrdemDeCarregamento = p.EmOrdemDeCarregamento != null ? 'Sim' : 'Não';
+
+    return m;
   }
   get columns(): Column[] {
     switch (this.groupBy) {
@@ -87,6 +86,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Quantidade', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
           new Column('Estoque minimo', 'EstoqueMinimo'),
+          new Column('Balanço', 'balanco'),
           new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
       default:
@@ -169,25 +169,27 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   action(event: any): void {}
 
   nextLink(): void {
-    if (!this.resultado.nextLink) return;
-    this.carregando = true;
+  if (!this.resultado.nextLink) return;
+  this.carregando = true;
 
-    this.nextLinkService
-      .next<PedidoCarregamento>(this.resultado.nextLink)
-      .subscribe({
-        next: (page) => {
-          const novos = page.content.map((p) => this.formatPedido(p));
-          this.resultado = {
-            ...this.resultado,
-            content: [...this.resultado.content, ...novos],
-            nextLink: page.nextLink,
-          };
-          this.carregando = false;
-        },
-        error: (err) => {
-          console.error('Erro no nextLink()', err);
-          this.carregando = false;
-        },
-      });
-  }
+  this.nextLinkService
+    .next<Page<PainelExpedicaoPedidos>>(this.resultado.nextLink)
+    .subscribe({
+      next: (page) => {
+        const novos = page.content.map((p) => this.formatPedido(p));
+
+        this.resultado = {
+          ...this.resultado,
+          content: [...this.resultado.content, ...novos],
+          nextLink: page.nextLink,
+        };
+
+        this.carregando = false;
+      },
+      error: (err) => {
+        console.error('Erro no nextLink()', err);
+        this.carregando = false;
+      },
+    });
+}
 }

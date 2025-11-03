@@ -5,26 +5,7 @@ import { Page } from '../model/page.model';
 
 import { ConfigService } from '../../core/services/config.service';
 import { Localidade } from '../model/localidade/localidade';
-
-
-export interface PedidoCarregamento {
-  content: any;
-  nextLink: string;
-  DocEntry?: number;
-  DocDate?: string;
-  CardCode?: string;
-  CardName?: string;
-  SlpCode?: number;
-  SlpName?: string;
-  ItemCode?: string;
-  Description?: string;
-  DistribSum?: number;
-  Quantity?: number;
-  OnHand?: number;
-  Localidade?: string;
-  EstoqueMinimo?: number;
-  EmOrdemDeCarregamento?: string;
-}
+import { PainelExpedicaoPedidos } from '../model/painel-expedicao-pedidos.model';
 
 @Injectable({ providedIn: 'root' })
 export class PedidosCarregamentoService {
@@ -36,7 +17,15 @@ export class PedidosCarregamentoService {
     }
 
   getByFilters(
-dataInicial: string, dataFinal: string, filial: number, cliente?: string, item?: string, vendedor?: string, agrupador?: string, localidade?: Localidade  ): Observable<Page<PedidoCarregamento>> {
+    dataInicial: string,
+    dataFinal: string,
+    filial: number,
+    cliente?: string,
+    item?: string,
+    vendedor?: string,
+    agrupador?: string,
+    localidade?: Localidade
+  ): Observable<Page<PainelExpedicaoPedidos>> {
     let params = new HttpParams()
       .set('dataInicial', dataInicial)
       .set('dataFinal', dataFinal)
@@ -48,7 +37,7 @@ dataInicial: string, dataFinal: string, filial: number, cliente?: string, item?:
     if (item) params = params.set('item', item);
     if (vendedor) params = params.set('vendedor', vendedor);
 
-    return this.http.get<Page<PedidoCarregamento>>(this.baseUrl+'/pedidos', {
+    return this.http.get<Page<PainelExpedicaoPedidos>>(this.baseUrl + '/pedidos', {
       params,
     });
   }
