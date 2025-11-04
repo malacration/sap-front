@@ -24,14 +24,16 @@ export class PainelExpedicaoPedidosService {
     item?: string,
     vendedor?: string,
     agrupador?: string,
-    localidade?: Localidade
+    localidade?: Localidade,
+    incoterms?: string
   ): Observable<Page<PainelExpedicaoPedidos>> {
     let params = new HttpParams()
       .set('dataInicial', dataInicial)
       .set('dataFinal', dataFinal)
       .set('filial', filial.toString())
       .set('agrupador', agrupador || '')
-      .set('localidade', localidade?.Code ?? '');
+      .set('localidade', localidade?.Code ?? '')
+      .set('incoterms',incoterms);
 
     if (cliente) params = params.set('cliente', cliente);
     if (item) params = params.set('item', item);

@@ -56,7 +56,14 @@
           (selectedOut)="onGroupByChange($event)"
         ></app-group-by-select>
       </div>
+       <div class="col-sm-4">
+        <app-incoterms-select
+          [selected]="incoterms"
+          (selectedOut)="onIncotermsChange($event)"
+        ></app-incoterms-select>
+      </div>
     </div>
+    
   </div>
 
   <div *ngIf="carregando" class="text-center py-4">Carregando...</div>

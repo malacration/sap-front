@@ -1,3 +1,4 @@
+
 import { AlertService } from './../../service/alert.service';
 import { LocalidadeService } from './../../service/localidade.service';
 import { Component, OnInit } from '@angular/core';
@@ -9,10 +10,11 @@ import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Item } from '../../model/item';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
-import { PedidosCarregamentoService } from '../../service/pedidos-carregamento.service';
+
 import { NextLinkService } from '../../service/nextLink.service';
 import { Localidade } from '../../model/localidade/localidade';
 import { PainelExpedicaoPedidos } from '../../model/painel-expedicao-pedidos.model';
+import { PainelExpedicaoPedidosService } from '../../service/painel-expedicao-pedidos.service';
 
 @Component({
   selector: 'painel-expedicao-pedidos',
@@ -36,8 +38,9 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   item: string;
   groupBy: any;
   localidade: Localidade | null = null;
+  incoterms: string;
   constructor(
-    private pedidosService: PedidosCarregamentoService,
+    private PainelExpedicaoPedidosService: PainelExpedicaoPedidosService,
     private localidadeService: LocalidadeService,
     private nextLinkService: NextLinkService,
     private AlertService: AlertService
@@ -86,7 +89,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Quantidade', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
           new Column('Estoque minimo', 'EstoqueMinimo'),
-          new Column('Balanço', 'balanco',null,true,true),
+          new Column('Balanço', 'balanco',null,false,true),
           new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
         ];
       default:
@@ -108,7 +111,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   getPedidos(): void {
     if (!this.startDate || !this.endDate || this.branchId == null) return;
     this.carregando = true;
-    this.pedidosService
+    this.PainelExpedicaoPedidosService
       .getByFilters(
         this.startDate,
         this.endDate,
@@ -117,7 +120,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         this.item,
         this.vendedor,
         this.groupBy,
-        this.localidade
+        this.localidade,
+        this.incoterms
       )
       .subscribe({
         next: (data) => {
@@ -163,6 +167,11 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
 
   onGroupByChange(novo: string): void {
     this.groupBy = novo;
+    this.getPedidos();
+  }
+
+  onIncotermsChange(novo: string): void {
+    this.incoterms = novo;
     this.getPedidos();
   }
 
