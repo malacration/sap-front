@@ -15,7 +15,7 @@ import { Option } from '../../../../model/form/option';
 })
 export class IncotermsSelectComponent implements OnInit {
   @Input()
-  selected: string = null;
+  selected: string ;
 
   opcoes: Option[] = [
     new Option('%', 'Todos'),

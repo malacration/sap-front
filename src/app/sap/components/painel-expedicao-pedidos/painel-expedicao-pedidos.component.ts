@@ -38,7 +38,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   item: string;
   groupBy: any;
   localidade: Localidade | null = null;
-  incoterms: string;
+  incoterms: string = '%';
   constructor(
     private PainelExpedicaoPedidosService: PainelExpedicaoPedidosService,
     private localidadeService: LocalidadeService,

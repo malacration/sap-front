@@ -34,7 +34,8 @@ export class SelectComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    
+    if(this.initialSelect)
+      this.selected = this.initialSelect
   }
 
   unselect(){
