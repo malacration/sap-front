@@ -114,6 +114,7 @@ import { InvoiceGenerationService } from './sap/service/invoice-generation.servi
 import { PdfCarregamentoService } from './sap/service/pdf-carregamento.service';
 import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { IncotermsSelectComponent } from './sap/components/form/select/incoterms/incoterms.select.component';
+import { EmOrdemDeCarregamentoSelectComponent } from './sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
 
 
 registerLocaleData(localeBr);
@@ -188,7 +189,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RomaneioPdfComponent,
     TransportadoraSearchComponent,
     PainelExpedicaoPedidosComponent,
-    IncotermsSelectComponent
+    IncotermsSelectComponent,
+    EmOrdemDeCarregamentoSelectComponent
   ],
   imports: [
     NgxPaginationModule,

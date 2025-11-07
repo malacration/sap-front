@@ -11,7 +11,7 @@ export class PainelExpedicaoPedidos {
   DistribSum?: number;
   Quantity?: number;
   OnHand?: number;
-  Localidade?: string;
+  Name?: string;
   EstoqueMinimo?: number;
   EmOrdemDeCarregamento?: string;
 

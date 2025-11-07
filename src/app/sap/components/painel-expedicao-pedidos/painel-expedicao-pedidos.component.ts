@@ -1,17 +1,11 @@
-
-import { AlertService } from './../../service/alert.service';
-import { LocalidadeService } from './../../service/localidade.service';
 import { Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
-
 import { Branch } from '../../model/branch';
 import { SalesPerson } from '../../model/sales-person/sales-person';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Item } from '../../model/item';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
-
-import { NextLinkService } from '../../service/nextLink.service';
 import { Localidade } from '../../model/localidade/localidade';
 import { PainelExpedicaoPedidos } from '../../model/painel-expedicao-pedidos.model';
 import { PainelExpedicaoPedidosService } from '../../service/painel-expedicao-pedidos.service';
@@ -24,6 +18,9 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   startDate = '';
   endDate = '';
   carregando = false;
+  private loadingStart: number | null = null;
+  elapsedSeconds = 0;
+  private loadingTimer: any;
 
   resultado: Page<PainelExpedicaoPedidos> = {
     content: [],
@@ -31,25 +28,23 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     totalElements: 0,
     size: 0,
   };
-
+  private todosPedidos: PainelExpedicaoPedidos[] = [];
   branchId: string;
   cliente: any;
   vendedor: any;
   item: string;
-  groupBy: any;
+  groupBy: any = 'Sem';
   localidade: Localidade | null = null;
+  emOrdemDeCarregamento: string | null = 'Todos';
   incoterms: string = '%';
   constructor(
-    private PainelExpedicaoPedidosService: PainelExpedicaoPedidosService,
-    private localidadeService: LocalidadeService,
-    private nextLinkService: NextLinkService,
-    private AlertService: AlertService
+    private PainelExpedicaoPedidosService: PainelExpedicaoPedidosService
   ) {}
 
   ngOnInit(): void {
-    const hoje = moment().format('YYYY-MM-DD');
-    this.startDate = hoje;
-    this.endDate = hoje;
+    const hoje = moment();
+    this.startDate = hoje.clone().startOf('month').format('YYYY-MM-DD');
+    this.endDate = hoje.format('YYYY-MM-DD');  
     this.getPedidos();
   }
   private formatPedido(p: PainelExpedicaoPedidos): PainelExpedicaoPedidos {
@@ -103,14 +98,15 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
           new Column('Qtd Imediata', 'Quantity'),
           new Column('Em Estoque', 'OnHand'),
           new Column('Em ordem de carregamento', 'EmOrdemDeCarregamento'),
-          new Column('Localidade', 'Localidade'),
+          new Column('Localidade', 'Name'),
         ];
     }
   }
 
   getPedidos(): void {
     if (!this.startDate || !this.endDate || this.branchId == null) return;
-    this.carregando = true;
+
+    this.startLoading();
     this.PainelExpedicaoPedidosService
       .getByFilters(
         this.startDate,
@@ -125,18 +121,57 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
       )
       .subscribe({
         next: (data) => {
+          const conteudoFormatado = data.content.map((p) =>
+            this.formatPedido(p)
+          );
+
+          // guarda todos sem filtro
+          this.todosPedidos = conteudoFormatado;
+
+          // aplica filtro no front
+          this.aplicarFiltrosFront();
+
+          // mantém outros metadados da paginação
           this.resultado = {
-            ...data,
-            content: data.content.map((p) => this.formatPedido(p)),
+            ...this.resultado,
+            nextLink: data.nextLink,
+            totalElements: this.resultado.content.length,
+            size: this.resultado.content.length,
           };
-          this.carregando = false;
+
+          this.stopLoading();
         },
         error: () => {
+          this.todosPedidos = [];
           this.resultado.content = [];
-          this.carregando = false;
+          this.resultado.totalElements = 0;
+          this.resultado.size = 0;
+          this.stopLoading();
         },
       });
   }
+private aplicarFiltrosFront(): void {
+    let filtrados = [...this.todosPedidos];
+
+    if (this.emOrdemDeCarregamento === 'Sim') {
+      filtrados = filtrados.filter(
+        (p) => p.EmOrdemDeCarregamento === 'Sim'
+      );
+    } else if (this.emOrdemDeCarregamento === 'Não') {
+      filtrados = filtrados.filter(
+        (p) => p.EmOrdemDeCarregamento === 'Não'
+      );
+    }
+  
+
+    this.resultado = {
+      ...this.resultado,
+      content: filtrados,
+      totalElements: filtrados.length,
+      size: filtrados.length,
+    };
+  }
+
   selectLocalidade(localidade: Localidade): void {
     this.localidade = localidade;
     this.getPedidos();
@@ -174,31 +209,48 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     this.incoterms = novo;
     this.getPedidos();
   }
+  onEmOrdemDeCarregamentoChange(value: string | null) {
+  this.emOrdemDeCarregamento = value;
+  this.getPedidos();
+}
 
   action(event: any): void {}
 
-  nextLink(): void {
-  if (!this.resultado.nextLink) return;
-  this.carregando = true;
 
-  this.nextLinkService
-    .next<Page<PainelExpedicaoPedidos>>(this.resultado.nextLink)
-    .subscribe({
-      next: (page) => {
-        const novos = page.content.map((p) => this.formatPedido(p));
+  private startLoading(): void {
+    this.carregando = true;
+    this.loadingStart = Date.now();
+    this.elapsedSeconds = 0;
 
-        this.resultado = {
-          ...this.resultado,
-          content: [...this.resultado.content, ...novos],
-          nextLink: page.nextLink,
-        };
+    if (this.loadingTimer) {
+      clearInterval(this.loadingTimer);
+    }
 
-        this.carregando = false;
-      },
-      error: (err) => {
-        console.error('Erro no nextLink()', err);
-        this.carregando = false;
-      },
-    });
-}
+    this.loadingTimer = setInterval(() => {
+      if (this.loadingStart) {
+        const diffMs = Date.now() - this.loadingStart;
+        this.elapsedSeconds = Math.floor(diffMs / 1000);
+      }
+    }, 1000);
+  }
+
+  private stopLoading(): void {
+    this.carregando = false;
+
+    if (this.loadingTimer) {
+      clearInterval(this.loadingTimer);
+      this.loadingTimer = null;
+    }
+  }
+
+  formatTime(): string {
+    const minutes = Math.floor(this.elapsedSeconds / 60);
+    const seconds = this.elapsedSeconds % 60;
+
+    const mm = minutes.toString().padStart(2, '0');
+    const ss = seconds.toString().padStart(2, '0');
+
+    return `${mm}:${ss}`;
+  }
+
 }

@@ -62,11 +62,27 @@
           (selectedOut)="onIncotermsChange($event)"
         ></app-incoterms-select>
       </div>
+      <div class="col-sm-4">
+        <app-em-ordem-de-carregamento-select
+          [selected]="emOrdemDeCarregamento"
+          (selectedOut)="onEmOrdemDeCarregamentoChange($event)"
+        ></app-em-ordem-de-carregamento-select>
+      </div>
     </div>
     
   </div>
 
-  <div *ngIf="carregando" class="text-center py-4">Carregando...</div>
+  <div
+  *ngIf="carregando"
+  class="overlay d-flex flex-column align-items-center justify-content-center"
+>
+  <div>
+    <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+  </div>
+  <div class="mt-2">
+    Essa operação pode levar vários minutos | Tempo: {{ formatTime() }}
+  </div>
+</div>
   <ng-container *ngIf="!carregando">
     <div *ngIf="resultado.content.length === 0" class="alert alert-warning">
       Nenhum pedido encontrado.
@@ -88,24 +104,4 @@
     <div class="col-12 text-center"></div>
   </div>
   <span>Total de {{ resultado.content.length }} itens</span>
-
-  <ng-container *ngIf="!carregando && resultado.content.length > 0">
-    <div class="row mt-3">
-      <div class="col-12 text-center">
-        <!-- se ainda tiver nextLink, mostra o botão -->
-        <button
-          *ngIf="resultado.nextLink; else semMais"
-          class="btn btn-primary"
-          (click)="nextLink()"
-        >
-          Carregar Mais
-        </button>
-
-        <!-- quando não tiver mais páginas, mostra mensagem -->
-        <ng-template #semMais>
-          <span class="text-muted">Não há mais registros.</span>
-        </ng-template>
-      </div>
-    </div>
-  </ng-container>
 </div>
