@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Branch } from '../../../../sap/model/branch';
@@ -18,7 +18,7 @@ import { CardComponent } from '../../../../shared/components/card/card.component
   templateUrl: './formulario.component.html',
   styleUrls: ['./formulario.component.scss']
 })
-export class FormularioComponent implements OnInit {
+export class FormularioComponent implements OnInit, OnChanges {
 
   @ViewChild('cardFilter', {static: true}) cardFilterComponent: CardComponent;
   
@@ -54,7 +54,12 @@ export class FormularioComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['ordemCarregamento']) {
+      this.hydrateSelectedOrders();
+    }
   }
 
   carregarOrdemParaEdicao(docEntry : string): void {
@@ -74,6 +79,10 @@ export class FormularioComponent implements OnInit {
 
   //TODO o back deveria voltar tudo no getOrdemCarregamento!
   carregarPedidosExistentes(): void {
+    if (!this.ordemCarregamento?.DocEntry) {
+      return;
+    }
+    this.loading = true;
     this.orderSalesService.getPedidosBy(this.ordemCarregamento.DocEntry).subscribe({
       next: (pedidos: PedidoVenda[]) => {
         this.selectedOrders = pedidos;
@@ -247,5 +256,28 @@ export class FormularioComponent implements OnInit {
       this.loading = false;
       this.router.navigate(['ordem-carregamento/'+this.ordemCarregamento.DocEntry]);
     });
+  }
+
+  private hydrateSelectedOrders(): void {
+    if (!this.ordemCarregamento) {
+      this.selectedOrders = [];
+      this.initialSelectedOrders = [];
+      return;
+    }
+
+    const pedidos = this.ordemCarregamento.pedidosVenda || [];
+    if (pedidos.length > 0) {
+      this.selectedOrders = [...pedidos];
+      this.initialSelectedOrders = [...pedidos];
+      return;
+    }
+
+    if (this.ordemCarregamento.DocEntry) {
+      this.carregarPedidosExistentes();
+      return;
+    }
+
+    this.selectedOrders = [];
+    this.initialSelectedOrders = [];
   }
 }

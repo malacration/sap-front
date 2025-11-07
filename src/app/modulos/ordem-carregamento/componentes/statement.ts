@@ -21,6 +21,12 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   pageContent: Page<OrdemCarregamento> = new Page<OrdemCarregamento>();
   selected: OrdemCarregamento | null = null;
   selectedEdit: OrdemCarregamento | null = null;
+  private selectionSequence = 0;
+  private selectionState: { selected: number; edit: number } = { selected: 0, edit: 0 };
+  private readonly targetParamMap: Record<'selected' | 'edit', 'id' | 'edit'> = {
+    selected: 'id',
+    edit: 'edit',
+  };
   all = false;
   readonly pageChangeHandler = (page: number) => this.pageChange(page);
 
@@ -95,10 +101,10 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
   action(event: ActionReturn): void {
     if (event.type == 'selected') {
-      this.parameterService.setParam(this.route, 'id', event.data.DocEntry);
+      this.updateSelectionParam('selected', event.data.DocEntry);
     }
     if (event.type == 'editar') {
-      this.parameterService.setParam(this.route, 'edit', event.data.DocEntry);
+      this.updateSelectionParam('edit', event.data.DocEntry);
     }
   }
 
@@ -119,24 +125,27 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   private registerRouteParam(param: string, target: 'selected' | 'edit'): void {
     const subscriptions = this.parameterService.subscribeToParam(this.route, param, (value: string | null) => {
       if (!value) {
+        this.selectionState[target] = 0;
         this.assignOrdem(target, null);
         return;
       }
-      this.loadOrdemCarregamento(value, target);
+      const token = ++this.selectionSequence;
+      this.selectionState[target] = token;
+      this.loadOrdemCarregamento(value, target, token);
     });
     this.routeSubscriptions.push(...subscriptions);
   }
 
-  private loadOrdemCarregamento(id: string, target: 'selected' | 'edit'): void {
+  private loadOrdemCarregamento(id: string, target: 'selected' | 'edit', token: number): void {
     const cached = this.pageContent?.content?.find((ordem) => ordem.DocEntry?.toString() === id);
     if (cached) {
-      this.handleOrdemSelection(cached, target);
+      this.handleOrdemSelection(cached, target, token);
       return;
     }
 
     this.service.get(id).subscribe({
       next: (ordem: OrdemCarregamento) => {
-        this.handleOrdemSelection(ordem, target);
+        this.handleOrdemSelection(ordem, target, token);
       },
       error: () => {
         this.alertService.error('Erro ao carregar a ordem de carregamento.');
@@ -158,8 +167,13 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleOrdemSelection(ordem: OrdemCarregamento, target: 'selected' | 'edit'): void {
+  private handleOrdemSelection(ordem: OrdemCarregamento, target: 'selected' | 'edit', token: number): void {
+    if (!this.isSelectionStillActive(target, token)) {
+      return;
+    }
+
     this.assignOrdem(target, ordem);
+    this.ensureExclusiveParam(target);
 
     if (ordem.pedidosVendaCarregados) {
       return;
@@ -195,5 +209,40 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     }
 
     return [response];
+  }
+
+  private updateSelectionParam(target: 'selected' | 'edit', value: string | number): void {
+    const paramName = this.targetParamMap[target];
+    const otherTarget = this.getOppositeTarget(target);
+    const otherParam = this.targetParamMap[otherTarget];
+
+    this.selectionState[otherTarget] = 0;
+    this.parameterService.removeParam(this.route, otherParam);
+    this.parameterService.setParam(this.route, paramName, String(value));
+  }
+
+  private ensureExclusiveParam(target: 'selected' | 'edit'): void {
+    const otherTarget = this.getOppositeTarget(target);
+    if (this.selectionState[otherTarget] === 0) {
+      return;
+    }
+
+    const otherParam = this.targetParamMap[otherTarget];
+    this.parameterService.removeParam(this.route, otherParam);
+  }
+
+  private isSelectionStillActive(target: 'selected' | 'edit', token: number): boolean {
+    if (this.selectionState[target] !== token) {
+      return false;
+    }
+
+    const otherTarget = target === 'selected' ? 'edit' : 'selected';
+    const otherToken = this.selectionState[otherTarget];
+
+    return otherToken === 0 || token >= otherToken;
+  }
+
+  private getOppositeTarget(target: 'selected' | 'edit'): 'selected' | 'edit' {
+    return target === 'selected' ? 'edit' : 'selected';
   }
 }
