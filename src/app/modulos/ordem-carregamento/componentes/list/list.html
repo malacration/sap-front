@@ -1,0 +1,16 @@
+
+<div class="card">
+    <div class="card-body">
+        <app-table [content]="pageContent?.content"
+            [definition]="definition"
+            (actionOutput)="action($event)">
+        </app-table>
+    </div>
+    <div class="card-footer clearfix">
+      <app-paginacao
+        (pageChange)="pageChange($event)"
+        [totalItens]="pageContent?.totalElements"
+        [pageSize]="pageContent?.size"
+      ></app-paginacao>
+    </div>
+</div>

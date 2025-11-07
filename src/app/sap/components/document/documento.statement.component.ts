@@ -1,20 +1,20 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { BusinessPartnerService } from '../../service/business-partners.service';
+import { BusinessPartnerService } from '../../../modulos/sap-shared/_services/business-partners.service';
 import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
-import { AlertService } from '../../service/alert.service';
-import { BranchSelectComponent } from '../form/branch/branch-select.component';
+import { AlertService } from '../../../shared/service/alert.service';
 import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { formatCurrency } from "@angular/common"
 import * as moment from 'moment';
-import { OrderSalesService } from '../../service/document/order-sales.service';
+import { OrderSalesService } from '../../../modulos/sap-shared/_services/documents/order-sales.service';
 import { DocumentAngularSave } from '../../service/document/document-angular-save';
 import { QuotationService } from '../../service/document/quotation.service';
 import { Branch } from '../../model/branch';
+import { BranchSelectComponent } from '../../../modulos/sap-shared/componentes/branch/branch-select.component';
 
 @Component({
   selector: 'app-document-statement',

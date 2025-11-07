@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { Option } from '../../../../model/form/option';
 import { CityService } from '../../../../service/addresses/city.service';
 import { FormaPagamentoService } from '../../../../service/forma-pagamento.service';
-import { SelectComponent } from '../select.component';
+import { SelectComponent } from '../../../../../shared/components/select/select.component';
 
 
 @Component({

@@ -8,7 +8,7 @@ import { ItemService } from '../../../../sap/service/item.service';
 import { LastPrice } from '../../models/last-price';
 import { Observable, concat, finalize, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
-import { AlertService } from '../../../../sap/service/alert.service';
+import { AlertService } from '../../../../shared/service/alert.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
 
 @Component({

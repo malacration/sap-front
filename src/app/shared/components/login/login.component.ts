@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AlertService } from '../../../sap/service/alert.service';
+import { AlertService } from '../../service/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../service/auth.service';
 import { error } from 'console';

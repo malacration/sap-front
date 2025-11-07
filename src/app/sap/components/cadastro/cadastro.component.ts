@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { BusinessPartnerService } from '../../service/business-partners.service';
-import { AlertService } from '../../service/alert.service';
+import { BusinessPartnerService } from '../../../modulos/sap-shared/_services/business-partners.service';
+import { AlertService } from '../../../shared/service/alert.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../../store/state';

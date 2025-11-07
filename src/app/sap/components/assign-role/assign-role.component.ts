@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../service/user.service'; 
-import { AlertService } from '../../service/alert.service';
+import { AlertService } from '../../../shared/service/alert.service';
 import { RoleService } from '../../service/role.service'; // Importar o RoleService
 
 @Component({

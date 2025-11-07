@@ -1,0 +1,114 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h5 class="card-title">
+        <b>Ordem de Carregamento {{ ordemCarregamento.DocEntry ? '#' + ordemCarregamento.DocEntry : '' }}</b>
+      </h5>
+      <div class="card-tools float-right">
+        <div class="btn-group">
+          <button class="btn btn-success" (click)="abreAnaliseLogistica()">
+            <i class="fas fa-arrow-up"></i> Análise de Logística
+          </button>
+          <button class="btn btn-success" (click)="toggleEstoque()">
+            Carregar Estoque
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label for="nameOrdInput">Nome da Ordem de Carregamento</label>
+        <input
+          type="text"
+          class="form-control"
+          id="nameOrdInput"
+          [(ngModel)]="ordemCarregamento.U_nameOrdem"
+          (ngModelChange)="onNameInputChange()"
+          placeholder="Digite o nome da ordem"
+        >
+      </div>
+      <card
+        [title]="'Filtros'" 
+        #cardFilter [cardClass]="'card-primary card-outline'" [collapsible]="true">
+        <div class="row">
+          <div class="col-sm-2">
+            <div class="form-group">
+              <label for="dataInicial">Data Inicial</label>
+              <div class="input-group">
+                <input type="date" class="form-control" id="dataInicial" [(ngModel)]="dtInicial">
+                <div class="input-group-append" *ngIf="dtInicial">
+                  <button (click)="clearDataInicial()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <label for="dataFinal">Data Final</label>
+              <div class="input-group">
+                <input type="date" class="form-control" id="dataFinal" [(ngModel)]="dtFinal">
+                <div class="input-group-append" *ngIf="dtFinal">
+                  <button (click)="clearDataFinal()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <app-localidade-search (selected)="selectLocalidade($event)"></app-localidade-search>
+            </div>
+          </div>
+          <div class="col-sm-4 d-flex align-items-end">
+            <div class="form-group mr-2">
+              <button
+                class="btn btn-primary"
+                [disabled]="!canFilter()"
+                (click)="criarAnalise()"
+              >
+                Filtrar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </card>
+      <app-dual-list-box
+        [availableItems]="availableOrders"
+        [selectedItems]="selectedOrders"
+        [showStock]="showStock"
+        [nextLink]="nextLink"
+        [isLoadingOrders]="isLoadingOrders"
+        (selectedItemsChange)="onSelectedOrdersChange($event)"
+        (loadMore)="loadMoreOrders()"
+      ></app-dual-list-box>
+    </div>
+    <div class="card-footer">
+      <button
+        *ngIf="!loading"
+        class="btn btn-success btn-block"
+        (click)="sendOrder()"
+      >
+        {{ ordemCarregamento.DocEntry ? 'Atualizar Ordem' : 'Criar Ordem' }}
+      </button>
+      <button
+        *ngIf="loading"
+        class="btn btn-success btn-block"
+        disabled
+      >
+        <i class="fas fa-spinner fa-spin"></i> Processando...
+      </button>
+    </div>
+    <div *ngIf="loading" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+  </div>
+</section>
+
+<app-modal [(show)]="modalAnaliseLogistica">
+  <painel-expedicao-pedidos></painel-expedicao-pedidos>
+</app-modal>

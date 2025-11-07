@@ -2,13 +2,13 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { LinhaItem, VendaFutura } from '../../../model/venda/venda-futura';
 
-import { AlertService } from '../../../service/alert.service';
+import { AlertService } from '../../../../shared/service/alert.service';
 import { Option } from '../../../model/form/option';
-import { SelectComponent } from '../../form/select/select.component';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { Item } from '../../../model/item';
 import { PedidoTroca } from '../../../model/venda/pedido-troca';
 import { ItemRetirada } from '../../../model/venda/item-retirada';
+import { SelectComponent } from '../../../../shared/components/select/select.component';
 
 @Component({
   selector: 'app-venda-futura-troca',
