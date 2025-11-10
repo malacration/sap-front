@@ -2,28 +2,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { Page } from '../model/page.model';
-import Big from 'big.js';
-import { ConfigService } from '../../core/services/config.service';
 
-export interface PedidoCarregamento {
-  content: any;
-  nextLink: string;
-  DocEntry?: number;
-  DocDate?: string;
-  CardCode?: string;
-  CardName?: string;
-  SlpCode?: number;
-  SlpName?: string;
-  ItemCode?: string;
-  Description?: string;
-  DistribSum?: number;
-  Quantity?: number;
-  OnHand?: number;
-  EmOrdemDeCarregamento?: string;
-}
+import { ConfigService } from '../../core/services/config.service';
+import { Localidade } from '../model/localidade/localidade';
+import { PainelExpedicaoPedidos } from '../model/painel-expedicao-pedidos.model';
 
 @Injectable({ providedIn: 'root' })
-export class PedidosCarregamentoService {
+export class PainelExpedicaoPedidosService {
   private baseUrl = 'http://localhost:8080/painel';
   DistribSum: any;
 
@@ -38,19 +23,23 @@ export class PedidosCarregamentoService {
     cliente?: string,
     item?: string,
     vendedor?: string,
-    agrupador?: string
-  ): Observable<Page<PedidoCarregamento>> {
+    agrupador?: string,
+    localidade?: Localidade,
+    incoterms?: string
+  ): Observable<Page<PainelExpedicaoPedidos>> {
     let params = new HttpParams()
       .set('dataInicial', dataInicial)
       .set('dataFinal', dataFinal)
       .set('filial', filial.toString())
-      .set('agrupador', agrupador || '');
+      .set('agrupador', agrupador || '')
+      .set('localidade', localidade?.Code ?? '')
+      .set('incoterms',incoterms);
 
     if (cliente) params = params.set('cliente', cliente);
     if (item) params = params.set('item', item);
     if (vendedor) params = params.set('vendedor', vendedor);
 
-    return this.http.get<Page<PedidoCarregamento>>(this.baseUrl+'/pedidos', {
+    return this.http.get<Page<PainelExpedicaoPedidos>>(this.baseUrl + '/pedidos', {
       params,
     });
   }
