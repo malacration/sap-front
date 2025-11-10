@@ -4,7 +4,10 @@
       <h5 class="card-title">
         <b>Ordem de Carregamento {{ ordemCarregamento.DocEntry ? '#' + ordemCarregamento.DocEntry : '' }}</b>
       </h5>
-      <div class="card-tools float-right">
+      <div class="card-tools float-right d-flex align-items-start">
+        <button class="btn btn-default mr-2" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i> Voltar
+        </button>
         <div class="btn-group">
           <button class="btn btn-success" (click)="abreAnaliseLogistica()">
             <i class="fas fa-arrow-up"></i> Análise de Logística

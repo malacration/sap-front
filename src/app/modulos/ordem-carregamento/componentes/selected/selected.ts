@@ -21,7 +21,7 @@ import { ParameterService } from '../../../../shared/service/parameter.service';
 })
 export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, DoCheck {
   @Input() selected: OrdemCarregamento | null = null;
-  @Output() close = new EventEmitter<void>();
+  @Output() back = new EventEmitter<void>();
 
   placa: string = '';
   nomeMotorista: string = '';
@@ -219,7 +219,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
   }
 
   voltar(): void {
-    this.close.emit();
+    this.back.emit();
   }
 
   action(event: ActionReturn): void {

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Branch } from '../../../../sap/model/branch';
@@ -43,6 +43,8 @@ export class FormularioComponent implements OnInit, OnChanges {
 
   @Input()
   ordemCarregamento : OrdemCarregamento = new OrdemCarregamento()
+  @Output()
+  back = new EventEmitter<void>();
 
   constructor(
     private localidadeService: LocalidadeService,
@@ -279,5 +281,9 @@ export class FormularioComponent implements OnInit, OnChanges {
 
     this.selectedOrders = [];
     this.initialSelectedOrders = [];
+  }
+
+  goBack(): void {
+    this.back.emit();
   }
 }

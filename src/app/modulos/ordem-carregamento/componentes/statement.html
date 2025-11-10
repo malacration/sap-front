@@ -1,6 +1,6 @@
 
 <section class="content">
-  <div class="card card-primary" *ngIf="!selected && !selectedEdit">
+  <div class="card card-primary" *ngIf="showList()">
     <div class="card-header">
             <h3 class="card-title"><b>Ordem de Carregamento</b></h3>
             <div class="card-tools float-right">
@@ -21,14 +21,18 @@
     </div>
   </div>
 
-  <div *ngIf="selected">
+  <div *ngIf="showView()">
     <app-ordem-selected
       [selected]="selected"
-      (close)="close()"
+      (back)="handleFormBack()"
     ></app-ordem-selected>
   </div>
 
-  <div *ngIf="selectedEdit">
-    <app-ordem-formulario [ordemCarregamento]="selectedEdit"></app-ordem-formulario>
+  <div *ngIf="showEdit()">
+    <app-ordem-formulario
+      [ordemCarregamento]="selected"
+      (back)="handleFormBack()"
+    ></app-ordem-formulario>
   </div>
 </section>
+<button (click)="handleFormBack()">windson</button>

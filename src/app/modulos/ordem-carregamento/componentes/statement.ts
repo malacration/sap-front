@@ -19,9 +19,11 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   nomeUsuario: string;
   loading = false;
   pageContent: Page<OrdemCarregamento> = new Page<OrdemCarregamento>();
+
   selected: OrdemCarregamento | null = null;
-  selectedEdit: OrdemCarregamento | null = null;
+
   private selectionSequence = 0;
+
   private selectionState: { selected: number; edit: number } = { selected: 0, edit: 0 };
   private readonly targetParamMap: Record<'selected' | 'edit', 'id' | 'edit'> = {
     selected: 'id',
@@ -31,6 +33,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   readonly pageChangeHandler = (page: number) => this.pageChange(page);
 
   private routeSubscriptions: Subscription[] = [];
+  
   page: (page: number) => void;
 
   constructor(
@@ -45,13 +48,18 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.pageChange(0);
-    this.registerRouteParam('id', 'selected');
-    this.registerRouteParam('edit', 'edit');
+    if(this.hasParam("id")){
+      this.registerRouteParam('id');
+    }else if(this.hasParam('edit')){
+      this.registerRouteParam('edit');
+    }else{
+      this.pageChange(0);
+    }
   }
 
   novo(){
-    this.selectedEdit = new OrdemCarregamento()
+    this.removeParams()
+    this.selected = new OrdemCarregamento();
   }
 
   pageChange(page: number): void {
@@ -66,50 +74,66 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
             this.loading = false;
           }
     })
-    // this.service.getAll(page, this.all).subscribe({
-    //   next: (pageData: Page<OrdemCarregamento>) => {
-    //     const detalhesRequests = pageData.content.map(ordem =>
-    //       this.service.getDetalhes(ordem.DocEntry).pipe(
-    //         map(detalhes => ({ ordem, detalhes }))
-    //       )
-    //     );
-
-    //     forkJoin(detalhesRequests).subscribe({
-    //       next: (results) => {
-    //         results.forEach(({ ordem, detalhes }) => {
-    //           const docEntriesUnicos = new Set(detalhes.map(d => d.DocEntry));
-    //           ordem.quantidadePedidos = docEntriesUnicos.size;
-    //           ordem.U_pesoTotal2 = detalhes.reduce((total, detalhe) => {
-    //             return total + (detalhe.Quantity * detalhe.Weight1);
-    //           }, 0).toString();
-    //         });
-    //         this.pageContent = pageData;
-    //         this.loading = false;
-    //       },
-    //       error: () => {
-    //         this.alertService.error('Erro ao carregar os detalhes das ordens.');
-    //         this.loading = false;
-    //       }
-    //     });
-    //   },
-    //   error: () => {
-    //     this.alertService.error('Erro ao carregar as ordens de carregamento.');
-    //     this.loading = false;
-    //   }
-    // });
   }
 
   action(event: ActionReturn): void {
     if (event.type == 'selected') {
-      this.updateSelectionParam('selected', event.data.DocEntry);
+      this.selected = event.data
+      this.parameterService.setParam(this.route,"id",event.data.DocEntry)
     }
     if (event.type == 'editar') {
-      this.updateSelectionParam('edit', event.data.DocEntry);
+      this.selected = event.data
+      this.parameterService.setParam(this.route,"edit",event.data.DocEntry)
     }
+    if(this.selected){
+      this.handleOrdemSelection(this.selected)
+    }
+  }
+
+  showList(): boolean {
+    return !this.hasParam('id') && !this.hasParam('edit');
+  }
+
+  showView(): boolean {
+    return this.hasParam('id') && !this.hasParam('edit') && !!this.selected;
+  }
+
+  showEdit(): boolean {
+    return this.hasParam('edit') && !!this.selected && !this.showView();
+  }
+
+  handleFormBack(): void {
+    // if(this.showView()){
+    //   alert("ola")
+    //   this.unsubscribe()
+    //   this.removeParams()
+    //   if(!this.pageContent || this.pageContent?.content?.length == 0)
+    //     this.pageChange(0)
+    //   this.selected = null
+    // }
+
+    this.removeParams()
+
+    
+    // const ordem = this.editingOrdem;
+    // this.editingOrdem = null;
+    // this.selectionState.edit = 0;
+    // this.parameterService.removeParam(this.route, 'edit');
+
+    // if (ordem?.DocEntry) {
+    //   this.selected = ordem;
+    //   this.parameterService.setParam(this.route, 'id', String(ordem.DocEntry));
+    //   return;
+    // }
+
+    // this.selected = null;
+    // this.selectionState.selected = 0;
+    // this.parameterService.removeParam(this.route, 'id');
   }
 
   close(): void {
     this.selected = null;
+    this.selectionState.selected = 0;
     this.parameterService.removeParam(this.route, 'id');
   }
 
@@ -119,33 +143,30 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.unsubscribe()
+  }
+
+  unsubscribe(){
     this.routeSubscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  private registerRouteParam(param: string, target: 'selected' | 'edit'): void {
-    const subscriptions = this.parameterService.subscribeToParam(this.route, param, (value: string | null) => {
-      if (!value) {
-        this.selectionState[target] = 0;
-        this.assignOrdem(target, null);
-        return;
-      }
-      const token = ++this.selectionSequence;
-      this.selectionState[target] = token;
-      this.loadOrdemCarregamento(value, target, token);
+  private registerRouteParam(param: string): void {
+    this.unsubscribe()
+    this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, param, (value: string | null) => {
+      this.loadOrdemCarregamento(value);
     });
-    this.routeSubscriptions.push(...subscriptions);
   }
 
-  private loadOrdemCarregamento(id: string, target: 'selected' | 'edit', token: number): void {
-    const cached = this.pageContent?.content?.find((ordem) => ordem.DocEntry?.toString() === id);
+  private loadOrdemCarregamento(id: string): void {
+    const cached = this.findCachedOrdem(id);
     if (cached) {
-      this.handleOrdemSelection(cached, target, token);
+      this.handleOrdemSelection(cached);
       return;
     }
 
     this.service.get(id).subscribe({
       next: (ordem: OrdemCarregamento) => {
-        this.handleOrdemSelection(ordem, target, token);
+        this.handleOrdemSelection(ordem);
       },
       error: () => {
         this.alertService.error('Erro ao carregar a ordem de carregamento.');
@@ -153,46 +174,17 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     });
   }
 
-  private assignOrdem(target: 'selected' | 'edit', ordem: OrdemCarregamento | null): void {
-    if (target === 'selected') {
-      this.selected = ordem;
-      if (ordem) {
-        this.selectedEdit = null;
-      }
-    } else {
-      this.selectedEdit = ordem;
-      if (ordem) {
-        this.selected = null;
-      }
-    }
-  }
-
-  private handleOrdemSelection(ordem: OrdemCarregamento, target: 'selected' | 'edit', token: number): void {
-    if (!this.isSelectionStillActive(target, token)) {
-      return;
-    }
-
-    this.assignOrdem(target, ordem);
-    this.ensureExclusiveParam(target);
-
-    if (ordem.pedidosVendaCarregados) {
-      return;
-    }
-
-    this.fetchPedidos(ordem).subscribe({
+  private handleOrdemSelection(ordem: OrdemCarregamento): void {
+    this.selected = ordem
+    this.pedidosVendaService.search(ordem.DocEntry).subscribe({
+      next : (pedidos) => {
+        ordem.pedidosVenda = this.normalizePedidosResponse(pedidos);
+        ordem.pedidosVendaCarregados = true;
+      },
       error: () => {
         this.alertService.error('Erro ao carregar os pedidos da ordem.');
       }
     });
-  }
-
-  private fetchPedidos(ordem: OrdemCarregamento): Observable<void> {
-    return this.pedidosVendaService.search(ordem.DocEntry).pipe(
-      map((pedidos) => {
-        ordem.pedidosVenda = this.normalizePedidosResponse(pedidos);
-        ordem.pedidosVendaCarregados = true;
-      })
-    );
   }
 
   private normalizePedidosResponse(response: any): any[] {
@@ -211,38 +203,20 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     return [response];
   }
 
-  private updateSelectionParam(target: 'selected' | 'edit', value: string | number): void {
-    const paramName = this.targetParamMap[target];
-    const otherTarget = this.getOppositeTarget(target);
-    const otherParam = this.targetParamMap[otherTarget];
-
-    this.selectionState[otherTarget] = 0;
-    this.parameterService.removeParam(this.route, otherParam);
-    this.parameterService.setParam(this.route, paramName, String(value));
+  private removeParams(): void {
+    this.parameterService.removeParam(this.route, "id")
+    this.parameterService.removeParam(this.route, "edit")
+    this.parameterService.removeParam(this.route, "new")
   }
 
-  private ensureExclusiveParam(target: 'selected' | 'edit'): void {
-    const otherTarget = this.getOppositeTarget(target);
-    if (this.selectionState[otherTarget] === 0) {
-      return;
+  private findCachedOrdem(id: string): OrdemCarregamento | undefined {
+    if (this.selected?.DocEntry?.toString() === id) {
+      return this.selected;
     }
-
-    const otherParam = this.targetParamMap[otherTarget];
-    this.parameterService.removeParam(this.route, otherParam);
+    return this.pageContent?.content?.find((ordem) => ordem.DocEntry?.toString() === id);
   }
 
-  private isSelectionStillActive(target: 'selected' | 'edit', token: number): boolean {
-    if (this.selectionState[target] !== token) {
-      return false;
-    }
-
-    const otherTarget = target === 'selected' ? 'edit' : 'selected';
-    const otherToken = this.selectionState[otherTarget];
-
-    return otherToken === 0 || token >= otherToken;
-  }
-
-  private getOppositeTarget(target: 'selected' | 'edit'): 'selected' | 'edit' {
-    return target === 'selected' ? 'edit' : 'selected';
+  private hasParam(param: 'id' | 'edit'): boolean {
+    return this.parameterService.hasParam(this.route, param);
   }
 }
