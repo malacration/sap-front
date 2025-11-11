@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription, map } from 'rxjs';
 import { Page } from '../../../sap/model/page.model';
 import { AuthService } from '../../../shared/service/auth.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService } from '../../../shared/service/alert.service';
 import { ParameterService } from '../../../shared/service/parameter.service';
 import { OrdemCarregamentoService } from '../service/ordem-carregamento.service';
@@ -39,6 +39,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   constructor(
     private auth: AuthService,
     private route: ActivatedRoute,
+    private router: Router,
     private alertService: AlertService,
     private parameterService: ParameterService,
     private service: OrdemCarregamentoService,
@@ -103,33 +104,13 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   handleFormBack(): void {
-    // if(this.showView()){
-    //   alert("ola")
-    //   this.unsubscribe()
-    //   this.removeParams()
-    //   if(!this.pageContent || this.pageContent?.content?.length == 0)
-    //     this.pageChange(0)
-    //   this.selected = null
-    // }
-
-    this.removeParams()
-
-    
-    // const ordem = this.editingOrdem;
-    // this.editingOrdem = null;
-    // this.selectionState.edit = 0;
-    // this.parameterService.removeParam(this.route, 'edit');
-
-    // if (ordem?.DocEntry) {
-    //   this.selected = ordem;
-    //   this.parameterService.setParam(this.route, 'id', String(ordem.DocEntry));
-    //   return;
-    // }
-
-    // this.selected = null;
-    // this.selectionState.selected = 0;
-    // this.parameterService.removeParam(this.route, 'id');
-  }
+      this.unsubscribe();
+      this.removeParams(); // Agora vai chamar a nova função corrigida
+      this.selected = null;
+      if (!this.pageContent || this.pageContent.content.length === 0) {
+        this.pageChange(0);
+      }
+  }
 
   close(): void {
     this.selected = null;
@@ -204,10 +185,14 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   private removeParams(): void {
-    this.parameterService.removeParam(this.route, "id")
-    this.parameterService.removeParam(this.route, "edit")
-    this.parameterService.removeParam(this.route, "new")
-  }
+      this.router.navigate(
+        [],
+        {
+          relativeTo: this.route,
+          queryParams: null 
+        }
+      );
+    }
 
   private findCachedOrdem(id: string): OrdemCarregamento | undefined {
     if (this.selected?.DocEntry?.toString() === id) {

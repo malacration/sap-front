@@ -46,7 +46,7 @@ export class OrderSalesService  implements DocumentAngularSave{
 
   getPedidosBy(ordemId: number): Observable<PedidoVenda[]> {
     return this.hppCliente
-      .get<NextLink<PedidoVenda>>(`${this.url}/search2`, {
+      .get<NextLink<PedidoVenda>>(`${this.url}/findLoadOrders`, {
         params: { U_Ordem_Carregamento: ordemId.toString() }
       })
       .pipe(
@@ -62,6 +62,6 @@ export class OrderSalesService  implements DocumentAngularSave{
   }
 
   searchAll(nextLink: string): Observable<any> {
-    return this.hppCliente.post(`${this.url}/search2All`, nextLink);
+    return this.hppCliente.post(`${this.url}/findLoadOrders`, nextLink);
   }
 }
