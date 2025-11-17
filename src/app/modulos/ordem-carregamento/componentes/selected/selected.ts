@@ -102,13 +102,6 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
     return true;
   }
 
-  private updateLocalStorage(): void {
-    if (this.selected?.DocEntry) {
-      localStorage.setItem(`placa_${this.selected.DocEntry}`, this.placa);
-      localStorage.setItem(`nomeMotorista_${this.selected.DocEntry}`, this.nomeMotorista);
-    }
-  }
-
   private hydrateFromSelected(): void {
     if (!this.selected) {
       this.placa = '';
@@ -201,13 +194,12 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
 
     this.ordemCarregamentoService.atualizarLogistica(this.selected!.DocEntry, dados).subscribe({
       next: () => {
-        this.alertService.confirm('Dados de logística salvos com sucesso!');
-        if (this.selected) {
-          this.selected.U_placa = this.placa;
-          this.selected.U_motorista = this.nomeMotorista;
-        }
-        this.updateLocalStorage();
-      },
+        this.alertService.confirm('Dados de logística salvos com sucesso!');
+        if (this.selected) {
+          this.selected.U_placa = this.placa;
+          this.selected.U_motorista = this.nomeMotorista;
+        }
+      },
       error: (err) => {
         this.alertService.error('Erro ao salvar dados de logística: ' + (err.error?.message || err.message));
         this.loading = false;
@@ -254,11 +246,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
     this.ordemCarregamentoService.atualizarStatus(this.selected!.DocEntry, dados).subscribe({
       next: () => {
         if (this.selected) {
-          this.selected.U_Status = 'Fechado';
-        }
-        // Limpa localStorage quando fechar
-        localStorage.removeItem(`placa_${this.selected!.DocEntry}`);
-        localStorage.removeItem(`nomeMotorista_${this.selected!.DocEntry}`);
+          this.selected.U_Status = 'Fechado';
+        }
       },
       error: (err) => {
         this.alertService.error('Erro ao atualizar status: ' + (err.error?.message || err.message));
@@ -321,8 +310,6 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
         this.alertService.confirm('Documento finalizado com sucesso!');
         if (this.selected) {
           this.selected.U_Status = 'Fechado';
-          localStorage.removeItem(`placa_${this.selected.DocEntry}`);
-          localStorage.removeItem(`nomeMotorista_${this.selected.DocEntry}`);
         }
         this.placa = '';
         this.nomeMotorista = '';
