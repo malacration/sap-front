@@ -8,7 +8,7 @@ export class OrdemCarregamento {
   CreateDate: string;
   Weight1: string;
   quantidadePedidos: number;
-  U_pesoTotal2: string;
+  U_pesoTotal: string;
   Ord_CRG_LINHACollection: any[] = [];
   U_placa: string 
   U_motorista: string 
@@ -20,7 +20,7 @@ export class OrdemCarregamento {
   }
 
   get pesoTotalFormatted(): string {
-    const peso = parseFloat(this.U_pesoTotal2) || 0;
+    const peso = parseFloat(this.U_pesoTotal) || 0;
     return peso.toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
