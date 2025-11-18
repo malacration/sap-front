@@ -61,6 +61,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   novo(){
     this.removeParams()
     this.selected = new OrdemCarregamento();
+    this.parameterService.setParam(this.route,"edit",'-1')
   }
 
   pageChange(page: number): void {
@@ -104,13 +105,13 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   handleFormBack(): void {
-      this.unsubscribe();
-      this.removeParams(); // Agora vai chamar a nova função corrigida
-      this.selected = null;
-      if (!this.pageContent || this.pageContent.content.length === 0) {
-        this.pageChange(0);
-      }
-  }
+    this.unsubscribe();
+    this.removeParams(); // Agora vai chamar a nova função corrigida
+    this.selected = null;
+    if (!this.pageContent || this.pageContent.content.length === 0) {
+      this.pageChange(0);
+    }
+  }
 
   close(): void {
     this.selected = null;
@@ -134,7 +135,9 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   private registerRouteParam(param: string): void {
     this.unsubscribe()
     this.routeSubscriptions = this.parameterService.subscribeToParam(this.route, param, (value: string | null) => {
-      this.loadOrdemCarregamento(value);
+      if(value != '-1'){
+        this.loadOrdemCarregamento(value);
+      }        
     });
   }
 
@@ -185,14 +188,12 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   private removeParams(): void {
-      this.router.navigate(
-        [],
-        {
-          relativeTo: this.route,
-          queryParams: null 
-        }
-      );
-    }
+    this.router.navigate([],{
+        relativeTo: this.route,
+        queryParams: null 
+      }
+    );
+  }
 
   private findCachedOrdem(id: string): OrdemCarregamento | undefined {
     if (this.selected?.DocEntry?.toString() === id) {
