@@ -220,10 +220,6 @@ export class FormularioComponent implements OnInit, OnChanges {
   }
 
   validateForm(): boolean {
-    if (!this.ordemCarregamento.U_nameOrdem || this.selectedOrders.length == 0) {
-      this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido.');
-      return false;
-    }
     return true;
   }
 
