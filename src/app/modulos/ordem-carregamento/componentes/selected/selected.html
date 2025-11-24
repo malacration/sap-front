@@ -40,6 +40,7 @@
           (click)="abrirModalItinerario()"
           type="button"
           class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
         >
           Itinerário
         </button>
@@ -47,6 +48,7 @@
           (click)="abrirModalRomaneio()"
           type="button"
           class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
         >
           Romaneio
         </button>
