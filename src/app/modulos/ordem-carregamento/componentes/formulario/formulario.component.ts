@@ -279,7 +279,17 @@ export class FormularioComponent implements OnInit, OnChanges {
     this.initialSelectedOrders = [];
   }
 
-  goBack(): void {
-    this.back.emit();
+goBack(): void {
+    const params = this.route.snapshot.queryParams;
+    if (params['id'] && params['edit']) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { edit: null }, 
+        queryParamsHandling: 'merge' 
+      });
+    } 
+    else {
+      this.back.emit(); 
+    }
   }
 }
