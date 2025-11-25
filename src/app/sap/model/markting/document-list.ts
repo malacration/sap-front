@@ -90,6 +90,8 @@ export class DocumentLines {
     UnitPrice : number
     LineTotal : number
     Quantity : number
+    ItemDescription : string
+    ItemCode : string
 
     get precoUnitarioCurrency(){
         return formatCurrency(this.UnitPrice,'pt','R$')

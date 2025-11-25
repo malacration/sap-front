@@ -115,6 +115,8 @@ private loadNotas() {
               DocNum: nota.DocNum,
               CardCode: nota.CardCode,
               CardName: nota.CardName,
+              ItemCode: line.ItemCode,
+              ItemDescription: line.ItemDescription,
               Quantity: line.Quantity,
               LineTotal: line.LineTotal,
             }))
@@ -124,6 +126,7 @@ private loadNotas() {
         },
         error: (err) => {
           console.error('Erro ao carregar notas', err);
+          // CORREÇÃO: Desativar o loading em caso de erro
           this.loading = false; 
         }
       });
