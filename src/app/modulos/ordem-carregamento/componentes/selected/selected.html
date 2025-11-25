@@ -177,6 +177,15 @@
                 </div>
               </div>
             </app-tab>
+
+            <app-tab tabTitle="Notas Emitidas">
+              <app-table [definition]="notasEmitida" [content]="flattened">
+              </app-table>
+              
+              <ng-container *ngIf="!loading && notas?.length === 0">
+                <p class="text-center">Nenhuma nota encontrada.</p>
+              </ng-container>
+            </app-tab>
           </app-tabs>
         </dd>
       </dl>

@@ -17,6 +17,7 @@ export class DocumentList{
     DocumentLines: DocumentLines[];
     DocStatus : string
     Devolucao : string
+    SequenceSerial: string; 
 
     getActions(): Action[] {
         return [

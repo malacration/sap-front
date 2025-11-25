@@ -13,6 +13,7 @@ import { BusinessPartnerService } from '../../../sap-shared/_services/business-p
 import { PedidosVendaService } from '../../../../sap/service/document/pedidos-venda.service';
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 import { ParameterService } from '../../../../shared/service/parameter.service';
+import { DocumentList } from '../../../../sap/model/markting/document-list';
 
 @Component({
   selector: 'app-ordem-selected',
@@ -25,6 +26,11 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
 
   placa: string = '';
   nomeMotorista: string = '';
+
+  notas: DocumentList[] = [];
+  flattened: any[] = [];
+
+  
   pesoCaminhao: number | null = null;
   formTouched: boolean = false;
   loading: boolean = false;
@@ -60,6 +66,17 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
     new Column('Un. Medida', 'UomCode')
   ];
 
+  notasEmitida = [
+  new Column('Núm. da Nota', 'SequenceSerial'),
+  new Column('Núm. do Documento', 'DocNum'),
+  new Column('Cód. Cliente', 'CardCode'),
+  new Column('Nome Cliente', 'CardName'),
+  new Column('Cód. Item', 'ItemCode'),
+  new Column('Dsc. Item', 'ItemDescription'),
+  new Column('Quantidade', 'Quantity'),
+  new Column('Valor', 'LineTotal'),
+  ];
+
   constructor(
     private alertService: AlertService,
     private ordemCarregamentoService: OrdemCarregamentoService,
@@ -71,12 +88,45 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
 
   ngOnInit(): void {
     this.hydrateFromSelected();
+    this.loadNotas();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selected']) {
       this.hydrateFromSelected();
     }
+  }
+
+private loadNotas() {
+    if (!this.selected?.DocEntry) {
+      return;
+    }
+    this.loading = true; // Ativa o spinner
+
+    this.ordemCarregamentoService
+      .getNotasByCarregamentos(this.selected.DocEntry)
+      .subscribe({
+        next: (docs) => {
+          this.notas = docs;
+
+          this.flattened = this.notas.flatMap((nota) =>
+            nota.DocumentLines.map((line) => ({
+              SequenceSerial: nota.SequenceSerial,
+              DocNum: nota.DocNum,
+              CardCode: nota.CardCode,
+              CardName: nota.CardName,
+              Quantity: line.Quantity,
+              LineTotal: line.LineTotal,
+            }))
+          );
+          
+          this.loading = false; 
+        },
+        error: (err) => {
+          console.error('Erro ao carregar notas', err);
+          this.loading = false; 
+        }
+      });
   }
 
   ngDoCheck(): void {
