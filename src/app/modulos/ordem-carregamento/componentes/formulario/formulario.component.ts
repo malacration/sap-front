@@ -230,43 +230,51 @@ export class FormularioComponent implements OnInit, OnChanges {
     this.createOrUpdate()
   }
 
-private createOrUpdate(): void {
-    this.loading = true;
+  private createOrUpdate(): void {
+      this.loading = true;
 
-    const toRemove = this.initialSelectedOrders
-      .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
-      .map(p => p.DocEntry);
+      const isCreation = !this.ordemCarregamento.DocEntry; 
 
-    const dto = new OrdemCarregamentoDto(
-      this.ordemCarregamento,
-      this.selectedOrders.map(pedido => pedido.DocEntry),
-      toRemove
-    )
+      const toRemove = this.initialSelectedOrders
+        .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
+        .map(p => p.DocEntry);
 
-    this.ordemCarregamentoService.save(dto).subscribe({
-      next: (it) => {
-        if (it) {
-            this.ordemCarregamento = it;
+      const dto = new OrdemCarregamentoDto(
+        this.ordemCarregamento,
+        this.selectedOrders.map(pedido => pedido.DocEntry),
+        toRemove
+      )
+
+      this.ordemCarregamentoService.save(dto).subscribe({
+        next: (it) => {
+          if (it) {
+              this.ordemCarregamento = it;
+          }
+          this.concluirEnvio(isCreation);
+        },
+        error: (err) => {
+          console.error(err);
+          this.alertService.error('Erro ao salvar a ordem.');
+          this.loading = false;
         }
-        this.concluirEnvio();
-      },
-      error: (err) => {
-        console.error(err);
-        this.alertService.error('Erro ao salvar a ordem.');
-        this.loading = false;
-      }
-    });
+      });
   }
 
-  private concluirEnvio(): void {
-    this.alertService.info(`Ordem de carregamento ${this.ordemCarregamento.DocEntry ? 'atualizada' : 'criada'} com sucesso.`).then(() => {
-      this.loading = false;
+  private concluirEnvio(isCreation: boolean): void {
       
-      // ALTERAÇÃO AQUI
-      this.router.navigate(['ordem-carregamento'], { 
-        queryParams: { id: this.ordemCarregamento.DocEntry } 
+      const acao = isCreation ? 'criada' : 'atualizada';
+
+      this.alertService.info(`Ordem de carregamento ${acao} com sucesso.`).then(() => {
+        this.loading = false;
+        
+        if (isCreation) {
+            this.router.navigate(['ordem-carregamento']);
+        } else {
+            this.router.navigate(['ordem-carregamento'], { 
+              queryParams: { id: this.ordemCarregamento.DocEntry } 
+            });
+        }
       });
-    });
   }
 
   private hydrateSelectedOrders(): void {
