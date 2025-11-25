@@ -230,9 +230,9 @@ export class FormularioComponent implements OnInit, OnChanges {
     this.createOrUpdate()
   }
 
-  private createOrUpdate(): void {
+private createOrUpdate(): void {
     this.loading = true;
-    
+
     const toRemove = this.initialSelectedOrders
       .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
       .map(p => p.DocEntry);
@@ -242,17 +242,30 @@ export class FormularioComponent implements OnInit, OnChanges {
       this.selectedOrders.map(pedido => pedido.DocEntry),
       toRemove
     )
-    this.ordemCarregamentoService.save(dto).subscribe(it => {
-      this.concluirEnvio()
-      this.ordemCarregamento = it
-      this.loading = false;
-    })
+
+    this.ordemCarregamentoService.save(dto).subscribe({
+      next: (it) => {
+        if (it) {
+            this.ordemCarregamento = it;
+        }
+        this.concluirEnvio();
+      },
+      error: (err) => {
+        console.error(err);
+        this.alertService.error('Erro ao salvar a ordem.');
+        this.loading = false;
+      }
+    });
   }
 
   private concluirEnvio(): void {
     this.alertService.info(`Ordem de carregamento ${this.ordemCarregamento.DocEntry ? 'atualizada' : 'criada'} com sucesso.`).then(() => {
       this.loading = false;
-      this.router.navigate(['ordem-carregamento/'+this.ordemCarregamento.DocEntry]);
+      
+      // ALTERAÇÃO AQUI
+      this.router.navigate(['ordem-carregamento'], { 
+        queryParams: { id: this.ordemCarregamento.DocEntry } 
+      });
     });
   }
 
@@ -262,7 +275,7 @@ export class FormularioComponent implements OnInit, OnChanges {
       this.initialSelectedOrders = [];
       return;
     }
-
+ 
     const pedidos = this.ordemCarregamento.pedidosVenda || [];
     if (pedidos.length > 0) {
       this.selectedOrders = [...pedidos];
