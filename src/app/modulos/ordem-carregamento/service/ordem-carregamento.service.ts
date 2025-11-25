@@ -79,7 +79,7 @@ export class OrdemCarregamentoService {
     return ordemCarregamento;
   }
 
-  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string }): Observable<any> {
+  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string, U_pesoCaminhao?: string | number | null }): Observable<any>{
     return this.http.post(`${this.url}/${docEntry}/logistica`, dados);
   }
 

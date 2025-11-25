@@ -25,6 +25,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
 
   placa: string = '';
   nomeMotorista: string = '';
+  pesoCaminhao: number | null = null;
   formTouched: boolean = false;
   loading: boolean = false;
   loadingPedidos: boolean = false;
@@ -106,6 +107,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
     if (!this.selected) {
       this.placa = '';
       this.nomeMotorista = '';
+      this.pesoCaminhao = null;
       this.pedidos = [];
       this.pedidosOrdenados = [];
       this.lastSelectedDocEntry = null;
@@ -115,6 +117,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
 
     this.placa = this.selected.U_placa || '';
     this.nomeMotorista = this.selected.U_motorista || '';
+    this.pesoCaminhao = this.selected.U_pesoCaminhao || null;
 
     if (this.lastSelectedDocEntry !== this.selected.DocEntry) {
       this.lastSelectedDocEntry = this.selected.DocEntry ?? null;
@@ -187,19 +190,24 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, Do
       return;
     }
     this.loading = true;
+    
+    const pesoString = this.pesoCaminhao ? String(this.pesoCaminhao) : null;
+
     const dados = {
       U_placa: this.placa,
-      U_motorista: this.nomeMotorista
-    };
+      U_motorista: this.nomeMotorista,
+      U_pesoCaminhao: pesoString
+    } as any; 
 
     this.ordemCarregamentoService.atualizarLogistica(this.selected!.DocEntry, dados).subscribe({
       next: () => {
-        this.alertService.confirm('Dados de logística salvos com sucesso!');
-        if (this.selected) {
-          this.selected.U_placa = this.placa;
-          this.selected.U_motorista = this.nomeMotorista;
-        }
-      },
+        this.alertService.confirm('Dados de logística salvos com sucesso!');
+        if (this.selected) {
+          this.selected.U_placa = this.placa;
+          this.selected.U_motorista = this.nomeMotorista;
+          this.selected.U_pesoCaminhao = this.pesoCaminhao; // Mantém como number na tela
+        }
+      },
       error: (err) => {
         this.alertService.error('Erro ao salvar dados de logística: ' + (err.error?.message || err.message));
         this.loading = false;
