@@ -34,6 +34,8 @@ export class FormularioComponent implements OnInit, OnChanges {
   nextLink: string = '';
   loading = false;
   isLoadingOrders = false;
+  mapaQuantidadesEmCarregamento: { [itemCode: string]: number } = {};
+  mapaLoadingStock: { [itemCode: string]: boolean } = {};
   
   // nameOrdInput: string = '';
   // ordemId: number | null = null;
@@ -163,7 +165,7 @@ export class FormularioComponent implements OnInit, OnChanges {
       });
   }
 
-  loadMoreOrders(): void {
+loadMoreOrders(): void {
     if (!this.nextLink) {
       this.alertService.error('Não há mais pedidos para carregar.');
       return;
@@ -171,13 +173,20 @@ export class FormularioComponent implements OnInit, OnChanges {
 
     this.orderSalesService.searchAll(this.nextLink).subscribe({
       next: (result: NextLink<PedidoVenda>) => {
+        const newOrders = result.content.filter(
+          order => !this.selectedOrders.some(selected => selected.DocEntry == order.DocEntry)
+        );
+
         this.availableOrders = [
           ...this.availableOrders,
-          ...result.content.filter(
-            order => !this.selectedOrders.some(selected => selected.DocEntry == order.DocEntry)
-          )
+          ...newOrders
         ];
+
         this.nextLink = result.nextLink;
+
+        if (this.showStock) {
+          this.loadQuantidadesEmCarregamento();
+        }
       },
       error: () => {
         this.alertService.error('Erro ao carregar mais pedidos.');
@@ -205,19 +214,32 @@ export class FormularioComponent implements OnInit, OnChanges {
   }
 
   loadQuantidadesEmCarregamento(): void {
-    this.availableOrders.forEach(order => {
-      if (order.ItemCode) {
-        this.ordemCarregamentoService.getEstoqueEmCarregamento(order.ItemCode).subscribe({
+      const itemsToLoad = new Set<string>();
+      
+      this.availableOrders.forEach(order => {
+          if (order.ItemCode && 
+              this.mapaQuantidadesEmCarregamento[order.ItemCode] === undefined && 
+              !this.mapaLoadingStock[order.ItemCode]) {
+              itemsToLoad.add(order.ItemCode);
+          }
+      });
+
+      itemsToLoad.forEach(itemCode => {
+        this.mapaLoadingStock[itemCode] = true; 
+        
+        this.ordemCarregamentoService.getEstoqueEmCarregamento(itemCode).subscribe({
           next: (quantidade) => {
-            order.quantidadeEmCarregamento = quantidade;
+            this.mapaQuantidadesEmCarregamento[itemCode] = quantidade;
+            this.mapaLoadingStock[itemCode] = false;
           },
           error: () => {
-            this.alertService.error(`Erro ao carregar estoque para ${order.ItemCode}.`);
+            this.alertService.error(`Erro ao carregar estoque para ${itemCode}.`);
+            this.mapaQuantidadesEmCarregamento[itemCode] = 0; 
+            this.mapaLoadingStock[itemCode] = false;
           }
         });
-      }
-    });
-  }
+      });
+    }
 
   validateForm(): boolean {
     return true;

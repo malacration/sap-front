@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { PedidoVenda } from '../../../../sap/components/document/documento.statement.component';
 import { AlertService } from '../../../../shared/service/alert.service';
-import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
+// REMOVIDO: import { OrdemCarregamentoService } ...
 
 @Component({
   selector: 'app-dual-list-box',
@@ -11,29 +11,25 @@ import { OrdemCarregamentoService } from '../../service/ordem-carregamento.servi
 export class DualListBoxComponent {
   @Input() availableItems: PedidoVenda[] = [];
   @Input() selectedItems: PedidoVenda[] = [];
+  
   @Input() showStock: boolean = false;
   @Input() nextLink: string = '';
   @Input() isLoadingOrders: boolean = false;
+  
+  @Input() quantidadesEmCarregamento: { [itemCode: string]: number } = {};
+  @Input() isLoadingStock: { [itemCode: string]: boolean } = {};
+
   @Output() selectedItemsChange = new EventEmitter<PedidoVenda[]>();
   @Output() loadMore = new EventEmitter<void>();
 
-  quantidadesEmCarregamento: { [itemCode: string]: number } = {};
-  isLoading: { [itemCode: string]: boolean } = {};
   searchTermAvailable: string = '';
   searchTermSelected: string = '';
   carregamentoPorPedido: boolean = true;
   isSelectedListCollapsed: boolean = false;
 
   constructor(
-    private alertService: AlertService,
-    private ordemCarregamentoService: OrdemCarregamentoService
+    private alertService: AlertService
   ) {}
-
-  ngOnChanges(): void {
-    if (this.showStock && this.availableItems.length > 0) {
-      this.loadQuantidadesEmCarregamento();
-    }
-  }
 
   get totalSelectedWeight(): number {
     return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
@@ -120,27 +116,5 @@ export class DualListBoxComponent {
 
   loadMoreOrders(): void {
     this.loadMore.emit();
-  }
-
-  private loadQuantidadesEmCarregamento(): void {
-    this.availableItems.forEach(item => {
-      if (item.ItemCode && !this.isLoading[item.ItemCode]) {
-        this.fetchQuantidadeEmCarregamento(item);
-      }
-    });
-  }
-
-  private fetchQuantidadeEmCarregamento(item: PedidoVenda): void {
-    this.isLoading[item.ItemCode] = true;
-    this.ordemCarregamentoService.getEstoqueEmCarregamento(item.ItemCode).subscribe({
-      next: (quantidade) => {
-        this.quantidadesEmCarregamento[item.ItemCode] = quantidade;
-        this.isLoading[item.ItemCode] = false;
-      },
-      error: () => {
-        this.quantidadesEmCarregamento[item.ItemCode] = 0;
-        this.isLoading[item.ItemCode] = false;
-      }
-    });
   }
 }

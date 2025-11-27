@@ -86,6 +86,10 @@
         [showStock]="showStock"
         [nextLink]="nextLink"
         [isLoadingOrders]="isLoadingOrders"
+        
+        [quantidadesEmCarregamento]="mapaQuantidadesEmCarregamento"
+        [isLoadingStock]="mapaLoadingStock"
+
         (selectedItemsChange)="onSelectedOrdersChange($event)"
         (loadMore)="loadMoreOrders()"
       ></app-dual-list-box>
