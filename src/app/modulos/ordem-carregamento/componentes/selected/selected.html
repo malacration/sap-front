@@ -298,6 +298,7 @@
               [itemCode]="currentPedido?.ItemCode"
               [codDeposito]="currentPedido?.DflWhs"
               [quantidade]="currentPedido?.Quantity"
+              [lotesPreSelecionados]="lotesSelecionadosPorItem.get(currentPedido?.ItemCode)"
               (lotesSelecionados)="lotesSelecionados($event)"
             ></selecao-lote>
           </div>

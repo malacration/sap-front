@@ -24,6 +24,9 @@ export class SelecaoLoteComponent implements OnChanges, OnInit {
   @Output()
   lotesSelecionados : EventEmitter<Array<BatchStock>> = new EventEmitter<Array<BatchStock>>();
 
+  @Input()
+  lotesPreSelecionados: BatchStock[] | undefined;
+
   lotes : Array<BatchStock> = new Array()
 
   definition = [
@@ -50,14 +53,28 @@ export class SelecaoLoteComponent implements OnChanges, OnInit {
     }
   }
 
-  change(){
+change(){
     this.loading = true
     this.lotes = []
-    this.service.get(this.itemCode,this.codDeposito).subscribe(it =>{
-      this.lotes = it
-      this.loading = false
+    
+    this.service.get(this.itemCode, this.codDeposito).subscribe(it => {
+      this.lotes = it;
+
+      if (this.lotesPreSelecionados && this.lotesPreSelecionados.length > 0) {
+        this.lotes.forEach(loteDaApi => {
+          const loteSalvo = this.lotesPreSelecionados.find(
+             ls => ls.DistNumber === loteDaApi.DistNumber 
+          );
+
+          if (loteSalvo) {
+            loteDaApi.quantitySelecionadaEditable = loteSalvo.quantitySelecionadaEditable;
+          }
+        });
+      }
+
+      this.loading = false;
     })
-  }
+}
 
   totalSelecionado() : number{
     return this.lotes.reduce((acc, it)  => (Number(it.quantitySelecionadaEditable?? 0)) + acc,0)
