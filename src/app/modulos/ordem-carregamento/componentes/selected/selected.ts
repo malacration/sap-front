@@ -468,7 +468,7 @@ private loadNotas() {
     }
   }
 
-  onDrop(event: DragEvent): void {
+onDrop(event: DragEvent): void {
     event.preventDefault();
     if (this.draggedIndex === null || !this.placeholder) return;
 
@@ -476,6 +476,7 @@ private loadNotas() {
     const movedItem = this.pedidosOrdenados.splice(this.draggedIndex, 1)[0];
     const placeholderIndex = Array.from(tbody.children).indexOf(this.placeholder);
     this.pedidosOrdenados.splice(placeholderIndex, 0, movedItem);
+    this.pedidosOrdenados = [...this.pedidosOrdenados]; 
 
     this.placeholder.remove();
     this.placeholder = null;
@@ -491,7 +492,12 @@ private loadNotas() {
       this.alertService.error('Componente de PDF não está pronto. Tente novamente.');
       return;
     }
-    this.itinerarioPdfComponent.gerarPdf();
+
+    this.loading = true;
+    setTimeout(() => {
+        this.itinerarioPdfComponent.gerarPdf();
+        this.loading = false;
+    }, 200);
   }
 
   abrirModalRomaneio(): void {

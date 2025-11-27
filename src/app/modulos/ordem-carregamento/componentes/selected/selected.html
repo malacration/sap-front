@@ -198,8 +198,7 @@
     </div>
   </div>
 
-  <!-- Modal Itinerário -->
-  <app-modal [(show)]="showItinerarioModal" [title]="'Ordenar Itinerário de Carregamento'">
+<app-modal [(show)]="showItinerarioModal" [title]="'Ordenar Itinerário de Carregamento'">
     <div class="modal-body">
       <div class="alert alert-info">
         <i class="fas fa-info-circle"></i> Arraste os itens para ordenar a sequência de carregamento
@@ -249,23 +248,16 @@
         </button>
       </div>
     </div>
+    
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar Ordem</button>
       <button type="button" class="btn btn-success" (click)="gerarPDF()">
         <i class="fas fa-file-pdf"></i> Gerar PDF
       </button>
       <button type="button" class="btn btn-secondary" (click)="showItinerarioModal = false">Fechar</button>
-      <div style="position: absolute; left: -9999px; width: 794px;">
-        <app-itinerario-pdf
-          [pedidosOrdenados]="pedidosOrdenados"
-          [ordemCarregamento]="selected"
-          [businessPartner]="businessPartner"
-          [localidadesMap]="localidadesMap"
-        ></app-itinerario-pdf>
-      </div>
     </div>
   </app-modal>
-
+  
   <!-- Modal Seleção de Lotes -->
   <app-modal [(show)]="showLote" [title]="'Selecione os Lotes'">
     <div class="modal-body">
