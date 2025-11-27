@@ -198,18 +198,18 @@
     </div>
   </div>
 
+  <!-- Modal Itinerário -->
   <app-modal [(show)]="showItinerarioModal" [title]="'Ordenar Itinerário de Carregamento'">
     <div class="modal-body">
-      
       <div class="alert alert-info">
         <i class="fas fa-info-circle"></i> Arraste os itens para ordenar a sequência de carregamento
       </div>
-
       <div class="table-responsive" #tableResponsive>
         <table class="table table-hover">
           <thead>
             <tr>
-              <th></th> <th>Ordem</th>
+              <th></th>
+              <th>Ordem</th>
               <th>Núm. Pedido</th>
               <th>Cliente</th>
               <th>Endereço</th>
@@ -238,24 +238,32 @@
           </tbody>
         </table>
       </div>
-
       <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLinkPedidos">
         <button class="btn btn-primary" (click)="loadMorePedidos()" [disabled]="loadingMore">
-          Carregar Mais
+          <ng-container *ngIf="!loadingMore">
+            Carregar Mais
+          </ng-container>
+          <ng-container *ngIf="loadingMore">
+            <i class="fas fa-spinner fa-spin"></i> Carregando...
+          </ng-container>
         </button>
       </div>
     </div>
-
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar Ordem</button>
-      
       <button type="button" class="btn btn-success" (click)="gerarPDF()">
         <i class="fas fa-file-pdf"></i> Gerar PDF
       </button>
-      
       <button type="button" class="btn btn-secondary" (click)="showItinerarioModal = false">Fechar</button>
-      
+      <div style="position: absolute; left: -9999px; width: 794px;">
+        <app-itinerario-pdf
+          [pedidosOrdenados]="pedidosOrdenados"
+          [ordemCarregamento]="selected"
+          [businessPartner]="businessPartner"
+          [localidadesMap]="localidadesMap"
+        ></app-itinerario-pdf>
       </div>
+    </div>
   </app-modal>
 
   <!-- Modal Seleção de Lotes -->
@@ -290,7 +298,6 @@
               [itemCode]="currentPedido?.ItemCode"
               [codDeposito]="currentPedido?.DflWhs"
               [quantidade]="currentPedido?.Quantity"
-              [lotesPreSelecionados]="lotesSelecionadosPorItem.get(currentPedido?.ItemCode)"
               (lotesSelecionados)="lotesSelecionados($event)"
             ></selecao-lote>
           </div>
@@ -369,7 +376,6 @@
 ></app-romaneio-pdf>
 
 <app-itinerario-pdf
-  style="position: absolute; left: -9999px;"
   [pedidosOrdenados]="pedidosOrdenados"
   [ordemCarregamento]="selected"
   [businessPartner]="businessPartner"

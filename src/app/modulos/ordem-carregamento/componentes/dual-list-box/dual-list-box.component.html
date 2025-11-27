@@ -30,7 +30,7 @@
                   <span class="stock-gray">Produção: {{ item.OnOrder || 0 }}</span>
                   <span class="stock-orange">
                     Carregamento:
-                    <ng-container *ngIf="isLoadingStock[item.ItemCode]; else loadedCarregamento">
+                    <ng-container *ngIf="isLoading[item.ItemCode]; else loadedCarregamento">
                       <i class="fas fa-spinner fa-spin"></i>
                     </ng-container>
                     <ng-template #loadedCarregamento>
@@ -39,7 +39,7 @@
                   </span>
                   <span class="stock-purple">
                     Balanço:
-                    <ng-container *ngIf="isLoadingStock[item.ItemCode]; else loadedBalanco">
+                    <ng-container *ngIf="isLoading[item.ItemCode]; else loadedBalanco">
                       <i class="fas fa-spinner fa-spin"></i>
                     </ng-container>
                     <ng-template #loadedBalanco>
