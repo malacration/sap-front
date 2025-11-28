@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
 
 @Component({
@@ -18,9 +18,13 @@ export class RomaneioPdfComponent implements OnChanges {
 
   itensAgrupados: any[] = [];
   paginatedItens: any[][] = [];
-  itemsPerPage: number = 20; // Ajustado para 20 itens por página
+  itemsPerPage: number = 20;
 
-  constructor(private pdfService: PdfCarregamentoService) {}
+  // 1. INJEÇÃO DO ChangeDetectorRef
+  constructor(
+    private pdfService: PdfCarregamentoService,
+    private cdr: ChangeDetectorRef 
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['pedidos'] && this.pedidos?.length > 0) {
@@ -48,15 +52,18 @@ export class RomaneioPdfComponent implements OnChanges {
     });
     this.itensAgrupados = Array.from(itensMap.values());
 
-    // Paginação com 20 itens por página
     const pages = [];
     for (let i = 0; i < this.itensAgrupados.length; i += this.itemsPerPage) {
       pages.push(this.itensAgrupados.slice(i, i + this.itemsPerPage));
     }
     this.paginatedItens = pages;
+    
+    this.cdr.detectChanges();
   }
   
   public gerarPdf(): void {
+    this.agruparEpaginarItens();
+    
     if (!this.pdfPagesContainer?.nativeElement) {
       console.error('Elemento container do PDF não encontrado.');
       return;
@@ -65,14 +72,14 @@ export class RomaneioPdfComponent implements OnChanges {
     setTimeout(async () => {
       const pageNodes = this.pdfPagesContainer.nativeElement.querySelectorAll('.pdf-page');
       if (pageNodes.length === 0) {
-        console.error('Nenhuma página para gerar PDF foi encontrada.');
+        console.error('Nenhuma página encontrada.');
         return;
       }
       await this.pdfService.gerarPdfMultiPagina(
         pageNodes,
-        `romaneio_${this.ordemCarregamento?.DocEntry}.pdf`
+        `romaneio_${this.ordemCarregamento?.DocEntry || 'doc'}.pdf`
       );
-    }, 100);
+    }, 200);
   }
 
   getTotalQuantidade(): number {

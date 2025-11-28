@@ -1,61 +1,46 @@
-<!-- single.component.html -->
-
 <section class="content">
   <div class="card card-primary">
     <div class="card-header">
       <h3 class="card-title"><b>Detalhes da Ordem de Carregamento</b></h3>
       <div class="card-tools float-right">
+        
         <button
-          (click)="gerarNotaFiscal()"
+          (click)="iniciarGeracaoNota()"
           type="button"
           class="btn btn-warning"
           [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
-          [title]="
-            selected?.U_Status == 'Fechado'
-              ? 'Esta ordem já foi fechada'
-              : selected?.U_Status == 'Cancelado'
-              ? 'Esta ordem foi cancelada'
-              : ''
-          "
-        >
+          [title]="selected?.U_Status == 'Fechado' ? 'Esta ordem já foi fechada' : ''">
           <span *ngIf="!loading">Gerar Nota Fiscal Saída</span>
           <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
         </button>
+
         <button
           (click)="editarOrdem()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
-          [title]="
-            selected?.U_Status == 'Fechado'
-              ? 'Esta ordem já foi fechada'
-              : selected?.U_Status == 'Cancelado'
-              ? 'Esta ordem foi cancelada'
-              : ''
-          "
-        >
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
           Editar
         </button>
+
         <button
           (click)="abrirModalItinerario()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Cancelado'"
-        >
+          [disabled]="loading || selected?.U_Status == 'Cancelado'">
           Itinerário
         </button>
+
         <button
           (click)="abrirModalRomaneio()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Cancelado'"
-        >
+          [disabled]="loading || selected?.U_Status == 'Cancelado'">
           Romaneio
         </button>
       </div>
     </div>
+
     <div class="card-body">
-      <!-- Alert para ordem fechada -->
       <div *ngIf="selected?.U_Status == 'Fechado'" class="alert alert-warning alert-dismissible">
         <h5><i class="icon fas fa-exclamation-triangle"></i> Ordem Fechada</h5>
         Esta ordem de carregamento já foi fechada e não pode mais ser editada.
@@ -79,6 +64,7 @@
         </dd>
         <dt class="col-sm-3">Data de Criação:</dt>
         <dd class="col-sm-9">{{ selected?.dataCriacao }}</dd>
+
         <dd class="col-sm-12 mt-3">
           <app-tabs>
             <app-tab tabTitle="Produtos" [active]="true">
@@ -89,47 +75,31 @@
               <app-table
                 *ngIf="!loadingPedidos"
                 [content]="pedidos"
-                [definition]="definition"
-                (actionOutput)="action($event)"
-              ></app-table>
-              <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLinkPedidos">
-                <button class="btn btn-primary" (click)="loadMorePedidos()" [disabled]="loadingMore">
-                  <ng-container *ngIf="!loadingMore">
-                    Carregar Mais
-                  </ng-container>
-                  <ng-container *ngIf="loadingMore">
-                    <i class="fas fa-spinner fa-spin"></i> Carregando...
-                  </ng-container>
-                </button>
+                [definition]="definition">
+              </app-table>
+              <div class="text-center mt-3" *ngIf="false"> <button class="btn btn-primary">Carregar Mais</button>
               </div>
             </app-tab>
+
             <app-tab tabTitle="Logística">
               <div class="row">
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Placa do Veículo</label>
-                    <input
-                      type="text"
-                      class="form-control"
+                    <input type="text" class="form-control"
                       [ngClass]="{'is-valid': placa, 'is-invalid': formTouched && !placa}"
-                      [(ngModel)]="placa"
-                      placeholder="Ex: ABC-1234"
-                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
-                    />
+                      [(ngModel)]="placa" placeholder="Ex: ABC-1234"
+                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
                     <div class="invalid-feedback">A placa do veículo é obrigatória.</div>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Nome do Motorista</label>
-                    <input
-                      type="text"
-                      class="form-control"
+                    <input type="text" class="form-control"
                       [ngClass]="{'is-valid': nomeMotorista, 'is-invalid': formTouched && !nomeMotorista}"
-                      [(ngModel)]="nomeMotorista"
-                      placeholder="Ex: João Silva"
-                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
-                    />
+                      [(ngModel)]="nomeMotorista" placeholder="Ex: João Silva"
+                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
                     <div class="invalid-feedback">O nome do motorista é obrigatório.</div>
                   </div>
                 </div>
@@ -138,40 +108,19 @@
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Transportadora</label>
-                    <app-transportadora-search 
-                      (selected)="selectBp($event)"
-                    ></app-transportadora-search>
+                    <app-transportadora-search (selected)="selectBp($event)"></app-transportadora-search>
                   </div>
                 </div>
-
                 <div class="col-md-6">
                   <div class="form-group">
                     <label>Peso do Caminhão (kg)</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      [(ngModel)]="pesoCaminhao"
-                      placeholder="0.00"
-                      step="0.01"
-                      min="0"
-                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
-                    />
+                    <input type="number" class="form-control" [(ngModel)]="pesoCaminhao" placeholder="0.00"
+                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
                   </div>
                 </div>
-
                 <div class="col-12 text-right">
-                  <button 
-                    class="btn btn-primary" 
-                    (click)="salvarLogistica()"
-                    [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
-                    [title]="
-                      selected?.U_Status == 'Fechado'
-                        ? 'Esta ordem já foi fechada'
-                        : selected?.U_Status == 'Cancelado'
-                        ? 'Esta ordem foi cancelada'
-                        : ''
-                    "
-                  >
+                  <button class="btn btn-primary" (click)="salvarLogistica()"
+                    [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
                     <i class="fas fa-save"></i> Salvar Logística
                   </button>
                 </div>
@@ -179,9 +128,7 @@
             </app-tab>
 
             <app-tab tabTitle="Notas Emitidas">
-              <app-table [definition]="notasEmitida" [content]="flattened">
-              </app-table>
-              
+              <app-table [definition]="notasEmitida" [content]="flattened"></app-table>
               <ng-container *ngIf="!loading && notas?.length === 0">
                 <p class="text-center">Nenhuma nota encontrada.</p>
               </ng-container>
@@ -190,195 +137,37 @@
         </dd>
       </dl>
     </div>
+
     <div class="card-footer">
       <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
     </div>
+
     <div *ngIf="loading" class="overlay">
       <i class="fas fa-2x fa-sync-alt fa-spin"></i>
     </div>
   </div>
 
-  <!-- Modal Itinerário -->
-  <app-modal [(show)]="showItinerarioModal" [title]="'Ordenar Itinerário de Carregamento'">
-    <div class="modal-body">
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> Arraste os itens para ordenar a sequência de carregamento
-      </div>
-      <div class="table-responsive" #tableResponsive>
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Ordem</th>
-              <th>Núm. Pedido</th>
-              <th>Cliente</th>
-              <th>Endereço</th>
-              <th>Localidade</th>
-              <th>Item</th>
-              <th>Quantidade</th>
-            </tr>
-          </thead>
-          <tbody (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-            <tr
-              *ngFor="let pedido of pedidosOrdenados; let i = index"
-              draggable="true"
-              (dragstart)="onDragStart($event, i)"
-              (dragend)="onDragEnd($event)"
-              class="draggable-item"
-            >
-              <td><i class="fas fa-grip-vertical text-muted"></i></td>
-              <td>{{i + 1}}</td>
-              <td>{{pedido.DocNum}}</td>
-              <td>{{pedido.CardName}}</td>
-              <td>{{pedido.Address2}}</td>
-              <td>{{localidadesMap.get(pedido.CardCode) || 'Não informado'}}</td>
-              <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
-              <td>{{pedido.Quantity}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLinkPedidos">
-        <button class="btn btn-primary" (click)="loadMorePedidos()" [disabled]="loadingMore">
-          <ng-container *ngIf="!loadingMore">
-            Carregar Mais
-          </ng-container>
-          <ng-container *ngIf="loadingMore">
-            <i class="fas fa-spinner fa-spin"></i> Carregando...
-          </ng-container>
-        </button>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar Ordem</button>
-      <button type="button" class="btn btn-success" (click)="gerarPDF()">
-        <i class="fas fa-file-pdf"></i> Gerar PDF
-      </button>
-      <button type="button" class="btn btn-secondary" (click)="showItinerarioModal = false">Fechar</button>
-      <div style="position: absolute; left: -9999px; width: 794px;">
-        <app-itinerario-pdf
-          [pedidosOrdenados]="pedidosOrdenados"
-          [ordemCarregamento]="selected"
-          [businessPartner]="businessPartner"
-          [localidadesMap]="localidadesMap"
-        ></app-itinerario-pdf>
-      </div>
-    </div>
-  </app-modal>
+  <app-itinerario-modal
+    [(show)]="showItinerarioModal"
+    [pedidos]="pedidos"
+    [ordemCarregamento]="selected"
+    [businessPartner]="businessPartner"
+    [localidadesMap]="localidadesMap">
+  </app-itinerario-modal>
 
-  <!-- Modal Seleção de Lotes -->
-  <app-modal [(show)]="showLote" [title]="'Selecione os Lotes'">
-    <div class="modal-body">
-      <div class="row">
-        <div class="col-md-4">
-          <h5>Pedidos Disponíveis</h5>
-          <div class="list-group" style="max-height: 400px; overflow-y: auto;">
-            <a
-              *ngFor="let pedido of pedidos"
-              href="javascript:void(0)"
-              class="list-group-item list-group-item-action"
-              [class.active]="currentPedido?.ItemCode == pedido.ItemCode"
-              (click)="selecionarPedido(pedido)"
-            >
-              <div class="d-flex w-100 justify-content-between">
-                <h6 class="mb-1">{{ pedido.ItemCode }} - {{ pedido.Dscription }}</h6>
-                <small>Qtd: {{ pedido.Quantity }}</small>
-              </div>
-              <small>Depósito: {{ pedido.DflWhs }}</small>
-              <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="text-success mt-1">
-                <small>{{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s) selecionado(s)</small>
-              </div>
-            </a>
-          </div>
-        </div>
-        <div class="col-md-8">
-          <div *ngIf="currentPedido; else noPedidoSelected">
-            <h5>Lotes para {{ currentPedido.ItemCode }}</h5>
-            <selecao-lote
-              [itemCode]="currentPedido?.ItemCode"
-              [codDeposito]="currentPedido?.DflWhs"
-              [quantidade]="currentPedido?.Quantity"
-              (lotesSelecionados)="lotesSelecionados($event)"
-            ></selecao-lote>
-          </div>
-          <ng-template #noPedidoSelected>
-            <div class="text-center text-muted p-4">
-              <i class="fas fa-box-open fa-3x mb-3"></i>
-              <p>Selecione um pedido à esquerda para visualizar os lotes disponíveis.</p>
-            </div>
-          </ng-template>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <div class="mr-auto">
-        <span *ngIf="lotesSelecionadosPorItem.size > 0" class="text-success">
-          <i class="fas fa-check-circle"></i> {{ lotesSelecionadosPorItem.size }} item(s) com lotes selecionado(s)
-        </span>
-        <span *ngIf="lotesSelecionadosPorItem.size === 0" class="text-muted">
-          Nenhum lote selecionado
-        </span>
-      </div>
-      <button type="button" class="btn btn-secondary" (click)="showLote = false">Cancelar</button>
-      <button
-        type="button"
-        class="btn btn-success"
-        (click)="confirmarNotaVerde()"
-        [disabled]="loading || lotesSelecionadosPorItem.size == 0"
-      >
-        <span *ngIf="!loading">
-          <i class="fas fa-file-invoice"></i> Confirmar Nota Fiscal
-        </span>
-        <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
-      </button>
-    </div>
-  </app-modal>
+  <app-selecao-lotes-modal
+    [(show)]="showLoteModal"
+    [pedidos]="pedidos"
+    [loading]="loading"
+    (confirm)="onLotesConfirmados($event)">
+  </app-selecao-lotes-modal>
 
-  <!-- Modal Romaneio -->
-  <app-modal [(show)]="showRomaneioModal" [title]="'Romaneio de Carregamento'">
-    <div class="modal-body">
-      <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> Visualização do romaneio com todos os itens da ordem de carregamento.
-      </div>
-      <div class="row" *ngIf="selected">
-        <div class="col-md-6">
-          <strong>Ordem de Carregamento:</strong> {{ selected.DocEntry }}
-        </div>
-        <div class="col-md-6">
-          <strong>Status:</strong> {{ selected.U_Status }}
-        </div>
-        <div class="col-md-6 mt-2">
-          <strong>Placa:</strong> {{ placa || 'Não informada' }}
-        </div>
-        <div class="col-md-6 mt-2">
-          <strong>Motorista:</strong> {{ nomeMotorista || 'Não informado' }}
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button (click)="gerarRomaneioPDF()" class="btn btn-success" [disabled]="!placa || !nomeMotorista">
-        <i class="fas fa-file-pdf"></i> Gerar PDF
-      </button>
-      <button type="button" class="btn btn-secondary" (click)="showRomaneioModal = false">Fechar</button>
-    </div>
-  </app-modal>
+  <app-romaneio-modal
+    [(show)]="showRomaneioModal"
+    [pedidos]="pedidos"
+    [ordem]="selected"
+    [placa]="placa"
+    [motorista]="nomeMotorista">
+  </app-romaneio-modal>
+
 </section>
-
-<!-- Componentes de PDF (fora da seção principal) -->
-<app-romaneio-pdf
-  [pedidos]="pedidos"
-  [ordemCarregamento]="selected"
-  [businessPartner]="businessPartner"
-  [localidadesMap]="localidadesMap"
-  [placa]="placa"
-  [nomeMotorista]="nomeMotorista"
-  #romaneioPdfComponent
-></app-romaneio-pdf>
-
-<app-itinerario-pdf
-  [pedidosOrdenados]="pedidosOrdenados"
-  [ordemCarregamento]="selected"
-  [businessPartner]="businessPartner"
-  [localidadesMap]="localidadesMap"
-  #itinerarioPdfComponent 
-></app-itinerario-pdf>

@@ -1,0 +1,54 @@
+<app-modal [show]="show" (showChange)="fecharModal()" [title]="'Ordenar Itinerário de Carregamento'">
+  <div class="modal-body">
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> Arraste os itens para ordenar a sequência
+    </div>
+    
+    <div class="table-responsive" #tableResponsive>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Ordem</th>
+            <th>Núm. Pedido</th>
+            <th>Cliente</th>
+            <th>Localidade</th>
+            <th>Item</th>
+            <th>Qtd.</th>
+          </tr>
+        </thead>
+        <tbody (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+          <tr *ngFor="let pedido of pedidosOrdenados; let i = index"
+              draggable="true"
+              (dragstart)="onDragStart($event, i)"
+              (dragend)="onDragEnd($event)"
+              class="draggable-item">
+            <td><i class="fas fa-grip-vertical text-muted"></i></td>
+            <td>{{i + 1}}</td>
+            <td>{{pedido.DocNum}}</td>
+            <td>{{pedido.CardName}}</td>
+            <td>{{localidadesMap.get(pedido.CardCode) || 'Não informado'}}</td>
+            <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
+            <td>{{pedido.Quantity}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar</button>
+    <button type="button" class="btn btn-success" (click)="gerarPDF()">
+      <i class="fas fa-file-pdf"></i> Gerar PDF
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+    
+    <div style="position: absolute; left: -9999px; width: 794px;">
+      <app-itinerario-pdf
+        [pedidosOrdenados]="pedidosOrdenados"
+        [ordemCarregamento]="ordemCarregamento"
+        [businessPartner]="businessPartner"
+        [localidadesMap]="localidadesMap">
+      </app-itinerario-pdf>
+    </div>
+  </div>
+</app-modal>
