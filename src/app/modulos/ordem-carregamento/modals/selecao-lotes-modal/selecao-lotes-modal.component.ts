@@ -11,7 +11,7 @@ export class SelecaoLotesModalComponent {
   @Input() loading: boolean = false;
   
   @Output() showChange = new EventEmitter<boolean>();
-  @Output() confirm = new EventEmitter<Map<string, BatchStock[]>>(); // Emite o resultado final
+  @Output() confirm = new EventEmitter<Map<string, BatchStock[]>>(); 
 
   currentPedido: any | null = null;
   lotesSelecionadosPorItem: Map<string, BatchStock[]> = new Map();
@@ -27,12 +27,11 @@ export class SelecaoLotesModalComponent {
   }
 
   confirmar() {
-    // O filho prepara os dados, mas o pai executa a ação de API (confirmarNotaVerde)
     this.confirm.emit(this.lotesSelecionadosPorItem);
   }
 
   close() {
     this.showChange.emit(false);
-    this.currentPedido = null; // Limpa estado interno ao fechar
+    this.currentPedido = null; 
   }
 }

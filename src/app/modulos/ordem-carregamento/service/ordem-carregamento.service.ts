@@ -94,7 +94,6 @@ export class OrdemCarregamentoService {
     
     return this.http.get<DocumentList[]>(endpoint).pipe(
       map((docs) =>
-        // CORREÇÃO: Mude 'new Document()' para 'new DocumentList()'
         docs.map((d) => Object.assign(new DocumentList(), d)) 
       )
     );

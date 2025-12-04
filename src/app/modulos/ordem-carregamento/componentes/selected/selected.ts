@@ -1,7 +1,6 @@
   import { Component, DoCheck, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
   import { ActivatedRoute } from '@angular/router';
 
-  // Models e Services
   import { Column } from '../../../../shared/components/table/column.model';
   import { ActionReturn } from '../../../../shared/components/action/action.model';
   import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
@@ -23,33 +22,27 @@
     @Input() selected: OrdemCarregamento | null = null;
     @Output() back = new EventEmitter<void>();
 
-    // Dados do Formulário
     placa: string = '';
     nomeMotorista: string = '';
     pesoCaminhao: number | null = null;
     formTouched: boolean = false;
 
-    // Estados de Carregamento
     loading: boolean = false;
     loadingPedidos: boolean = false;
     
-    // Controle de Exibição dos Modais (Booleanos Simples)
     showItinerarioModal: boolean = false;
     showRomaneioModal: boolean = false;
     showLoteModal: boolean = false;
 
-    // Dados de Negócio
     notas: DocumentList[] = [];
     flattened: any[] = [];
     pedidos: any[] = [];
     businessPartner: BusinessPartner | null = null;
     localidadesMap: Map<string, string> = new Map();
 
-    // Controles de mudança
     private lastSelectedDocEntry: number | null = null;
     private lastPedidosRef: any[] | null = null;
 
-    // Definições de Tabela
     definition: Column[] = [
       new Column('Núm. do Pedido', 'DocNum'),
       new Column('Cód. Cliente', 'CardCode'),
@@ -105,7 +98,6 @@
       }
     }
 
-    // --- CARREGAMENTO DE DADOS ---
 
     private loadNotas() {
       if (!this.selected?.DocEntry) return;
@@ -202,9 +194,7 @@
       });
     }
 
-    // --- AÇÕES DO USUÁRIO (ABERTURA DE MODAIS E SALVAMENTOS) ---
 
-    // 1. AÇÃO: Gerar Nota Fiscal (Abre Modal de Seleção)
     iniciarGeracaoNota(): void {
       if (this.pedidos.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
@@ -213,13 +203,11 @@
       this.showLoteModal = true;
     }
 
-    // Evento recebido do Modal Filho (<app-selecao-lotes-modal>)
     onLotesConfirmados(mapaLotes: Map<string, BatchStock[]>): void {
       if (mapaLotes.size === 0) return;
 
       this.loading = true;
       
-      // Transforma o Mapa recebido do filho no JSON esperado pela API
       const lotesToSave = Array.from(mapaLotes.entries()).map(([itemCode, lotes]) => ({
         ItemCode: itemCode,
         Batches: lotes.map(lote => ({
@@ -237,7 +225,7 @@
         next: () => {
           this.alertService.confirm('Nota fiscal confirmada com sucesso!');
           this.atualizarStatusParaFechado();
-          this.showLoteModal = false; // Fecha modal
+          this.showLoteModal = false; 
         },
         error: (error) => {
           this.alertService.error('Erro ao confirmar nota: ' + (error.error?.message || error.message));
@@ -246,7 +234,6 @@
       });
     }
 
-    // 2. AÇÃO: Itinerário (Prepara dados e Abre Modal)
     async abrirModalItinerario(): Promise<void> {
       if (this.pedidos.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
@@ -255,7 +242,6 @@
       
       this.loading = true;
       try {
-        // O pai carrega as localidades necessárias para o filho exibir
         const promises = this.pedidos.map(pedido =>
           this.pedidosVendaService.searchLocalidade(20).toPromise()
         );
@@ -267,7 +253,7 @@
           }
         });
         
-        this.showItinerarioModal = true; // Abre o modal
+        this.showItinerarioModal = true; 
       } catch (error: any) {
         this.alertService.error('Erro ao carregar localidades: ' + (error.message || 'Erro desconhecido'));
       } finally {
@@ -275,7 +261,6 @@
       }
     }
 
-    // 3. AÇÃO: Romaneio (Valida e Abre Modal)
     abrirModalRomaneio(): void {
       if (this.pedidos.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
@@ -286,7 +271,6 @@
       }
     }
 
-    // --- OUTRAS AÇÕES ---
 
     salvarLogistica(): void {
       if (!this.validateForm()) return;

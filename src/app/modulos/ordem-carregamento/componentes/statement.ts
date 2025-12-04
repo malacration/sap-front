@@ -106,7 +106,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
   handleFormBack(): void {
     this.unsubscribe();
-    this.removeParams(); // Agora vai chamar a nova função corrigida
+    this.removeParams(); 
     this.selected = null;
     if (!this.pageContent || this.pageContent.content.length === 0) {
       this.pageChange(0);

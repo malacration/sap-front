@@ -27,7 +27,6 @@ export class ItinerarioModalComponent implements OnChanges {
     }
   }
 
-  // MUDANÇA 1: Renomeado de 'close' para 'fecharModal' para evitar conflitos
   fecharModal() {
     this.showChange.emit(false);
   }
@@ -37,13 +36,11 @@ export class ItinerarioModalComponent implements OnChanges {
   }
 
   gerarPDF() {
-    // Garante que o PDF component existe antes de chamar
     if (this.pdfComponent) {
         this.pdfComponent.gerarPdf();
     }
   }
 
-  // --- Lógica de Drag and Drop (MANTIDA IGUAL) ---
   onDragStart(event: DragEvent, index: number): void {
     this.draggedIndex = index;
     event.dataTransfer!.setData('text/plain', index.toString());
