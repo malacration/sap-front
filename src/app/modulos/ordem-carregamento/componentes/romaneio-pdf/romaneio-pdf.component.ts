@@ -20,7 +20,6 @@ export class RomaneioPdfComponent implements OnChanges {
   paginatedItens: any[][] = [];
   itemsPerPage: number = 20;
 
-  // 1. INJEÇÃO DO ChangeDetectorRef
   constructor(
     private pdfService: PdfCarregamentoService,
     private cdr: ChangeDetectorRef 
