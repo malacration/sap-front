@@ -17,13 +17,11 @@ export class ItinerarioPdfComponent implements OnChanges, OnInit {
   paginatedPedidos: any[][] = [];
   itemsPerPage = 4;
 
-  // INJEÇÃO DO ChangeDetectorRef
   constructor(
     private pdfService: PdfCarregamentoService,
     private cdr: ChangeDetectorRef 
   ) {}
 
-  // Adicionado ngOnInit para garantir carga inicial
   ngOnInit(): void {
     this.paginatePedidos();
   }
@@ -43,15 +41,12 @@ export class ItinerarioPdfComponent implements OnChanges, OnInit {
     }
     this.paginatedPedidos = pages;
     
-    // Força atualização da view caso o Angular não tenha percebido
     this.cdr.detectChanges(); 
   }
   
   public gerarPdf(): void {
-    // 1. Garante que a paginação está atualizada
     this.paginatePedidos();
 
-    // 2. Força a detecção de mudanças para que o *ngFor desenhe as divs .pdf-page no DOM
     this.cdr.detectChanges();
 
     if (!this.pdfPagesContainer?.nativeElement) {
@@ -59,7 +54,6 @@ export class ItinerarioPdfComponent implements OnChanges, OnInit {
       return;
     }
 
-    // Aumentei um pouco o tempo para garantir renderização (200ms)
     setTimeout(async () => {
       const pageNodes = this.pdfPagesContainer.nativeElement.querySelectorAll('.pdf-page');
       
