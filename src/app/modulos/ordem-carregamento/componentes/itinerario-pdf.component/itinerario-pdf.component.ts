@@ -1,5 +1,6 @@
 import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, ChangeDetectorRef, OnInit } from '@angular/core';
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
+import { AlertService } from '../../../../shared/service/alert.service';
 
 @Component({
   selector: 'app-itinerario-pdf',
@@ -19,7 +20,8 @@ export class ItinerarioPdfComponent implements OnChanges, OnInit {
 
   constructor(
     private pdfService: PdfCarregamentoService,
-    private cdr: ChangeDetectorRef 
+    private cdr: ChangeDetectorRef,
+    private alertService: AlertService
   ) {}
 
   ngOnInit(): void {
@@ -59,10 +61,15 @@ export class ItinerarioPdfComponent implements OnChanges, OnInit {
       
       console.log('Tentando gerar PDF. Páginas encontradas:', pageNodes.length);
 
-      if (pageNodes.length === 0) {
-        console.error('ERRO: O array paginatedPedidos tem tamanho:', this.paginatedPedidos.length);
-        alert('Erro: O PDF não foi renderizado corretamente. Tente novamente.');
-        return;
+      if (pageNodes.length == 0) {
+          console.error('ERRO: O array paginatedPedidos tem tamanho:', this.paginatedPedidos.length);
+          
+          this.alertService.error(
+              'O PDF não foi renderizado corretamente. Tente novamente.', 
+              'Erro de Renderização' 
+          );
+          
+          return;
       }
       
       await this.pdfService.gerarPdfMultiPagina(
