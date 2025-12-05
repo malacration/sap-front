@@ -3,6 +3,14 @@
     <div class="card-header">
       <h3 class="card-title"><b>Detalhes da Ordem de Carregamento</b></h3>
       <div class="card-tools float-right">
+
+        <button
+          (click)="cancelarOrdem()"
+          type="button"
+          class="btn btn-danger mr-2"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+          Cancelar
+        </button>
         
         <button
           (click)="iniciarGeracaoNota()"

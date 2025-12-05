@@ -127,6 +127,29 @@
       });
     }
 
+    cancelarOrdem(): void {
+        if (!this.selected) return;
+
+        if (confirm('Tem certeza que deseja cancelar este Romaneio? Isso irá desvincular todos os pedidos.')) {
+            this.loading = true;
+            this.ordemCarregamentoService.cancelar(this.selected.DocEntry).subscribe({
+                next: (res) => {
+                    this.alertService.confirm('Romaneio cancelado com sucesso!');
+                    // Atualiza o objeto localmente para refletir a mudança
+                    if (this.selected) {
+                        this.selected.U_Status = 'Cancelado';
+                    }
+                    this.loading = false;
+                },
+                error: (err) => {
+                    console.error(err);
+                    this.alertService.error('Erro ao cancelar romaneio: ' + (err.error?.message || err.message));
+                    this.loading = false;
+                }
+            });
+        }
+    }
+
     loadPedidos(): void {
       this.loadingPedidos = true;
       if (!this.selected) {

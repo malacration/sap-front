@@ -55,6 +55,10 @@ export class OrdemCarregamentoService {
     return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
   }
 
+  cancelar(id: number): Observable<any> {
+    return this.http.post(`${this.url}/${id}/cancel`, {});
+  }
+
   saveSelectedLotes(docEntry: number, lotes: any): Observable<any> {
     return this.http.post(`${this.url}/generate-from-loading-order/${docEntry}`, lotes);
   }

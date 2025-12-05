@@ -261,14 +261,6 @@ export class FormularioComponent implements OnInit, OnChanges {
   }
 
   private concluirEnvio(isCreation: boolean): void {
-      if (!this.ordemCarregamento?.DocEntry) {
-        this.loading = false;
-        const msgErro = 'Erro crítico: ID da ordem não retornado após salvar.';
-        console.error(msgErro);
-        this.alertService.error(msgErro);
-        throw new Error(msgErro);
-      }
-
       const acao = isCreation ? 'criada' : 'atualizada';
 
       this.alertService.info(`Ordem de carregamento ${acao} com sucesso.`).then(() => {
