@@ -18,9 +18,10 @@
     templateUrl: './selected.html',
     styleUrls: ['./selected.scss']
   })
-  export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges, DoCheck {
+  export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     @Input() selected: OrdemCarregamento | null = null;
     @Output() back = new EventEmitter<void>();
+    @Output() atualizaPedidos = new EventEmitter<OrdemCarregamento>();
 
     placa: string = '';
     nomeMotorista: string = '';
@@ -36,7 +37,6 @@
 
     notas: DocumentList[] = [];
     flattened: any[] = [];
-    pedidos: any[] = [];
     businessPartner: BusinessPartner | null = null;
     localidadesMap: Map<string, string> = new Map();
 
@@ -82,19 +82,6 @@
     ngOnChanges(changes: SimpleChanges): void {
       if (changes['selected']) {
         this.hydrateFromSelected();
-      }
-    }
-
-    ngDoCheck(): void {
-      if (!this.selected) return;
-
-      const currentPedidos = this.selected.pedidosVenda;
-      if (
-        this.selected.pedidosVendaCarregados &&
-        currentPedidos &&
-        currentPedidos !== this.lastPedidosRef
-      ) {
-        this.loadPedidos();
       }
     }
 
@@ -150,24 +137,6 @@
         }
     }
 
-    loadPedidos(): void {
-      this.loadingPedidos = true;
-      if (!this.selected) {
-        this.pedidos = [];
-        this.loadingPedidos = false;
-        return;
-      }
-
-      const pedidosOrigem = Array.isArray(this.selected.pedidosVenda) ? this.selected.pedidosVenda : [];
-      const pedidosAgrupados = this.groupPedidos(pedidosOrigem);
-
-      this.selected.pedidosVenda = pedidosAgrupados;
-      this.lastPedidosRef = this.selected.pedidosVenda;
-      this.pedidos = this.selected.pedidosVenda;
-      
-      this.loadingPedidos = false;
-    }
-
     private hydrateFromSelected(): void {
       if (!this.selected) {
         this.resetState();
@@ -181,11 +150,6 @@
       if (this.lastSelectedDocEntry !== this.selected.DocEntry) {
         this.lastSelectedDocEntry = this.selected.DocEntry ?? null;
         this.lastPedidosRef = null;
-        this.pedidos = [];
-      }
-
-      if (this.selected.pedidosVendaCarregados && this.selected.pedidosVenda !== this.lastPedidosRef) {
-        this.loadPedidos();
       }
     }
 
@@ -193,21 +157,8 @@
       this.placa = '';
       this.nomeMotorista = '';
       this.pesoCaminhao = null;
-      this.pedidos = [];
       this.lastSelectedDocEntry = null;
       this.lastPedidosRef = null;
-    }
-
-    private groupPedidos(content: any[]): any[] {
-      const groupedPedidos = content.reduce((acc: any, pedido: any) => {
-        const itemCode = pedido.ItemCode;
-        if (!acc[itemCode]) {
-          acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
-        }
-        acc[itemCode].Quantity += pedido.Quantity;
-        return acc;
-      }, {});
-      return Object.values(groupedPedidos);
     }
 
     selectBp(event: BusinessPartner): void {
@@ -219,7 +170,7 @@
 
 
     iniciarGeracaoNota(): void {
-      if (this.pedidos.length === 0) {
+      if (this.selected.pedidosVenda.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
         return;
       }
@@ -258,21 +209,21 @@
     }
 
     async abrirModalItinerario(): Promise<void> {
-      if (this.pedidos.length === 0) {
+      if (this.selected.pedidosVenda.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
         return;
       }
       
       this.loading = true;
       try {
-        const promises = this.pedidos.map(pedido =>
+        const promises = this.selected.pedidosVenda.map(pedido =>
           this.pedidosVendaService.searchLocalidade(20).toPromise()
         );
         const results = await Promise.all(promises);
         
         results.forEach((res, index) => {
           if (res && res.content?.length > 0) {
-            this.localidadesMap.set(this.pedidos[index].CardCode, res.content[0].Name);
+            this.localidadesMap.set(this.selected.pedidosVenda[index].CardCode, res.content[0].Name);
           }
         });
         
@@ -285,7 +236,7 @@
     }
 
     abrirModalRomaneio(): void {
-      if (this.pedidos.length === 0) {
+      if (this.selected.pedidosVenda.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
         return;
       }

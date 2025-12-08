@@ -76,13 +76,13 @@
         <dd class="col-sm-12 mt-3">
           <app-tabs>
             <app-tab tabTitle="Produtos" [active]="true">
-              <div *ngIf="loadingPedidos" class="text-center p-4">
+              <div *ngIf="!selected.pedidosVendaCarregados" class="text-center p-4">
                 <i class="fas fa-spinner fa-spin fa-2x"></i>
                 <p>Carregando produtos...</p>
               </div>
               <app-table
-                *ngIf="!loadingPedidos"
-                [content]="pedidos"
+                *ngIf="selected.pedidosVendaCarregados"
+                [content]="selected.pedidosVenda"
                 [definition]="definition">
               </app-table>
               <div class="text-center mt-3" *ngIf="false"> <button class="btn btn-primary">Carregar Mais</button>
@@ -157,7 +157,7 @@
 
   <app-itinerario-modal
     [(show)]="showItinerarioModal"
-    [pedidos]="pedidos"
+    [pedidos]="selected.pedidosVenda"
     [ordemCarregamento]="selected"
     [businessPartner]="businessPartner"
     [localidadesMap]="localidadesMap">
@@ -165,14 +165,14 @@
 
   <app-selecao-lotes-modal
     [(show)]="showLoteModal"
-    [pedidos]="pedidos"
+    [pedidos]="selected.pedidosVenda"
     [loading]="loading"
     (confirm)="onLotesConfirmados($event)">
   </app-selecao-lotes-modal>
 
   <app-romaneio-modal
     [(show)]="showRomaneioModal"
-    [pedidos]="pedidos"
+    [pedidos]="selected.pedidosVenda"
     [ordem]="selected"
     [placa]="placa"
     [motorista]="nomeMotorista">
