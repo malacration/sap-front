@@ -6,6 +6,7 @@ import { Page } from '../../../sap/model/page.model';
 import { LinhaItem } from '../../../sap/model/venda/venda-futura';
 import { OrdemCarregamento } from '../models/ordem-carregamento';
 import { OrdemCarregamentoDto } from '../models/ordem-carregamento-dto';
+import { DocumentList } from '../../../sap/model/markting/document-list';
 
 export interface CarregamentoDetalhes {
   DocEntry: number;
@@ -54,6 +55,10 @@ export class OrdemCarregamentoService {
     return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
   }
 
+  cancelar(id: number): Observable<any> {
+    return this.http.post(`${this.url}/${id}/cancel`, {});
+  }
+
   saveSelectedLotes(docEntry: number, lotes: any): Observable<any> {
     return this.http.post(`${this.url}/generate-from-loading-order/${docEntry}`, lotes);
   }
@@ -79,11 +84,22 @@ export class OrdemCarregamentoService {
     return ordemCarregamento;
   }
 
-  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string }): Observable<any> {
+  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string, U_pesoCaminhao?: string | number | null }): Observable<any>{
     return this.http.post(`${this.url}/${docEntry}/logistica`, dados);
   }
 
   atualizarStatus(docEntry: number, dados: any): Observable<any> {
     return this.http.post(`${this.url}/${docEntry}/status`, dados);
+  }
+
+
+  getNotasByCarregamentos(idCarregamento: number): Observable<DocumentList[]> {
+    const endpoint = `${this.url}/notas/${idCarregamento}`;
+    
+    return this.http.get<DocumentList[]>(endpoint).pipe(
+      map((docs) =>
+        docs.map((d) => Object.assign(new DocumentList(), d)) 
+      )
+    );
   }
 }

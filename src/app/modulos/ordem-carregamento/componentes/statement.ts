@@ -106,7 +106,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
   handleFormBack(): void {
     this.unsubscribe();
-    this.removeParams(); // Agora vai chamar a nova função corrigida
+    this.removeParams(); 
     this.selected = null;
     if (!this.pageContent || this.pageContent.content.length === 0) {
       this.pageChange(0);
@@ -158,11 +158,12 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     });
   }
 
-  private handleOrdemSelection(ordem: OrdemCarregamento): void {
+  public handleOrdemSelection(ordem: OrdemCarregamento): void {
     this.selected = ordem
+    ordem.pedidosVendaCarregados = false;
     this.pedidosVendaService.search(ordem.DocEntry).subscribe({
       next : (pedidos) => {
-        ordem.pedidosVenda = this.normalizePedidosResponse(pedidos);
+        ordem.pedidosVenda = this.groupPedidos(this.normalizePedidosResponse(pedidos));
         ordem.pedidosVendaCarregados = true;
       },
       error: () => {
@@ -171,17 +172,28 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     });
   }
 
+  private groupPedidos(content: any[]): any[] {
+    const groupedPedidos = content.reduce((acc: any, pedido: any) => {
+      const itemCode = pedido.ItemCode;
+      if (!acc[itemCode]) {
+        acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
+      }
+      acc[itemCode].Quantity += pedido.Quantity;
+      return acc;
+    }, {});
+    return Object.values(groupedPedidos);
+  }
+
   private normalizePedidosResponse(response: any): any[] {
     if (!response) {
       return [];
     }
+    if (Array.isArray(response?.content)) {
+      return response.content;
+    }
 
     if (Array.isArray(response)) {
       return response;
-    }
-
-    if (Array.isArray(response?.content)) {
-      return response.content;
     }
 
     return [response];
