@@ -10,6 +10,7 @@ import { Observable, concat, finalize, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
 import { AlertService } from '../../../../sap/service/alert.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
+import { CalculadoraPdfComponent } from '../calculadora-pdf/calculadora-pdf.component';
 
 @Component({
   selector: 'formacao-preco',
@@ -28,6 +29,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   @ViewChild('custoMercadoria', {static: true}) custoModal: ModalComponent;
   @ViewChild('modalAdicionarItem', {static: true}) adicionarItemModal: ModalComponent;
   @ViewChild('modalAtualizaCustos', {static: true}) modalAtualizaCustos: ModalComponent;
+  @ViewChild('calculadoraPdf') calculadoraPdf: CalculadoraPdfComponent;
 
   @ViewChild('table', {static: true}) table: TableComponent;
 
@@ -45,6 +47,15 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     let fatorSubProduto = 40
   }
+
+imprimirPdf() {
+  if (this.calculadoraPdf) {
+    this.calculadoraPdf.gerarPdf();
+  } else {
+    console.error('Componente de PDF não foi carregado na tela.');
+    this.alertService.error("Erro ao gerar PDF: Componente não inicializado.");
+  }
+}
 
   ngOnChanges(changes: SimpleChanges): void {
     if(this.analise)

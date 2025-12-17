@@ -16,6 +16,9 @@
                         <button class="btn btn-default" (click)="modalChangeCustos($event)">Custos Materia Prima</button>
                         <button class="btn btn-default" (click)="modalAdicioanrItem($event)">Adicionar Itens</button>
                         <button class="btn btn-default" (click)="modalAtualizarCustos($event)">Atualizar Custo (media)</button>
+                        <button class="btn btn-danger" (click)="imprimirPdf()">
+                            <i class="fas fa-file-pdf"></i> Gerar PDF
+                        </button>
                     </div>
                 </div>
                 <label for="pageSize" class="col-auto col-form-label">Itens por pagina</label>
@@ -86,3 +89,5 @@
         <app-progress-bar [total]="totalProgressBar" [current]="currentProgressBar" ></app-progress-bar>
     </div>
 </app-modal>
+
+<app-calculadora-pdf #calculadoraPdf [analise]="analise"></app-calculadora-pdf>

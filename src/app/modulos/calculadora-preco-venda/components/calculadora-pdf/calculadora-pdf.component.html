@@ -1,0 +1,102 @@
+<div style="position: absolute; left: -9999px; top: 0;">
+
+  <div class="page-print-content" style="width: 794px; min-height: 1122px; background: white; padding: 20px 30px; font-family: 'Arial Narrow', 'Segoe UI', sans-serif; box-sizing: border-box;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+      
+      <div class="header" style="flex: 0 0 180px; text-align: left;">
+        <img src="assets/logo.png" alt="Logo" class="logo" style="max-height: 60px; object-fit: contain;">
+      </div>
+
+      <div style="flex: 1; text-align: center;">
+        <h1 style="color: #333; font-weight: 800; margin: 0; font-size: 26px; font-style: italic; letter-spacing: -0.5px;">
+          Tabela de Preços
+        </h1>
+      </div>
+
+      <div style="flex: 0 0 180px; text-align: right;">
+        <div style="background-color: #f5f5f5; border: 1px solid #ccc; padding: 4px 8px; font-size: 9px; text-align: center; border-radius: 2px; display: inline-block;">
+          <div style="font-weight: bold; color: #555; border-bottom: 1px solid #ddd; margin-bottom: 2px; padding-bottom: 2px;">
+            Nº 08/2025
+          </div>
+          <div style="color: #666; font-size: 8px;">VÁLIDA A PARTIR</div>
+          <div style="font-weight: 900; color: #d32f2f; font-size: 11px;">
+            {{ dataAtual | date:'dd/MM/yyyy' }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngFor="let grupo of produtosAgrupados" class="mb-4" style="margin-bottom: 25px;">
+      
+      <div [style.background-color]="getCorHeader(grupo.nomeGrupo)" 
+           style="color: white; padding: 4px 0; font-weight: 900; font-size: 16px; margin-bottom: 0; text-align: center; text-transform: uppercase; text-shadow: 1px 1px 1px rgba(0,0,0,0.3);">
+        {{ grupo.nomeGrupo }}
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; font-size: 9px; color: #000;">
+        
+        <thead>
+          <tr style="background-color: #e6e6e6; text-align: center; font-weight: 800; color: #222; height: 30px;">
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">CÓDIGO</th>
+            <th style="border: 1px solid #ccc; text-align: left; padding: 2px 5px;">PRODUTO</th>
+            <th style="border: 1px solid #ccc; width: 55px; padding: 2px;">EMBALAGEM</th>
+            <th style="border: 1px solid #ccc; width: 75px; padding: 2px;">GRUPO</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">A VISTA</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">30 dias direto</th>
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">30/60/90 ou<br>60 dias</th>
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">30...120 ou<br>75 dias</th>
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">30...150 ou<br>90 dias</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">120 dias direto</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">150 dias direto</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let prod of grupo.produtos; let isOdd = odd" 
+              [style.background-color]="isOdd ? '#f9f9f9' : '#ffffff'">
+            
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: center; color: #444; font-style: italic;">
+                {{ prod.ItemCode }}
+            </td>
+            
+            <td style="border: 1px solid #ddd; padding: 4px; font-weight: 800; color: #000;">
+                {{ prod.Descricao }}
+            </td>
+            
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: center;">
+                {{ prod.UnidadeMedida }}
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: center; font-size: 8px; text-transform: uppercase; color: #333;">
+              {{ getDescricaoGrupo(prod.U_grupo_sustennutri) }}
+            </td>
+
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right; font-weight: 900; background-color: rgba(0,0,0,0.02);">
+              {{ prod.getPrecoSacoCurrency() | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+            
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+              {{ (prod.getPrecoSacoCurrency() * 1.02) | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+              {{ (prod.getPrecoSacoCurrency() * 1.04) | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+              {{ (prod.getPrecoSacoCurrency() * 1.06) | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+              {{ (prod.getPrecoSacoCurrency() * 1.08) | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+              {{ (prod.getPrecoSacoCurrency() * 1.10) | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+              {{ (prod.getPrecoSacoCurrency() * 1.12) | currency:'BRL':'symbol':'1.2-2' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br> </div>
+    
+  </div>
+</div>
