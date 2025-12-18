@@ -31,60 +31,61 @@
       <table style="width: 100%; border-collapse: collapse; font-size: 9px; color: #000;">
         
         <thead>
-          <tr style="background-color: #e6e6e6; text-align: center; font-weight: 800; color: #222; height: 30px;">
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">CÓDIGO</th>
-            <th style="border: 1px solid #ccc; text-align: left; padding: 2px 5px;">PRODUTO</th>
-            <th style="border: 1px solid #ccc; width: 55px; padding: 2px;">EMBALAGEM</th>
-            <th style="border: 1px solid #ccc; width: 75px; padding: 2px;">GRUPO</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">A VISTA</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">30 dias</th>
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">60 dias</th>
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">75 dias</th>
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">90 dias</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">120 dias</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">150 dias</th>
+          <tr style="background-color: #D8D8D8; text-align: center; font-weight: bold; color: #222; height: 30px;">
+            <th style="border: 1px solid #9A9A9A; width: 65px; padding: 2px;">CÓDIGO</th>
+            <th style="border: 1px solid #9A9A9A; text-align: left; padding: 2px 5px;">PRODUTO</th>
+            <th style="border: 1px solid #9A9A9A; width: 55px; padding: 2px;">EMBALAGEM</th>
+            <th style="border: 1px solid #9A9A9A; width: 75px; padding: 2px;">GRUPO</th>
+            <th style="border: 1px solid #9A9A9A; width: 60px; padding: 2px;">A VISTA</th>
+            <th style="border: 1px solid #9A9A9A; width: 60px; padding: 2px;">30 dias</th>
+            <th style="border: 1px solid #9A9A9A; width: 65px; padding: 2px;">60 dias</th>
+            <th style="border: 1px solid #9A9A9A; width: 65px; padding: 2px;">75 dias</th>
+            <th style="border: 1px solid #9A9A9A; width: 65px; padding: 2px;">90 dias</th>
+            <th style="border: 1px solid #9A9A9A; width: 60px; padding: 2px;">120 dias</th>
+            <th style="border: 1px solid #9A9A9A; width: 60px; padding: 2px;">150 dias</th>
           </tr>
         </thead>
 
         <tbody>
-          <tr *ngFor="let prod of grupo.produtos">
+          <tr *ngFor="let prod of grupo.produtos; let j = index" 
+              [style.background-color]="j % 2 !== 0 ? '#D8D8D8' : '#FFFFFF'">
             
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: center;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: center;">
                 {{ prod.ItemCode }}
             </td>
             
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: left;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: left;">
                 {{ prod.Descricao }}
             </td>
             
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: center;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: center;">
                 {{ prod.UnidadeMedida }}
             </td>
 
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: center; font-size: 8px; text-transform: uppercase;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: center; font-size: 8px; text-transform: uppercase;">
               {{ getDescricaoGrupo(prod.U_grupo_sustennutri) }}
             </td>
 
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ prod.getPrecoSacoCurrency() | currency:'BRL':'symbol':'1.2-2' }}
             </td>
             
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ (prod.getPrecoSacoCurrency() * 1.02) | currency:'BRL':'symbol':'1.2-2' }}
             </td>
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ (prod.getPrecoSacoCurrency() * 1.04) | currency:'BRL':'symbol':'1.2-2' }}
             </td>
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ (prod.getPrecoSacoCurrency() * 1.06) | currency:'BRL':'symbol':'1.2-2' }}
             </td>
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ (prod.getPrecoSacoCurrency() * 1.08) | currency:'BRL':'symbol':'1.2-2' }}
             </td>
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ (prod.getPrecoSacoCurrency() * 1.10) | currency:'BRL':'symbol':'1.2-2' }}
             </td>
-            <td style="border: 1px solid #ddd; padding: 4px; text-align: right;">
+            <td style="border: 1px solid #9A9A9A; padding: 4px; text-align: right;">
               {{ (prod.getPrecoSacoCurrency() * 1.12) | currency:'BRL':'symbol':'1.2-2' }}
             </td>
           </tr>
