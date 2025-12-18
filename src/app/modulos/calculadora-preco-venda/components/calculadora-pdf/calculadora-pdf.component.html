@@ -7,7 +7,6 @@
   <div *ngFor="let pagina of paginasParaImpressao; let i = index" 
        class="page-print-content" 
        style="width: 794px; min-height: 1122px; background: white; padding: 20px 30px; 
-              /* 2. ALTERADO AQUI: Definindo Source Sans Pro */
               font-family: 'Source Sans Pro', 'Helvetica', sans-serif; 
               -webkit-font-smoothing: antialiased; 
               -moz-osx-font-smoothing: grayscale; 
@@ -35,8 +34,8 @@
       
       <div [style.background-color]="getCorHeader(grupo.nomeGrupo)" 
            style="color: white; padding: 6px 0; font-weight: 900; font-size: 16px; margin-bottom: 0; text-align: center; text-transform: uppercase; text-shadow: 1px 1px 1px rgba(0,0,0,0.3); border-radius: 4px 4px 0 0;">
-        {{ grupo.nomeGrupo }} 
-        </div>
+        {{ getDescricaoLinha(grupo.nomeGrupo) }} 
+      </div>
 
       <table style="width: 100%; border-collapse: collapse; font-size: 10px; color: #000; font-family: 'Source Sans Pro', sans-serif;">
         

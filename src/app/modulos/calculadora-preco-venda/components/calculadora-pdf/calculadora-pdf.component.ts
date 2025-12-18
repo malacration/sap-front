@@ -4,7 +4,7 @@ import { Produto } from '../../models/produto';
 import { PdfCarregamentoService } from '../../../../sap/service/pdf-carregamento.service';
 
 interface GrupoRender {
-  nomeGrupo: string;
+  nomeGrupo: string; // Guarda o ID cru (ex: 'mega')
   produtos: Produto[];
 }
 
@@ -23,7 +23,13 @@ export class CalculadoraPdfComponent implements OnChanges {
 
   public paginasParaImpressao: PaginaRender[] = [];
   
-  private readonly ITENS_POR_PAGINA = 25;
+  // --- CONFIGURAÇÃO DE PAGINAÇÃO ---
+  // Define quantas "linhas virtuais" cabem em uma página
+  private readonly LINHAS_TOTAIS_POR_PAGINA = 23; 
+  
+  // Define quanto espaço visual um cabeçalho (Título Laranja + Cabeçalho Cinza) consome
+  // Valor 5 significa que um cabeçalho ocupa o mesmo espaço que 5 produtos
+  private readonly CUSTO_CABECALHO = 5; 
 
   constructor(private pdfService: PdfCarregamentoService) {}
 
@@ -34,7 +40,6 @@ export class CalculadoraPdfComponent implements OnChanges {
   }
 
   public async gerarPdf() {
-    // Seleciona TODAS as páginas geradas pelo ngFor
     const elements = document.querySelectorAll('.page-print-content') as NodeListOf<HTMLElement>;
     if (elements.length > 0) {
       await this.pdfService.gerarPdfMultiPagina(elements, `Tabela_Precos_${this.analise?.descricao || 'Geral'}`);
@@ -44,7 +49,7 @@ export class CalculadoraPdfComponent implements OnChanges {
   private montarPaginas() {
     if (!this.analise || !this.analise.produtos) return;
 
-    // 1. Primeiro agrupa tudo (lógica original)
+    // 1. Agrupamento inicial
     const gruposMap = new Map<string, Produto[]>();
     this.analise.produtos.forEach(produto => {
       const grupoKey = (produto as any).U_linha_sustennutri || 'OUTROS';
@@ -54,20 +59,32 @@ export class CalculadoraPdfComponent implements OnChanges {
 
     const gruposOrdenados = Array.from(gruposMap, ([name, value]) => ({ nomeGrupo: name, produtos: value }))
       .sort((a, b) => {
-        if (a.nomeGrupo.includes('PREMIUM')) return -1;
-        if (b.nomeGrupo.includes('PREMIUM')) return 1;
+        const nomeA = a.nomeGrupo.toLowerCase();
+        const nomeB = b.nomeGrupo.toLowerCase();
+        if (nomeA.includes('premium')) return -1;
+        if (nomeB.includes('premium')) return 1;
         return 0;
       });
 
-    // 2. Agora fatiamos em páginas de 20 itens
+    // 2. Paginação Inteligente (Calculando espaços)
     this.paginasParaImpressao = [];
     
     let paginaAtual: PaginaRender = { grupos: [] };
-    let contadorItensPagina = 0;
-    
+    let espacoUsadoNaPagina = 0; // Contador de linhas usadas na página atual
+
     for (const grupoOriginal of gruposOrdenados) {
       
-      // Criamos um grupo temporário para a página atual
+      // Verifica se cabe o cabeçalho novo + pelo menos 1 produto
+      // Se não couber, cria nova página antes de começar o grupo
+      if (espacoUsadoNaPagina + this.CUSTO_CABECALHO + 1 > this.LINHAS_TOTAIS_POR_PAGINA) {
+         this.paginasParaImpressao.push(paginaAtual);
+         paginaAtual = { grupos: [] };
+         espacoUsadoNaPagina = 0;
+      }
+
+      // Adiciona o "custo" visual do cabeçalho deste grupo
+      espacoUsadoNaPagina += this.CUSTO_CABECALHO;
+
       let grupoAtualNaPagina: GrupoRender = { 
         nomeGrupo: grupoOriginal.nomeGrupo, 
         produtos: [] 
@@ -75,53 +92,72 @@ export class CalculadoraPdfComponent implements OnChanges {
 
       for (const produto of grupoOriginal.produtos) {
         
-        // Se atingiu o limite, salva a página e cria nova
-        if (contadorItensPagina >= this.ITENS_POR_PAGINA) {
+        // Verifica se adicionar este produto vai estourar a página
+        if (espacoUsadoNaPagina >= this.LINHAS_TOTAIS_POR_PAGINA) {
           
-          // Se o grupo atual tem itens, salva ele na página antes de fechar
+          // Salva o que já foi processado na página atual
           if (grupoAtualNaPagina.produtos.length > 0) {
             paginaAtual.grupos.push(grupoAtualNaPagina);
           }
-
-          this.paginasParaImpressao.push(paginaAtual); // Empurra página cheia
+          this.paginasParaImpressao.push(paginaAtual); // Fecha a página
           
-          // Reseta para nova página
+          // Inicia Nova Página
           paginaAtual = { grupos: [] };
-          contadorItensPagina = 0;
+          espacoUsadoNaPagina = 0;
           
-          // Cria novo container de grupo para a nova página (repete o nome do grupo)
+          // Como o grupo continua na nova página, ele vai ter cabeçalho de novo?
+          // Sim, o HTML vai desenhar o cabeçalho novamente para o resto dos itens.
+          // Então somamos o custo do cabeçalho novamente na nova página.
+          espacoUsadoNaPagina += this.CUSTO_CABECALHO;
+
           grupoAtualNaPagina = { 
             nomeGrupo: grupoOriginal.nomeGrupo, 
             produtos: [] 
           };
         }
 
-        // Adiciona produto e incrementa contador
+        // Adiciona o produto e conta +1 linha de espaço
         grupoAtualNaPagina.produtos.push(produto);
-        contadorItensPagina++;
+        espacoUsadoNaPagina++;
       }
 
-      // Acabou os produtos desse grupo original. 
-      // Se sobrou algo no grupo temporário, adiciona na página atual
+      // Se sobrou itens no buffer do grupo, adiciona na página
       if (grupoAtualNaPagina.produtos.length > 0) {
         paginaAtual.grupos.push(grupoAtualNaPagina);
       }
     }
 
-    // Se sobrou alguma página aberta no final, adiciona ao array
+    // Adiciona a última página se tiver conteúdo
     if (paginaAtual.grupos.length > 0) {
       this.paginasParaImpressao.push(paginaAtual);
     }
   }
 
-  // --- MÉTODOS AUXILIARES VISUAIS ---
+  // --- MÉTODOS AUXILIARES ---
+
+  private deParaLinhas: { [key: string]: string } = {
+    'especial': 'ESPECIAL',
+    'fora': 'FORA DE LINHA',
+    'mega': 'OX MEGA',
+    'power': 'OX POWER',
+    'premium': 'OX PREMIUM',
+    'farelado': 'FARELADA',
+    'terceiro': 'TERCEIROS'
+  };
+
+  getDescricaoLinha(codigo: string): string {
+    if (!codigo) return '';
+    const chave = codigo.toLowerCase().trim();
+    return this.deParaLinhas[chave] || codigo.toUpperCase();
+  }
 
   getCorHeader(nomeGrupo: string): string {
-    const nome = nomeGrupo ? nomeGrupo.toUpperCase() : '';
-    if (nome.includes('PREMIUM')) return '#F26522';
-    if (nome.includes('MEGA')) return '#FFC20E';
-    if (nome.includes('POWER')) return '#777777';
-    if (nome.includes('SUPREMA')) return '#28a745';
+    const chave = nomeGrupo ? nomeGrupo.toLowerCase().trim() : '';
+    if (chave === 'premium') return '#F26522';
+    if (chave === 'mega') return '#FFC20E';
+    if (chave === 'power') return '#777777';
+    if (chave === 'suprema') return '#28a745';
+    if (chave === 'especial') return '#004085';
     return '#004085';
   }
 
