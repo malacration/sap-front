@@ -3,4 +3,5 @@ export class LastPrice{
     LastPurPrc : number
     LstEvlPric : number
     AvgPrice : number
+    U_productionCost : number
 }
