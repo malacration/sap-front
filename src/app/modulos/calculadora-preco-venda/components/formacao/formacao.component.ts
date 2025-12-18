@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -33,6 +33,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
 
   @Input()
   analise : Analise
+  @Output() close = new EventEmitter<void>();
 
   page = 0
   pageSize = 10
@@ -305,6 +306,10 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
       const index = this.analise.produtos.findIndex(obj => obj.ItemCode == action.data.ItemCode)
       this.analise.produtos.splice(index, 1);
     }
+  }
+
+  voltar(): void {
+    this.close.emit();
   }
 
 }

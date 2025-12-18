@@ -104,6 +104,10 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
     this.routeSubscriptions.forEach(it => it.unsubscribe())
   }
 
+  fecharAnalise() {
+    this.analiseSelected = null;
+  }
+
 }
 
 
