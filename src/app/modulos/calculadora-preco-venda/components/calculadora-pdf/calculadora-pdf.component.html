@@ -1,37 +1,29 @@
 <div style="position: absolute; left: -9999px; top: 0;">
 
-  <div class="page-print-content" style="width: 794px; min-height: 1122px; background: white; padding: 20px 30px; font-family: 'Arial Narrow', 'Segoe UI', sans-serif; box-sizing: border-box;">
+  <div *ngFor="let pagina of paginasParaImpressao; let i = index" 
+       class="page-print-content" 
+       style="width: 794px; min-height: 1122px; background: white; padding: 20px 30px; font-family: 'Arial Narrow', 'Segoe UI', sans-serif; box-sizing: border-box; page-break-after: always; display: block;">
     
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
       
       <div class="header" style="flex: 0 0 180px; text-align: left;">
-        <img src="assets/logo.png" alt="Logo" class="logo" style="max-height: 60px; object-fit: contain;">
+        <img src="logo.png" alt="Logo" class="logo" style="max-height: 60px; object-fit: contain;">
       </div>
 
       <div style="flex: 1; text-align: center;">
         <h1 style="color: #333; font-weight: 800; margin: 0; font-size: 26px; font-style: italic; letter-spacing: -0.5px;">
           Tabela de Preços
         </h1>
-      </div>
-
-      <div style="flex: 0 0 180px; text-align: right;">
-        <div style="background-color: #f5f5f5; border: 1px solid #ccc; padding: 4px 8px; font-size: 9px; text-align: center; border-radius: 2px; display: inline-block;">
-          <div style="font-weight: bold; color: #555; border-bottom: 1px solid #ddd; margin-bottom: 2px; padding-bottom: 2px;">
-            Nº 08/2025
-          </div>
-          <div style="color: #666; font-size: 8px;">VÁLIDA A PARTIR</div>
-          <div style="font-weight: 900; color: #d32f2f; font-size: 11px;">
-            {{ dataAtual | date:'dd/MM/yyyy' }}
-          </div>
-        </div>
+        <div style="font-size: 10px; color: #999;">Página {{ i + 1 }} de {{ paginasParaImpressao.length }}</div>
       </div>
     </div>
-    <div *ngFor="let grupo of produtosAgrupados" class="mb-4" style="margin-bottom: 25px;">
+
+    <div *ngFor="let grupo of pagina.grupos" class="mb-4" style="margin-bottom: 25px;">
       
       <div [style.background-color]="getCorHeader(grupo.nomeGrupo)" 
            style="color: white; padding: 4px 0; font-weight: 900; font-size: 16px; margin-bottom: 0; text-align: center; text-transform: uppercase; text-shadow: 1px 1px 1px rgba(0,0,0,0.3);">
-        {{ grupo.nomeGrupo }}
-      </div>
+        {{ grupo.nomeGrupo }} 
+        </div>
 
       <table style="width: 100%; border-collapse: collapse; font-size: 9px; color: #000;">
         
@@ -42,12 +34,12 @@
             <th style="border: 1px solid #ccc; width: 55px; padding: 2px;">EMBALAGEM</th>
             <th style="border: 1px solid #ccc; width: 75px; padding: 2px;">GRUPO</th>
             <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">A VISTA</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">30 dias direto</th>
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">30/60/90 ou<br>60 dias</th>
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">30...120 ou<br>75 dias</th>
-            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">30...150 ou<br>90 dias</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">120 dias direto</th>
-            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">150 dias direto</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">30 dias</th>
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">60 dias</th>
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">75 dias</th>
+            <th style="border: 1px solid #ccc; width: 65px; padding: 2px;">90 dias</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">120 dias</th>
+            <th style="border: 1px solid #ccc; width: 60px; padding: 2px;">150 dias</th>
           </tr>
         </thead>
 
@@ -96,7 +88,8 @@
           </tr>
         </tbody>
       </table>
-      <br> </div>
+      <br> 
+    </div>
     
   </div>
 </div>
