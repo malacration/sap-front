@@ -23,8 +23,8 @@ export class ListComponent implements OnInit, OnDestroy {
     definition: Column[] = [
         new Column('ID', 'DocEntry'),
         new Column('Nome', 'U_nameOrdem'),
-        new Column('Peso Total (Kg)', 'U_pesoTotal2'),
-        new Column('Qtd. Pedidos', 'quantidadePedidos'),
+        new Column('Peso Total (Kg)', 'Weight1'),
+        new Column('Qtd. Pedidos', 'DocEntryQuantity'),
         new Column('Status', 'U_Status'),
         new Column('Criado em', 'dataCriacao')
     ];

@@ -13,6 +13,9 @@ import { PainelExpedicaoPedidosComponent } from './componentes/painel-expedicao-
 import { PedidosCarregamentoService } from './service/pedidos-carregamento.service';
 import { DualListBoxComponent } from './componentes/dual-list-box/dual-list-box.component';
 import { FormularioComponent } from './componentes/formulario/formulario.component';
+import { SelecaoLotesModalComponent } from './modals/selecao-lotes-modal/selecao-lotes-modal.component';
+import { RomaneioModalComponent } from './modals/romaneio-modal/romaneio-modal.component';
+import { ItinerarioModalComponent } from './modals/itinerario-modal/itinerario-modal.component';
 
 
 @NgModule({
@@ -24,7 +27,10 @@ import { FormularioComponent } from './componentes/formulario/formulario.compone
     ListComponent,
     PainelExpedicaoPedidosComponent,
     DualListBoxComponent,
-    FormularioComponent
+    FormularioComponent,
+    SelecaoLotesModalComponent,
+    RomaneioModalComponent,
+    ItinerarioModalComponent
   ],
   imports: [
     CommonModule,

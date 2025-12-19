@@ -17,6 +17,7 @@ export class DocumentList{
     DocumentLines: DocumentLines[];
     DocStatus : string
     Devolucao : string
+    SequenceSerial: string; 
 
     getActions(): Action[] {
         return [
@@ -89,6 +90,8 @@ export class DocumentLines {
     UnitPrice : number
     LineTotal : number
     Quantity : number
+    ItemDescription : string
+    ItemCode : string
 
     get precoUnitarioCurrency(){
         return formatCurrency(this.UnitPrice,'pt','R$')

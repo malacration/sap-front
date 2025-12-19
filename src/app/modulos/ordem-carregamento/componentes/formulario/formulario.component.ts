@@ -220,10 +220,6 @@ export class FormularioComponent implements OnInit, OnChanges {
   }
 
   validateForm(): boolean {
-    if (!this.ordemCarregamento.U_nameOrdem || this.selectedOrders.length == 0) {
-      this.alertService.error('Preencha o nome da ordem e selecione pelo menos um pedido.');
-      return false;
-    }
     return true;
   }
 
@@ -235,29 +231,45 @@ export class FormularioComponent implements OnInit, OnChanges {
   }
 
   private createOrUpdate(): void {
-    this.loading = true;
-    
-    const toRemove = this.initialSelectedOrders
-      .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
-      .map(p => p.DocEntry);
+      this.loading = true;
 
-    const dto = new OrdemCarregamentoDto(
-      this.ordemCarregamento,
-      this.selectedOrders.map(pedido => pedido.DocEntry),
-      toRemove
-    )
-    this.ordemCarregamentoService.save(dto).subscribe(it => {
-      this.concluirEnvio()
-      this.ordemCarregamento = it
-      this.loading = false;
-    })
+      const isCreation = !this.ordemCarregamento.DocEntry; 
+
+      const toRemove = this.initialSelectedOrders
+        .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
+        .map(p => p.DocEntry);
+
+      const dto = new OrdemCarregamentoDto(
+        this.ordemCarregamento,
+        this.selectedOrders.map(pedido => pedido.DocEntry),
+        toRemove
+      )
+
+      this.ordemCarregamentoService.save(dto).subscribe({
+        next: (it) => {
+          if (it) {
+              this.ordemCarregamento = it;
+          }
+          this.concluirEnvio(isCreation);
+        },
+        error: (err) => {
+          console.error(err);
+          this.alertService.error('Erro ao salvar a ordem.');
+          this.loading = false;
+        }
+      });
   }
 
-  private concluirEnvio(): void {
-    this.alertService.info(`Ordem de carregamento ${this.ordemCarregamento.DocEntry ? 'atualizada' : 'criada'} com sucesso.`).then(() => {
-      this.loading = false;
-      this.router.navigate(['ordem-carregamento/'+this.ordemCarregamento.DocEntry]);
-    });
+  private concluirEnvio(isCreation: boolean): void {
+      const acao = isCreation ? 'criada' : 'atualizada';
+
+      this.alertService.info(`Ordem de carregamento ${acao} com sucesso.`).then(() => {
+        this.loading = false;
+        
+        this.router.navigate(['ordem-carregamento'], { 
+          queryParams: { id: this.ordemCarregamento.DocEntry } 
+        });
+      });
   }
 
   private hydrateSelectedOrders(): void {
@@ -266,7 +278,7 @@ export class FormularioComponent implements OnInit, OnChanges {
       this.initialSelectedOrders = [];
       return;
     }
-
+ 
     const pedidos = this.ordemCarregamento.pedidosVenda || [];
     if (pedidos.length > 0) {
       this.selectedOrders = [...pedidos];
@@ -283,7 +295,17 @@ export class FormularioComponent implements OnInit, OnChanges {
     this.initialSelectedOrders = [];
   }
 
-  goBack(): void {
-    this.back.emit();
+goBack(): void {
+    const params = this.route.snapshot.queryParams;
+    if (params['id'] && params['edit']) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { edit: null }, 
+        queryParamsHandling: 'merge' 
+      });
+    } 
+    else {
+      this.back.emit(); 
+    }
   }
 }
