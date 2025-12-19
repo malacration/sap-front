@@ -261,4 +261,33 @@ export class TableComponent implements OnInit {
     const result = Number(normalized);
     return Number.isFinite(result) ? result : null;
   }
+  getCellClass(item: any, def: Column) {
+   const classes: { [klass: string]: boolean } = {};
+
+  // sticky da coluna
+   if (def.sticky) {
+     classes['sticky-column'] = true;
+   }
+
+  // highlight negativo
+   if (def.highlightNegative) {
+     const value = this.getValue(item, def);
+     const num =
+       typeof value === 'number'
+         ? value
+         : Number(
+             String(value)
+               .replace(/\./g, '')  // milhares
+               .replace(',', '.')   // vírgula -> ponto
+           );
+
+     if (Number.isFinite(num) && num < 0) {
+       classes['text-danger'] = true;
+     }
+   }
+
+   return classes;
+}
+
+
 }

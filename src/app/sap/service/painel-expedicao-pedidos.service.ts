@@ -1,11 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Page } from '../../../sap/model/page.model';
 import Big from 'big.js';
-import { ConfigService } from '../../../core/services/config.service';
-import { PainelExpedicaoPedidos } from '../../../sap/model/painel-expedicao-pedidos.model';
-import { Localidade } from '../../../sap/model/localidade/localidade';
+import { Page } from '../model/page.model';
+import { ConfigService } from '../../core/services/config.service';
+import { Localidade } from '../model/localidade/localidade';
+import { PainelExpedicaoPedidos } from '../model/painel-expedicao-pedidos.model';
 
 @Injectable({ providedIn: 'root' })
 export class PainelExpedicaoPedidosService {

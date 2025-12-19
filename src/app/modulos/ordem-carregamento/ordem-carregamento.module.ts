@@ -10,7 +10,6 @@ import { PdfCarregamentoService } from './service/pdf-carregamento.service';
 import { RomaneioPdfComponent } from './componentes/romaneio-pdf/romaneio-pdf.component';
 import { ItinerarioPdfComponent } from './componentes/itinerario-pdf.component/itinerario-pdf.component';
 import { PainelExpedicaoPedidosComponent } from './componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
-import { PedidosCarregamentoService } from './service/pedidos-carregamento.service';
 import { DualListBoxComponent } from './componentes/dual-list-box/dual-list-box.component';
 import { FormularioComponent } from './componentes/formulario/formulario.component';
 import { SelecaoLotesModalComponent } from './modals/selecao-lotes-modal/selecao-lotes-modal.component';
@@ -40,7 +39,6 @@ import { ItinerarioModalComponent } from './modals/itinerario-modal/itinerario-m
   providers: [
     OrdemCarregamentoService,
     PdfCarregamentoService,
-    PedidosCarregamentoService
   ],
   exports: [
     OrdemCarregamentoStatementComponent

@@ -1,6 +1,12 @@
 <div class="card card-primary">
     <div class="card-header">
         <h3 class="card-title"><b>Formação de Preços</b> - <small> </small></h3>
+
+        <div class="float-right">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="voltar()">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <div class="form-group">
@@ -73,6 +79,7 @@
             <option value="precoAnalisado">Ultimo Preço Analisado</option>
             <option value="precoCompra">Ultimpo Preço de Compra</option>
             <option value="precoContabil">Custo Contabil</option>
+            <option value="precoCustoProducao">Custo Apontado p/ Produção</option>
         </select>
     </div>
     <hr>

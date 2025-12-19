@@ -99,6 +99,8 @@ import { LoadingBarHttpClientModule } from '@ngx-loading-bar/http-client';
 import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
 import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carregamento.module';
+import { IncotermsSelectComponent } from './sap/components/form/select/incoterms/incoterms.select.component';
+import { EmOrdemDeCarregamentoSelectComponent } from './sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
 
 
 registerLocaleData(localeBr);
@@ -161,6 +163,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     PedidosVendaStatementComponent,
     DescontoComponent,
     TrocaComponent,
+    IncotermsSelectComponent,
+    EmOrdemDeCarregamentoSelectComponent
   ],
   imports: [
     NgxPaginationModule,

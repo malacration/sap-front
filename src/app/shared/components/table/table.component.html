@@ -15,7 +15,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let item of content">
-          <td *ngFor="let def of definition" scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
+          <td *ngFor="let def of definition" scope="col" [ngClass]="getCellClass(item, def)">
             <div *ngIf="renderContent(item, def)" [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
             <div *ngIf="isRouterLink(item,def)">
               <a [routerLink]="getValue(item, def)?.path" [queryParams]="getValue(item, def)?.params">
