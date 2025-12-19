@@ -4,7 +4,7 @@ import { RomaneioFazendaInsumo } from '../../model/romaneio-fazenda-insumo.model
 import { RomaneioPesagem } from '../../model/romaneio-pesagem.model';
 import { RomaneioFazendaInsumoService } from '../../service/romaneio-fazenda-insumo.service';
 import { RomaneioPesagemService } from '../../service/romaneio-pesagem.service';
-import { AlertService } from '../../service/alert.service';
+import { AlertService } from '../../../shared/service/alert.service';
 import { CowntDown } from '../../../core/cowntdown.module';
 
 @Component({

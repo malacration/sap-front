@@ -26,6 +26,11 @@ export class VendaFutura {
   DocNum: number;
   U_filial;
   U_status;
+  U_valorProdutos;
+
+  get U_valorProdutosCurrency() {
+    return this.U_valorProdutos
+  }
 
   SalesEmployeeName: string;
   OrderDocNum: string;

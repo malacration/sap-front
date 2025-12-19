@@ -3,7 +3,7 @@ import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Page } from '../../model/page.model';
 import { Column } from '../../../shared/components/table/column.model';
 import { AuthService } from '../../../shared/service/auth.service';
-import { BusinessPartnerService } from '../../service/business-partners.service';
+import { BusinessPartnerService } from '../../../modulos/sap-shared/_services/business-partners.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';

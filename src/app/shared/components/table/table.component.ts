@@ -4,7 +4,7 @@ import { Column } from './column.model';
 import { RouteLink } from '../../../sap/model/route-link';
 import { formatCurrency } from '@angular/common';
 import { FormControl } from '@angular/forms';
-import { AlertService } from '../../../sap/service/alert.service';
+import { AlertService } from '../../service/alert.service';
 
 
 @Component({

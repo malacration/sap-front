@@ -1,0 +1,38 @@
+
+<section class="content">
+  <div class="card card-primary" *ngIf="showList()">
+    <div class="card-header">
+            <h3 class="card-title"><b>Ordem de Carregamento</b></h3>
+            <div class="card-tools float-right">
+                <button (click)="novo()" type="button" class="btn btn-success">
+                    Novo
+                </button>
+            </div>
+    </div>
+    <div class="card-body">
+      <ordem-carregamento-list
+            [pageContent]="pageContent"
+            [pageChangeFn]="pageChangeHandler"
+            (actionOutput)="action($event)">
+      </ordem-carregamento-list>
+    </div>
+    <div *ngIf="loading" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+  </div>
+
+  <div *ngIf="showView()">
+    <app-ordem-selected
+      [selected]="selected"
+      (back)="handleFormBack()"
+      (atualizaPedidos)="handleOrdemSelection($event)"
+    ></app-ordem-selected>
+  </div>
+
+  <div *ngIf="showEdit()">
+    <app-ordem-formulario
+      [ordemCarregamento]="selected"
+      (back)="handleFormBack()"
+    ></app-ordem-formulario>
+  </div>
+</section>

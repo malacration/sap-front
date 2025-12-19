@@ -6,11 +6,11 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { BusinessPartnerService } from '../../../service/business-partners.service';
+import { BusinessPartnerService } from '../../../../modulos/sap-shared/_services/business-partners.service';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
-import { OrderSalesService } from '../../../service/document/order-sales.service';
+import { OrderSalesService } from '../../../../modulos/sap-shared/_services/documents/order-sales.service';
 import { PedidoVenda } from '../../document/documento.statement.component';
 import { ContaReceber } from '../../../model/contas-receber.model';
 import { Page } from '../../../model/page.model';

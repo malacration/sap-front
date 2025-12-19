@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
-import { AlertService } from '../../service/alert.service';
+import { AlertService } from '../../../shared/service/alert.service';
 import { Router } from '@angular/router';
 
 @Component({

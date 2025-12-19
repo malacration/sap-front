@@ -19,10 +19,9 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { ChangePassowrd } from './shared/components/change-password/change-password.component';
-import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
-import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
 import { ConfigService } from './core/services/config.service';
-import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
+import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
+import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 
  let routes: Routes = [
   {
@@ -148,22 +147,7 @@ import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedic
     canActivate: [authGuard],
     data: ["icon:fas fa-truck"],
     path: 'ordem-carregamento',
-    children: [ 
-      {
-        path: 'ordem',
-        title: 'Ordem',
-        data: ["icon:fas fa-box"],
-        canActivate: [authGuard],
-        component: OrdemCarregamentoComponent
-      },
-      {
-        path: 'detalhes',
-        title: 'Detalhes',
-        data: ["icon:fas fa-file-alt"],
-        canActivate: [authGuard],
-        component: OrdemCarregamentoStatementComponent
-      },
-    ]
+    component: OrdemCarregamentoStatementComponent
   },
   {
     title: 'Administrador',
@@ -197,12 +181,6 @@ import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedic
     title: 'Calculadora',
     path: 'statement-calc',
     component: CalculadoraStatementComponent,
-  },
-  {
-    path: 'ordem-carregamento/:id',
-    title: 'Editar Ordem de Carregamento',
-    data: ["hidden"],
-    component: OrdemCarregamentoComponent,
   },
   {
     path: '**',
