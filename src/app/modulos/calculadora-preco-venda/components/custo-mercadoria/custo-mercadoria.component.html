@@ -19,7 +19,7 @@
                                 <th class="pr-3 text-nowrap">Custo Saco</th>
                                 <td class="px-2">|</td>
                                 <td colspan="4" class="text-right">
-                                    {{ (receita.useCustoSap ? receita.getCustoReceitaCurrency() : receita.CustoMateriaPrimaCurrency) | currency}} 
+                                    {{ (receita.useCustoSap ? receita.CustoMateriaPrimaCurrency : receita.getCustoReceitaCurrency()) | currency}} 
                                 </td>
                             </tr>
                                 <tr>
