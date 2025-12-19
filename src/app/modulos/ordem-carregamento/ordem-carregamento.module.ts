@@ -15,6 +15,8 @@ import { FormularioComponent } from './componentes/formulario/formulario.compone
 import { SelecaoLotesModalComponent } from './modals/selecao-lotes-modal/selecao-lotes-modal.component';
 import { RomaneioModalComponent } from './modals/romaneio-modal/romaneio-modal.component';
 import { ItinerarioModalComponent } from './modals/itinerario-modal/itinerario-modal.component';
+import { IncotermsSelectComponent } from '../../sap/components/form/select/incoterms/incoterms.select.component';
+import { EmOrdemDeCarregamentoSelectComponent } from '../../sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
 
 
 @NgModule({
@@ -29,7 +31,9 @@ import { ItinerarioModalComponent } from './modals/itinerario-modal/itinerario-m
     FormularioComponent,
     SelecaoLotesModalComponent,
     RomaneioModalComponent,
-    ItinerarioModalComponent
+    ItinerarioModalComponent,
+    IncotermsSelectComponent,
+    EmOrdemDeCarregamentoSelectComponent
   ],
   imports: [
     CommonModule,
