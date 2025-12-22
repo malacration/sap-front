@@ -26,7 +26,14 @@
           <div style="font-size: 10px; color: #999;">Página {{ i + 1 }} de {{ paginasParaImpressao.length }}</div>
         </div>
 
-        <div style="flex: 0 0 180px;"></div>
+        <div style="flex: 0 0 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <span style="font-size: 11px; font-weight: 900; color: #000; text-transform: uppercase; line-height: 1.1;">
+            VÁLIDA A PARTIR
+          </span>
+          <span style="font-size: 11px; font-weight: 900; color: red; line-height: 1; margin-top: 2px;">
+            {{ dataAtual | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
 
     </div>
 
