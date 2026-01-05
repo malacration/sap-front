@@ -3,129 +3,123 @@ import { Analise } from '../../models/analise';
 import { Produto } from '../../models/produto';
 import { PdfCarregamentoService } from '../../../../sap/service/pdf-carregamento.service';
 
-interface GrupoRender {
-  nomeGrupo: string;
-  produtos: Produto[];
-}
-
-interface PaginaRender {
-  grupos: GrupoRender[];
-}
+interface PrazoConfig { dias: string; multiplicador: number; }
 
 @Component({
   selector: 'app-calculadora-pdf',
   templateUrl: './calculadora-pdf.component.html',
+  styleUrls: ['./calculadora-pdf.component.scss']
 })
 export class CalculadoraPdfComponent implements OnChanges {
   @Input() analise: Analise;
 
-  public paginasParaImpressao: PaginaRender[] = [];
-  private readonly LINHAS_TOTAIS_POR_PAGINA = 23;
-  private readonly CUSTO_CABECALHO = 5;
+  public paginasParaImpressao: any[] = [];
+  public readonly dataAtual = new Date();
+  
+  private readonly CONFIG = {
+    LINHAS_POR_PAGINA: 23,
+    CUSTO_CABECALHO: 5
+  };
+
+  public readonly prazos: PrazoConfig[] = [
+    { dias: '30', multiplicador: 1.02 },
+    { dias: '60', multiplicador: 1.04 },
+    { dias: '75', multiplicador: 1.06 },
+    { dias: '90', multiplicador: 1.08 },
+    { dias: '120', multiplicador: 1.10 },
+    { dias: '150', multiplicador: 1.12 }
+  ];
 
   private readonly deParaLinhas: Record<string, string> = {
-    'especial': 'ESPECIAL',
-    'fora': 'FORA DE LINHA',
-    'mega': 'OX MEGA',
-    'power': 'OX POWER',
-    'premium': 'OX PREMIUM',
-    'farelado': 'FARELADA',
-    'terceiro': 'TERCEIROS'
+    especial: 'ESPECIAL', fora: 'FORA DE LINHA', mega: 'OX MEGA',
+    power: 'OX POWER', premium: 'OX PREMIUM', farelado: 'FARELADA', terceiro: 'TERCEIROS'
   };
 
-  private readonly deParaGrupos: Record<string, string> = {
-    'sal': 'SAL MINERAL',
-    'racao': 'RAÇÃO',
-    'quirela': 'QUIRERA',
-    'nucleo': 'NÚCLEOS E CONCENTRADOS',
-    'milho': 'MILHO',
-    'fora': 'FORA DE LINHA',
-    'farelo': 'FARELADA',
-    'ener-prot': 'ENERGÉTICO - PROTEICO',
-    'adensado': 'ADENSADO'
-  };
+  private readonly deParaGrupos: Record<string, string> = {'sal': 'SAL MINERAL','racao': 'RAÇÃO','quirela': 'QUIRERA', 'nucleo': 'NÚCLEOS E CONCENTRADOS', 'milho': 'MILHO','fora': 'FORA DE LINHA','farelo': 'FARELADA','ener-prot': 'ENERGÉTICO - PROTEICO','adensado': 'ADENSADO'};
 
   constructor(private pdfService: PdfCarregamentoService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['analise'] && this.analise) {
+    if (changes['analise']?.currentValue) {
       this.montarPaginas();
     }
   }
 
-  public async gerarPdf() {
-    const elements = document.querySelectorAll('.page-print-content') as NodeListOf<HTMLElement>;
-    if (elements.length > 0) {
-      await this.pdfService.gerarPdfMultiPagina(elements, `Tabela_Precos_${this.analise?.descricao || 'Geral'}`);
-    }
-  }
-
-  private montarPaginas() {
-    if (!this.analise?.produtos) return;
-
-    const gruposMap = new Map<string, Produto[]>();
-    this.analise.produtos.forEach(produto => {
-      const grupoKey = (produto as any).U_linha_sustennutri || 'OUTROS';
-      if (!gruposMap.has(grupoKey)) gruposMap.set(grupoKey, []);
-      gruposMap.get(grupoKey).push(produto);
-    });
-
-    const gruposOrdenados = Array.from(gruposMap, ([name, value]) => ({ nomeGrupo: name, produtos: value }))
-      .sort((a, b) => a.nomeGrupo.toLowerCase().includes('premium') ? -1 : 1);
-
-    this.paginasParaImpressao = [];
-    let paginaAtual: PaginaRender = { grupos: [] };
-    let espacoUsadoNaPagina = 0;
-
-    for (const grupoOriginal of gruposOrdenados) {
-      if (espacoUsadoNaPagina + this.CUSTO_CABECALHO + 1 > this.LINHAS_TOTAIS_POR_PAGINA) {
-        this.paginasParaImpressao.push(paginaAtual);
-        paginaAtual = { grupos: [] };
-        espacoUsadoNaPagina = 0;
-      }
-
-      espacoUsadoNaPagina += this.CUSTO_CABECALHO;
-      let grupoAtualNaPagina: GrupoRender = { nomeGrupo: grupoOriginal.nomeGrupo, produtos: [] };
-
-      for (const produto of grupoOriginal.produtos) {
-        if (espacoUsadoNaPagina >= this.LINHAS_TOTAIS_POR_PAGINA) {
-          if (grupoAtualNaPagina.produtos.length > 0) paginaAtual.grupos.push(grupoAtualNaPagina);
-          this.paginasParaImpressao.push(paginaAtual);
-          
-          paginaAtual = { grupos: [] };
-          espacoUsadoNaPagina = this.CUSTO_CABECALHO;
-          grupoAtualNaPagina = { nomeGrupo: grupoOriginal.nomeGrupo, produtos: [] };
-        }
-        grupoAtualNaPagina.produtos.push(produto);
-        espacoUsadoNaPagina++;
-      }
-      if (grupoAtualNaPagina.produtos.length > 0) paginaAtual.grupos.push(grupoAtualNaPagina);
-    }
-    if (paginaAtual.grupos.length > 0) this.paginasParaImpressao.push(paginaAtual);
-  }
-
-  getDescricaoLinha(codigo: string): string {
-    const chave = codigo?.toLowerCase().trim();
-    return this.deParaLinhas[chave] || codigo?.toUpperCase() || '';
-  }
-
-  getCorHeader(nomeGrupo: string): string {
-    const cores: Record<string, string> = {
-      'premium': '#F26522',
-      'mega': '#FFC20E',
-      'power': '#777777',
-      'suprema': '#28a745',
-      'especial': '#004085'
-    };
-    return cores[nomeGrupo?.toLowerCase().trim()] || '#004085';
-  }
-
-  getDescricaoGrupo(codigo: string): string {
+  public getDescricaoGrupo(codigo: string): string {
     const chave = codigo?.toLowerCase().trim();
     return this.deParaGrupos[chave] || codigo?.toUpperCase() || '';
   }
 
-  get dataAtual(): Date {
-    return new Date();
+
+  public async gerarPdf(): Promise<void> {
+    const elements = document.querySelectorAll('.page-print-content') as NodeListOf<HTMLElement>;
+    if (elements.length) {
+      const nomeArquivo = `Tabela_Precos_${this.analise?.descricao || 'Geral'}`;
+      await this.pdfService.gerarPdfMultiPagina(elements, nomeArquivo);
+    }
+  }
+
+  private montarPaginas(): void {
+    const produtos = this.analise?.produtos || [];
+    const gruposOrdenados = this.agruparEOrdenarProdutos(produtos);
+    
+    this.paginasParaImpressao = [];
+    let paginaAtual = { grupos: [] };
+    let espacoOcupado = 0;
+
+    for (const grupo of gruposOrdenados) {
+      if (espacoOcupado + this.CONFIG.CUSTO_CABECALHO > this.CONFIG.LINHAS_POR_PAGINA) {
+        this.finalizarPagina(paginaAtual);
+        paginaAtual = { grupos: [] };
+        espacoOcupado = 0;
+      }
+
+      espacoOcupado += this.CONFIG.CUSTO_CABECALHO;
+      let grupoNaPagina = { nomeGrupo: grupo.nomeGrupo, produtos: [] };
+
+      grupo.produtos.forEach(produto => {
+        if (espacoOcupado >= this.CONFIG.LINHAS_POR_PAGINA) {
+          paginaAtual.grupos.push(grupoNaPagina);
+          this.finalizarPagina(paginaAtual);
+          
+          paginaAtual = { grupos: [] };
+          grupoNaPagina = { nomeGrupo: grupo.nomeGrupo, produtos: [] };
+          espacoOcupado = this.CONFIG.CUSTO_CABECALHO;
+        }
+        grupoNaPagina.produtos.push(produto);
+        espacoOcupado++;
+      });
+
+      if (grupoNaPagina.produtos.length) paginaAtual.grupos.push(grupoNaPagina);
+    }
+    this.finalizarPagina(paginaAtual);
+  }
+
+  private agruparEOrdenarProdutos(produtos: Produto[]) {
+    const gruposMap = new Map<string, Produto[]>();
+    
+    produtos.forEach(p => {
+      const key = (p as any).U_linha_sustennutri || 'OUTROS';
+      if (!gruposMap.has(key)) gruposMap.set(key, []);
+      gruposMap.get(key).push(p);
+    });
+
+    return Array.from(gruposMap, ([nomeGrupo, produtos]) => ({ nomeGrupo, produtos }))
+      .sort((a, b) => a.nomeGrupo.toLowerCase().includes('premium') ? -1 : 1);
+  }
+
+  private finalizarPagina(pagina: any): void {
+    if (pagina.grupos.length) this.paginasParaImpressao.push(pagina);
+  }
+
+  public getCorHeader(nomeGrupo: string): string {
+    const cores: Record<string, string> = {
+      premium: '#F26522', mega: '#FFC20E', power: '#777777', suprema: '#28a745'
+    };
+    return cores[nomeGrupo?.toLowerCase().trim()] || '#004085';
+  }
+
+  public getDescricaoLinha(codigo: string): string {
+    return this.deParaLinhas[codigo?.toLowerCase().trim()] || codigo?.toUpperCase() || '';
   }
 }

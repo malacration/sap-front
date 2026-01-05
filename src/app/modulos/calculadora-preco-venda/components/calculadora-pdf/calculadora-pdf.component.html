@@ -1,43 +1,26 @@
 <div class="print-container-hidden">
-  <style>
-    @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap');
-    .print-container-hidden { position: absolute; left: -9999px; top: 0; }
-    .page-print-content {
-      width: 794px; min-height: 1122px; background: white; padding: 20px 30px;
-      font-family: 'Source Sans Pro', 'Helvetica', sans-serif;
-      box-sizing: border-box; page-break-after: always; display: block;
-    }
-    .pdf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-    .pdf-table { width: 100%; border-collapse: collapse; font-size: 10px; color: #000; }
-    .pdf-table th { border: 1px solid #9A9A9A; padding: 2px; background-color: #D8D8D8; color: #222; }
-    .pdf-table td { border: 1px solid #9A9A9A; padding: 5px 2px; }
-    .group-header { 
-      color: white; padding: 6px 0; font-weight: 900; font-size: 16px; 
-      text-align: center; text-transform: uppercase; border-radius: 4px 4px 0 0; 
-    }
-  </style>
-
   <div *ngFor="let pagina of paginasParaImpressao; let i = index" class="page-print-content">
     
-    <div class="pdf-header">
-      <div style="flex: 0 0 180px; text-align: left;">
-        <img src="logo.png" alt="Logo" style="max-height: 60px; object-fit: contain;">
+    <header class="pdf-header">
+      <div class="logo-container">
+        <img src="logo.png" alt="Logo">
       </div>
 
-      <div style="flex: 1; text-align: center;">
-        <h1 style="color: #333; font-weight: 800; margin: 0; font-size: 26px; font-style: italic; letter-spacing: -0.5px;">
-          Tabela de Preços
-        </h1>
-        <div style="font-size: 10px; color: #999;">Página {{ i + 1 }} de {{ paginasParaImpressao.length }}</div>
+      <div class="title-container">
+        <h1>Tabela de Preços</h1>
+        <div class="page-info">
+          Página {{ i + 1 }} de {{ paginasParaImpressao.length }}
+        </div>
       </div>
 
-      <div style="flex: 0 0 180px; display: flex; flex-direction: column; align-items: center;">
-        <span style="font-size: 11px; font-weight: 900; text-transform: uppercase;">VÁLIDA A PARTIR</span>
-        <span style="font-size: 11px; font-weight: 900; color: red;">{{ dataAtual | date:'dd/MM/yyyy' }}</span>
+      <div class="date-container">
+        <span>Válida a partir</span>
+        <span class="date-value">{{ dataAtual | date:'dd/MM/yyyy' }}</span>
       </div>
-    </div>
+    </header>
 
-    <div *ngFor="let grupo of pagina.grupos" style="margin-bottom: 25px;">
+    <div *ngFor="let grupo of pagina.grupos" class="group-section" style="margin-bottom: 25px;">
+      
       <div class="group-header" [style.background-color]="getCorHeader(grupo.nomeGrupo)">
         {{ getDescricaoLinha(grupo.nomeGrupo) }}
       </div>
@@ -47,33 +30,46 @@
           <tr>
             <th style="width: 65px;">CÓDIGO</th>
             <th style="text-align: left; padding-left: 5px;">PRODUTO</th>
-            <th style="width: 55px;">EMB.</th>
-            <th style="width: 75px;">GRUPO</th>
-            <th style="width: 60px;">À VISTA</th>
-            <th style="width: 60px;">30 dias</th>
-            <th style="width: 65px;">60 dias</th>
-            <th style="width: 65px;">75 dias</th>
-            <th style="width: 65px;">90 dias</th>
-            <th style="width: 60px;">120 dias</th>
-            <th style="width: 60px;">150 dias</th>
+            <th style="width: 50px;">EMB.</th>
+            <th style="width: 80px;">GRUPO</th>
+            <th style="width: 65px;">À VISTA</th>
+            <th *ngFor="let prazo of prazos" style="width: 62px;">
+              {{ prazo.dias }} dias
+            </th>
           </tr>
         </thead>
+        
         <tbody>
-          <tr *ngFor="let prod of grupo.produtos; let j = index" [style.background-color]="j % 2 !== 0 ? '#EEEEEE' : '#FFFFFF'">
-            <td style="text-align: center; font-weight: bold;">{{ prod.ItemCode }}</td>
-            <td style="text-align: left; padding-left: 5px;">{{ prod.Descricao }}</td>
-            <td style="text-align: center;">{{ prod.UnidadeMedida }}</td>
-            <td style="text-align: center; font-size: 9px; text-transform: uppercase;">{{ getDescricaoGrupo(prod.U_grupo_sustennutri) }}</td>
-            <td style="text-align: right; font-weight: bold; padding-right: 5px;">{{ prod.getPrecoSacoCurrency() | currency:'BRL' }}</td>
-            <td style="text-align: right; padding-right: 5px;">{{ (prod.getPrecoSacoCurrency() * 1.02) | currency:'BRL' }}</td>
-            <td style="text-align: right; padding-right: 5px;">{{ (prod.getPrecoSacoCurrency() * 1.04) | currency:'BRL' }}</td>
-            <td style="text-align: right; padding-right: 5px;">{{ (prod.getPrecoSacoCurrency() * 1.06) | currency:'BRL' }}</td>
-            <td style="text-align: right; padding-right: 5px;">{{ (prod.getPrecoSacoCurrency() * 1.08) | currency:'BRL' }}</td>
-            <td style="text-align: right; padding-right: 5px;">{{ (prod.getPrecoSacoCurrency() * 1.10) | currency:'BRL' }}</td>
-            <td style="text-align: right; padding-right: 5px;">{{ (prod.getPrecoSacoCurrency() * 1.12) | currency:'BRL' }}</td>
+          <tr *ngFor="let prod of grupo.produtos; let j = index" 
+              [class.zebra-row]="j % 2 !== 0">
+            
+            <td class="text-center bold">
+              {{ prod.ItemCode }}
+            </td>
+
+            <td style="text-align: left; padding-left: 5px;">
+              {{ prod.Descricao }}
+            </td>
+
+            <td class="text-center">
+              {{ prod.UnidadeMedida }}
+            </td>
+
+            <td class="col-grupo">
+              {{ getDescricaoGrupo(prod.U_grupo_sustennutri) }}
+            </td>
+
+            <td class="text-right bold">
+              {{ prod.getPrecoSacoCurrency() | currency:'BRL' }}
+            </td>
+
+            <td *ngFor="let prazo of prazos" class="text-right">
+              {{ (prod.getPrecoSacoCurrency() * prazo.multiplicador) | currency:'BRL' }}
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+
   </div>
 </div>
