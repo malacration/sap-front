@@ -76,7 +76,9 @@ export class VendaFuturaSingleComponent implements OnInit {
         }));
         
         this.entregas.forEach(item => {
-          let produto = this.selected?.AR_CF_LINHACollection?.find(it => it.U_itemCode == item.ItemCode.toString());
+          let produto = this.selected?.AR_CF_LINHACollection?.find(
+            it => it.U_itemCode == item.ItemCode.toString() && it.U_precoNegociado == item.U_preco_negociado
+          );
           if(produto)
             produto.entregue += item.formattedQuantityInvoice | 0
         });
