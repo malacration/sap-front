@@ -16,8 +16,8 @@ export class SelecaoProdutoComponent implements OnInit {
 
   loading = false
   segundos: number = 0;
-  start = "PAC0000115"
-  end   = "PAC0000120"
+  start = "PAC0000001"
+  end   = "PAC9999999"
   private intervalId: any;
 
 
