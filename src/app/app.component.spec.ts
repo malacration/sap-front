@@ -1,7 +1,7 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
-import { ElectronService } from './core/services';
+import { ElectronService } from './core/services/electron/electron.service';
 import { BrowserDynamicTestingModule } from '@angular/platform-browser-dynamic/testing';
 import { CoreModule } from './core/core.module';
 import { StoreModule } from '@ngrx/store';

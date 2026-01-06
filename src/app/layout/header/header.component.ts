@@ -5,7 +5,6 @@ import {Observable} from 'rxjs';
 import { AppState } from '../../store/state';
 import { ToggleControlSidebar, ToggleDarkMode, ToggleSidebarMenu } from '../../store/ui/actions';
 import { UiState } from '../../store/ui/state';
-import { config } from 'process';
 import { ConfigService } from '../../core/services/config.service';
 import { AuthService } from '../../shared/service/auth.service';
 
