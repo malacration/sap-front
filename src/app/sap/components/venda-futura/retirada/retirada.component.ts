@@ -48,10 +48,10 @@ export class RetiradaComponent implements OnInit {
 
   get filteredItems(): Array<Option> {
     // Filtra os itens que já foram retirados
-    const retiradosCodes = this.itensRetirados.map(it => it.itemCode);
+    const retiradosCodes = this.itensRetirados.map(it => it.itemCode+'-'+it.LineId);
     return this.vendaFutura?.AR_CF_LINHACollection?.filter(
-      item => !retiradosCodes.includes(item.U_itemCode)
-    )?.map(it => new Option(it,it.U_description+" - Qtd: "+it.U_quantity));
+      item => item.qtdDisponivel > 0 && !retiradosCodes.includes(item.U_itemCode+'-'+item.LineId)
+    )?.map(it => new Option(it,it.U_description+" - Qtd: "+it.qtdDisponivel));
   }
 
   selecionado($event){
@@ -74,7 +74,13 @@ export class RetiradaComponent implements OnInit {
 
   adiciona() {
     if (this.selectedItem && this.quantity && this.quantity <= this.selectedItem.U_quantity) {
-      this.itensRetirados.push(new ItemRetirada(this.selectedItem.U_itemCode,this.quantity,this.selectedItem.U_description));
+      this.itensRetirados.push(
+        new ItemRetirada(
+          this.selectedItem.U_itemCode,
+          this.quantity,this.selectedItem.U_description,
+          this.selectedItem.LineId)
+      );
+      console.log(this.itensRetirados)
       this.clearForm()
     }
   }

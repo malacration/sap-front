@@ -10,6 +10,8 @@ import { Observable, concat, finalize, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
+import { CalculadoraPdfComponent } from '../calculadora-pdf/calculadora-pdf.component';
+import { CalculadoraPreco } from '../../models/CalculadoraPreco';
 
 @Component({
   selector: 'formacao-preco',
@@ -28,8 +30,11 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   @ViewChild('custoMercadoria', {static: true}) custoModal: ModalComponent;
   @ViewChild('modalAdicionarItem', {static: true}) adicionarItemModal: ModalComponent;
   @ViewChild('modalAtualizaCustos', {static: true}) modalAtualizaCustos: ModalComponent;
+  @ViewChild('calculadoraPdf') calculadoraPdf: CalculadoraPdfComponent;
 
   @ViewChild('table', {static: true}) table: TableComponent;
+
+  @ViewChild('modalPrazosPagamento', {static: true}) modalPrazos: ModalComponent;
 
   @Input()
   analise : Analise
@@ -46,6 +51,15 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     let fatorSubProduto = 40
   }
+
+imprimirPdf() {
+  if (this.calculadoraPdf) {
+    this.calculadoraPdf.gerarPdf();
+  } else {
+    console.error('Componente de PDF não foi carregado na tela.');
+    this.alertService.error("Erro ao gerar PDF: Componente não inicializado.");
+  }
+}
 
   ngOnChanges(changes: SimpleChanges): void {
     if(this.analise)
@@ -210,11 +224,19 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
 
   salvar($event){
     this.analise.produtos.forEach(it => {
-      this.removeKeys(it)
-      it.Ingredientes.forEach(it => this.removeKeys(it))
+        this.removeKeys(it)
+        it.Ingredientes.forEach(it => this.removeKeys(it))
     })
     localStorage.setItem("calculadora-"+this.analise.descricao,JSON.stringify(this.analise.produtos))
-  }
+    this.alertService.info("Salvo com sucesso")
+    // this.service.save(new CalculadoraPreco(
+    //     this.analise.descricao,
+    //     JSON.stringify(this.analise.produtos
+    //     )
+    // )).subscribe(it => 
+    //     console.log(it)
+    // )
+}
 
   //TODO isso seria de um tableservice talvez
   removeKeys(obj){

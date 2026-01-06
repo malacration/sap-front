@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Analise } from '../../models/analise';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -25,6 +25,7 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
   constructor(
     private service : CalculadoraService,
     private parameterService : ParameterService,
+    private cdRef: ChangeDetectorRef,
     private route: ActivatedRoute){
   }
 
@@ -94,6 +95,7 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
 
   custoMercadoriaVoltar(){
     this.parameterService.removeParam(this.route, "id")
+    this.cdRef.detectChanges()
   }
 
   selecaoProdutos($event){
@@ -106,6 +108,7 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
 
   fecharAnalise() {
     this.analiseSelected = null;
+    this.ngOnInit()
   }
 
 }

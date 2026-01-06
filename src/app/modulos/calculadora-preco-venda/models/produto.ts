@@ -32,8 +32,11 @@ interface ProdutoMetrics {
 export class Produto {
   Descricao: string;
   UnidadeMedida: string;
-  ItemCode: string;
+  ItemCode: string; 
   DefaultWareHouse: string;
+  U_linha_sustennutri: string;
+  U_grupo_sustennutri: string;
+  Grupo: string;
 
   private _KgsPorUnidade = 0;
   get KgsPorUnidade(): number {

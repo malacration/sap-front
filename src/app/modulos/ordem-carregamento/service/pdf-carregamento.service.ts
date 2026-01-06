@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import jsPDF from 'jspdf/dist/jspdf.umd';
+import jsPDF from 'jspdf'; 
 import html2canvas from 'html2canvas';
 
 @Injectable({
@@ -17,40 +17,48 @@ export class PdfCarregamentoService {
 
     newWindow.document.write(`
       <html>
-        <head><title>A Gerar PDF...</title></head>
+        <head><title>Gerando PDF...</title></head>
         <body style="font-family: sans-serif; text-align: center; padding-top: 50px; color: #333;">
-          <h2>Aguarde, a processar o seu documento...</h2>
-          <p>Este processo pode demorar alguns segundos.</p>
+          <h2>Aguarde, processando documento em Alta Definição...</h2>
+          <p>Este processo pode demorar alguns segundos devido à qualidade da imagem.</p>
           <p style="font-size: 2rem;">&#8987;</p>
         </body>
       </html>
     `);
 
     try {
-      const a4Width = 794;
+      const a4Width = 794; 
       const a4Height = 1122;
-      const margin = 40;
+      const margin = 30; 
 
       const pdf = new jsPDF('p', 'px', [a4Width, a4Height]);
+      
       const options = {
-        scale: 2,
+        scale: 4, 
         useCORS: true,
         backgroundColor: '#ffffff',
+        logging: false, 
+        windowWidth: a4Width 
       };
 
       for (let i = 0; i < elements.length; i++) {
         const pageElement = elements[i];
+        
+        pageElement.style.backgroundColor = '#ffffff';
+
         const canvas = await html2canvas(pageElement, options);
 
         if (i > 0) {
           pdf.addPage();
         }
 
-        const imgData = canvas.toDataURL('image/png', 0.9);
-        const imgWidth = a4Width - 2 * margin;
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        
+        const imgWidth = a4Width - (2 * margin); 
+        const pageHeight = a4Height - (2 * margin);
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
         
-        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
       }
 
       const pdfBlob = pdf.output('blob');
@@ -62,7 +70,6 @@ export class PdfCarregamentoService {
       newWindow.document.body.innerHTML = `
         <div style="color: red; border: 2px solid red; padding: 20px;">
           <h2>Ocorreu um erro ao gerar o PDF.</h2>
-          <p>Por favor, feche esta janela e tente novamente. Detalhes do erro:</p>
           <pre>${(error as Error).message}</pre>
         </div>
       `;
