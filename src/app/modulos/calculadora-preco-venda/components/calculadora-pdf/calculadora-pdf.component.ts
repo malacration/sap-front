@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Analise } from '../../models/analise';
 import { Produto } from '../../models/produto';
-import { PdfCarregamentoService } from '../../../../sap/service/pdf-carregamento.service';
+import { PdfCarregamentoService } from '../../../ordem-carregamento/service/pdf-carregamento.service';
 
 interface PrazoConfig { dias: string; multiplicador: number; }
 
