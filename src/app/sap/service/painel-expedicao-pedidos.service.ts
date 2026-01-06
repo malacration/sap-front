@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import Big from 'big.js';
 import { Page } from '../model/page.model';
-
 import { ConfigService } from '../../core/services/config.service';
 import { Localidade } from '../model/localidade/localidade';
 import { PainelExpedicaoPedidos } from '../model/painel-expedicao-pedidos.model';
@@ -12,9 +12,9 @@ export class PainelExpedicaoPedidosService {
   private baseUrl = 'http://localhost:8080/painel';
   DistribSum: any;
 
-    constructor(private config : ConfigService, private http : HttpClient) {
+  constructor(private config : ConfigService, private http : HttpClient) {
       this.baseUrl = config.getHost()+"/painel"
-    }
+  }
 
   getByFilters(
     dataInicial: string,

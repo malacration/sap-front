@@ -4,6 +4,7 @@ import { Observable, map, of } from "rxjs"
 import { Produto } from "../models/produto"
 import { ConfigService } from "../../../core/services/config.service"
 import { LastPrice } from "../models/last-price"
+import { CalculadoraPreco } from "../models/CalculadoraPreco"
 
 
 @Injectable({
@@ -15,6 +16,11 @@ import { LastPrice } from "../models/last-price"
     
     constructor(private config : ConfigService, private hppCliente : HttpClient) {
       this.url = config.getHost()+"/calculadora-preco"
+    }
+
+    save(body : CalculadoraPreco) : Observable<CalculadoraPreco>{
+      return this.hppCliente.post<CalculadoraPreco>(`${this.url}`, body);
+
     }
   
     range(start : string, end : string): Observable<Array<Produto>> {

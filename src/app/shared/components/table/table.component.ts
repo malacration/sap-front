@@ -4,7 +4,7 @@ import { Column } from './column.model';
 import { RouteLink } from '../../../sap/model/route-link';
 import { formatCurrency } from '@angular/common';
 import { FormControl } from '@angular/forms';
-import { AlertService } from '../../../sap/service/alert.service';
+import { AlertService } from '../../service/alert.service';
 
 
 @Component({
@@ -111,11 +111,17 @@ export class TableComponent implements OnInit {
   
   formControlFactory(item : any, definition : Column) : FormControl{
     let key = "formControlFactory"+definition.property
+    const currentValue = this.getValue(item, definition);
     if(item[key] == null || item[key] == undefined) {
-      item[key] = new FormControl(this.getValue(item,definition))
+      item[key] = new FormControl(currentValue)
       item[key].valueChanges.subscribe(value => {
         this.processInputChange(item,definition,value);
       });
+    } else {
+      const fc = item[key] as FormControl;
+      if (fc.value !== currentValue) {
+        fc.setValue(currentValue, { emitEvent: false });
+      }
     }
     return item[key]
   }

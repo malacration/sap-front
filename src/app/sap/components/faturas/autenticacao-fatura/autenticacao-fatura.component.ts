@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RadioItem } from '../../form/radio/radio.model';
-import { AlertService } from '../../../service/alert.service';
+import { AlertService } from '../../../../shared/service/alert.service';
 import { CowntDown } from '../../../../core/cowntdown.module';
 import { OneTimePasswordService } from '../../../service/one-time-password.service';
 

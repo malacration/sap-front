@@ -12,7 +12,6 @@ import { ActionComponent } from './components/action/action.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { SafeHtmlDirective } from './directives/safe-html/safe-html.directive';
-import { SelectComponent } from '../sap/components/form/select/select.component';
 import { ParameterService } from './service/parameter.service';
 import { AuthService } from './service/auth.service';
 import { PercentageDirective } from './directives/percentage.directive';
@@ -25,11 +24,16 @@ import { NormalTextDirective } from './directives/normalText.directive';
 import { TabsComponent } from './components/tabs/tabs.component';
 import { TabComponent } from './components/tabs/tab/tab.component';
 import { ModalSelectComponent } from './components/modal/select/modal.select.component';
+import { AlertService } from './service/alert.service';
+import { SelectComponent } from './components/select/select.component';
+import { SearchComponent } from './components/search/search.component';
+import { CardComponent } from './components/card/card.component';
 
 @NgModule({
   providers: [
     ParameterService,
     AuthService,
+    AlertService
   ],
   declarations: [
     PageNotFoundComponent,
@@ -47,6 +51,8 @@ import { ModalSelectComponent } from './components/modal/select/modal.select.com
     TabsComponent,
     TabComponent,
     ModalComponent,
+    SearchComponent,
+    CardComponent,
     ChangePassowrd
   ],
   imports: [
@@ -76,7 +82,9 @@ import { ModalSelectComponent } from './components/modal/select/modal.select.com
     ProgressBarComponent,
     TabsComponent,
     TabComponent,
-    ChangePassowrd
+    ChangePassowrd,
+    SearchComponent,
+    CardComponent
   ]
 })
 export class SharedModule {}

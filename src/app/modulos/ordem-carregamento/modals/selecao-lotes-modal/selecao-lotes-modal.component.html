@@ -1,0 +1,52 @@
+<app-modal [show]="show" (showChange)="close()" [title]="'Selecione os Lotes'">
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-4">
+        <h5>Pedidos Disponíveis</h5>
+        <div class="list-group" style="max-height: 400px; overflow-y: auto;">
+          <a *ngFor="let pedido of pedidos"
+             href="javascript:void(0)"
+             class="list-group-item list-group-item-action"
+             [class.active]="currentPedido?.ItemCode == pedido.ItemCode"
+             (click)="selecionarPedido(pedido)">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ pedido.ItemCode }}</h6>
+              <small>Qtd: {{ pedido.Quantity }}</small>
+            </div>
+            <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="text-success mt-1">
+              <small>{{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)</small>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div *ngIf="currentPedido; else noSelection">
+          <h5>Lotes para {{ currentPedido.ItemCode }}</h5>
+          <selecao-lote
+            [itemCode]="currentPedido?.ItemCode"
+            [codDeposito]="currentPedido?.DflWhs"
+            [quantidade]="currentPedido?.Quantity"
+            (lotesSelecionados)="onLotesSelecionados($event)">
+          </selecao-lote>
+        </div>
+        <ng-template #noSelection>
+          <div class="text-center text-muted p-4">
+            <i class="fas fa-box-open fa-3x mb-3"></i>
+            <p>Selecione um pedido.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
+    <button type="button" class="btn btn-success" 
+            (click)="confirmar()" 
+            [disabled]="loading || lotesSelecionadosPorItem.size === 0">
+      <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></span>
+      <span *ngIf="!loading"><i class="fas fa-file-invoice"></i> Confirmar Nota</span>
+    </button>
+  </div>
+</app-modal>

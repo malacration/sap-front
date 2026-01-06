@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
 import { ReprocessamentoComponent } from './componentes/reprocessamento/repreocessamento.component';
-import { SapSharedModule } from '../sap-shared/sap-shared.module';
 import { ReprocessamentoService } from './_services/reprocessamento.service';
+import { SapSharedModule } from '../sap-shared/sap-shared.module';
 
 
 @NgModule({
@@ -15,7 +15,6 @@ import { ReprocessamentoService } from './_services/reprocessamento.service';
   ],
   providers: [
     ReprocessamentoService
-    
   ]
 })
 export class ProducaoModule {

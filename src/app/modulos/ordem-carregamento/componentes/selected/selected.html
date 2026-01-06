@@ -1,0 +1,181 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Detalhes da Ordem de Carregamento</b></h3>
+      <div class="card-tools float-right">
+
+        <button
+          (click)="cancelarOrdem()"
+          type="button"
+          class="btn btn-danger mr-2"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+          Cancelar
+        </button>
+        
+        <button
+          (click)="iniciarGeracaoNota()"
+          type="button"
+          class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
+          [title]="selected?.U_Status == 'Fechado' ? 'Esta ordem já foi fechada' : ''">
+          <span *ngIf="!loading">Gerar Nota Fiscal Saída</span>
+          <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
+        </button>
+
+        <button
+          (click)="editarOrdem()"
+          type="button"
+          class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+          Editar
+        </button>
+
+        <button
+          (click)="abrirModalItinerario()"
+          type="button"
+          class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Cancelado'">
+          Itinerário
+        </button>
+
+        <button
+          (click)="abrirModalRomaneio()"
+          type="button"
+          class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Cancelado'">
+          Romaneio
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div *ngIf="selected?.U_Status == 'Fechado'" class="alert alert-warning alert-dismissible">
+        <h5><i class="icon fas fa-exclamation-triangle"></i> Ordem Fechada</h5>
+        Esta ordem de carregamento já foi fechada e não pode mais ser editada.
+      </div>
+
+      <dl class="row">
+        <dt class="col-sm-3">Número da Ordem:</dt>
+        <dd class="col-sm-9">{{ selected?.DocEntry }}</dd>
+        <dt class="col-sm-3">Descrição da Ordem:</dt>
+        <dd class="col-sm-9">{{ selected?.U_nameOrdem }}</dd>
+        <dt class="col-sm-3">Status:</dt>
+        <dd class="col-sm-9">
+          <span [ngClass]="{
+            'badge badge-success': selected?.U_Status == 'Fechado',
+            'badge badge-danger': selected?.U_Status == 'Cancelado',
+            'badge badge-primary': selected?.U_Status == 'Aberto',
+            'badge badge-warning': selected?.U_Status == 'Falhou'
+          }">
+            {{ selected?.U_Status }}
+          </span>
+        </dd>
+        <dt class="col-sm-3">Data de Criação:</dt>
+        <dd class="col-sm-9">{{ selected?.dataCriacao }}</dd>
+
+        <dd class="col-sm-12 mt-3">
+          <app-tabs>
+            <app-tab tabTitle="Produtos" [active]="true">
+              <div *ngIf="!selected.pedidosVendaCarregados" class="text-center p-4">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Carregando produtos...</p>
+              </div>
+              <app-table
+                *ngIf="selected.pedidosVendaCarregados"
+                [content]="selected.pedidosVenda"
+                [definition]="definition">
+              </app-table>
+              <div class="text-center mt-3" *ngIf="false"> <button class="btn btn-primary">Carregar Mais</button>
+              </div>
+            </app-tab>
+
+            <app-tab tabTitle="Logística">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Placa do Veículo</label>
+                    <input type="text" class="form-control"
+                      [ngClass]="{'is-valid': placa, 'is-invalid': formTouched && !placa}"
+                      [(ngModel)]="placa" placeholder="Ex: ABC-1234"
+                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
+                    <div class="invalid-feedback">A placa do veículo é obrigatória.</div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Nome do Motorista</label>
+                    <input type="text" class="form-control"
+                      [ngClass]="{'is-valid': nomeMotorista, 'is-invalid': formTouched && !nomeMotorista}"
+                      [(ngModel)]="nomeMotorista" placeholder="Ex: João Silva"
+                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
+                    <div class="invalid-feedback">O nome do motorista é obrigatório.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Transportadora</label>
+                    <app-transportadora-search (selected)="selectBp($event)"></app-transportadora-search>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Peso do Caminhão (kg)</label>
+                    <input type="number" class="form-control" [(ngModel)]="pesoCaminhao" placeholder="0.00"
+                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
+                  </div>
+                </div>
+                <div class="col-12 text-right">
+                  <button class="btn btn-primary" (click)="salvarLogistica()"
+                    [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+                    <i class="fas fa-save"></i> Salvar Logística
+                  </button>
+                </div>
+              </div>
+            </app-tab>
+
+            <app-tab tabTitle="Notas Emitidas">
+              <app-table [definition]="notasEmitida" [content]="flattened"></app-table>
+              <ng-container *ngIf="!loading && notas?.length === 0">
+                <p class="text-center">Nenhuma nota encontrada.</p>
+              </ng-container>
+            </app-tab>
+          </app-tabs>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="card-footer">
+      <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
+    </div>
+
+    <div *ngIf="loading" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+  </div>
+
+  <app-itinerario-modal
+    [(show)]="showItinerarioModal"
+    [pedidos]="selected.pedidosVenda"
+    [ordemCarregamento]="selected"
+    [businessPartner]="businessPartner"
+    [localidadesMap]="localidadesMap">
+  </app-itinerario-modal>
+
+  <app-selecao-lotes-modal
+    [(show)]="showLoteModal"
+    [pedidos]="selected.pedidosVenda"
+    [loading]="loading"
+    (confirm)="onLotesConfirmados($event)">
+  </app-selecao-lotes-modal>
+
+  <app-romaneio-modal
+    [(show)]="showRomaneioModal"
+    [pedidos]="selected.pedidosVenda"
+    [ordem]="selected"
+    [placa]="placa"
+    [motorista]="nomeMotorista">
+  </app-romaneio-modal>
+
+</section>

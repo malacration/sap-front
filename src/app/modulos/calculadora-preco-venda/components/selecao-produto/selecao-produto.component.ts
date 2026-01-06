@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Produto } from '../../models/produto';
 import { CalculadoraService } from '../../service/calculadora.service';
-import { AlertService } from '../../../../sap/service/alert.service';
+import { AlertService } from '../../../../shared/service/alert.service';
 
 @Component({
   selector: 'selecao-produto-calc',

@@ -28,11 +28,22 @@ export class CurrencyDirective implements ControlValueAccessor {
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
   parseToFloat(rawValue : string){
-    return parseFloat(rawValue.replace(',', '.').replace("R$",""));
+    if (rawValue == null) {
+      return NaN;
+    }
+    let normalized = String(rawValue).replace(/\s+/g, '').replace(/R\$/gi, '');
+    const hasComma = normalized.includes(',');
+    const hasDot = normalized.includes('.');
+    if (hasComma && hasDot) {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else {
+      normalized = normalized.replace(',', '.');
+    }
+    return parseFloat(normalized);
   }
 
   @HostListener('input', ['$event'])
-  onKeyUp(event: KeyboardEvent): void {
+  onKeyUp(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     const rawValue = inputEl.value;
     const numericValue = this.parseToFloat(rawValue)
@@ -60,11 +71,22 @@ export class CurrencyDirective implements ControlValueAccessor {
   }
 
   writeValue(value: any): void {
-    if(value != undefined) {
-      this.renderer.setProperty(this.el.nativeElement, 'value', value);
-    }else{
-      this.renderer.setProperty(this.el.nativeElement, 'value',0.0);
+    if (value === null || value === undefined) {
+      this.renderer.setProperty(this.el.nativeElement, 'value', 0.0);
+      return;
     }
+
+    if (typeof value === 'number' && !isNaN(value)) {
+      const rangeDecimal = "1.2-" + Math.max(value.toString().length, 2);
+      this.renderer.setProperty(
+        this.el.nativeElement,
+        'value',
+        formatCurrency(value, 'pt', 'R$', undefined, rangeDecimal)
+      );
+      return;
+    }
+
+    this.renderer.setProperty(this.el.nativeElement, 'value', value);
   }
 
   // Metodos do ControlValueAccessor

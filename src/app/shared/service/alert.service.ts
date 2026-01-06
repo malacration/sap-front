@@ -1,0 +1,110 @@
+import { Injectable } from '@angular/core';
+import { Observable, lastValueFrom } from 'rxjs';
+import Swal, { SweetAlertInput, SweetAlertOptions, SweetAlertResult } from 'sweetalert2';
+
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AlertService {
+    
+    warning(): Promise<any> {
+        return Swal.fire({
+            title: 'Error!',
+            text: 'Do you want to continue',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          })
+    }
+
+    confirm(text : string = "Tem certeza que deseja continuar?"): Promise<SweetAlertResult> {
+        return Swal.fire({
+            title: 'Atenção',
+            text: text,
+            icon: 'question',
+            confirmButtonText: 'Ok',
+            showCancelButton : true,
+          })
+    }
+
+    confirmWithInput(
+        text: string = 'Tem certeza? Informe um motivo:',
+        input: SweetAlertInput = 'text',
+        opts: Partial<SweetAlertOptions> = {}
+      ): Promise<SweetAlertResult<string>> {
+        const {
+          inputLabel,
+          inputPlaceholder,
+          inputValue,
+          inputAttributes,
+          ...rest
+        } = opts ?? {};
+
+        const mergedInputAttributes = {
+          'aria-label': 'Campo de motivo',
+          ...(inputAttributes ?? {})
+        };
+
+        return Swal.fire({
+          title: 'Atenção',
+          text,
+          icon: 'question',
+          input,                        // 'text' | 'textarea' | 'email' | 'number' | 'select' | 'radio' | 'password'
+          inputLabel,
+          inputPlaceholder: inputPlaceholder ?? 'Digite aqui...',
+          inputValue: inputValue ?? '',
+          inputAttributes: mergedInputAttributes,
+          showCancelButton: true,
+          confirmButtonText: 'Confirmar',
+          cancelButtonText: 'Cancelar',
+          reverseButtons: true,
+          // Validação simples (obrigatório)
+          preConfirm: (value) => {
+            if (!value || String(value).trim() === '') {
+              Swal.showValidationMessage('Este campo é obrigatório');
+              return false as any;
+            }
+            return value as any; // value vai para result.value
+          },
+          ...rest,
+        });
+      }
+      
+
+    loading<T>(task: Promise<T> | Observable<T>) : Promise<T>{
+        const swalInstance = Swal.fire({
+            title: 'Carregando...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading(null);
+            }
+        });
+
+        const taskPromise = task instanceof Promise ? task : lastValueFrom(task);
+
+        return taskPromise.finally(() => {
+            if (Swal.isVisible() && Swal.getTitle()?.textContent == 'Carregando...') {
+                Swal.close();
+            }
+        });
+    }
+
+    error(text : string, titulo : string = 'Erro!') : Promise<any> {
+        return Swal.fire({
+            title: 'Erro!',
+            text: text,
+            icon: 'error',
+            confirmButtonText: 'Ok'
+        })
+    }
+
+    info(msg : string = 'Do you want to continue') : Promise<any>{
+        return Swal.fire({
+            title: 'Info!',
+            text: msg,
+            icon: 'info',
+            confirmButtonText: 'Ok'
+        })
+    }
+}

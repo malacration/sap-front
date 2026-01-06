@@ -1,0 +1,24 @@
+<app-modal [show]="show" (showChange)="close()" [title]="'Romaneio de Carregamento'">
+  <div class="modal-body">
+    <div class="alert alert-info">Visualização do romaneio.</div>
+    <div class="row">
+      <div class="col-md-6"><strong>Ordem:</strong> {{ ordem?.DocEntry }}</div>
+      <div class="col-md-6"><strong>Placa:</strong> {{ placa }}</div>
+      <div class="col-md-6"><strong>Motorista:</strong> {{ motorista }}</div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button (click)="gerarPDF()" class="btn btn-success" [disabled]="!placa || !motorista">
+       <i class="fas fa-file-pdf"></i> Gerar PDF
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="close()">Fechar</button>
+    
+    <app-romaneio-pdf
+      [pedidos]="pedidos"
+      [ordemCarregamento]="ordem"
+      [placa]="placa"
+      [nomeMotorista]="motorista"
+      #romaneioPdf>
+    </app-romaneio-pdf>
+  </div>
+</app-modal>

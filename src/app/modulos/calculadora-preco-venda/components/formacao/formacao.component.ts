@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -8,9 +8,10 @@ import { ItemService } from '../../../../sap/service/item.service';
 import { LastPrice } from '../../models/last-price';
 import { Observable, concat, finalize, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
-import { AlertService } from '../../../../sap/service/alert.service';
+import { AlertService } from '../../../../shared/service/alert.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
 import { CalculadoraPdfComponent } from '../calculadora-pdf/calculadora-pdf.component';
+import { CalculadoraPreco } from '../../models/CalculadoraPreco';
 
 @Component({
   selector: 'formacao-preco',
@@ -35,6 +36,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
 
   @Input()
   analise : Analise
+  @Output() close = new EventEmitter<void>();
 
   page = 0
   pageSize = 10
@@ -168,6 +170,9 @@ imprimirPdf() {
     else if(this.tipoCustosAcabado == 'precoCompra'){
       return lastPrice?.LastPurPrc ?? 0;
     }
+    else if(this.tipoCustosAcabado == 'precoCustoProducao'){
+      return lastPrice?.U_productionCost ?? 0;
+    }
     return lastPrice?.AvgPrice ?? 0;
   }
 
@@ -221,6 +226,13 @@ imprimirPdf() {
       it.Ingredientes.forEach(it => this.removeKeys(it))
     })
     localStorage.setItem("calculadora-"+this.analise.descricao,JSON.stringify(this.analise.produtos))
+    this.service.save(new CalculadoraPreco(
+        this.analise.descricao,
+        JSON.stringify(this.analise.produtos
+        )
+    )).subscribe(it => 
+      console.log(it)
+    )
   }
 
   //TODO isso seria de um tableservice talvez
@@ -316,6 +328,10 @@ imprimirPdf() {
       const index = this.analise.produtos.findIndex(obj => obj.ItemCode == action.data.ItemCode)
       this.analise.produtos.splice(index, 1);
     }
+  }
+
+  voltar(): void {
+    this.close.emit();
   }
 
 }

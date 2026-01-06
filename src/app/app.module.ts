@@ -32,7 +32,7 @@ import { TransferenciaClientesComponent } from './sap/components/transferencia-c
 
 
 import { NgxPaginationModule } from 'ngx-pagination';
-import { AlertService } from './sap/service/alert.service';
+import { AlertService } from './shared/service/alert.service';
 import { ErrorInterceptor } from './interceptors/error.interceptor';
 import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
@@ -43,7 +43,6 @@ import { ReferenciaComponent } from './sap/components/cadastro/referencia-comerc
 import { StateService } from './sap/service/addresses/state.service';
 import { CitySelectComponent } from './sap/components/form/select/city/city-select.component';
 import { CityService } from './sap/service/addresses/city.service';
-import { BusinessPartnerService } from './sap/service/business-partners.service';
 import { FileUploadComponent } from './shared/components/file-upload/file-upload.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { FaturaSelecionadaComponent } from './sap/components/faturas/fatura-selecionada/fatura-selecionada.component';
@@ -62,16 +61,13 @@ import { DatasComponent } from './sap/components/filters/datas/datas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { ItensComponent } from './sap/components/document/itens/itens.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { BusinesPartnerSearchComponent } from './sap/components/search/busines-partner-search/busines-partner-search.component';
 import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
 import { ItemService } from './sap/service/item.service';
-import { BranchSelectComponent } from './sap/components/form/branch/branch-select.component';
 import { BranchService } from './sap/service/branch.service';
 import { StateSelectComponent } from './sap/components/form/select/state/state-select.component';
 import { FormaPagamentoSelectComponent } from './sap/components/form/select/forma-pagamento/forma-pagamento-select.component';
 import { CondicaoPagamentoSelectComponent } from './sap/components/form/select/condicao-pagamento/condicao-pagamento-select.component';
 import { CondicaoPagamentoService } from './sap/service/condicao-pagamento.service';
-import { SalesPersonSearchComponent } from './sap/components/search/sales-person-search/sales-person-search.component';
 import { CurrencyInputComponent } from './shared/components/currency/currency-input.component';
 import { LoginComponent } from './shared/components/login/login.component';
 import { ListComponent } from './sap/components/marketing-document/core/list/list.component';
@@ -91,7 +87,6 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
-import { OrderSalesService } from './sap/service/document/order-sales.service';
 import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
@@ -102,17 +97,8 @@ import { LoadingBarModule } from '@ngx-loading-bar/core';
 import { LoadingBarRouterModule } from '@ngx-loading-bar/router';
 import { LoadingBarHttpClientModule } from '@ngx-loading-bar/http-client';
 import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
-import { OrdemCarregamentoComponent } from './sap/components/ordem-carregamento/ordem-carregamento.component';
-import { LocalidadeSearchComponent } from './sap/components/search/localidade-search/localidade-search.component';
-import { DualListBoxComponent } from './sap/components/dual-list-box/dual-list-box.component';
-import { OrdemCarregamentoStatementComponent } from './sap/components/detalhes-ordem-carregamento/ordem-carregamento-statement.component';
-import { OrdemCarregamentoSingleComponent } from './sap/components/detalhes-ordem-carregamento/single/single.component';
-import { ItinerarioPdfComponent } from './sap/components/detalhes-ordem-carregamento/itinerario-pdf.component/itinerario-pdf.component';
-import { RomaneioPdfComponent } from './sap/components/detalhes-ordem-carregamento/romaneio-pdf/romaneio-pdf.component';
-import { TransportadoraSearchComponent } from './sap/components/search/transportadora-search/transportadora-search.component';
 import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
-import { PdfCarregamentoService } from './sap/service/pdf-carregamento.service';
-import { PainelExpedicaoPedidosComponent } from './sap/components/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
+import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carregamento.module';
 import { IncotermsSelectComponent } from './sap/components/form/select/incoterms/incoterms.select.component';
 import { EmOrdemDeCarregamentoSelectComponent } from './sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
 
@@ -155,14 +141,11 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DatasComponent,
     DocumentStatementComponent,
     ItensComponent,
-    BusinesPartnerSearchComponent,
     ItemSearchComponent,
-    BranchSelectComponent,
     FormaPagamentoSelectComponent,
     CondicaoPagamentoSelectComponent,
     CurrencyInputComponent,
     LoginComponent,
-    SalesPersonSearchComponent,
     CurrencyInputComponent,
     ListComponent,
     CotacoesStatementComponent,
@@ -180,15 +163,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     PedidosVendaStatementComponent,
     DescontoComponent,
     TrocaComponent,
-    OrdemCarregamentoComponent,
-    LocalidadeSearchComponent,
-    DualListBoxComponent,
-    OrdemCarregamentoStatementComponent,
-    OrdemCarregamentoSingleComponent,
-    ItinerarioPdfComponent,
-    RomaneioPdfComponent,
-    TransportadoraSearchComponent,
-    PainelExpedicaoPedidosComponent,
     IncotermsSelectComponent,
     EmOrdemDeCarregamentoSelectComponent
   ],
@@ -201,11 +175,12 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FormsModule,
     CoreModule,
     SharedModule,
-    ReactiveFormsModule,
     SapSharedModule,
+    OrdemCarregamentoModule,
+    ReactiveFormsModule,
     LoadingBarModule,
-    LoadingBarRouterModule,      // barra em navegação de rotas
-    LoadingBarHttpClientModule,  // barra em requisições HttpClient
+    LoadingBarRouterModule,
+    LoadingBarHttpClientModule,
     AppRoutingModule,
     ToastrModule.forRoot({
       timeOut: 3000,
@@ -231,20 +206,17 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     AlertService,
     FaturasService,
     CityService,
-    BusinessPartnerService,
     OneTimePasswordService,
     DownPaymentService,
     BsModalService,
     ItemService,
     BranchService,
     QuotationService,
-    OrderSalesService,
     CondicaoPagamentoService,
     CotacaoService,
     PedidosVendaService,
     CurrencyPipe,
     InvoiceGenerationService,
-    PdfCarregamentoService,
     FutureDeliverySalesService,
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

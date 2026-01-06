@@ -25,7 +25,7 @@
 
 <selecao-produto-calc *ngIf="isSelectProduto()" (selecaoProdutos)="selecaoProdutos($event)"></selecao-produto-calc>
 
-<formacao-preco *ngIf="isFormacaoPreco()" [analise]="analiseSelected"></formacao-preco>
+<formacao-preco *ngIf="isFormacaoPreco()" [analise]="analiseSelected" (close)="fecharAnalise()"></formacao-preco>
 
 <custo-mercadoria *ngIf="isCustoMercadoria()" 
     (voltarEvnt)="custoMercadoriaVoltar()" 
