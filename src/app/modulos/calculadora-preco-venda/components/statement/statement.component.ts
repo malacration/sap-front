@@ -108,6 +108,7 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
 
   fecharAnalise() {
     this.analiseSelected = null;
+    this.ngOnInit()
   }
 
 }

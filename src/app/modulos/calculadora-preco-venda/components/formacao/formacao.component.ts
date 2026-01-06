@@ -222,18 +222,19 @@ imprimirPdf() {
 
   salvar($event){
     this.analise.produtos.forEach(it => {
-      this.removeKeys(it)
-      it.Ingredientes.forEach(it => this.removeKeys(it))
+        this.removeKeys(it)
+        it.Ingredientes.forEach(it => this.removeKeys(it))
     })
     localStorage.setItem("calculadora-"+this.analise.descricao,JSON.stringify(this.analise.produtos))
-    this.service.save(new CalculadoraPreco(
-        this.analise.descricao,
-        JSON.stringify(this.analise.produtos
-        )
-    )).subscribe(it => 
-      console.log(it)
-    )
-  }
+    this.alertService.confirm("teste")
+    // this.service.save(new CalculadoraPreco(
+    //     this.analise.descricao,
+    //     JSON.stringify(this.analise.produtos
+    //     )
+    // )).subscribe(it => 
+    //     console.log(it)
+    // )
+}
 
   //TODO isso seria de um tableservice talvez
   removeKeys(obj){
