@@ -226,7 +226,7 @@ imprimirPdf() {
         it.Ingredientes.forEach(it => this.removeKeys(it))
     })
     localStorage.setItem("calculadora-"+this.analise.descricao,JSON.stringify(this.analise.produtos))
-    this.alertService.confirm("teste")
+    this.alertService.info("Salvo com sucesso")
     // this.service.save(new CalculadoraPreco(
     //     this.analise.descricao,
     //     JSON.stringify(this.analise.produtos
