@@ -10,6 +10,7 @@ import { Observable, concat, finalize, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
+import { CalculadoraPreco } from '../../models/CalculadoraPreco';
 
 @Component({
   selector: 'formacao-preco',
@@ -214,6 +215,13 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
       it.Ingredientes.forEach(it => this.removeKeys(it))
     })
     localStorage.setItem("calculadora-"+this.analise.descricao,JSON.stringify(this.analise.produtos))
+    this.service.save(new CalculadoraPreco(
+        this.analise.descricao,
+        JSON.stringify(this.analise.produtos
+        )
+    )).subscribe(it => 
+      console.log(it)
+    )
   }
 
   //TODO isso seria de um tableservice talvez
