@@ -25,6 +25,9 @@
                         <button class="btn btn-danger" (click)="imprimirPdf()">
                             <i class="fas fa-file-pdf"></i> Gerar PDF
                         </button>
+                        <button class="btn btn-default" (click)="modalPrazos.openModal()">
+    <i class="fas fa-calendar-alt"></i> Definir Prazos
+</button>
                     </div>
                 </div>
                 <label for="pageSize" class="col-auto col-form-label">Itens por pagina</label>
@@ -94,6 +97,21 @@
     </div>
     <div class="row" *ngIf="loadingCustos">
         <app-progress-bar [total]="totalProgressBar" [current]="currentProgressBar" ></app-progress-bar>
+    </div>
+</app-modal>
+
+<app-modal #modalPrazosPagamento [title]="'Prazos de Pagamento'">
+    <div class="card-body">
+        <div class="row" *ngFor="let prazo of analise.prazos; let i = index">
+            <div class="col-sm-8">
+                <label>{{ prazo.descricao }}</label>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <input type="number" class="form-control" [(ngModel)]="prazo.fator">
+                </div>
+            </div>
+        </div>
     </div>
 </app-modal>
 

@@ -33,8 +33,8 @@
             <th style="width: 50px;">EMB.</th>
             <th style="width: 80px;">GRUPO</th>
             <th style="width: 65px;">À VISTA</th>
-            <th *ngFor="let prazo of prazos" style="width: 62px;">
-              {{ prazo.dias }} dias
+            <th *ngFor="let prazo of analise.prazos" style="width: 62px;">
+              {{ prazo.descricao }}
             </th>
           </tr>
         </thead>
@@ -63,8 +63,8 @@
               {{ prod.getPrecoSacoCurrency() | currency:'BRL' }}
             </td>
 
-            <td *ngFor="let prazo of prazos" class="text-right">
-              {{ (prod.getPrecoSacoCurrency() * prazo.multiplicador) | currency:'BRL' }}
+            <td *ngFor="let prazo of analise.prazos" class="text-right">
+              {{ (prod.getPrecoSacoCurrency() * (1+prazo.fator)) | currency:'BRL' }}
             </td>
           </tr>
         </tbody>

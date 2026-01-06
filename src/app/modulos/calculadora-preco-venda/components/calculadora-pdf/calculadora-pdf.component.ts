@@ -2,8 +2,9 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Analise } from '../../models/analise';
 import { Produto } from '../../models/produto';
 import { PdfCarregamentoService } from '../../../ordem-carregamento/service/pdf-carregamento.service';
+import { PrazoPagamento } from '../../models/prazo-pagamento';
 
-interface PrazoConfig { dias: string; multiplicador: number; }
+interface PrazoConfig { descricao: string; multiplicador: number; }
 
 @Component({
   selector: 'app-calculadora-pdf',
@@ -20,15 +21,6 @@ export class CalculadoraPdfComponent implements OnChanges {
     LINHAS_POR_PAGINA: 23,
     CUSTO_CABECALHO: 5
   };
-
-  public readonly prazos: PrazoConfig[] = [
-    { dias: '30', multiplicador: 1.02 },
-    { dias: '60', multiplicador: 1.04 },
-    { dias: '75', multiplicador: 1.06 },
-    { dias: '90', multiplicador: 1.08 },
-    { dias: '120', multiplicador: 1.10 },
-    { dias: '150', multiplicador: 1.12 }
-  ];
 
   private readonly deParaLinhas: Record<string, string> = {
     especial: 'ESPECIAL', fora: 'FORA DE LINHA', mega: 'OX MEGA',

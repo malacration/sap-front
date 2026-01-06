@@ -34,6 +34,8 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
 
   @ViewChild('table', {static: true}) table: TableComponent;
 
+  @ViewChild('modalPrazosPagamento', {static: true}) modalPrazos: ModalComponent;
+
   @Input()
   analise : Analise
   @Output() close = new EventEmitter<void>();
