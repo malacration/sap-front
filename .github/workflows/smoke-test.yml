@@ -1,0 +1,37 @@
+name: Smoke Test
+
+on:
+  pull_request:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build web app
+      run: npm run web:build
+
+    - name: Smoke test - page loads
+      run: |
+        npx http-server dist -p 8080 -c-1 > /tmp/http-server.log 2>&1 &
+        SERVER_PID=$!
+        sleep 2
+        INDEX_HTML="$(curl -fsSL http://localhost:8080/)"
+        echo "$INDEX_HTML" | grep -q "<app-root"
+        MAIN_JS="$(echo "$INDEX_HTML" | grep -oE 'main\\.[^\" ]+\\.js' | head -n1)"
+        RUNTIME_JS="$(echo "$INDEX_HTML" | grep -oE 'runtime\\.[^\" ]+\\.js' | head -n1)"
+        test -n "$MAIN_JS"
+        test -n "$RUNTIME_JS"
+        curl -fsSL "http://localhost:8080/$MAIN_JS" > /dev/null
+        curl -fsSL "http://localhost:8080/$RUNTIME_JS" > /dev/null
+        kill "$SERVER_PID"
