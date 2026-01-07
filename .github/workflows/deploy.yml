@@ -23,8 +23,8 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build Angular app
-      run: npm run build --prod --output-hashing=all -- --configuration production --deploy-url / --base-href /
+    - name: Build web app
+      run: npm run web:build
 
     - name: Archive build artifacts
       run: |
