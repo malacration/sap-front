@@ -57,6 +57,7 @@
     "handlebars": "4.7.8",
     "html2canvas": "1.4.1",
     "jspdf": "2.5.2",
+    "jspdf-autotable": "5.0.7",
     "luxon": "3.4.4",
     "ng": "0.0.0",
     "ngx-bootstrap": "10.3.0",
