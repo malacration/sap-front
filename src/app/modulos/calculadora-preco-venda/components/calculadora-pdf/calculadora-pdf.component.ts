@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import jsPDF from 'jspdf';
-import autoTable, { RowInput, UserOptions } from 'jspdf-autotable';
+import autoTable, { RowInput } from 'jspdf-autotable';
 import { Analise } from '../../models/analise';
 
 @Component({
@@ -49,12 +49,10 @@ export class CalculadoraPdfComponent {
     const pageW = doc.internal.pageSize.getWidth();
     const marginX = 10;
     
-    // Configurações de altura do cabeçalho fixo
     const headerStartInfo = 10;
     const headerContentHeight = 25;
     const tableStartY = headerStartInfo + headerContentHeight + 5;
 
-    // --- CARREGAMENTO DA LOGO ---
     let logoBytes: Uint8Array | null = null;
     try {
       logoBytes = await this.loadPngAsUint8Array('logo.png');
@@ -62,13 +60,13 @@ export class CalculadoraPdfComponent {
       console.warn('Logo não encontrada.');
     }
 
-    // --- PREPARAÇÃO DOS DADOS ---
-
-    // 1. Definição das colunas (Head)
     const prazoHeaders = (this.analise.prazos || []).map(p => {
       let desc = p.descricao || '';
-      if (desc.toLowerCase().includes('vista')) desc = 'À VISTA.';
-      else desc = this.wrapPrazoHeader(desc);
+      if (desc.toLowerCase().includes('vista')) {
+        desc = 'À VISTA.';
+      } else {
+        desc = this.wrapPrazoHeader(desc);
+      }
 
       return {
         content: desc,
@@ -76,7 +74,6 @@ export class CalculadoraPdfComponent {
       };
     });
 
-    // Cabeçalho completo da tabela
     const headRow = [
       { content: 'CÓDIGO', styles: { fontStyle: 'bold' as 'bold', halign: 'center' as 'center' } },
       { content: 'PRODUTO', styles: { fontStyle: 'bold' as 'bold', halign: 'left' as 'left' } },
@@ -87,7 +84,6 @@ export class CalculadoraPdfComponent {
 
     const totalCols = headRow.length;
 
-    // 2. Agrupamento por Linha
     const getLinhaKey = (p: any) => 
       (p?.U_linha_sustennutri || 'OUTROS').toString().toLowerCase().trim();
 
@@ -104,9 +100,6 @@ export class CalculadoraPdfComponent {
       return 1;
     });
 
-    // =================================================================
-    // LOOP PRINCIPAL
-    // =================================================================
     let currentY = tableStartY;
 
     for (let i = 0; i < linhasOrdenadas.length; i++) {
@@ -119,7 +112,6 @@ export class CalculadoraPdfComponent {
 
       const body: RowInput[] = [];
 
-      // --- ROW DE TÍTULO DA LINHA ---
       const labelLinha = this.deParaLinhas[linhaKey] || (linhaKey === 'outros' ? 'GERAL' : linhaKey.toUpperCase());
       const corRgb = this.hexToRgb(this.getCorHeader(linhaKey)) ?? [0, 64, 133];
 
@@ -138,7 +130,6 @@ export class CalculadoraPdfComponent {
         } as any
       ]);
 
-      // --- ROWS DE PRODUTOS ---
       for (const produto of produtosDaLinha) {
         let precoBase = 0;
         try {
@@ -149,21 +140,14 @@ export class CalculadoraPdfComponent {
         const nomeGrupoColuna = this.deParaGrupos[rawGrupo] || rawGrupo.toUpperCase();
 
         body.push([
-          // Coluna Código: BOLD
           { content: produto?.ItemCode || '', styles: { halign: 'center', fontStyle: 'bold' } },
-          // Coluna Produto
           { content: produto?.Descricao || '', styles: { halign: 'left' } },
-          // Coluna Emb
           { content: produto?.UnidadeMedida || '', styles: { halign: 'center' } },
-          // Coluna Grupo
           { content: nomeGrupoColuna, styles: { halign: 'center', fontSize: 6 } },
-
-          // Colunas Prazos (Preços)
           ...(this.analise.prazos || []).map(prazo => {
             const fator = prazo?.fator ?? 0;
             const precoPrazo = precoBase * (1 + fator);
             
-            // >>> CORREÇÃO AQUI: \u00A0 é o espaço que não quebra linha <<<
             return {
               content: `R$\u00A0${this.formatCurrency(precoPrazo)}`,
               styles: { 
@@ -175,13 +159,11 @@ export class CalculadoraPdfComponent {
         ]);
       }
 
-      // --- GERAÇÃO DA TABELA ---
       autoTable(doc, {
         head: [headRow],
         body: body,
         startY: currentY,
         theme: 'striped',
-
         styles: {
           font: 'helvetica',
           fontSize: 7,
@@ -192,7 +174,6 @@ export class CalculadoraPdfComponent {
           valign: 'middle',
           overflow: 'linebreak'
         },
-
         headStyles: {
           fillColor: [215, 215, 215],
           textColor: [0, 0, 0],
@@ -201,28 +182,23 @@ export class CalculadoraPdfComponent {
           lineWidth: 0.1,
           lineColor: [157, 157, 157]
         },
-
         bodyStyles: {
           textColor: [0, 0, 0]
         },
-
         alternateRowStyles: {
           fillColor: [238, 238, 238]
         },
-
         columnStyles: {
-          0: { cellWidth: 24 }, // Código
-          1: { cellWidth: 'auto' }, // Produto
-          2: { cellWidth: 10 }, // Emb
-          3: { cellWidth: 18 }, // Grupo
+          0: { cellWidth: 24 },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 10 },
+          3: { cellWidth: 18 },
         },
-
         margin: { top: tableStartY, left: marginX, right: marginX, bottom: 10 },
         showHead: 'everyPage' 
       });
     }
 
-    // --- RODAPÉ/CABEÇALHO FIXO ---
     const totalPages = doc.getNumberOfPages();
     const dataStr = new Date().toLocaleDateString('pt-BR');
 
@@ -256,11 +232,10 @@ export class CalculadoraPdfComponent {
       doc.line(marginX, headerStartInfo + 18, pageW - marginX, headerStartInfo + 18);
     }
 
-    const nomeLimpo = (this.analise.descricao || 'Geral').replace(/[^a-z0-9]/gi, '_');
-    doc.save(`Tabela_Precos_${nomeLimpo}.pdf`);
+    // Alteração AQUI: Data no nome do arquivo (ex: Tabela_Precos_08-01-2026.pdf)
+    const dataArquivo = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    doc.save(`Tabela_Precos_${dataArquivo}.pdf`);
   }
-
-  // --- Helpers ---
 
   private wrapPrazoHeader(texto: string): string {
     const t = (texto || '').trim();
