@@ -196,7 +196,7 @@ updateOrderName(): void {
     });
   }
 
-onSelectedOrdersChange(orders: PedidoVenda[]): void {
+  onSelectedOrdersChange(orders: PedidoVenda[]): void {
     this.selectedOrders = orders;
     this.updateOrderName(); 
   }
