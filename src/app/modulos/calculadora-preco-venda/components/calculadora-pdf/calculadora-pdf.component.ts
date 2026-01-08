@@ -65,7 +65,7 @@ export class CalculadoraPdfComponent {
     // --- PREPARAÇÃO DOS DADOS ---
 
     // 1. Definição das colunas (Head)
-    // Aplicando Bold especificamente nos headers de prazo
+    // Headers de prazo em BOLD
     const prazoHeaders = (this.analise.prazos || []).map(p => {
       let desc = p.descricao || '';
       if (desc.toLowerCase().includes('vista')) desc = 'À VISTA.';
@@ -110,7 +110,6 @@ export class CalculadoraPdfComponent {
     // LOOP PRINCIPAL (UMA TABELA POR GRUPO/LINHA)
     // =================================================================
     
-    // Variável para controlar a posição Y. Na primeira iteração é fixa, nas próximas reinicia.
     let currentY = tableStartY;
 
     for (let i = 0; i < linhasOrdenadas.length; i++) {
@@ -119,7 +118,7 @@ export class CalculadoraPdfComponent {
       // Se não for a primeira tabela, adiciona nova página
       if (i > 0) {
         doc.addPage();
-        currentY = tableStartY; // Reseta a altura para o topo da nova página
+        currentY = tableStartY; 
       }
 
       const body: RowInput[] = [];
@@ -133,8 +132,8 @@ export class CalculadoraPdfComponent {
           content: labelLinha,
           colSpan: totalCols,
           styles: {
-            fillColor: corRgb, // Cor do Header da Linha
-            textColor: [255, 255, 255], // Branco no título
+            fillColor: corRgb,
+            textColor: [255, 255, 255],
             fontStyle: 'bold',
             halign: 'center',
             cellPadding: 1.5,
@@ -164,12 +163,16 @@ export class CalculadoraPdfComponent {
           { content: nomeGrupoColuna, styles: { halign: 'center', fontSize: 6 } },
 
           // Colunas Prazos (Preços)
+          // >>> AQUI ESTÁ A ALTERAÇÃO: fontStyle: 'bold' adicionado <<<
           ...(this.analise.prazos || []).map(prazo => {
             const fator = prazo?.fator ?? 0;
             const precoPrazo = precoBase * (1 + fator);
             return {
               content: `R$ ${this.formatCurrency(precoPrazo)}`,
-              styles: { halign: 'right' as 'right' }
+              styles: { 
+                  halign: 'right' as 'right', 
+                  fontStyle: 'bold' as 'bold' // Deixa o preço em negrito
+              }
             };
           })
         ]);
@@ -180,13 +183,13 @@ export class CalculadoraPdfComponent {
         head: [headRow],
         body: body,
         startY: currentY,
-        theme: 'striped', // Baseado em listras, vamos sobrescrever as cores abaixo
+        theme: 'striped',
 
         styles: {
           font: 'helvetica',
           fontSize: 7,
-          textColor: [0, 0, 0], // PRETO GERAL
-          lineColor: [157, 157, 157], // #9D9D9D (Cinza das bordas)
+          textColor: [0, 0, 0],
+          lineColor: [157, 157, 157],
           lineWidth: 0.1,
           cellPadding: 1.0, 
           valign: 'middle',
@@ -194,92 +197,78 @@ export class CalculadoraPdfComponent {
         },
 
         headStyles: {
-          fillColor: [215, 215, 215], // #D7D7D7 (Cinza claro do cabeçalho)
-          textColor: [0, 0, 0],       // Preto
+          fillColor: [215, 215, 215],
+          textColor: [0, 0, 0],
           fontStyle: 'bold',
           halign: 'center',
           lineWidth: 0.1,
-          lineColor: [157, 157, 157] // #9D9D9D
+          lineColor: [157, 157, 157]
         },
 
         bodyStyles: {
-          textColor: [0, 0, 0] // Preto no corpo
+          textColor: [0, 0, 0]
         },
 
         alternateRowStyles: {
-          fillColor: [238, 238, 238] // #EEEEEE (Cinza zebra)
+          fillColor: [238, 238, 238]
         },
 
-        // Definição explicita de colunas para evitar quebras ruins
         columnStyles: {
-          0: { cellWidth: 24 }, // Código (Aumentado para não cortar)
-          1: { cellWidth: 'auto' }, // Produto (Ocupa o que sobra)
+          0: { cellWidth: 24 }, // Código
+          1: { cellWidth: 'auto' }, // Produto
           2: { cellWidth: 10 }, // Emb
           3: { cellWidth: 18 }, // Grupo
-          // As colunas de preço (4 em diante) ficam automáticas distribuídas
         },
 
         margin: { top: tableStartY, left: marginX, right: marginX, bottom: 10 },
-        
-        // Garante cabeçalho em caso de quebra de página dentro do mesmo grupo
         showHead: 'everyPage' 
       });
     }
 
-    // --- RODAPÉ/CABEÇALHO FIXO EM CADA PÁGINA ---
+    // --- RODAPÉ/CABEÇALHO FIXO ---
     const totalPages = doc.getNumberOfPages();
     const dataStr = new Date().toLocaleDateString('pt-BR');
 
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       
-      // LOGO
       if (logoBytes) {
         doc.addImage(logoBytes as any, 'PNG', marginX, headerStartInfo, 30, 12, undefined, 'FAST');
       }
 
-      // Título Central
       doc.setFont('helvetica', 'bolditalic');
       doc.setFontSize(18);
-      doc.setTextColor(0, 0, 0); // Preto
+      doc.setTextColor(0, 0, 0);
       doc.text('Tabela de Preços', pageW / 2, headerStartInfo + 8, { align: 'center' });
 
-      // Página X de Y
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
       doc.text(`Página ${i} de ${totalPages}`, pageW / 2, headerStartInfo + 14, { align: 'center' });
 
-      // Data Direita
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(0, 0, 0); // Preto
+      doc.setTextColor(0, 0, 0);
       doc.text('VÁLIDA A PARTIR:', pageW - marginX, headerStartInfo + 5, { align: 'right' });
       
-      doc.setTextColor(255, 0, 0); // Vermelho apenas na data
+      doc.setTextColor(255, 0, 0);
       doc.text(dataStr, pageW - marginX, headerStartInfo + 10, { align: 'right' });
 
-      // Linha separadora do Header
-      doc.setDrawColor(157, 157, 157); // #9D9D9D
+      doc.setDrawColor(157, 157, 157);
       doc.setLineWidth(0.5);
       doc.line(marginX, headerStartInfo + 18, pageW - marginX, headerStartInfo + 18);
     }
 
-    // Salvar
     const nomeLimpo = (this.analise.descricao || 'Geral').replace(/[^a-z0-9]/gi, '_');
     doc.save(`Tabela_Precos_${nomeLimpo}.pdf`);
   }
 
   // --- Helpers ---
 
-  // Função para forçar quebra de linha nos Headers longos
   private wrapPrazoHeader(texto: string): string {
     const t = (texto || '').trim();
-    // Quebra forçada antes de 'ou'
     if (t.includes(' ou ')) return t.replace(' ou ', '\nou ');
-    // Quebra forçada nas barras
     if (t.includes('/')) return t.replace(/\//g, '/\n');
-    // Quebra forçada em 'dias' se estiver no final de uma string longa
     if (t.length > 10 && t.endsWith(' dias')) return t.replace(' dias', '\ndias');
     return t;
   }
