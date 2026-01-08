@@ -65,7 +65,6 @@ export class CalculadoraPdfComponent {
     // --- PREPARAÇÃO DOS DADOS ---
 
     // 1. Definição das colunas (Head)
-    // Headers de prazo em BOLD
     const prazoHeaders = (this.analise.prazos || []).map(p => {
       let desc = p.descricao || '';
       if (desc.toLowerCase().includes('vista')) desc = 'À VISTA.';
@@ -88,7 +87,7 @@ export class CalculadoraPdfComponent {
 
     const totalCols = headRow.length;
 
-    // 2. Agrupamento por Linha (Premium, Mega, etc)
+    // 2. Agrupamento por Linha
     const getLinhaKey = (p: any) => 
       (p?.U_linha_sustennutri || 'OUTROS').toString().toLowerCase().trim();
 
@@ -99,7 +98,6 @@ export class CalculadoraPdfComponent {
       linhasMap.get(key)!.push(p);
     }
 
-    // Ordenação (Premium primeiro)
     const linhasOrdenadas = Array.from(linhasMap.entries()).sort((a, b) => {
       const nomeA = a[0];
       if (nomeA.includes('premium')) return -1;
@@ -107,15 +105,13 @@ export class CalculadoraPdfComponent {
     });
 
     // =================================================================
-    // LOOP PRINCIPAL (UMA TABELA POR GRUPO/LINHA)
+    // LOOP PRINCIPAL
     // =================================================================
-    
     let currentY = tableStartY;
 
     for (let i = 0; i < linhasOrdenadas.length; i++) {
       const [linhaKey, produtosDaLinha] = linhasOrdenadas[i];
 
-      // Se não for a primeira tabela, adiciona nova página
       if (i > 0) {
         doc.addPage();
         currentY = tableStartY; 
@@ -123,7 +119,7 @@ export class CalculadoraPdfComponent {
 
       const body: RowInput[] = [];
 
-      // --- ROW DE TÍTULO DA LINHA (Faixa Colorida) ---
+      // --- ROW DE TÍTULO DA LINHA ---
       const labelLinha = this.deParaLinhas[linhaKey] || (linhaKey === 'outros' ? 'GERAL' : linhaKey.toUpperCase());
       const corRgb = this.hexToRgb(this.getCorHeader(linhaKey)) ?? [0, 64, 133];
 
@@ -163,22 +159,23 @@ export class CalculadoraPdfComponent {
           { content: nomeGrupoColuna, styles: { halign: 'center', fontSize: 6 } },
 
           // Colunas Prazos (Preços)
-          // >>> AQUI ESTÁ A ALTERAÇÃO: fontStyle: 'bold' adicionado <<<
           ...(this.analise.prazos || []).map(prazo => {
             const fator = prazo?.fator ?? 0;
             const precoPrazo = precoBase * (1 + fator);
+            
+            // >>> CORREÇÃO AQUI: \u00A0 é o espaço que não quebra linha <<<
             return {
-              content: `R$ ${this.formatCurrency(precoPrazo)}`,
+              content: `R$\u00A0${this.formatCurrency(precoPrazo)}`,
               styles: { 
                   halign: 'right' as 'right', 
-                  fontStyle: 'bold' as 'bold' // Deixa o preço em negrito
+                  fontStyle: 'bold' as 'bold' 
               }
             };
           })
         ]);
       }
 
-      // --- GERAÇÃO DA TABELA (AutoTable) ---
+      // --- GERAÇÃO DA TABELA ---
       autoTable(doc, {
         head: [headRow],
         body: body,
