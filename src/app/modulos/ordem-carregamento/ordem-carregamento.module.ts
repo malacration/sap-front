@@ -17,6 +17,7 @@ import { RomaneioModalComponent } from './modals/romaneio-modal/romaneio-modal.c
 import { ItinerarioModalComponent } from './modals/itinerario-modal/itinerario-modal.component';
 import { IncotermsSelectComponent } from '../../sap/components/form/select/incoterms/incoterms.select.component';
 import { EmOrdemDeCarregamentoSelectComponent } from '../../sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
+import { OrdemCarregamentoPdfService } from './ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import { EmOrdemDeCarregamentoSelectComponent } from '../../sap/components/form/
   providers: [
     OrdemCarregamentoService,
     PdfCarregamentoService,
+    OrdemCarregamentoPdfService,
   ],
   exports: [
     OrdemCarregamentoStatementComponent

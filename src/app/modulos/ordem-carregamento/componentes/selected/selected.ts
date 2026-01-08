@@ -12,6 +12,7 @@
   import { BusinessPartnerService } from '../../../sap-shared/_services/business-partners.service';
   import { PedidosVendaService } from '../../../../sap/service/document/pedidos-venda.service';
   import { ParameterService } from '../../../../shared/service/parameter.service';
+import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 
   @Component({
     selector: 'app-ordem-selected',
@@ -72,6 +73,7 @@
       private pedidosVendaService: PedidosVendaService,
       private parameterService: ParameterService,
       private route: ActivatedRoute,
+      private pdfService: OrdemCarregamentoPdfService
     ) {}
 
     ngOnInit(): void {
@@ -85,6 +87,12 @@
       }
     }
 
+    imprimirOrdemPdf(): void {
+      if (this.selected) {
+        const transportadora = this.businessPartner?.CardName || '';
+        this.pdfService.gerarPdf(this.selected, transportadora);
+      }
+    }
 
     private loadNotas() {
       if (!this.selected?.DocEntry) return;

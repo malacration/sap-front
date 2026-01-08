@@ -45,6 +45,14 @@
           [disabled]="loading || selected?.U_Status == 'Cancelado'">
           Romaneio
         </button>
+
+        <button
+          (click)="imprimirOrdemPdf()"
+          type="button"
+          class="btn btn-warning"
+          [disabled]="loading || selected?.U_Status == 'Cancelado'">
+          Pdf Carregamento
+        </button>
       </div>
     </div>
 
