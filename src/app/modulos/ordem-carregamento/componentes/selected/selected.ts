@@ -47,7 +47,7 @@
       new Column('Núm. do Pedido', 'DocNum'),
       new Column('Cód. Cliente', 'CardCode'),
       new Column('Nome Cliente', 'CardName'),
-      new Column('Localidade', 'Localidade'),
+      new Column('Localidade', 'Name'),
       new Column('Cód. Item', 'ItemCode'),
       new Column('Dsc. Item', 'Dscription'),
       new Column('Quantidade', 'Quantity'),
