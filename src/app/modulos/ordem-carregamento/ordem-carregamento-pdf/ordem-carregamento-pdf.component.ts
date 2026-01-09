@@ -19,6 +19,9 @@ export class OrdemCarregamentoPdfService {
     const pageW = doc.internal.pageSize.getWidth();
     let currentY = 15;
 
+    // --- Cálculo do Total de Frete ---
+    const totalFrete = (selected.pedidosVenda || []).reduce((acc, p) => acc + (Number(p.DistribSum) || 0), 0);
+
     const logo = await this.getLogo();
     if (logo) {
       doc.addImage(logo, 'PNG', this.MARGIN_X, currentY - 5, 30, 12, undefined, 'FAST');
@@ -34,7 +37,8 @@ export class OrdemCarregamentoPdfService {
     doc.line(this.MARGIN_X, currentY, pageW - this.MARGIN_X, currentY);
     
     currentY += 8;
-    currentY = this.drawInfoList(doc, selected, currentY);
+    // Passamos o totalFrete para o cabeçalho de informações
+    currentY = this.drawInfoList(doc, selected, totalFrete, currentY);
 
     currentY += 5;
     currentY = this.drawLogisticsBox(doc, selected, transportadoraNome, currentY, pageW);
@@ -45,7 +49,7 @@ export class OrdemCarregamentoPdfService {
     doc.save(`Ordem_Carregamento_${selected.DocEntry}_${dataArquivo}.pdf`);
   }
 
-  private drawInfoList(doc: jsPDF, selected: OrdemCarregamento, y: number): number {
+  private drawInfoList(doc: jsPDF, selected: OrdemCarregamento, totalFrete: number, y: number): number {
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
 
@@ -53,17 +57,23 @@ export class OrdemCarregamentoPdfService {
       { label: 'Número da Ordem:', value: selected.DocEntry, space: 35 },
       { label: 'Data de Criação:', value: selected.dataCriacao, space: 35 },
       { label: 'Descrição:', value: selected.U_nameOrdem, space: 22 },
-      { label: 'Status:', value: selected.U_Status?.toUpperCase(), space: 15 }
+      { label: 'Status:', value: selected.U_Status?.toUpperCase(), space: 15 },
+      { label: 'Total Frete:', value: `R$ ${this.formatCurrency(totalFrete)}`, space: 22, color: [255, 0, 0] } // Vermelho para destaque
     ];
 
     info.forEach(item => {
       doc.setFont('helvetica', 'bold');
+      if (item.color) doc.setTextColor(item.color[0], item.color[1], item.color[2]);
+      else doc.setTextColor(0, 0, 0);
+
       doc.text(item.label, this.MARGIN_X, y);
+      
       doc.setFont('helvetica', 'normal');
       doc.text(`${item.value}`, this.MARGIN_X + item.space, y);
       y += 6;
     });
 
+    doc.setTextColor(0, 0, 0); // Reset cor
     return y;
   }
 
@@ -102,12 +112,14 @@ export class OrdemCarregamentoPdfService {
   private drawTable(doc: jsPDF, selected: OrdemCarregamento, y: number): void {
     autoTable(doc, {
       startY: y,
-      head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'UN']],
+      head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'FRETE', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'UN']],
       body: (selected.pedidosVenda || []).map(p => [
         { content: p.DocNum, styles: { fontStyle: 'bold' } },
         p.CardCode,
         p.CardName,
         p.Name,
+        p.SlpName || 'N/A', // Nome do Vendedor
+        `R$ ${this.formatCurrency(p.DistribSum || 0)}`, // Valor do Frete
         p.ItemCode,
         p.Dscription,
         { content: p.Quantity, styles: { halign: 'center', fontStyle: 'bold' } },
@@ -116,7 +128,7 @@ export class OrdemCarregamentoPdfService {
       theme: 'grid',
       styles: {
         font: 'helvetica',
-        fontSize: 7.5,
+        fontSize: 6.5, // Reduzi levemente para caber as novas colunas
         textColor: [0, 0, 0],
         lineColor: this.CINZA_BORDA,
         lineWidth: 0.1,
@@ -125,18 +137,27 @@ export class OrdemCarregamentoPdfService {
         fillColor: this.VERDE_SUSTEN,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        halign: 'center'
+        halign: 'center',
+        fontSize: 6
       },
       columnStyles: {
-        0: { cellWidth: 15 },
-        1: { cellWidth: 20 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 20 },
-        6: { cellWidth: 12 },
-        7: { cellWidth: 12, overflow: 'visible' }
+        0: { cellWidth: 12 }, 
+        1: { cellWidth: 14 }, 
+        2: { cellWidth: 'auto' }, 
+        3: { cellWidth: 18 }, 
+        4: { cellWidth: 18 }, 
+        5: { cellWidth: 16 }, 
+        6: { cellWidth: 18 }, 
+        8: { cellWidth: 10 }, 
+        9: { cellWidth: 10 }  
       },
       margin: { left: this.MARGIN_X, right: this.MARGIN_X }
     });
+  }
+
+  private formatCurrency(value: any): string {
+    const val = Number(value) || 0;
+    return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   private async getLogo(): Promise<Uint8Array | null> {
