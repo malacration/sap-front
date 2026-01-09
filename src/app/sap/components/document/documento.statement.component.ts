@@ -238,6 +238,7 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
+  DistribSum: number
 
   // Ordem de Carregamento
   DflWhs : string

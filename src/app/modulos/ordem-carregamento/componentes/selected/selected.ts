@@ -49,6 +49,8 @@ import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-
       new Column('Cód. Cliente', 'CardCode'),
       new Column('Nome Cliente', 'CardName'),
       new Column('Localidade', 'Name'),
+      new Column('Vendedor', 'SlpName'),
+      new Column('Frete', 'DistribSum'),
       new Column('Cód. Item', 'ItemCode'),
       new Column('Dsc. Item', 'Dscription'),
       new Column('Quantidade', 'Quantity'),
