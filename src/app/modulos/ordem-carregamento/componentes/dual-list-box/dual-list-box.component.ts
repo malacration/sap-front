@@ -57,15 +57,22 @@ export class DualListBoxComponent {
     return this.groupItems(this.selectedItems, this.searchTermSelected);
   }
 
-  private groupItems(items: PedidoVenda[], searchTerm: string): { docNum: number; items: PedidoVenda[] }[] {
+  get totalSelectedFrete(): number {
+    return this.selectedItems.reduce((sum, item) => sum + (Number(item.DistribSum) || 0), 0);
+  }
+
+  private groupItems(items: PedidoVenda[], searchTerm: string): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     const grouped = items.reduce((acc, item) => {
       const docNum = item.DocNum;
       if (!acc[docNum]) {
-        acc[docNum] = { docNum, items: [] };
+        acc[docNum] = { docNum, items: [], totalFrete: 0 };
       }
       acc[docNum].items.push(item);
+      
+      acc[docNum].totalFrete += Number(item.DistribSum) || 0;
+      
       return acc;
-    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
+    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[], totalFrete: number } });
 
     return Object.values(grouped)
       .filter(group => group.items.some(item =>
@@ -143,4 +150,6 @@ export class DualListBoxComponent {
       }
     });
   }
+
+
 }
