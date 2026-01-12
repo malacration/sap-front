@@ -9,7 +9,7 @@
     
     <div class="modal-body p-0">
       <div class="alert alert-info m-2 py-2">
-        <small><i class="fas fa-info-circle"></i> Arraste as linhas para definir a ordem das entregas (paradas).</small>
+        <small><i class="fas fa-info-circle"></i> Arraste as linhas para definir a ordem das entregas.</small>
       </div>
 
       <div class="table-responsive">
@@ -29,9 +29,13 @@
               *ngFor="let pedido of pedidosAgrupados; let i = index"
               draggable="true"
               (dragstart)="onDragStart(i)"
-              (dragover)="onDragOver($event)"
+              (dragover)="onDragOver($event, i)"
+              (dragleave)="onDragLeave()"
               (drop)="onDrop(i)"
-              [class.table-primary]="draggedItemIndex === i"
+              (dragend)="limparDrag()"
+              [class.dragging-original]="draggedItemIndex === i"
+              [class.drop-above]="dropTargetIndex === i && dropPosition === 'above'"
+              [class.drop-below]="dropTargetIndex === i && dropPosition === 'below'"
               style="cursor: move;">
               
               <td class="text-center">
@@ -65,7 +69,7 @@
 
             <tr *ngIf="pedidosAgrupados.length === 0">
               <td colspan="6" class="text-center py-4 text-muted">
-                Nenhum pedido encontrado para esta ordem.
+                Nenhum pedido encontrado.
               </td>
             </tr>
           </tbody>
@@ -74,9 +78,7 @@
     </div>
 
     <div class="modal-footer bg-light">
-      <button type="button" class="btn btn-secondary" (click)="fechar()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary" (click)="fechar()">Cancelar</button>
       <button type="button" class="btn btn-success" (click)="gerarPdf()">
         <i class="fas fa-file-pdf mr-1"></i> Gerar PDF do Itinerário
       </button>

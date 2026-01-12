@@ -98,6 +98,9 @@ export class ItinerarioPdfService {
       this.escreverDetalhe(doc, 'Endereço:', endereco, marginX + 5, cursorY);
       cursorY += (endereco.length * 4.5) + 1;
       
+      this.escreverDetalhe(doc, 'Vendedor:', `${pedido.SlpName}`, marginX + 5, cursorY);
+      cursorY += 5;
+
       const contato = pedido.Mobil || pedido.Telephone || 'NÃO INFORMADO';
       this.escreverDetalhe(doc, 'Contato:', contato, marginX + 5, cursorY);
       cursorY += 6;
