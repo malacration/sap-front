@@ -1,76 +1,53 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { ItinerarioPdfComponent } from '../../componentes/itinerario-pdf.component/itinerario-pdf.component';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { OrdemCarregamento } from '../../models/ordem-carregamento';
+import { ItinerarioPdfService } from '../../componentes/itinerario-pdf.component/itinerario-pdf.component';
 
 @Component({
   selector: 'app-itinerario-modal',
-  templateUrl: './itinerario-modal.component.html'
+  templateUrl: './itinerario-modal.component.html',
+  styleUrls: ['./itinerario-modal.component.scss']
 })
-export class ItinerarioModalComponent implements OnChanges {
+export class ItinerarioModalComponent {
   @Input() show: boolean = false;
   @Input() pedidos: any[] = [];
-  @Input() ordemCarregamento: any;
-  @Input() businessPartner: any;
+  @Input() ordemCarregamento: OrdemCarregamento | null = null;
   @Input() localidadesMap: Map<string, string> = new Map();
-  
+  @Input() businessPartner: any = null;
   @Output() showChange = new EventEmitter<boolean>();
 
-  pedidosOrdenados: any[] = [];
-  draggedIndex: number | null = null;
-  placeholder: HTMLTableRowElement | null = null;
+  draggedItemIndex: number | null = null;
 
-  @ViewChild('tableResponsive') tableResponsive: ElementRef;
-  @ViewChild(ItinerarioPdfComponent) pdfComponent: ItinerarioPdfComponent;
+  constructor(private itinerarioPdfService: ItinerarioPdfService) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['pedidos'] && this.pedidos) {
-      this.resetarOrdem();
-    }
-  }
-
-  fecharModal() {
+  fechar() {
     this.showChange.emit(false);
   }
 
-  resetarOrdem() {
-    this.pedidosOrdenados = [...this.pedidos];
+  // --- Lógica de Drag and Drop Nativo ---
+  onDragStart(index: number) {
+    this.draggedItemIndex = index;
   }
 
-  gerarPDF() {
-    if (this.pdfComponent) {
-        this.pdfComponent.gerarPdf();
+  onDragOver(event: DragEvent) {
+    event.preventDefault(); // Necessário para permitir o drop
+  }
+
+  onDrop(index: number) {
+    if (this.draggedItemIndex !== null && this.draggedItemIndex !== index) {
+      const movedItem = this.pedidos[this.draggedItemIndex];
+      this.pedidos.splice(this.draggedItemIndex, 1);
+      this.pedidos.splice(index, 0, movedItem);
     }
+    this.draggedItemIndex = null;
   }
 
-  onDragStart(event: DragEvent, index: number): void {
-    this.draggedIndex = index;
-    event.dataTransfer!.setData('text/plain', index.toString());
-    event.dataTransfer!.effectAllowed = 'move';
-    (event.target as HTMLElement).classList.add('dragging');
-    
-    this.placeholder = document.createElement('tr');
-    this.placeholder.classList.add('placeholder');
-    this.placeholder.innerHTML = '<td colspan="7"></td>';
-  }
-
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    event.dataTransfer!.dropEffect = 'move';
-  }
-
-  onDragEnd(event: DragEvent): void {
-    (event.target as HTMLElement).classList.remove('dragging');
-    this.placeholder?.remove();
-    this.placeholder = null;
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (this.draggedIndex === null) return;
-    
-    const movedItem = this.pedidosOrdenados.splice(this.draggedIndex, 1)[0];
-    this.pedidosOrdenados.push(movedItem); 
-    
-    this.draggedIndex = null;
-    this.placeholder?.remove();
+  gerarPdf() {
+    if (this.ordemCarregamento) {
+      this.itinerarioPdfService.gerarPdf(
+        this.ordemCarregamento, 
+        this.pedidos, 
+        this.localidadesMap
+      );
+    }
   }
 }

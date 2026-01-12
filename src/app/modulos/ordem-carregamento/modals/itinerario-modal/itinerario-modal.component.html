@@ -1,54 +1,47 @@
-<app-modal [show]="show" (showChange)="fecharModal()" [title]="'Ordenar Itinerário de Carregamento'">
-  <div class="modal-body">
-    <div class="alert alert-info">
-      <i class="fas fa-info-circle"></i> Arraste os itens para ordenar a sequência
+<div class="modal-backdrop" *ngIf="show">
+  <div class="modal-content">
+    <div class="modal-header bg-primary text-white">
+      <h5 class="modal-title">Organizar Itinerário</h5>
+      <button type="button" class="close text-white" (click)="fechar()">&times;</button>
     </div>
     
-    <div class="table-responsive" #tableResponsive>
-      <table class="table table-hover">
-        <thead>
+    <div class="modal-body p-0">
+      <table class="table table-hover mb-0">
+        <thead class="thead-light">
           <tr>
-            <th></th>
-            <th>Ordem</th>
-            <th>Núm. Pedido</th>
+            <th style="width: 50px">Seq.</th>
+            <th>Pedido SAP</th>
             <th>Cliente</th>
             <th>Localidade</th>
             <th>Item</th>
-            <th>Qtd.</th>
+            <th class="text-center">Qtd</th>
           </tr>
         </thead>
-        <tbody (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-          <tr *ngFor="let pedido of pedidosOrdenados; let i = index"
-              draggable="true"
-              (dragstart)="onDragStart($event, i)"
-              (dragend)="onDragEnd($event)"
-              class="draggable-item">
-            <td><i class="fas fa-grip-vertical text-muted"></i></td>
-            <td>{{i + 1}}</td>
-            <td>{{pedido.DocNum}}</td>
-            <td>{{pedido.CardName}}</td>
-            <td>{{localidadesMap.get(pedido.CardCode) || 'Não informado'}}</td>
-            <td>{{pedido.ItemCode}} - {{pedido.Dscription}}</td>
-            <td>{{pedido.Quantity}}</td>
+        <tbody>
+          <tr 
+            *ngFor="let pedido of pedidos; let i = index"
+            draggable="true"
+            (dragstart)="onDragStart(i)"
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop(i)"
+            [class.table-primary]="draggedItemIndex === i"
+            style="cursor: move;">
+            <td class="font-weight-bold text-success">{{ i + 1 }}</td>
+            <td>{{ pedido.DocNum }}</td>
+            <td>{{ pedido.CardName }}</td>
+            <td>{{ localidadesMap.get(pedido.CardCode) || '...' }}</td>
+            <td>{{ pedido.ItemCode }}</td>
+            <td class="text-center">{{ pedido.Quantity }}</td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="resetarOrdem()">Resetar</button>
-    <button type="button" class="btn btn-success" (click)="gerarPDF()">
-      <i class="fas fa-file-pdf"></i> Gerar PDF
-    </button>
-    <button type="button" class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
-    
-    <div style="position: absolute; left: -9999px; width: 794px;">
-      <app-itinerario-pdf
-        [pedidosOrdenados]="pedidosOrdenados"
-        [ordemCarregamento]="ordemCarregamento"
-        [businessPartner]="businessPartner"
-        [localidadesMap]="localidadesMap">
-      </app-itinerario-pdf>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="fechar()">Fechar</button>
+      <button type="button" class="btn btn-success" (click)="gerarPdf()">
+        <i class="fas fa-file-pdf"></i> Imprimir Itinerário
+      </button>
     </div>
   </div>
-</app-modal>
+</div>

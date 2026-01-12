@@ -270,6 +270,7 @@ export class PedidoVenda{
   ClosingRemarks : string
   AttachmentEntry : number
   Address2 : string
+  SlpName : string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');

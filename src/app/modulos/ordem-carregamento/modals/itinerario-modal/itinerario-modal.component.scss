@@ -1,0 +1,29 @@
+.modal-backdrop {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5); z-index: 1050; display: flex; align-items: center; justify-content: center;
+}
+.modal-content { width: 80%; max-width: 900px; max-height: 90vh; background: white; border-radius: 8px; overflow: hidden; }
+.itinerary-list { overflow-y: auto; max-height: 60vh; padding: 10px; }
+
+.itinerary-card {
+  display: flex; background: #f8f9fa; border: 1px solid #dee2e6;
+  margin-bottom: 10px; border-radius: 4px; transition: all 0.2s;
+  cursor: grab;
+  &:active { cursor: grabbing; }
+  &.dragging { opacity: 0.5; border: 2px dashed #007bff; }
+}
+
+.drag-handle {
+  display: flex; align-items: center; padding: 0 15px; color: #ccc; background: #eee;
+}
+
+.info-content { flex: 1; padding: 10px; }
+.seq-badge { 
+  background: #28a745; color: white; padding: 5px 12px; 
+  border-radius: 50%; font-weight: bold; font-size: 1.2rem; 
+}
+
+.details-grid {
+  display: grid; grid-template-columns: 1fr 1fr; font-size: 0.85rem; gap: 5px;
+  .full-width { grid-column: span 2; color: #555; font-style: italic; }
+}

@@ -7,7 +7,6 @@ import { CommonModule } from '@angular/common';
 import { ListComponent } from './componentes/list/list';
 import { OrdemCarregamentoSelectedComponent } from './componentes/selected/selected';
 import { PdfCarregamentoService } from './service/pdf-carregamento.service';
-import { ItinerarioPdfComponent } from './componentes/itinerario-pdf.component/itinerario-pdf.component';
 import { PainelExpedicaoPedidosComponent } from './componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { DualListBoxComponent } from './componentes/dual-list-box/dual-list-box.component';
 import { FormularioComponent } from './componentes/formulario/formulario.component';
@@ -17,13 +16,13 @@ import { IncotermsSelectComponent } from '../../sap/components/form/select/incot
 import { EmOrdemDeCarregamentoSelectComponent } from '../../sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
 import { OrdemCarregamentoPdfService } from './ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 import { RomaneioPdfService } from './componentes/romaneio-pdf/romaneio-pdf.component';
+import { ItinerarioPdfService } from './componentes/itinerario-pdf.component/itinerario-pdf.component';
 
 
 @NgModule({
   declarations: [
     OrdemCarregamentoStatementComponent,
     OrdemCarregamentoSelectedComponent,
-    ItinerarioPdfComponent,
     ListComponent,
     PainelExpedicaoPedidosComponent,
     DualListBoxComponent,
@@ -42,7 +41,8 @@ import { RomaneioPdfService } from './componentes/romaneio-pdf/romaneio-pdf.comp
     OrdemCarregamentoService,
     PdfCarregamentoService,
     OrdemCarregamentoPdfService,
-    RomaneioPdfService
+    RomaneioPdfService,
+    ItinerarioPdfService
   ],
   exports: [
     OrdemCarregamentoStatementComponent
