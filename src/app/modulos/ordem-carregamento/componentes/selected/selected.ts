@@ -128,12 +128,11 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
     cancelarOrdem(): void {
         if (!this.selected) return;
 
-        if (confirm('Tem certeza que deseja cancelar este Romaneio? Isso irá desvincular todos os pedidos.')) {
+        if (this.alertService.confirm('Tem certeza que deseja cancelar esta Ordem de Carregamento? Isso irá desvincular todos os pedidos.')) {
             this.loading = true;
             this.ordemCarregamentoService.cancelar(this.selected.DocEntry).subscribe({
                 next: (res) => {
-                    this.alertService.confirm('Romaneio cancelado com sucesso!');
-                    // Atualiza o objeto localmente para refletir a mudança
+                    this.alertService.info('Ordem de Carregamento cancelada com sucesso!');
                     if (this.selected) {
                         this.selected.U_Status = 'Cancelado';
                     }
@@ -141,7 +140,7 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
                 },
                 error: (err) => {
                     console.error(err);
-                    this.alertService.error('Erro ao cancelar romaneio: ' + (err.error?.message || err.message));
+                    this.alertService.error('Erro ao cancelar a Ordem de Carregamento: ' + (err.error?.message || err.message));
                     this.loading = false;
                 }
             });
