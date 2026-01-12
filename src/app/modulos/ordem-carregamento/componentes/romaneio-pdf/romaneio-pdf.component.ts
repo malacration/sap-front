@@ -11,7 +11,6 @@ export class RomaneioPdfService {
 
   private readonly VERDE_SUSTEN: [number, number, number] = [37, 162, 70];
   private readonly CINZA_FUNDO: [number, number, number] = [245, 247, 246];
-  private readonly CINZA_TEXTO: [number, number, number] = [80, 80, 80];
   private readonly VERMELHO: [number, number, number] = [200, 0, 0];
   private readonly MARGIN_X = 15;
 
@@ -39,15 +38,15 @@ export class RomaneioPdfService {
     doc.setLineWidth(0.5);
     doc.line(this.MARGIN_X, currentY, pageW - this.MARGIN_X, currentY);
 
-    // 2. Cabeçalho de Informações (Box Cinza)
+    // 2. Cabeçalho de Informações (Box Cinza com Textos Pretos)
     currentY += 8;
     currentY = this.drawHeaderInfo(doc, selected, currentY, pageW);
 
-    // 3. Tabela de Itens (Incluindo coluna Frete)
+    // 3. Tabela de Itens (Linhas Pretas com divisória)
     currentY += 10;
     this.drawItensTable(doc, selected, currentY);
 
-    // 4. Rodapé (Assinatura e Numeração)
+    // 4. Rodapé
     this.drawFooter(doc, pageW);
 
     const dataArquivo = moment().format('DD-MM-YYYY_HHmm');
@@ -56,7 +55,6 @@ export class RomaneioPdfService {
 
   private drawHeaderInfo(doc: jsPDF, selected: OrdemCarregamento, y: number, pageW: number): number {
     const boxW = pageW - (this.MARGIN_X * 2);
-    // Altura do box aumentada para permitir que a descrição cresça verticalmente
     const boxH = 50; 
     
     doc.setFillColor(this.CINZA_FUNDO[0], this.CINZA_FUNDO[1], this.CINZA_FUNDO[2]);
@@ -70,22 +68,18 @@ export class RomaneioPdfService {
 
     doc.setFontSize(10);
 
-    // LINHA 1: Número da Ordem | Descrição (Largura de ~60mm para forçar quebra após ~34-40 caracteres)
+    // Todos os rótulos e valores agora são pretos (0)
     this.drawLabelValue(doc, 'Número da Ordem:', `${selected.DocEntry}`, this.MARGIN_X + 5, startY);
     this.drawLabelValue(doc, 'Descrição:', `${selected.U_nameOrdem || ''}`, col2, startY, 60);
-    
-    // LINHA 2: Data de Criação
     this.drawLabelValue(doc, 'Data de Criação:', `${selected.dataCriacao || ''}`, this.MARGIN_X + 5, startY + lineHeight);
     
-    // LINHA 3: Motorista | Placa
     const yLinha3 = startY + (lineHeight * 2);
     this.drawLabelValue(doc, 'Motorista:', `${selected.U_motorista || 'Pedro'}`, this.MARGIN_X + 5, yLinha3);
     this.drawLabelValue(doc, 'Placa:', `${selected.U_placa || 'N/A'}`, col2, yLinha3);
 
-    // LINHA 4: Total Frete (EM VERMELHO)
     const yLinha4 = startY + (lineHeight * 3);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
+    doc.setTextColor(0); // Preto
     doc.text('Total Frete:', this.MARGIN_X + 5, yLinha4);
     
     doc.setTextColor(this.VERMELHO[0], this.VERMELHO[1], this.VERMELHO[2]);
@@ -95,16 +89,18 @@ export class RomaneioPdfService {
   }
 
   private drawLabelValue(doc: jsPDF, label: string, value: string, x: number, y: number, wrapWidth?: number) {
+    // Rótulo em Preto
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
+    doc.setTextColor(0); 
     doc.text(label, x, y);
 
     const labelWidth = doc.getTextWidth(label) + 2;
+    
+    // Valor em Preto
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(this.CINZA_TEXTO[0], this.CINZA_TEXTO[1], this.CINZA_TEXTO[2]);
+    doc.setTextColor(0); 
 
     if (wrapWidth) {
-      // splitTextToSize faz o texto "ir para a próxima linha" se for maior que wrapWidth
       const splitValue = doc.splitTextToSize(value, wrapWidth);
       doc.text(splitValue, x + labelWidth, y);
     } else {
@@ -140,19 +136,31 @@ export class RomaneioPdfService {
           `R$ ${this.formatCurrency(i.frete)}`
         ]),
         [
-          { content: 'TOTAIS GERAIS:', colSpan: 2, styles: { halign: 'left', fontStyle: 'bold' } },
-          { content: totalQtd.toString(), styles: { fontStyle: 'bold', halign: 'center' } },
-          { content: totalPeso.toFixed(2) + ' kg', styles: { fontStyle: 'bold', halign: 'center' } },
-          { content: `R$ ${this.formatCurrency(totalFreteAcumulado)}`, styles: { fontStyle: 'bold', halign: 'right' } }
+          { content: 'TOTAIS GERAIS:', colSpan: 2, styles: { halign: 'left', fontStyle: 'bold', textColor: 0 } },
+          { content: totalQtd.toString(), styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
+          { content: totalPeso.toFixed(2) + ' kg', styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
+          { content: `R$ ${this.formatCurrency(totalFreteAcumulado)}`, styles: { fontStyle: 'bold', halign: 'right', textColor: 0 } }
         ]
       ],
       theme: 'plain',
-      headStyles: { fillColor: this.VERDE_SUSTEN, textColor: 255, fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3, textColor: 50 },
+      headStyles: { 
+        fillColor: this.VERDE_SUSTEN, 
+        textColor: 255, 
+        fontStyle: 'bold'
+      },
+      styles: { 
+        fontSize: 9, 
+        cellPadding: 3, 
+        textColor: 0, // Garante que o texto dos itens seja preto
+        lineWidth: { bottom: 0.1 }, 
+        lineColor: [0, 0, 0] 
+      },
       columnStyles: {
-        2: { halign: 'center' },
-        3: { halign: 'center' },
-        4: { halign: 'right' }
+        0: { cellWidth: 30 },
+        1: { cellWidth: 'auto' },
+        2: { halign: 'center', cellWidth: 25 },
+        3: { halign: 'center', cellWidth: 35 },
+        4: { halign: 'right', cellWidth: 30 }
       }
     });
   }
@@ -161,18 +169,16 @@ export class RomaneioPdfService {
     const pageH = doc.internal.pageSize.getHeight();
     const footerY = pageH - 25;
 
-    // Linha e Campo de Assinatura
     doc.setDrawColor(180);
     doc.line(this.MARGIN_X, footerY, this.MARGIN_X + 80, footerY);
     doc.setFontSize(9);
-    doc.setTextColor(this.CINZA_TEXTO[0], this.CINZA_TEXTO[1], this.CINZA_TEXTO[2]);
+    doc.setTextColor(0); // Texto do rodapé em preto
     doc.text('Assinatura: ___________________________', this.MARGIN_X, footerY + 5);
 
-    // Numeração de Páginas
     const totalPages = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.text(`Página ${i} de ${totalPages}`, pageW - this.MARGIN_X - 25, footerY + 5);
+      doc.setPage(i);
+      doc.text(`Página ${i} de ${totalPages}`, pageW - this.MARGIN_X - 25, footerY + 5);
     }
   }
 
@@ -192,7 +198,7 @@ export class RomaneioPdfService {
       const item = map.get(key);
       item.quantidade += Number(p.Quantity || 0);
       item.pesoTotal += (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
-      item.frete += Number(p.DistribSum || 0); // Mapeamento da coluna Frete
+      item.frete += Number(p.DistribSum || 0);
     });
     return Array.from(map.values());
   }
@@ -202,6 +208,6 @@ export class RomaneioPdfService {
   }
 
   private async getLogo(): Promise<string | null> {
-    return 'logo.png'; 
+    return null; 
   }
 }
