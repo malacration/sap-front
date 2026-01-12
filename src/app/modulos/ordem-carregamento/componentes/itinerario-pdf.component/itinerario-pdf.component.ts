@@ -20,9 +20,13 @@ export class ItinerarioPdfService {
   private carregarLogo(): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
       const img = new Image();
-      img.src = 'logo.png'; // Verifique o caminho correto
+      // No Angular, o caminho correto para imagens estáticas é dentro de assets
+      img.src = 'assets/logo.png'; 
       img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
+      img.onerror = () => {
+        console.error("Não foi possível carregar a logo em assets/logo.png");
+        resolve(null);
+      };
     });
   }
 
@@ -55,32 +59,41 @@ export class ItinerarioPdfService {
     desenharCabecalho();
 
     // --- Bloco Superior (Dados da Ordem) ---
+    // Resetando o tamanho da fonte para os dados (estava herdando 18 do título)
+    doc.setFontSize(10); 
+    const alturaBlocoVerde = 28;
+
     doc.setFillColor(this.VERDE_CLARO_BG[0], this.VERDE_CLARO_BG[1], this.VERDE_CLARO_BG[2]);
-    doc.roundedRect(marginX, cursorY, pageW - (marginX * 2), 32, 2, 2, 'F');
+    doc.roundedRect(marginX, cursorY, pageW - (marginX * 2), alturaBlocoVerde, 2, 2, 'F');
     
+    // Coluna 1
     this.escreverCampoVerde(doc, 'Número da Ordem:', ordem.DocEntry.toString(), marginX + 5, cursorY + 8);
     this.escreverCampoVerde(doc, 'Data de Criação:', ordem.dataCriacao || '', marginX + 5, cursorY + 18);
     
-    const desc = this.quebrarTextoPorCaracteres(ordem.U_nameOrdem || 'NÃO INFORMADO', 42);
-    this.escreverCampoVerde(doc, 'Descrição:', desc, (pageW / 2) - 10, cursorY + 8);
+    // Coluna 2
+    const coluna2X = (pageW / 2) - 5;
+    const desc = this.quebrarTextoPorCaracteres(ordem.U_nameOrdem || 'NÃO INFORMADO', 45);
+    this.escreverCampoVerde(doc, 'Descrição:', desc, coluna2X, cursorY + 8);
     
-    cursorY += 40;
+    // Adicionado campo Status conforme o print
+    this.escreverCampoVerde(doc, 'Status:', 'Aberto', coluna2X, cursorY + 20);
+    
+    cursorY += alturaBlocoVerde + 10;
 
-    // --- Listagem de Pedidos e Seus Itens ---
+    // --- Listagem de Pedidos ---
     pedidosAgrupados.forEach((pedido, index) => {
       const endereco = this.quebrarTextoPorCaracteres(pedido.Address2 || 'ENDEREÇO NÃO CADASTRADO', 72);
-      
-      // Cálculo de espaço: Cabeçalho (35mm) + Endereço + Itens (8mm cada)
       const alturaPedido = 40 + (endereco.length * 5) + (pedido.itens.length * 8);
 
       if (cursorY + alturaPedido > pageH - 30) {
         doc.addPage();
         desenharCabecalho();
+        doc.setFontSize(10); // Garante o reset do tamanho na nova página
       }
 
       const seqStartY = cursorY;
       
-      // Cabeçalho do Pedido
+      // Cabeçalho do Pedido (Parada e Número)
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
@@ -105,14 +118,14 @@ export class ItinerarioPdfService {
       this.escreverDetalhe(doc, 'Contato:', contato, marginX + 5, cursorY);
       cursorY += 6;
 
-      // Divisória Interna de Itens
+      // Divisória Interna
       doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineDashPattern([1, 1], 0);
       doc.line(marginX + 5, cursorY, pageW - marginX - 5, cursorY);
       doc.setLineDashPattern([], 0);
       cursorY += 6;
 
-      // Listagem dos Produtos deste Pedido
+      // Itens do Pedido
       pedido.itens.forEach((item: any) => {
         doc.setFont('helvetica', 'bold');
         doc.text('Produto:', marginX + 5, cursorY);
@@ -127,7 +140,7 @@ export class ItinerarioPdfService {
         cursorY += 6;
       });
 
-      // Borda do Bloco do Pedido
+      // Borda do Bloco
       cursorY += 2;
       doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineWidth(0.3);
@@ -140,9 +153,11 @@ export class ItinerarioPdfService {
   }
 
   private escreverCampoVerde(doc: jsPDF, label: string, valor: any, x: number, y: number) {
+    doc.setFontSize(10); // Força o tamanho correto para evitar o bug
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
     doc.text(label, x, y);
+    
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(this.PRETO_TEXTO[0], this.PRETO_TEXTO[1], this.PRETO_TEXTO[2]);
@@ -151,7 +166,9 @@ export class ItinerarioPdfService {
 
   private escreverDetalhe(doc: jsPDF, label: string, valor: any, x: number, y: number) {
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(this.PRETO_TEXTO[0], this.PRETO_TEXTO[1], this.PRETO_TEXTO[2]);
     doc.text(label, x, y);
+    
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
     doc.text(Array.isArray(valor) ? valor : String(valor), x + labelW + 2, y);
@@ -164,10 +181,16 @@ export class ItinerarioPdfService {
       const footerY = pageH - 20;
       doc.setFontSize(8);
       doc.setTextColor(100);
+      
+      // Linha e texto da esquerda
       doc.line(marginX, footerY, marginX + 60, footerY);
       doc.text('Assinatura Motorista', marginX, footerY + 4);
+      
+      // Linha e texto da direita
       doc.line(pageW - marginX - 60, footerY, pageW - marginX, footerY);
       doc.text('Conferência Logística', pageW - marginX, footerY + 4, { align: 'right' });
+      
+      // Numeração de página
       doc.text(`Página ${i} de ${totalPages}`, pageW / 2, pageH - 8, { align: 'center' });
     }
   }
