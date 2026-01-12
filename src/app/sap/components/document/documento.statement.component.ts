@@ -239,6 +239,8 @@ export class PedidoVenda{
   Frete : number
   VehicleState: string
   DistribSum: number
+  Telephone : string
+  Mobil : string
 
   // Ordem de Carregamento
   DflWhs : string
