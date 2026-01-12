@@ -11,6 +11,7 @@ export class RomaneioPdfService {
 
   private readonly VERDE_SUSTEN: [number, number, number] = [37, 162, 70];
   private readonly CINZA_FUNDO: [number, number, number] = [245, 247, 246];
+  private readonly CINZA_TEXTO: [number, number, number] = [80, 80, 80];
   private readonly VERMELHO: [number, number, number] = [200, 0, 0];
   private readonly MARGIN_X = 15;
 
@@ -38,11 +39,11 @@ export class RomaneioPdfService {
     doc.setLineWidth(0.5);
     doc.line(this.MARGIN_X, currentY, pageW - this.MARGIN_X, currentY);
 
-    // 2. Cabeçalho de Informações (Box Cinza com Textos Pretos)
+    // 2. Cabeçalho de Informações
     currentY += 8;
     currentY = this.drawHeaderInfo(doc, selected, currentY, pageW);
 
-    // 3. Tabela de Itens (Linhas Pretas com divisória)
+    // 3. Tabela de Itens
     currentY += 10;
     this.drawItensTable(doc, selected, currentY);
 
@@ -68,37 +69,39 @@ export class RomaneioPdfService {
 
     doc.setFontSize(10);
 
-    // Todos os rótulos e valores agora são pretos (0)
+    // Labels em Verde | Valores em Preto
     this.drawLabelValue(doc, 'Número da Ordem:', `${selected.DocEntry}`, this.MARGIN_X + 5, startY);
     this.drawLabelValue(doc, 'Descrição:', `${selected.U_nameOrdem || ''}`, col2, startY, 60);
     this.drawLabelValue(doc, 'Data de Criação:', `${selected.dataCriacao || ''}`, this.MARGIN_X + 5, startY + lineHeight);
     
     const yLinha3 = startY + (lineHeight * 2);
-    this.drawLabelValue(doc, 'Motorista:', `${selected.U_motorista || 'Pedro'}`, this.MARGIN_X + 5, yLinha3);
+    this.drawLabelValue(doc, 'Motorista:', `${selected.U_motorista || 'Não informado'}`, this.MARGIN_X + 5, yLinha3);
     this.drawLabelValue(doc, 'Placa:', `${selected.U_placa || 'N/A'}`, col2, yLinha3);
 
+    // Linha do Frete: Label Verde | Valor Vermelho
     const yLinha4 = startY + (lineHeight * 3);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0); // Preto
+    doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
     doc.text('Total Frete:', this.MARGIN_X + 5, yLinha4);
     
+    const labelWidth = doc.getTextWidth('Total Frete:') + 2;
     doc.setTextColor(this.VERMELHO[0], this.VERMELHO[1], this.VERMELHO[2]);
-    doc.text(`R$ ${this.formatCurrency(totalFrete)}`, this.MARGIN_X + 28, yLinha4);
+    doc.text(`R$ ${this.formatCurrency(totalFrete)}`, this.MARGIN_X + 5 + labelWidth, yLinha4);
 
     return y + boxH;
   }
 
   private drawLabelValue(doc: jsPDF, label: string, value: string, x: number, y: number, wrapWidth?: number) {
-    // Rótulo em Preto
+    // Label em Verde
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0); 
+    doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
     doc.text(label, x, y);
 
     const labelWidth = doc.getTextWidth(label) + 2;
     
     // Valor em Preto
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0); 
+    doc.setTextColor(0, 0, 0); 
 
     if (wrapWidth) {
       const splitValue = doc.splitTextToSize(value, wrapWidth);
@@ -151,9 +154,9 @@ export class RomaneioPdfService {
       styles: { 
         fontSize: 9, 
         cellPadding: 3, 
-        textColor: 0, // Garante que o texto dos itens seja preto
-        lineWidth: { bottom: 0.1 }, 
-        lineColor: [0, 0, 0] 
+        textColor: 0, // Itens da tabela em preto
+        lineWidth: { bottom: 0.1 }, // Divisória embaixo de cada linha
+        lineColor: [0, 0, 0] // Cor preta para a divisória
       },
       columnStyles: {
         0: { cellWidth: 30 },
@@ -172,7 +175,7 @@ export class RomaneioPdfService {
     doc.setDrawColor(180);
     doc.line(this.MARGIN_X, footerY, this.MARGIN_X + 80, footerY);
     doc.setFontSize(9);
-    doc.setTextColor(0); // Texto do rodapé em preto
+    doc.setTextColor(0); 
     doc.text('Assinatura: ___________________________', this.MARGIN_X, footerY + 5);
 
     const totalPages = (doc as any).internal.getNumberOfPages();
