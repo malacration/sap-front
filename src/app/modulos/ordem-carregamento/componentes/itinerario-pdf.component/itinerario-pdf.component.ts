@@ -21,7 +21,7 @@ export class ItinerarioPdfService {
     return new Promise((resolve) => {
       const img = new Image();
       // No Angular, o caminho correto para imagens estáticas é dentro de assets
-      img.src = 'assets/logo.png'; 
+      img.src = 'logo.png'; 
       img.onload = () => resolve(img);
       img.onerror = () => {
         console.error("Não foi possível carregar a logo em assets/logo.png");
