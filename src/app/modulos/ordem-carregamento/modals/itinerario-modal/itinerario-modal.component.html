@@ -1,46 +1,84 @@
 <div class="modal-backdrop" *ngIf="show">
   <div class="modal-content">
     <div class="modal-header bg-primary text-white">
-      <h5 class="modal-title">Organizar Itinerário</h5>
+      <h5 class="modal-title">
+        <i class="fas fa-route mr-2"></i> Organizar Itinerário (Paradas)
+      </h5>
       <button type="button" class="close text-white" (click)="fechar()">&times;</button>
     </div>
     
     <div class="modal-body p-0">
-      <table class="table table-hover mb-0">
-        <thead class="thead-light">
-          <tr>
-            <th style="width: 50px">Seq.</th>
-            <th>Pedido SAP</th>
-            <th>Cliente</th>
-            <th>Localidade</th>
-            <th>Item</th>
-            <th class="text-center">Qtd</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr 
-            *ngFor="let pedido of pedidos; let i = index"
-            draggable="true"
-            (dragstart)="onDragStart(i)"
-            (dragover)="onDragOver($event)"
-            (drop)="onDrop(i)"
-            [class.table-primary]="draggedItemIndex === i"
-            style="cursor: move;">
-            <td class="font-weight-bold text-success">{{ i + 1 }}</td>
-            <td>{{ pedido.DocNum }}</td>
-            <td>{{ pedido.CardName }}</td>
-            <td>{{ localidadesMap.get(pedido.CardCode) || '...' }}</td>
-            <td>{{ pedido.ItemCode }}</td>
-            <td class="text-center">{{ pedido.Quantity }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="alert alert-info m-2 py-2">
+        <small><i class="fas fa-info-circle"></i> Arraste as linhas para definir a ordem das entregas (paradas).</small>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="thead-light">
+            <tr>
+              <th style="width: 60px" class="text-center">Parada</th>
+              <th style="width: 120px">Pedido SAP</th>
+              <th>Cliente</th>
+              <th>Localidade</th>
+              <th class="text-center">Qtd. Itens</th>
+              <th style="width: 40px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr 
+              *ngFor="let pedido of pedidosAgrupados; let i = index"
+              draggable="true"
+              (dragstart)="onDragStart(i)"
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop(i)"
+              [class.table-primary]="draggedItemIndex === i"
+              style="cursor: move;">
+              
+              <td class="text-center">
+                <span class="badge badge-pill badge-success" style="font-size: 14px;">
+                  {{ i + 1 }}
+                </span>
+              </td>
+
+              <td class="font-weight-bold">{{ pedido.DocNum }}</td>
+
+              <td>
+                <div class="text-truncate" style="max-width: 250px;" [title]="pedido.CardName">
+                  {{ pedido.CardName }}
+                </div>
+              </td>
+
+              <td>
+                {{ localidadesMap.get(pedido.CardCode) || 'Não Informada' }}
+              </td>
+
+              <td class="text-center">
+                <span class="badge badge-light border">
+                  {{ pedido.itens.length }} item(ns)
+                </span>
+              </td>
+
+              <td class="text-muted">
+                <i class="fas fa-grip-lines"></i>
+              </td>
+            </tr>
+
+            <tr *ngIf="pedidosAgrupados.length === 0">
+              <td colspan="6" class="text-center py-4 text-muted">
+                Nenhum pedido encontrado para esta ordem.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="fechar()">Fechar</button>
+    <div class="modal-footer bg-light">
+      <button type="button" class="btn btn-secondary" (click)="fechar()">
+        Cancelar
+      </button>
       <button type="button" class="btn btn-success" (click)="gerarPdf()">
-        <i class="fas fa-file-pdf"></i> Imprimir Itinerário
+        <i class="fas fa-file-pdf mr-1"></i> Gerar PDF do Itinerário
       </button>
     </div>
   </div>

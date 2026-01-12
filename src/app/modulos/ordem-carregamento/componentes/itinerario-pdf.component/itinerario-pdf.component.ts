@@ -4,17 +4,13 @@ import { OrdemCarregamento } from '../../models/ordem-carregamento';
 
 @Injectable({ providedIn: 'root' })
 export class ItinerarioPdfService {
-
-  private readonly VERDE_SUSTEN: [number, number, number] = [0, 155, 58]; 
+  private readonly VERDE_SUSTEN: [number, number, number] = [0, 155, 58];
   private readonly VERDE_CLARO_BG: [number, number, number] = [235, 247, 238];
   private readonly CINZA_LINHA: [number, number, number] = [200, 200, 200];
   private readonly PRETO_TEXTO: [number, number, number] = [40, 40, 40];
 
   constructor() {}
 
-  /**
-   * Divide uma string em um array de strings respeitando o limite de caracteres
-   */
   private quebrarTextoPorCaracteres(texto: string, limite: number): string[] {
     if (!texto) return ['NÃO INFORMADO'];
     const regex = new RegExp(`.{1,${limite}}`, 'g');
@@ -24,16 +20,13 @@ export class ItinerarioPdfService {
   private carregarLogo(): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
       const img = new Image();
-      img.src = 'logo.png';
+      img.src = 'assets/logo.png'; // Verifique o caminho correto
       img.onload = () => resolve(img);
-      img.onerror = () => {
-        console.error('Erro: Arquivo assets/logo.png não encontrado.');
-        resolve(null);
-      };
+      img.onerror = () => resolve(null);
     });
   }
 
-  async gerarPdf(ordem: OrdemCarregamento, pedidos: any[], localidadesMap: Map<string, string>) {
+  async gerarPdf(ordem: OrdemCarregamento, pedidosAgrupados: any[], localidadesMap: Map<string, string>) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
@@ -50,7 +43,7 @@ export class ItinerarioPdfService {
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
-      doc.text('ITINERÁRIO DE CARREGAMENTO', pageW - marginX, cursorY + 7, { align: 'right' });
+      doc.text('ITINERÁRIO DE ENTREGA', pageW - marginX, cursorY + 7, { align: 'right' });
 
       cursorY += 14;
       doc.setDrawColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
@@ -61,79 +54,82 @@ export class ItinerarioPdfService {
 
     desenharCabecalho();
 
-    // --- Bloco Superior ---
-    const infoHeight = 32; // Aumentado levemente para acomodar descrição longa
+    // --- Bloco Superior (Dados da Ordem) ---
     doc.setFillColor(this.VERDE_CLARO_BG[0], this.VERDE_CLARO_BG[1], this.VERDE_CLARO_BG[2]);
-    doc.roundedRect(marginX, cursorY, pageW - (marginX * 2), infoHeight, 2, 2, 'F');
-
-    doc.setFontSize(9);
-    const col2X = pageW / 2 - 10;
+    doc.roundedRect(marginX, cursorY, pageW - (marginX * 2), 32, 2, 2, 'F');
     
     this.escreverCampoVerde(doc, 'Número da Ordem:', ordem.DocEntry.toString(), marginX + 5, cursorY + 8);
-    this.escreverCampoVerde(doc, 'Data de Criação:', ordem.dataCriacao, marginX + 5, cursorY + 18);
-
-    // AQUI: Descrição com limite de 42 caracteres
-    const desc = this.quebrarTextoPorCaracteres(ordem.U_nameOrdem || 'NÃO INFORMADO', 42);
-    this.escreverCampoVerde(doc, 'Descrição:', desc, col2X, cursorY + 8);
+    this.escreverCampoVerde(doc, 'Data de Criação:', ordem.dataCriacao || '', marginX + 5, cursorY + 18);
     
-    // Ajuste dinâmico do status baseado nas linhas da descrição
-    const statusYOffset = desc.length > 1 ? (desc.length * 4) + 14 : 18;
-    this.escreverCampoVerde(doc, 'Status:', ordem.U_Status, col2X, cursorY + statusYOffset);
+    const desc = this.quebrarTextoPorCaracteres(ordem.U_nameOrdem || 'NÃO INFORMADO', 42);
+    this.escreverCampoVerde(doc, 'Descrição:', desc, (pageW / 2) - 10, cursorY + 8);
+    
+    cursorY += 40;
 
-    cursorY += infoHeight + 8;
+    // --- Listagem de Pedidos e Seus Itens ---
+    pedidosAgrupados.forEach((pedido, index) => {
+      const endereco = this.quebrarTextoPorCaracteres(pedido.Address2 || 'ENDEREÇO NÃO CADASTRADO', 72);
+      
+      // Cálculo de espaço: Cabeçalho (35mm) + Endereço + Itens (8mm cada)
+      const alturaPedido = 40 + (endereco.length * 5) + (pedido.itens.length * 8);
 
-    // --- Listagem de Pedidos ---
-    pedidos.forEach((p, index) => {
-      // Cálculo antecipado do endereço (72 caracteres)
-      const endereco = this.quebrarTextoPorCaracteres(p.Address2 || 'ENDEREÇO NÃO CADASTRADO', 72);
-      const blocoEstimado = 60 + (endereco.length * 5);
-
-      if (cursorY + blocoEstimado > pageH - 35) {
+      if (cursorY + alturaPedido > pageH - 30) {
         doc.addPage();
         desenharCabecalho();
       }
 
       const seqStartY = cursorY;
+      
+      // Cabeçalho do Pedido
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
-      doc.text(`Sequência: ${index + 1}`, marginX + 2, cursorY + 5);
-      doc.text(`Pedido SAP: ${p.DocNum || p.DocEntry}`, pageW - marginX - 2, cursorY + 5, { align: 'right' });
+      doc.text(`Parada: ${index + 1}`, marginX + 2, cursorY + 5);
+      doc.text(`Pedido: ${pedido.DocNum || pedido.DocEntry}`, pageW - marginX - 2, cursorY + 5, { align: 'right' });
       
       cursorY += 12;
       doc.setFontSize(9);
       doc.setTextColor(this.PRETO_TEXTO[0], this.PRETO_TEXTO[1], this.PRETO_TEXTO[2]);
       
-      this.escreverDetalhe(doc, 'Cliente:', `${p.CardName} (${p.CardCode})`, marginX + 5, cursorY);
+      this.escreverDetalhe(doc, 'Cliente:', `${pedido.CardName} (${pedido.CardCode})`, marginX + 5, cursorY);
       cursorY += 5;
-      this.escreverDetalhe(doc, 'Localidade:', localidadesMap.get(p.CardCode) || 'Candeias do Jamari', marginX + 5, cursorY);
+      this.escreverDetalhe(doc, 'Localidade:', localidadesMap.get(pedido.CardCode) || 'NÃO INFORMADO', marginX + 5, cursorY);
       cursorY += 5;
+      this.escreverDetalhe(doc, 'Endereço:', endereco, marginX + 5, cursorY);
+      cursorY += (endereco.length * 4.5) + 1;
       
-      // AQUI: Endereço de Entrega com limite de 72 caracteres
-      this.escreverDetalhe(doc, 'Endereço de Entrega:', endereco, marginX + 5, cursorY);
-      cursorY += (endereco.length * 4.5) + 1; // Espaçamento proporcional às linhas
-
-      this.escreverDetalhe(doc, 'Vendedor:', p.SlpName || 'NÃO INFORMADO', marginX + 5, cursorY);
-      cursorY += 5;
-      const contato = p.Mobil || p.Telephone || 'NÃO INFORMADO';
-      this.escreverDetalhe(doc, 'Telefone:', contato, marginX + 5, cursorY);
+      const contato = pedido.Mobil || pedido.Telephone || 'NÃO INFORMADO';
+      this.escreverDetalhe(doc, 'Contato:', contato, marginX + 5, cursorY);
       cursorY += 6;
 
-      doc.setDrawColor(this.CINZA_LINHA[0], this.CINZA_LINHA[1], this.CINZA_LINHA[2]);
+      // Divisória Interna de Itens
+      doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineDashPattern([1, 1], 0);
       doc.line(marginX + 5, cursorY, pageW - marginX - 5, cursorY);
       doc.setLineDashPattern([], 0);
       cursorY += 6;
 
-      this.escreverDetalhe(doc, 'Item:', `${p.ItemCode} - ${p.Dscription}`, marginX + 5, cursorY);
-      cursorY += 5;
-      this.escreverDetalhe(doc, 'Quantidade:', `${p.Quantity} ${p.UomCode || 'SC'}`, marginX + 5, cursorY);
-      
-      cursorY += 8;
-      doc.setDrawColor(this.CINZA_LINHA[0], this.CINZA_LINHA[1], this.CINZA_LINHA[2]);
+      // Listagem dos Produtos deste Pedido
+      pedido.itens.forEach((item: any) => {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Produto:', marginX + 5, cursorY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${item.ItemCode} - ${item.Dscription}`, marginX + 22, cursorY);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text('Qtd:', pageW - 60, cursorY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${item.Quantity} ${item.UomCode || 'SC'}`, pageW - 50, cursorY);
+        
+        cursorY += 6;
+      });
+
+      // Borda do Bloco do Pedido
+      cursorY += 2;
+      doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineWidth(0.3);
       doc.roundedRect(marginX, seqStartY, pageW - (marginX * 2), cursorY - seqStartY, 2, 2, 'S');
-      cursorY += 6; 
+      cursorY += 8; 
     });
 
     this.desenharRodape(doc, pageW, pageH, marginX);
@@ -146,8 +142,8 @@ export class ItinerarioPdfService {
     doc.text(label, x, y);
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0);
-    doc.text(valor, x + labelW + 2, y);
+    doc.setTextColor(this.PRETO_TEXTO[0], this.PRETO_TEXTO[1], this.PRETO_TEXTO[2]);
+    doc.text(Array.isArray(valor) ? valor : String(valor), x + labelW + 2, y);
   }
 
   private escreverDetalhe(doc: jsPDF, label: string, valor: any, x: number, y: number) {
@@ -155,21 +151,21 @@ export class ItinerarioPdfService {
     doc.text(label, x, y);
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
-    doc.text(valor, x + labelW + 2, y);
+    doc.text(Array.isArray(valor) ? valor : String(valor), x + labelW + 2, y);
   }
 
   private desenharRodape(doc: jsPDF, pageW: number, pageH: number, marginX: number) {
     const totalPages = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      const footerY = pageH - 25;
+      const footerY = pageH - 20;
       doc.setFontSize(8);
       doc.setTextColor(100);
       doc.line(marginX, footerY, marginX + 60, footerY);
       doc.text('Assinatura Motorista', marginX, footerY + 4);
       doc.line(pageW - marginX - 60, footerY, pageW - marginX, footerY);
       doc.text('Conferência Logística', pageW - marginX, footerY + 4, { align: 'right' });
-      doc.text(`Página ${i} de ${totalPages}`, pageW / 2, pageH - 10, { align: 'center' });
+      doc.text(`Página ${i} de ${totalPages}`, pageW / 2, pageH - 8, { align: 'center' });
     }
   }
 }
