@@ -13,12 +13,18 @@ export class ItinerarioPdfService {
   constructor() {}
 
   /**
-   * Converte o arquivo físico em uma imagem que o jsPDF entende
+   * Divide uma string em um array de strings respeitando o limite de caracteres
    */
+  private quebrarTextoPorCaracteres(texto: string, limite: number): string[] {
+    if (!texto) return ['NÃO INFORMADO'];
+    const regex = new RegExp(`.{1,${limite}}`, 'g');
+    return texto.match(regex) || [texto];
+  }
+
   private carregarLogo(): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
       const img = new Image();
-      img.src = 'logo.png'; // Caminho relativo aos assets do Angular
+      img.src = 'logo.png';
       img.onload = () => resolve(img);
       img.onerror = () => {
         console.error('Erro: Arquivo assets/logo.png não encontrado.');
@@ -34,18 +40,13 @@ export class ItinerarioPdfService {
     const marginX = 12;
     let cursorY = 10;
 
-    // Aguarda o carregamento da imagem antes de começar
     const logoImg = await this.carregarLogo();
 
     const desenharCabecalho = () => {
       cursorY = 10;
-      
-      // Renderiza a logo se o arquivo foi carregado com sucesso
       if (logoImg) {
-        // x, y, largura, altura
         doc.addImage(logoImg, 'PNG', marginX, cursorY - 3, 30, 12);
       }
-
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
@@ -60,8 +61,8 @@ export class ItinerarioPdfService {
 
     desenharCabecalho();
 
-    // --- Bloco Superior de Detalhes da Ordem ---
-    const infoHeight = 28;
+    // --- Bloco Superior ---
+    const infoHeight = 32; // Aumentado levemente para acomodar descrição longa
     doc.setFillColor(this.VERDE_CLARO_BG[0], this.VERDE_CLARO_BG[1], this.VERDE_CLARO_BG[2]);
     doc.roundedRect(marginX, cursorY, pageW - (marginX * 2), infoHeight, 2, 2, 'F');
 
@@ -71,22 +72,28 @@ export class ItinerarioPdfService {
     this.escreverCampoVerde(doc, 'Número da Ordem:', ordem.DocEntry.toString(), marginX + 5, cursorY + 8);
     this.escreverCampoVerde(doc, 'Data de Criação:', ordem.dataCriacao, marginX + 5, cursorY + 18);
 
-    const desc = doc.splitTextToSize(ordem.U_nameOrdem || 'NÃO INFORMADO', (pageW / 2) - 15);
+    // AQUI: Descrição com limite de 42 caracteres
+    const desc = this.quebrarTextoPorCaracteres(ordem.U_nameOrdem || 'NÃO INFORMADO', 42);
     this.escreverCampoVerde(doc, 'Descrição:', desc, col2X, cursorY + 8);
-    this.escreverCampoVerde(doc, 'Status:', ordem.U_Status, col2X, cursorY + 18 + (desc.length > 1 ? 4 : 0));
+    
+    // Ajuste dinâmico do status baseado nas linhas da descrição
+    const statusYOffset = desc.length > 1 ? (desc.length * 4) + 14 : 18;
+    this.escreverCampoVerde(doc, 'Status:', ordem.U_Status, col2X, cursorY + statusYOffset);
 
     cursorY += infoHeight + 8;
 
     // --- Listagem de Pedidos ---
     pedidos.forEach((p, index) => {
-      // Verifica se precisa de nova página (bloco agora é maior)
-      if (cursorY + 70 > pageH - 35) {
+      // Cálculo antecipado do endereço (72 caracteres)
+      const endereco = this.quebrarTextoPorCaracteres(p.Address2 || 'ENDEREÇO NÃO CADASTRADO', 72);
+      const blocoEstimado = 60 + (endereco.length * 5);
+
+      if (cursorY + blocoEstimado > pageH - 35) {
         doc.addPage();
         desenharCabecalho();
       }
 
       const seqStartY = cursorY;
-      
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
@@ -94,29 +101,24 @@ export class ItinerarioPdfService {
       doc.text(`Pedido SAP: ${p.DocNum || p.DocEntry}`, pageW - marginX - 2, cursorY + 5, { align: 'right' });
       
       cursorY += 12;
-
       doc.setFontSize(9);
       doc.setTextColor(this.PRETO_TEXTO[0], this.PRETO_TEXTO[1], this.PRETO_TEXTO[2]);
       
       this.escreverDetalhe(doc, 'Cliente:', `${p.CardName} (${p.CardCode})`, marginX + 5, cursorY);
       cursorY += 5;
-      
       this.escreverDetalhe(doc, 'Localidade:', localidadesMap.get(p.CardCode) || 'Candeias do Jamari', marginX + 5, cursorY);
       cursorY += 5;
       
-      const endereco = doc.splitTextToSize(p.Address2 || 'ENDEREÇO NÃO CADASTRADO', pageW - (marginX * 2) - 45);
+      // AQUI: Endereço de Entrega com limite de 72 caracteres
       this.escreverDetalhe(doc, 'Endereço de Entrega:', endereco, marginX + 5, cursorY);
-      cursorY += (endereco.length * 4.5);
+      cursorY += (endereco.length * 4.5) + 1; // Espaçamento proporcional às linhas
 
-      // --- NOVOS CAMPOS: Vendedor e Telefone ---
       this.escreverDetalhe(doc, 'Vendedor:', p.SlpName || 'NÃO INFORMADO', marginX + 5, cursorY);
       cursorY += 5;
-
       const contato = p.Mobil || p.Telephone || 'NÃO INFORMADO';
       this.escreverDetalhe(doc, 'Telefone:', contato, marginX + 5, cursorY);
       cursorY += 6;
 
-      // Linha Pontilhada
       doc.setDrawColor(this.CINZA_LINHA[0], this.CINZA_LINHA[1], this.CINZA_LINHA[2]);
       doc.setLineDashPattern([1, 1], 0);
       doc.line(marginX + 5, cursorY, pageW - marginX - 5, cursorY);
@@ -128,12 +130,9 @@ export class ItinerarioPdfService {
       this.escreverDetalhe(doc, 'Quantidade:', `${p.Quantity} ${p.UomCode || 'SC'}`, marginX + 5, cursorY);
       
       cursorY += 8;
-
-      // Borda do Bloco
       doc.setDrawColor(this.CINZA_LINHA[0], this.CINZA_LINHA[1], this.CINZA_LINHA[2]);
       doc.setLineWidth(0.3);
       doc.roundedRect(marginX, seqStartY, pageW - (marginX * 2), cursorY - seqStartY, 2, 2, 'S');
-      
       cursorY += 6; 
     });
 
@@ -148,7 +147,7 @@ export class ItinerarioPdfService {
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0);
-    doc.text(String(valor), x + labelW + 2, y);
+    doc.text(valor, x + labelW + 2, y);
   }
 
   private escreverDetalhe(doc: jsPDF, label: string, valor: any, x: number, y: number) {
@@ -156,7 +155,7 @@ export class ItinerarioPdfService {
     doc.text(label, x, y);
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
-    doc.text(String(valor), x + labelW + 2, y);
+    doc.text(valor, x + labelW + 2, y);
   }
 
   private desenharRodape(doc: jsPDF, pageW: number, pageH: number, marginX: number) {
