@@ -13,6 +13,7 @@
   import { PedidosVendaService } from '../../../../sap/service/document/pedidos-venda.service';
   import { ParameterService } from '../../../../shared/service/parameter.service';
 import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
+import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
 
   @Component({
     selector: 'app-ordem-selected',
@@ -33,7 +34,6 @@ import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-
     loadingPedidos: boolean = false;
     
     showItinerarioModal: boolean = false;
-    showRomaneioModal: boolean = false;
     showLoteModal: boolean = false;
 
     notas: DocumentList[] = [];
@@ -75,7 +75,8 @@ import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-
       private pedidosVendaService: PedidosVendaService,
       private parameterService: ParameterService,
       private route: ActivatedRoute,
-      private pdfService: OrdemCarregamentoPdfService
+      private pdfService: OrdemCarregamentoPdfService,
+      private romaneioPdfService: RomaneioPdfService
     ) {}
 
     ngOnInit(): void {
@@ -146,6 +147,18 @@ import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-
             });
         }
     }
+
+  imprimirRomaneioAgrupado(): void {
+    if (!this.validateForm()) {
+      return; 
+    }
+
+    if (this.selected) {
+      this.selected.U_placa = this.placa;
+      this.selected.U_motorista = this.nomeMotorista;
+      this.romaneioPdfService.gerarPdf(this.selected);
+    }
+  }
 
     private hydrateFromSelected(): void {
       if (!this.selected) {
@@ -244,17 +257,6 @@ import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-
         this.loading = false;
       }
     }
-
-    abrirModalRomaneio(): void {
-      if (this.selected.pedidosVenda.length === 0) {
-        this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
-        return;
-      }
-      if (this.validateForm()) {
-        this.showRomaneioModal = true;
-      }
-    }
-
 
     salvarLogistica(): void {
       if (!this.validateForm()) return;

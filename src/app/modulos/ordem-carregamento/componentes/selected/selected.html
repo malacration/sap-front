@@ -39,7 +39,7 @@
         </button>
 
         <button
-          (click)="abrirModalRomaneio()"
+          (click)="imprimirRomaneioAgrupado()"
           type="button"
           class="btn btn-warning"
           [disabled]="loading || selected?.U_Status == 'Cancelado'">
@@ -177,13 +177,5 @@
     [loading]="loading"
     (confirm)="onLotesConfirmados($event)">
   </app-selecao-lotes-modal>
-
-  <app-romaneio-modal
-    [(show)]="showRomaneioModal"
-    [pedidos]="selected.pedidosVenda"
-    [ordem]="selected"
-    [placa]="placa"
-    [motorista]="nomeMotorista">
-  </app-romaneio-modal>
 
 </section>
