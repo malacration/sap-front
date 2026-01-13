@@ -157,7 +157,7 @@ updateOrderName(): void {
     }
 
     this.isLoadingOrders = true;
-    this.orderSalesService
+    this.ordemCarregamentoService
       .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.Bplid, this.localidade!.Code)
       .subscribe({
         next: (result: NextLink<PedidoVenda>) => {
