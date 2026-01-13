@@ -285,11 +285,8 @@
   word-break: break-word; 
 }
 
-// Novo botão de seta
 .btn-move-arrow {
-  background-color: rgba(0, 0, 0, 0.1);
   border: none;
-  color: #333;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -297,15 +294,33 @@
   width: 28px;
   height: 28px;
   border-radius: 4px;
-  flex-shrink: 0;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.2);
-    transform: scale(1.1);
-  }
-
+  
+  color: white;
+  
   i {
     font-size: 14px;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.left-list .btn-move-arrow {
+  background-color: #28a745; 
+
+  &:hover {
+    background-color: #218838; 
+    transform: scale(1.1);
+  }
+}
+
+.right-list .btn-move-arrow {
+  background-color: #dc3545; 
+
+  &:hover {
+    background-color: #c82333; 
+    transform: scale(1.1);
   }
 }
 
