@@ -20,7 +20,6 @@ export class ItinerarioPdfService {
   private carregarLogo(): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
       const img = new Image();
-      // No Angular, o caminho correto para imagens estáticas é dentro de assets
       img.src = 'logo.png'; 
       img.onload = () => resolve(img);
       img.onerror = () => {
@@ -58,29 +57,23 @@ export class ItinerarioPdfService {
 
     desenharCabecalho();
 
-    // --- Bloco Superior (Dados da Ordem) ---
-    // Resetando o tamanho da fonte para os dados (estava herdando 18 do título)
     doc.setFontSize(10); 
     const alturaBlocoVerde = 28;
 
     doc.setFillColor(this.VERDE_CLARO_BG[0], this.VERDE_CLARO_BG[1], this.VERDE_CLARO_BG[2]);
     doc.roundedRect(marginX, cursorY, pageW - (marginX * 2), alturaBlocoVerde, 2, 2, 'F');
     
-    // Coluna 1
     this.escreverCampoVerde(doc, 'Número da Ordem:', ordem.DocEntry.toString(), marginX + 5, cursorY + 8);
     this.escreverCampoVerde(doc, 'Data de Criação:', ordem.dataCriacao || '', marginX + 5, cursorY + 18);
     
-    // Coluna 2
     const coluna2X = (pageW / 2) - 5;
     const desc = this.quebrarTextoPorCaracteres(ordem.U_nameOrdem || 'NÃO INFORMADO', 45);
     this.escreverCampoVerde(doc, 'Descrição:', desc, coluna2X, cursorY + 8);
     
-    // Adicionado campo Status conforme o print
     this.escreverCampoVerde(doc, 'Status:', 'Aberto', coluna2X, cursorY + 20);
     
     cursorY += alturaBlocoVerde + 10;
 
-    // --- Listagem de Pedidos ---
     pedidosAgrupados.forEach((pedido, index) => {
       const endereco = this.quebrarTextoPorCaracteres(pedido.Address2 || 'ENDEREÇO NÃO CADASTRADO', 72);
       const alturaPedido = 40 + (endereco.length * 5) + (pedido.itens.length * 8);
@@ -88,12 +81,11 @@ export class ItinerarioPdfService {
       if (cursorY + alturaPedido > pageH - 30) {
         doc.addPage();
         desenharCabecalho();
-        doc.setFontSize(10); // Garante o reset do tamanho na nova página
+        doc.setFontSize(10); 
       }
 
       const seqStartY = cursorY;
       
-      // Cabeçalho do Pedido (Parada e Número)
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
@@ -118,14 +110,12 @@ export class ItinerarioPdfService {
       this.escreverDetalhe(doc, 'Contato:', contato, marginX + 5, cursorY);
       cursorY += 6;
 
-      // Divisória Interna
       doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineDashPattern([1, 1], 0);
       doc.line(marginX + 5, cursorY, pageW - marginX - 5, cursorY);
       doc.setLineDashPattern([], 0);
       cursorY += 6;
 
-      // Itens do Pedido
       pedido.itens.forEach((item: any) => {
         doc.setFont('helvetica', 'bold');
         doc.text('Produto:', marginX + 5, cursorY);
@@ -140,7 +130,6 @@ export class ItinerarioPdfService {
         cursorY += 6;
       });
 
-      // Borda do Bloco
       cursorY += 2;
       doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineWidth(0.3);
@@ -153,7 +142,7 @@ export class ItinerarioPdfService {
   }
 
   private escreverCampoVerde(doc: jsPDF, label: string, valor: any, x: number, y: number) {
-    doc.setFontSize(10); // Força o tamanho correto para evitar o bug
+    doc.setFontSize(10); 
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
     doc.text(label, x, y);
@@ -182,15 +171,12 @@ export class ItinerarioPdfService {
       doc.setFontSize(8);
       doc.setTextColor(100);
       
-      // Linha e texto da esquerda
       doc.line(marginX, footerY, marginX + 60, footerY);
       doc.text('Assinatura Motorista', marginX, footerY + 4);
       
-      // Linha e texto da direita
       doc.line(pageW - marginX - 60, footerY, pageW - marginX, footerY);
       doc.text('Conferência Logística', pageW - marginX, footerY + 4, { align: 'right' });
       
-      // Numeração de página
       doc.text(`Página ${i} de ${totalPages}`, pageW / 2, pageH - 8, { align: 'center' });
     }
   }

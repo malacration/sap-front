@@ -16,7 +16,6 @@ export class ItinerarioModalComponent implements OnChanges {
 
   pedidosAgrupados: any[] = [];
   
-  // Variáveis de controle do Drag
   draggedItemIndex: number | null = null;
   dropTargetIndex: number | null = null;
   dropPosition: 'above' | 'below' | null = null;
@@ -44,14 +43,13 @@ export class ItinerarioModalComponent implements OnChanges {
     this.pedidosAgrupados = Array.from(agrupado.values());
   }
 
-  // --- Lógica de Drag and Drop ---
 
   onDragStart(index: number) {
     this.draggedItemIndex = index;
   }
 
   onDragOver(event: DragEvent, index: number) {
-    event.preventDefault(); // Necessário para permitir o drop
+    event.preventDefault(); 
     
     if (this.draggedItemIndex === index) {
       this.dropTargetIndex = null;
@@ -62,7 +60,6 @@ export class ItinerarioModalComponent implements OnChanges {
     const rect = target.getBoundingClientRect();
     const mouseY = event.clientY;
     
-    // Se o mouse estiver acima da metade da linha, a sombra fica em cima
     const threshold = rect.top + (rect.height / 2);
     
     this.dropTargetIndex = index;
