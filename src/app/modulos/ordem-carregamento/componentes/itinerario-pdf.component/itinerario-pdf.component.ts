@@ -21,7 +21,7 @@ export class ItinerarioPdfService {
   private carregarLogo(): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
       const img = new Image();
-      img.src = 'assets/logo.png'; 
+      img.src = 'logo.png'; 
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
     });
