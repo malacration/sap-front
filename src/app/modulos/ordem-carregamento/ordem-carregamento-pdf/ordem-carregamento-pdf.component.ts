@@ -9,6 +9,7 @@ import { OrdemCarregamento } from '../models/ordem-carregamento';
 export class OrdemCarregamentoPdfService {
 
   private readonly VERDE_SUSTEN: [number, number, number] = [37, 162, 70];
+  private readonly AZUL_DESTAQUE: [number, number, number] = [0, 51, 153];
   private readonly CINZA_BORDA: [number, number, number] = [157, 157, 157];
   private readonly MARGIN_X = 10;
 
@@ -19,8 +20,10 @@ export class OrdemCarregamentoPdfService {
     const pageW = doc.internal.pageSize.getWidth();
     let currentY = 15;
 
-    // --- Cálculo do Total de Frete ---
-    const totalFrete = (selected.pedidosVenda || []).reduce((acc, p) => acc + (Number(p.DistribSum) || 0), 0);
+    const totalItens = (selected.pedidosVenda || []).reduce((acc, p) => acc + Number(p.Quantity || 0), 0);
+    const totalPesoGeral = (selected.pedidosVenda || []).reduce((acc, p) => 
+      acc + (Number(p.Quantity || 0) * Number(p.Weight1 || 0)), 0
+    );
 
     const logo = await this.getLogo();
     if (logo) {
@@ -37,8 +40,7 @@ export class OrdemCarregamentoPdfService {
     doc.line(this.MARGIN_X, currentY, pageW - this.MARGIN_X, currentY);
     
     currentY += 8;
-    // Passamos o totalFrete para o cabeçalho de informações
-    currentY = this.drawInfoList(doc, selected, totalFrete, currentY);
+    currentY = this.drawInfoList(doc, selected, totalItens, totalPesoGeral, currentY);
 
     currentY += 5;
     currentY = this.drawLogisticsBox(doc, selected, transportadoraNome, currentY, pageW);
@@ -49,22 +51,26 @@ export class OrdemCarregamentoPdfService {
     doc.save(`Ordem_Carregamento_${selected.DocEntry}_${dataArquivo}.pdf`);
   }
 
-  private drawInfoList(doc: jsPDF, selected: OrdemCarregamento, totalFrete: number, y: number): number {
+  private drawInfoList(doc: jsPDF, selected: OrdemCarregamento, totalItens: number, totalPeso: number, y: number): number {
     doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
 
     const info = [
       { label: 'Número da Ordem:', value: selected.DocEntry, space: 35 },
       { label: 'Data de Criação:', value: selected.dataCriacao, space: 35 },
       { label: 'Descrição:', value: selected.U_nameOrdem, space: 22 },
       { label: 'Status:', value: selected.U_Status?.toUpperCase(), space: 15 },
-      { label: 'Total Frete:', value: `R$ ${this.formatCurrency(totalFrete)}`, space: 22, color: [255, 0, 0] } // Vermelho para destaque
+      { label: 'Quantidade Total:', value: `${totalItens}`, space: 30, color: this.VERDE_SUSTEN },
+      { label: 'Peso Total Ordem:', value: `${this.formatDecimal(totalPeso)} kg`, space: 30, color: this.VERDE_SUSTEN }
     ];
 
     info.forEach(item => {
       doc.setFont('helvetica', 'bold');
-      if (item.color) doc.setTextColor(item.color[0], item.color[1], item.color[2]);
-      else doc.setTextColor(0, 0, 0);
+      
+      if (item.color) {
+        doc.setTextColor(item.color[0], item.color[1], item.color[2]);
+      } else {
+        doc.setTextColor(0, 0, 0);
+      }
 
       doc.text(item.label, this.MARGIN_X, y);
       
@@ -73,7 +79,7 @@ export class OrdemCarregamentoPdfService {
       y += 6;
     });
 
-    doc.setTextColor(0, 0, 0); // Reset cor
+    doc.setTextColor(0, 0, 0);
     return y;
   }
 
@@ -88,6 +94,7 @@ export class OrdemCarregamentoPdfService {
 
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
     
     let lineY = y + 6;
     doc.text('PLACA:', this.MARGIN_X + 3, lineY);
@@ -112,23 +119,26 @@ export class OrdemCarregamentoPdfService {
   private drawTable(doc: jsPDF, selected: OrdemCarregamento, y: number): void {
     autoTable(doc, {
       startY: y,
-      head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'FRETE', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'UN']],
-      body: (selected.pedidosVenda || []).map(p => [
-        { content: p.DocNum, styles: { fontStyle: 'bold' } },
-        p.CardCode,
-        p.CardName,
-        p.Name,
-        p.SlpName || 'N/A', // Nome do Vendedor
-        `R$ ${this.formatCurrency(p.DistribSum || 0)}`, // Valor do Frete
-        p.ItemCode,
-        p.Dscription,
-        { content: p.Quantity, styles: { halign: 'center', fontStyle: 'bold' } },
-        { content: p.UomCode, styles: { halign: 'center' } }
-      ]),
+      head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'PESO TOTAL (KG)', 'UN']],
+      body: (selected.pedidosVenda || []).map(p => {
+        const pesoTotalRow = (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
+        return [
+          { content: p.DocNum, styles: { fontStyle: 'bold' } },
+          p.CardCode,
+          p.CardName,
+          p.Name,
+          p.SlpName || 'N/A',
+          p.ItemCode,
+          p.Dscription,
+          { content: p.Quantity, styles: { halign: 'center', fontStyle: 'bold' } },
+          { content: this.formatDecimal(pesoTotalRow), styles: { halign: 'center' } },
+          { content: p.UomCode, styles: { halign: 'center' } }
+        ];
+      }),
       theme: 'grid',
       styles: {
         font: 'helvetica',
-        fontSize: 6.5, // Reduzi levemente para caber as novas colunas
+        fontSize: 6.5,
         textColor: [0, 0, 0],
         lineColor: this.CINZA_BORDA,
         lineWidth: 0.1,
@@ -146,18 +156,20 @@ export class OrdemCarregamentoPdfService {
         2: { cellWidth: 'auto' }, 
         3: { cellWidth: 18 }, 
         4: { cellWidth: 18 }, 
-        5: { cellWidth: 16 }, 
-        6: { cellWidth: 18 }, 
-        8: { cellWidth: 10 }, 
+        5: { cellWidth: 18 }, 
+        7: { cellWidth: 10 }, 
+        8: { cellWidth: 15 },
         9: { cellWidth: 10 }  
       },
       margin: { left: this.MARGIN_X, right: this.MARGIN_X }
     });
   }
 
-  private formatCurrency(value: any): string {
-    const val = Number(value) || 0;
-    return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  private formatDecimal(value: any): string {
+    return (Number(value) || 0).toLocaleString('pt-BR', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
   }
 
   private async getLogo(): Promise<Uint8Array | null> {
