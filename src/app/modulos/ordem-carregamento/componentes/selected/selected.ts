@@ -12,6 +12,8 @@
   import { BusinessPartnerService } from '../../../sap-shared/_services/business-partners.service';
   import { PedidosVendaService } from '../../../../sap/service/document/pedidos-venda.service';
   import { ParameterService } from '../../../../shared/service/parameter.service';
+import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
+import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
 
   @Component({
     selector: 'app-ordem-selected',
@@ -32,7 +34,6 @@
     loadingPedidos: boolean = false;
     
     showItinerarioModal: boolean = false;
-    showRomaneioModal: boolean = false;
     showLoteModal: boolean = false;
 
     notas: DocumentList[] = [];
@@ -47,7 +48,9 @@
       new Column('Núm. do Pedido', 'DocNum'),
       new Column('Cód. Cliente', 'CardCode'),
       new Column('Nome Cliente', 'CardName'),
-      new Column('Localidade', 'Localidade'),
+      new Column('Localidade', 'Name'),
+      new Column('Vendedor', 'SlpName'),
+      new Column('Frete', 'DistribSum'),
       new Column('Cód. Item', 'ItemCode'),
       new Column('Dsc. Item', 'Dscription'),
       new Column('Quantidade', 'Quantity'),
@@ -72,6 +75,8 @@
       private pedidosVendaService: PedidosVendaService,
       private parameterService: ParameterService,
       private route: ActivatedRoute,
+      private pdfService: OrdemCarregamentoPdfService,
+      private romaneioPdfService: RomaneioPdfService
     ) {}
 
     ngOnInit(): void {
@@ -85,6 +90,12 @@
       }
     }
 
+    imprimirOrdemPdf(): void {
+      if (this.selected) {
+        const transportadora = this.businessPartner?.CardName || '';
+        this.pdfService.gerarPdf(this.selected, transportadora);
+      }
+    }
 
     private loadNotas() {
       if (!this.selected?.DocEntry) return;
@@ -117,12 +128,11 @@
     cancelarOrdem(): void {
         if (!this.selected) return;
 
-        if (confirm('Tem certeza que deseja cancelar este Romaneio? Isso irá desvincular todos os pedidos.')) {
+        if (this.alertService.confirm('Tem certeza que deseja cancelar esta Ordem de Carregamento? Isso irá desvincular todos os pedidos.')) {
             this.loading = true;
             this.ordemCarregamentoService.cancelar(this.selected.DocEntry).subscribe({
                 next: (res) => {
-                    this.alertService.confirm('Romaneio cancelado com sucesso!');
-                    // Atualiza o objeto localmente para refletir a mudança
+                    this.alertService.info('Ordem de Carregamento cancelada com sucesso!');
                     if (this.selected) {
                         this.selected.U_Status = 'Cancelado';
                     }
@@ -130,12 +140,24 @@
                 },
                 error: (err) => {
                     console.error(err);
-                    this.alertService.error('Erro ao cancelar romaneio: ' + (err.error?.message || err.message));
+                    this.alertService.error('Erro ao cancelar a Ordem de Carregamento: ' + (err.error?.message || err.message));
                     this.loading = false;
                 }
             });
         }
     }
+
+  imprimirRomaneioAgrupado(): void {
+    if (!this.validateForm()) {
+      return; 
+    }
+
+    if (this.selected) {
+      this.selected.U_placa = this.placa;
+      this.selected.U_motorista = this.nomeMotorista;
+      this.romaneioPdfService.gerarPdf(this.selected);
+    }
+  }
 
     private hydrateFromSelected(): void {
       if (!this.selected) {
@@ -208,43 +230,22 @@
       });
     }
 
-    async abrirModalItinerario(): Promise<void> {
-      if (this.selected.pedidosVenda.length === 0) {
+    abrirModalItinerario(): void {
+      if (!this.selected || this.selected.pedidosVenda.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
         return;
       }
-      
-      this.loading = true;
-      try {
-        const promises = this.selected.pedidosVenda.map(pedido =>
-          this.pedidosVendaService.searchLocalidade(20).toPromise()
-        );
-        const results = await Promise.all(promises);
-        
-        results.forEach((res, index) => {
-          if (res && res.content?.length > 0) {
-            this.localidadesMap.set(this.selected.pedidosVenda[index].CardCode, res.content[0].Name);
-          }
-        });
-        
-        this.showItinerarioModal = true; 
-      } catch (error: any) {
-        this.alertService.error('Erro ao carregar localidades: ' + (error.message || 'Erro desconhecido'));
-      } finally {
-        this.loading = false;
-      }
-    }
 
-    abrirModalRomaneio(): void {
-      if (this.selected.pedidosVenda.length === 0) {
-        this.alertService.error('Nenhum pedido disponível para gerar romaneio.');
-        return;
-      }
-      if (this.validateForm()) {
-        this.showRomaneioModal = true;
-      }
-    }
+      this.localidadesMap.clear();
 
+      this.selected.pedidosVenda.forEach(pedido => {
+        if (pedido.CardCode && pedido.Name) {
+          this.localidadesMap.set(pedido.CardCode, pedido.Name);
+        }
+      });
+
+      this.showItinerarioModal = true;
+    }
 
     salvarLogistica(): void {
       if (!this.validateForm()) return;

@@ -1,76 +1,106 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { ItinerarioPdfComponent } from '../../componentes/itinerario-pdf.component/itinerario-pdf.component';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { OrdemCarregamento } from '../../models/ordem-carregamento';
+import { ItinerarioPdfService } from '../../componentes/itinerario-pdf.component/itinerario-pdf.component';
 
 @Component({
   selector: 'app-itinerario-modal',
-  templateUrl: './itinerario-modal.component.html'
+  templateUrl: './itinerario-modal.component.html',
+  styleUrls: ['./itinerario-modal.component.scss']
 })
 export class ItinerarioModalComponent implements OnChanges {
   @Input() show: boolean = false;
   @Input() pedidos: any[] = [];
-  @Input() ordemCarregamento: any;
-  @Input() businessPartner: any;
+  @Input() ordemCarregamento: OrdemCarregamento | null = null;
   @Input() localidadesMap: Map<string, string> = new Map();
-  
   @Output() showChange = new EventEmitter<boolean>();
 
-  pedidosOrdenados: any[] = [];
-  draggedIndex: number | null = null;
-  placeholder: HTMLTableRowElement | null = null;
+  pedidosAgrupados: any[] = [];
+  
+  draggedItemIndex: number | null = null;
+  dropTargetIndex: number | null = null;
+  dropPosition: 'above' | 'below' | null = null;
 
-  @ViewChild('tableResponsive') tableResponsive: ElementRef;
-  @ViewChild(ItinerarioPdfComponent) pdfComponent: ItinerarioPdfComponent;
+  constructor(private itinerarioPdfService: ItinerarioPdfService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['pedidos'] && this.pedidos) {
-      this.resetarOrdem();
+    if ((changes['show'] && this.show) || changes['pedidos']) {
+      this.agruparPedidos();
     }
   }
 
-  fecharModal() {
+  private agruparPedidos() {
+    if (!this.pedidos) return;
+    const agrupado = new Map<string, any>();
+
+    this.pedidos.forEach(item => {
+      const chave = item.DocNum || item.DocEntry;
+      if (!agrupado.has(chave)) {
+        agrupado.set(chave, { ...item, itens: [] });
+      }
+      agrupado.get(chave).itens.push(item);
+    });
+
+    this.pedidosAgrupados = Array.from(agrupado.values());
+  }
+
+
+  onDragStart(index: number) {
+    this.draggedItemIndex = index;
+  }
+
+  onDragOver(event: DragEvent, index: number) {
+    event.preventDefault(); 
+    
+    if (this.draggedItemIndex === index) {
+      this.dropTargetIndex = null;
+      return;
+    }
+
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const mouseY = event.clientY;
+    
+    const threshold = rect.top + (rect.height / 2);
+    
+    this.dropTargetIndex = index;
+    this.dropPosition = mouseY < threshold ? 'above' : 'below';
+  }
+
+  onDragLeave() {
+    this.dropTargetIndex = null;
+    this.dropPosition = null;
+  }
+
+  onDrop(index: number) {
+    if (this.draggedItemIndex !== null && this.draggedItemIndex !== index) {
+      const lista = [...this.pedidosAgrupados];
+      const itemMovido = lista.splice(this.draggedItemIndex, 1)[0];
+      
+      const novoIndex = this.dropPosition === 'below' ? index : index;
+      
+      lista.splice(novoIndex, 0, itemMovido);
+      this.pedidosAgrupados = lista;
+    }
+    this.limparDrag();
+  }
+
+  limparDrag() {
+    this.draggedItemIndex = null;
+    this.dropTargetIndex = null;
+    this.dropPosition = null;
+  }
+
+  fechar() {
     this.showChange.emit(false);
   }
 
-  resetarOrdem() {
-    this.pedidosOrdenados = [...this.pedidos];
-  }
-
-  gerarPDF() {
-    if (this.pdfComponent) {
-        this.pdfComponent.gerarPdf();
+  gerarPdf() {
+    if (this.ordemCarregamento) {
+      this.itinerarioPdfService.gerarPdf(
+        this.ordemCarregamento,
+        this.pedidosAgrupados,
+        this.localidadesMap
+      );
     }
-  }
-
-  onDragStart(event: DragEvent, index: number): void {
-    this.draggedIndex = index;
-    event.dataTransfer!.setData('text/plain', index.toString());
-    event.dataTransfer!.effectAllowed = 'move';
-    (event.target as HTMLElement).classList.add('dragging');
-    
-    this.placeholder = document.createElement('tr');
-    this.placeholder.classList.add('placeholder');
-    this.placeholder.innerHTML = '<td colspan="7"></td>';
-  }
-
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
-    event.dataTransfer!.dropEffect = 'move';
-  }
-
-  onDragEnd(event: DragEvent): void {
-    (event.target as HTMLElement).classList.remove('dragging');
-    this.placeholder?.remove();
-    this.placeholder = null;
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    if (this.draggedIndex === null) return;
-    
-    const movedItem = this.pedidosOrdenados.splice(this.draggedIndex, 1)[0];
-    this.pedidosOrdenados.push(movedItem); 
-    
-    this.draggedIndex = null;
-    this.placeholder?.remove();
   }
 }

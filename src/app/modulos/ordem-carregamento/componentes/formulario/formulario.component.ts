@@ -118,12 +118,23 @@ export class FormularioComponent implements OnInit, OnChanges {
     });
   }
 
-  updateOrderName(): void {
-    if (!this.isNameManuallyEdited && this.selectedBranch && this.localidade) {
-      this.ordemCarregamento.U_nameOrdem = `${this.selectedBranch.Bplname || 'Filial'} Com Destino: ${this.localidade.Name || 'Localidade'}`;
+updateOrderName(): void {
+    if (this.isNameManuallyEdited) {
+        return;
     }
-  }
 
+    const nomeFilial = this.selectedBranch?.Bplname || 'Filial';
+
+    const localidadesUnicas = [...new Set(
+      this.selectedOrders
+        .map(pedido => pedido.Name) 
+        .filter(name => name && name.trim() !== '') 
+    )];
+
+    const destinosConcatenados = localidadesUnicas.join(' - ');
+    const sulfixo = destinosConcatenados ? destinosConcatenados : '';
+    this.ordemCarregamento.U_nameOrdem = `${nomeFilial} Com Destino: ${sulfixo}`;
+  }
   onNameInputChange(): void {
     this.isNameManuallyEdited = true;
   }
@@ -187,6 +198,7 @@ export class FormularioComponent implements OnInit, OnChanges {
 
   onSelectedOrdersChange(orders: PedidoVenda[]): void {
     this.selectedOrders = orders;
+    this.updateOrderName(); 
   }
 
   clearDataInicial(): void {
