@@ -1,55 +1,56 @@
 <div class="dual-list-container" [ngClass]="{'collapsed-right': isSelectedListCollapsed}">
   <div class="list-box left-list">
     <h5 class="titulo">Disponíveis <span class="order-count">{{ availableOrdersCount }} Pedidos</span></h5>
-    <input
-      type="text"
-      class="form-control mb-2"
-      placeholder="Pesquisar..."
-      [(ngModel)]="searchTermAvailable"
-    >
+    <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermAvailable">
+    
     <div class="list-container">
       <div *ngIf="isLoadingOrders" class="text-center mt-3">
         <i class="fas fa-spinner fa-spin fa-2x"></i>
         <p>Carregando pedidos...</p>
       </div>
+
       <ng-container *ngIf="!isLoadingOrders">
         <ng-container *ngFor="let group of groupedAvailableItems">
           <div class="order-group">
-            <div class="order-header">
+            <div class="order-header d-flex justify-content-between align-items-center">
               <span class="order-info" title="{{ group.items[0]?.Name || 'N/A' }}">
                 Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}
                 | Vendedor: {{ group.items[0]?.SlpName || 'N/A' }}
                 | Cliente: {{ group.items[0]?.CardName || 'N/A' }}
                 | <b class="text-success">Total Frete: {{ group.totalFrete | currency:'BRL' }}</b>
               </span>
+              <button class="btn btn-sm btn-move-arrow" (click)="selectGroup(group)" title="Adicionar Pedido">
+                <i class="fas fa-chevron-right"></i>
+              </button>
             </div>
+            
             <ul class="order-list">
-              <li *ngFor="let item of group.items" class="list-item" (click)="selectItem(item)">
+              <li *ngFor="let item of group.items" class="list-item no-click">
                 <div class="item-details">
                   {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                 </div>
                 <div class="stock-info" *ngIf="showStock">
-                  <span class="stock-green">Estoque: {{ item.OnHand }}</span>
-                  <span class="stock-gray">Produção: {{ item.OnOrder || 0 }}</span>
-                  <span class="stock-orange">
-                    Carregamento:
-                    <ng-container *ngIf="isLoading[item.ItemCode]; else loadedCarregamento">
-                      <i class="fas fa-spinner fa-spin"></i>
-                    </ng-container>
-                    <ng-template #loadedCarregamento>
-                      {{ quantidadesEmCarregamento[item.ItemCode] ?? 0 }}
-                    </ng-template>
-                  </span>
-                  <span class="stock-purple">
-                    Balanço:
-                    <ng-container *ngIf="isLoading[item.ItemCode]; else loadedBalanco">
-                      <i class="fas fa-spinner fa-spin"></i>
-                    </ng-container>
-                    <ng-template #loadedBalanco>
-                      {{ item.OnHand - (quantidadesEmCarregamento[item.ItemCode] ?? 0) }}
-                    </ng-template>
-                  </span>
-                </div>
+                    <span class="stock-green">Estoque: {{ item.OnHand }}</span>
+                    <span class="stock-gray">Produção: {{ item.OnOrder || 0 }}</span>
+                    <span class="stock-orange">
+                      Carregamento:
+                      <ng-container *ngIf="isLoading[item.ItemCode]; else loadedCarregamento">
+                        <i class="fas fa-spinner fa-spin"></i>
+                      </ng-container>
+                      <ng-template #loadedCarregamento>
+                        {{ quantidadesEmCarregamento[item.ItemCode] ?? 0 }}
+                      </ng-template>
+                    </span>
+                    <span class="stock-purple">
+                      Balanço:
+                      <ng-container *ngIf="isLoading[item.ItemCode]; else loadedBalanco">
+                        <i class="fas fa-spinner fa-spin"></i>
+                      </ng-container>
+                      <ng-template #loadedBalanco>
+                        {{ item.OnHand - (quantidadesEmCarregamento[item.ItemCode] ?? 0) }}
+                      </ng-template>
+                    </span>
+                  </div>
               </li>
             </ul>
           </div>
@@ -61,33 +62,29 @@
       <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
     </div>
   </div>
+
   <div class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
     <div class="list-header">
       <h5>Selecionados <span class="order-count">{{ selectedOrdersCount }} Pedidos</span></h5>
       <div class="total-weight-info mb-2">
-        <span class="btn btn-sm btn-success">
-          Peso Total: {{ totalSelectedWeight | number:'1.2-2' }} KG
-        </span>
-        <span class="btn btn-sm btn-success">
-           Frete Total: {{ totalSelectedFrete | currency:'BRL' }}
-         </span>
+        <span class="btn btn-sm btn-success">Peso: {{ totalSelectedWeight | number:'1.2-2' }} KG</span>
+        <span class="btn btn-sm btn-success">Frete: {{ totalSelectedFrete | currency:'BRL' }}</span>
       </div>
       <button class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
         {{ isSelectedListCollapsed ? 'Maximizar' : 'Minimizar' }}
       </button>
     </div>
+
     <div class="list-content" [ngClass]="{'collapsed': isSelectedListCollapsed}">
       <ng-container *ngIf="!isSelectedListCollapsed">
-        <input
-          type="text"
-          class="form-control mb-2"
-          placeholder="Pesquisar..."
-          [(ngModel)]="searchTermSelected"
-        >
+        <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermSelected">
         <div class="list-container">
           <ng-container *ngFor="let group of groupedSelectedItems">
             <div class="order-group">
-              <div class="order-header">
+              <div class="order-header d-flex align-items-center">
+                <button class="btn btn-sm btn-move-arrow mr-2" (click)="removeGroup(group)" title="Remover Pedido">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
                 <span class="order-info" title="{{ group.items[0]?.Name || 'N/A' }}">
                   Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}
                   | Vendedor: {{ group.items[0]?.SlpName || 'N/A' }}
@@ -96,7 +93,7 @@
                 </span>
               </div>
               <ul class="order-list">
-                <li *ngFor="let item of group.items" class="list-item" (click)="removeItem(item)">
+                <li *ngFor="let item of group.items" class="list-item no-click">
                   <div class="item-details">
                     {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                   </div>
@@ -107,12 +104,6 @@
         </div>
         <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
       </ng-container>
-      <div *ngIf="isSelectedListCollapsed" class="collapsed-info">
-        <button class="btn btn-sm btn-success maximize-btn" (click)="toggleSelectedList()">
-          {{ groupedSelectedItems.length }} Pedidos Selecionados - Peso Total: {{ totalSelectedWeight | number:'1.2-2' }} KG |
-          Frete: {{ totalSelectedFrete | currency:'BRL' }}
-        </button>
       </div>
-    </div>
   </div>
 </div>

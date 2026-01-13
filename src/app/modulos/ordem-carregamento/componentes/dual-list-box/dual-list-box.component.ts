@@ -61,6 +61,20 @@ export class DualListBoxComponent {
     return this.selectedItems.reduce((sum, item) => sum + (Number(item.DistribSum) || 0), 0);
   }
 
+  selectGroup(group: { docNum: number, items: PedidoVenda[] }): void {
+    const itemsToMove = [...group.items];
+    this.selectedItems = this.sortItems([...this.selectedItems, ...itemsToMove]);
+    this.availableItems = this.availableItems.filter(i => i.DocNum !== group.docNum);
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
+  removeGroup(group: { docNum: number, items: PedidoVenda[] }): void {
+    const itemsToMove = [...group.items];
+    this.availableItems = this.sortItems([...this.availableItems, ...itemsToMove]);
+    this.selectedItems = this.selectedItems.filter(i => i.DocNum !== group.docNum);
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
   private groupItems(items: PedidoVenda[], searchTerm: string): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     const grouped = items.reduce((acc, item) => {
       const docNum = item.DocNum;

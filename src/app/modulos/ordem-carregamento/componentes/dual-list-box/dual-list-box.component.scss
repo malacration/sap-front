@@ -261,6 +261,66 @@
   }
 }
 
+/* ... (estilos anteriores mantidos) ... */
+
+.order-header {
+  background-color: #ffc107;
+  color: #333;
+  padding: 6px 12px; // Ajustado para acomodar o botão
+  font-weight: 500;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 14px;
+  display: flex;
+  
+  .order-info {
+    flex: 1;
+    white-space: normal;
+    line-height: 1.2;
+  }
+}
+
+// Novo botão de seta
+.btn-move-arrow {
+  background-color: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: #333;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+    transform: scale(1.1);
+  }
+
+  i {
+    font-size: 14px;
+  }
+}
+
+.list-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8ecef;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+
+  // Removido cursor pointer e hover de cor azul
+  &.no-click {
+    cursor: default;
+    &:hover {
+      background-color: transparent; 
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .dual-list-container {
     gap: 12px;
