@@ -11,8 +11,6 @@ export class RomaneioPdfService {
 
   private readonly VERDE_SUSTEN: [number, number, number] = [37, 162, 70];
   private readonly CINZA_FUNDO: [number, number, number] = [245, 247, 246];
-  private readonly CINZA_TEXTO: [number, number, number] = [80, 80, 80];
-  private readonly VERMELHO: [number, number, number] = [200, 0, 0];
   private readonly MARGIN_X = 15;
 
   async gerarPdf(selected: OrdemCarregamento): Promise<void> {
@@ -51,7 +49,7 @@ export class RomaneioPdfService {
 
   private drawHeaderInfo(doc: jsPDF, selected: OrdemCarregamento, y: number, pageW: number): number {
     const boxW = pageW - (this.MARGIN_X * 2);
-    const boxH = 50; 
+    const boxH = 40;
     
     doc.setFillColor(this.CINZA_FUNDO[0], this.CINZA_FUNDO[1], this.CINZA_FUNDO[2]);
     doc.roundedRect(this.MARGIN_X, y, boxW, boxH, 3, 3, 'F');
@@ -60,8 +58,6 @@ export class RomaneioPdfService {
     const col2 = pageW / 2 - 5; 
     const lineHeight = 8;
     
-    const totalFrete = (selected.pedidosVenda || []).reduce((acc, p) => acc + (Number(p.DistribSum) || 0), 0);
-
     doc.setFontSize(10);
 
     this.drawLabelValue(doc, 'Número da Ordem:', `${selected.DocEntry}`, this.MARGIN_X + 5, startY);
@@ -72,15 +68,6 @@ export class RomaneioPdfService {
     this.drawLabelValue(doc, 'Motorista:', `${selected.U_motorista || 'Não informado'}`, this.MARGIN_X + 5, yLinha3);
     this.drawLabelValue(doc, 'Placa:', `${selected.U_placa || 'N/A'}`, col2, yLinha3);
 
-    const yLinha4 = startY + (lineHeight * 3);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
-    doc.text('Total Frete:', this.MARGIN_X + 5, yLinha4);
-    
-    const labelWidth = doc.getTextWidth('Total Frete:') + 2;
-    doc.setTextColor(this.VERMELHO[0], this.VERMELHO[1], this.VERMELHO[2]);
-    doc.text(`R$ ${this.formatCurrency(totalFrete)}`, this.MARGIN_X + 5 + labelWidth, yLinha4);
-
     return y + boxH;
   }
 
@@ -90,7 +77,6 @@ export class RomaneioPdfService {
     doc.text(label, x, y);
 
     const labelWidth = doc.getTextWidth(label) + 2;
-    
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0); 
 
@@ -116,24 +102,23 @@ export class RomaneioPdfService {
     const itensAgrupados = this.agruparItens(selected.pedidosVenda || []);
     const totalQtd = itensAgrupados.reduce((acc, item) => acc + item.quantidade, 0);
     const totalPeso = itensAgrupados.reduce((acc, item) => acc + item.pesoTotal, 0);
-    const totalFreteAcumulado = itensAgrupados.reduce((acc, item) => acc + item.frete, 0);
 
     autoTable(doc, {
       startY: y + 10,
-      head: [['Item', 'Descrição', 'Quantidade', 'Peso Total (kg)', 'Frete']],
+      head: [['Item', 'Descrição', 'Quantidade', 'Peso Total (kg)', 'Lote']],
       body: [
         ...itensAgrupados.map(i => [
           i.itemCode,
           i.descricao,
           i.quantidade,
           i.pesoTotal.toFixed(2),
-          `R$ ${this.formatCurrency(i.frete)}`
+          '' 
         ]),
         [
           { content: 'TOTAIS GERAIS:', colSpan: 2, styles: { halign: 'left', fontStyle: 'bold', textColor: 0 } },
           { content: totalQtd.toString(), styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
           { content: totalPeso.toFixed(2) + ' kg', styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
-          { content: `R$ ${this.formatCurrency(totalFreteAcumulado)}`, styles: { fontStyle: 'bold', halign: 'right', textColor: 0 } }
+          { content: '', styles: { halign: 'right' } } 
         ]
       ],
       theme: 'plain',
@@ -154,7 +139,7 @@ export class RomaneioPdfService {
         1: { cellWidth: 'auto' },
         2: { halign: 'center', cellWidth: 25 },
         3: { halign: 'center', cellWidth: 35 },
-        4: { halign: 'right', cellWidth: 30 }
+        4: { halign: 'center', cellWidth: 30 }
       }
     });
   }
@@ -185,20 +170,14 @@ export class RomaneioPdfService {
           itemCode: p.ItemCode,
           descricao: p.Dscription,
           quantidade: 0,
-          pesoTotal: 0,
-          frete: 0
+          pesoTotal: 0
         });
       }
       const item = map.get(key);
       item.quantidade += Number(p.Quantity || 0);
       item.pesoTotal += (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
-      item.frete += Number(p.DistribSum || 0);
     });
     return Array.from(map.values());
-  }
-
-  private formatCurrency(value: any): string {
-    return (Number(value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   private async getLogo(): Promise<string | null> {
