@@ -49,11 +49,11 @@ export class DualListBoxComponent {
     return uniqueDocNums.size;
   }
 
-  get groupedAvailableItems(): { docNum: number; items: PedidoVenda[] }[] {
+  get groupedAvailableItems(): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     return this.groupItems(this.availableItems, this.searchTermAvailable);
   }
 
-  get groupedSelectedItems(): { docNum: number; items: PedidoVenda[] }[] {
+  get groupedSelectedItems(): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     return this.groupItems(this.selectedItems, this.searchTermSelected);
   }
 
