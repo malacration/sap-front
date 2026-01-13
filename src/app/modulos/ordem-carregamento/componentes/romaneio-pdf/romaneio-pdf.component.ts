@@ -18,6 +18,7 @@ export class RomaneioPdfService {
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
     let currentY = 15;
 
     const logo = await this.getLogo();
@@ -41,7 +42,8 @@ export class RomaneioPdfService {
     currentY += 10;
     this.drawItensTable(doc, selected, currentY);
 
-    this.drawFooter(doc, pageW);
+    // Chamada do novo rodapé
+    this.desenharRodape(doc, pageW, pageH, this.MARGIN_X);
 
     const dataArquivo = moment().format('DD-MM-YYYY_HHmm');
     doc.save(`Romaneio_${selected.DocEntry}_${dataArquivo}.pdf`);
@@ -59,7 +61,6 @@ export class RomaneioPdfService {
     const lineHeight = 8;
     
     doc.setFontSize(10);
-
     this.drawLabelValue(doc, 'Número da Ordem:', `${selected.DocEntry}`, this.MARGIN_X + 5, startY);
     this.drawLabelValue(doc, 'Descrição:', `${selected.U_nameOrdem || ''}`, col2, startY, 60);
     this.drawLabelValue(doc, 'Data de Criação:', `${selected.dataCriacao || ''}`, this.MARGIN_X + 5, startY + lineHeight);
@@ -111,7 +112,7 @@ export class RomaneioPdfService {
           i.itemCode,
           i.descricao,
           i.quantidade,
-          this.formatDecimal(i.pesoTotal), // Peso formatado com milhar
+          this.formatDecimal(i.pesoTotal),
           '' 
         ]),
         [
@@ -122,18 +123,8 @@ export class RomaneioPdfService {
         ]
       ],
       theme: 'plain',
-      headStyles: { 
-        fillColor: this.VERDE_SUSTEN, 
-        textColor: 255, 
-        fontStyle: 'bold'
-      },
-      styles: { 
-        fontSize: 9, 
-        cellPadding: 3, 
-        textColor: 0, 
-        lineWidth: { bottom: 0.1 },
-        lineColor: [0, 0, 0] 
-      },
+      headStyles: { fillColor: this.VERDE_SUSTEN, textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3, textColor: 0, lineWidth: { bottom: 0.1 }, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 30 },
         1: { cellWidth: 'auto' },
@@ -144,20 +135,26 @@ export class RomaneioPdfService {
     });
   }
 
-  private drawFooter(doc: jsPDF, pageW: number): void {
-    const pageH = doc.internal.pageSize.getHeight();
-    const footerY = pageH - 25;
-
-    doc.setDrawColor(180);
-    doc.line(this.MARGIN_X, footerY, this.MARGIN_X + 80, footerY);
-    doc.setFontSize(9);
-    doc.setTextColor(0); 
-    doc.text('Assinatura: ___________________________', this.MARGIN_X, footerY + 5);
-
+  // Novo rodapé conforme solicitado
+  private desenharRodape(doc: jsPDF, pageW: number, pageH: number, marginX: number) {
     const totalPages = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      doc.text(`Página ${i} de ${totalPages}`, pageW - this.MARGIN_X - 25, footerY + 5);
+      const footerY = pageH - 20;
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.setDrawColor(100); // Garante que a linha também seja cinza
+      
+      // Assinatura Motorista (Esquerda)
+      doc.line(marginX, footerY, marginX + 60, footerY);
+      doc.text('Assinatura Motorista', marginX, footerY + 4);
+      
+      // Conferência Logística (Direita)
+      doc.line(pageW - marginX - 60, footerY, pageW - marginX, footerY);
+      doc.text('Conferência Logística', pageW - marginX, footerY + 4, { align: 'right' });
+      
+      // Paginação (Centro)
+      doc.text(`Página ${i} de ${totalPages}`, pageW / 2, pageH - 8, { align: 'center' });
     }
   }
 
