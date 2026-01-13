@@ -110,6 +110,10 @@ export class ItinerarioPdfService {
       this.escreverDetalhe(doc, 'Contato:', contato, marginX + 5, cursorY);
       cursorY += 6;
 
+      const observacao = this.quebrarTextoPorCaracteres(pedido.Comments || 'SEM OBSERVAÇÕES', 72);
+      this.escreverDetalhe(doc, 'Obs:', observacao, marginX + 5, cursorY);
+      cursorY += (observacao.length * 4.5) + 2;
+
       doc.setDrawColor(this.CINZA_LINHA[0]);
       doc.setLineDashPattern([1, 1], 0);
       doc.line(marginX + 5, cursorY, pageW - marginX - 5, cursorY);
