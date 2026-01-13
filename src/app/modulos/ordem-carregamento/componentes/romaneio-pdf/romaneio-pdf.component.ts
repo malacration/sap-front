@@ -49,7 +49,7 @@ export class RomaneioPdfService {
 
   private drawHeaderInfo(doc: jsPDF, selected: OrdemCarregamento, y: number, pageW: number): number {
     const boxW = pageW - (this.MARGIN_X * 2);
-    const boxH = 40;
+    const boxH = 40; 
     
     doc.setFillColor(this.CINZA_FUNDO[0], this.CINZA_FUNDO[1], this.CINZA_FUNDO[2]);
     doc.roundedRect(this.MARGIN_X, y, boxW, boxH, 3, 3, 'F');
@@ -111,14 +111,14 @@ export class RomaneioPdfService {
           i.itemCode,
           i.descricao,
           i.quantidade,
-          i.pesoTotal.toFixed(2),
+          this.formatDecimal(i.pesoTotal), // Peso formatado com milhar
           '' 
         ]),
         [
           { content: 'TOTAIS GERAIS:', colSpan: 2, styles: { halign: 'left', fontStyle: 'bold', textColor: 0 } },
           { content: totalQtd.toString(), styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
-          { content: totalPeso.toFixed(2) + ' kg', styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
-          { content: '', styles: { halign: 'right' } } 
+          { content: this.formatDecimal(totalPeso) + ' kg', styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
+          { content: '', styles: { halign: 'right' } }
         ]
       ],
       theme: 'plain',
@@ -178,6 +178,13 @@ export class RomaneioPdfService {
       item.pesoTotal += (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
     });
     return Array.from(map.values());
+  }
+
+  private formatDecimal(value: any): string {
+    return (Number(value) || 0).toLocaleString('pt-BR', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
   }
 
   private async getLogo(): Promise<string | null> {
