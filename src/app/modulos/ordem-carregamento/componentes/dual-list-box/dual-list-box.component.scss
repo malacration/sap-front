@@ -266,18 +266,23 @@
 .order-header {
   background-color: #ffc107;
   color: #333;
-  padding: 6px 12px; // Ajustado para acomodar o botão
+  padding: 8px 12px;
   font-weight: 500;
   border-radius: 4px 4px 0 0;
   border-bottom: 1px solid #e0e0e0;
-  font-size: 14px;
+  font-size: 13px; // Reduzi levemente para caber mais info em uma linha
   display: flex;
-  
-  .order-info {
-    flex: 1;
-    white-space: normal;
-    line-height: 1.2;
-  }
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; // Garante um espaço entre o texto e o botão
+}
+
+.order-info {
+  flex: 1;           /* Faz o texto ocupar todo o espaço restante */
+  max-width: 100%;   /* REMOVA o 50% que estava aqui */
+  white-space: normal;
+  line-height: 1.4;  /* Melhora o respiro entre as linhas se quebrar */
+  word-break: break-word; 
 }
 
 // Novo botão de seta
@@ -292,6 +297,7 @@
   width: 28px;
   height: 28px;
   border-radius: 4px;
+  flex-shrink: 0;
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.2);
