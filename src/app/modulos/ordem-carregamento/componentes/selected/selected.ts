@@ -230,31 +230,21 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
       });
     }
 
-    async abrirModalItinerario(): Promise<void> {
-      if (this.selected.pedidosVenda.length === 0) {
+    abrirModalItinerario(): void {
+      if (!this.selected || this.selected.pedidosVenda.length === 0) {
         this.alertService.error('Nenhum pedido disponível para gerar itinerário.');
         return;
       }
-      
-      this.loading = true;
-      try {
-        const promises = this.selected.pedidosVenda.map(pedido =>
-          this.pedidosVendaService.searchLocalidade(20).toPromise()
-        );
-        const results = await Promise.all(promises);
-        
-        results.forEach((res, index) => {
-          if (res && res.content?.length > 0) {
-            this.localidadesMap.set(this.selected.pedidosVenda[index].CardCode, res.content[0].Name);
-          }
-        });
-        
-        this.showItinerarioModal = true; 
-      } catch (error: any) {
-        this.alertService.error('Erro ao carregar localidades: ' + (error.message || 'Erro desconhecido'));
-      } finally {
-        this.loading = false;
-      }
+
+      this.localidadesMap.clear();
+
+      this.selected.pedidosVenda.forEach(pedido => {
+        if (pedido.CardCode && pedido.Name) {
+          this.localidadesMap.set(pedido.CardCode, pedido.Name);
+        }
+      });
+
+      this.showItinerarioModal = true;
     }
 
     salvarLogistica(): void {

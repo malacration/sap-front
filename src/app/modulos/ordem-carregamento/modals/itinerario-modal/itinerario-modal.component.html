@@ -53,7 +53,7 @@
               </td>
 
               <td>
-                {{ localidadesMap.get(pedido.CardCode) || 'Não Informada' }}
+                {{ localidadesMap.get(pedido.CardCode) || pedido.Name || 'Não Informada' }}
               </td>
 
               <td class="text-center">

@@ -76,22 +76,13 @@ export class ItinerarioModalComponent implements OnChanges {
 
   onDrop(index: number) {
     if (this.draggedItemIndex !== null && this.draggedItemIndex !== index) {
-      const itemParaMover = this.pedidosAgrupados[this.draggedItemIndex];
+      const lista = [...this.pedidosAgrupados];
+      const itemMovido = lista.splice(this.draggedItemIndex, 1)[0];
       
-      // Remove da posição antiga
-      this.pedidosAgrupados.splice(this.draggedItemIndex, 1);
+      const novoIndex = this.dropPosition === 'below' ? index : index;
       
-      // Calcula nova posição baseada no preview (above/below)
-      // Se eu estiver movendo de cima para baixo e cair "below", o index se mantém.
-      // Se eu mover de baixo para cima e cair "below", o index precisa de ajuste.
-      // O splice lida com a maioria dos casos, mas a lógica de posição visual ajuda o usuário.
-      
-      let targetIdx = this.pedidosAgrupados.indexOf(this.pedidosAgrupados[index]);
-      
-      // Ajuste simples: se soltar em cima da "sombra de baixo", coloca depois do item
-      const insertIndex = this.dropPosition === 'below' ? index + 1 : index;
-      
-      this.pedidosAgrupados.splice(index, 0, itemParaMover);
+      lista.splice(novoIndex, 0, itemMovido);
+      this.pedidosAgrupados = lista;
     }
     this.limparDrag();
   }
