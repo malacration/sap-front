@@ -34,7 +34,6 @@ export class ItinerarioPdfService {
     const marginX = 10;
     let cursorY = 10;
 
-    // Totais Gerais
     let totalGeralQtd = 0;
     let totalGeralPeso = 0;
     pedidosAgrupados.forEach(p => {
@@ -112,7 +111,6 @@ export class ItinerarioPdfService {
       doc.setFont('helvetica', 'bold').text('Obs:', marginX + 3, cursorY);
       doc.setFont('helvetica', 'normal').text(obsLinhas, marginX + 12, cursorY);
       
-      // LINHA VERDE: Agora bem próxima à Obs
       cursorY += (obsLinhas.length * 3.8) + 1.5; 
 
       pedido.itens.forEach((item: any, idxItem: number) => {
@@ -122,11 +120,11 @@ export class ItinerarioPdfService {
 
         if (idxItem === 0) {
           doc.setDrawColor(...this.VERDE_SUSTEN).setLineWidth(0.4).line(marginX + 3, cursorY, pageW - marginX - 3, cursorY);
-          cursorY += 6; // Espaço maior após a linha verde para o 1º produto
+          cursorY += 6; 
         } else {
-          cursorY += 4; // Espaço após o item anterior antes de desenhar a linha preta
+          cursorY += 4; 
           doc.setDrawColor(0, 0, 0).setLineWidth(0.1).line(marginX + 3, cursorY, pageW - marginX - 3, cursorY);
-          cursorY += 5; // Espaço após a linha preta antes do próximo texto
+          cursorY += 5; 
         }
 
         doc.setFontSize(7.5);
@@ -138,7 +136,6 @@ export class ItinerarioPdfService {
         this.escreverCampo(doc, 'U.M:', item.UomCode || 'UN', pageW - 28, cursorY);
       });
 
-      // Totalizador da Parada
       cursorY += 6;
       doc.setFillColor(250, 250, 250).rect(marginX + 2, cursorY - 4, pageW - (marginX * 2) - 4, 6, 'F');
       doc.setDrawColor(...this.CINZA_LINHA).line(marginX + 3, cursorY - 4, pageW - marginX - 3, cursorY - 4);
