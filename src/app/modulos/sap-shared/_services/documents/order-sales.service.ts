@@ -21,29 +21,6 @@ export class OrderSalesService  implements DocumentAngularSave{
     return this.hppCliente.post<any>(this.url+"/angular",body)
   }
 
-    search(dataInicial: string, dataFinal: string, filial: string, localidade: string): Observable<NextLink<PedidoVenda>> {
-    let params = new HttpParams()
-      .set('filial', filial.toString())
-      .set('localidade', localidade.toString());
-
-    if (dataInicial) {
-      params = params.set('dataInicial', dataInicial);
-    }
-
-    if (dataFinal) {
-      params = params.set('dataFinal', dataFinal);
-    }
-
-    return this.hppCliente
-      .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
-      .pipe(
-        map((response) => {
-          response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
-          return response;
-        })
-      );
-  }
-
   getPedidosBy(ordemId: number): Observable<PedidoVenda[]> {
     return this.hppCliente
       .get<NextLink<PedidoVenda>>(`${this.url}/findLoadOrders`, {
