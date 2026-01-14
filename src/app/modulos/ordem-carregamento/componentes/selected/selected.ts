@@ -252,6 +252,7 @@ import { OrderSalesService } from '../../../sap-shared/_services/documents/order
         next: () => {
           this.alertService.confirm('Nota fiscal confirmada com sucesso!');
           this.atualizarStatusParaFechado();
+          this.loadNotas();
           this.showLoteModal = false; 
         },
         error: (error) => {
