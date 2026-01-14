@@ -8,7 +8,7 @@
           (click)="cancelarOrdem()"
           type="button"
           class="btn btn-danger mr-2"
-          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
           Cancelar
         </button>
         
@@ -16,7 +16,7 @@
           (click)="iniciarGeracaoNota()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'"
           [title]="selected?.U_Status == 'Fechado' ? 'Esta ordem já foi fechada' : ''">
           <span *ngIf="!loading">Gerar Nota Fiscal Saída</span>
           <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
@@ -26,7 +26,7 @@
           (click)="editarOrdem()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
           Editar
         </button>
 
@@ -34,7 +34,7 @@
           (click)="abrirModalItinerario()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Cancelado'">
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
           Itinerário
         </button>
 
@@ -42,7 +42,7 @@
           (click)="imprimirRomaneioAgrupado()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Cancelado'">
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
           Romaneio
         </button>
 
@@ -50,7 +50,7 @@
           (click)="imprimirOrdemPdf()"
           type="button"
           class="btn btn-warning"
-          [disabled]="loading || selected?.U_Status == 'Cancelado'">
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
           Pdf Carregamento
         </button>
       </div>
