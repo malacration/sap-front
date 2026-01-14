@@ -14,7 +14,9 @@
               <small>Qtd: {{ pedido.Quantity }}</small>
             </div>
             <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="text-success mt-1">
-              <small>{{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)</small>
+              <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="mt-1" style="color: #25A246;">
+                <small>{{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)</small>
+              </div>
             </div>
           </a>
         </div>
