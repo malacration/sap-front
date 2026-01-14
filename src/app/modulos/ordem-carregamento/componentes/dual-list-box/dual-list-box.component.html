@@ -10,7 +10,7 @@
       </div>
 
       <ng-container *ngIf="!isLoadingOrders">
-        <ng-container *ngFor="let group of groupedAvailableItems">
+        <ng-container *ngFor="let group of groupedAvailableItems; trackBy: trackByDocNum">
           <div class="order-group">
             <div class="order-header d-flex justify-content-between align-items-center">
               <span class="order-info" title="{{ group.items[0]?.Name || 'N/A' }}">
@@ -25,7 +25,7 @@
             </div>
             
             <ul class="order-list">
-              <li *ngFor="let item of group.items" class="list-item no-click">
+              <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
                 <div class="item-details">
                   {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                 </div>
@@ -79,7 +79,7 @@
       <ng-container *ngIf="!isSelectedListCollapsed">
         <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermSelected">
         <div class="list-container">
-          <ng-container *ngFor="let group of groupedSelectedItems">
+          <ng-container *ngFor="let group of groupedSelectedItems; trackBy: trackByDocNum">
             <div class="order-group">
               <div class="order-header d-flex align-items-center">
                 <button class="btn btn-sm btn-move-arrow mr-2" (click)="removeGroup(group)" title="Remover Pedido">
@@ -93,7 +93,7 @@
                 </span>
               </div>
               <ul class="order-list">
-                <li *ngFor="let item of group.items" class="list-item no-click">
+                <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
                   <div class="item-details">
                     {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                   </div>

@@ -68,6 +68,14 @@ export class DualListBoxComponent {
     this.selectedItemsChange.emit(this.selectedItems);
   }
 
+  trackByDocNum(index: number, group: { docNum: number }) {
+    return group.docNum;
+  }
+
+  trackByItem(index: number, item: PedidoVenda) {
+    return `${item.DocNum}-${item.ItemCode}`;
+  }
+
   removeGroup(group: { docNum: number, items: PedidoVenda[] }): void {
     const itemsToMove = [...group.items];
     this.availableItems = this.sortItems([...this.availableItems, ...itemsToMove]);
