@@ -105,10 +105,15 @@ export class OrdemCarregamentoService {
     );
   }
 
-    search(dataInicial: string, dataFinal: string, filial: string, localidade: string): Observable<NextLink<PedidoVenda>> {
+    search(dataInicial: string, dataFinal: string, filial: string, localidade: string, vendedor : number): Observable<NextLink<PedidoVenda>> {
       let params = new HttpParams()
         .set('filial', filial.toString())
-        .set('localidade', localidade.toString());
+        .set('localidade', localidade.toString())
+        .set('vendedor', vendedor);
+
+      if (vendedor != null) {
+        params = params.set('vendedor', vendedor.toString());
+      }
   
       if (dataInicial) {
         params = params.set('dataInicial', dataInicial);
