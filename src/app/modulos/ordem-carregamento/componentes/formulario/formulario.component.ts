@@ -12,6 +12,7 @@ import { LocalidadeService } from '../../../sap-shared/_services/localidade.serv
 import { NextLink } from '../../../../sap/model/next-link';
 import { OrdemCarregamentoDto } from '../../models/ordem-carregamento-dto';
 import { CardComponent } from '../../../../shared/components/card/card.component';
+import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 
 @Component({
   selector: 'app-ordem-formulario',
@@ -34,6 +35,7 @@ export class FormularioComponent implements OnInit, OnChanges {
   nextLink: string = '';
   loading = false;
   isLoadingOrders = false;
+  vendedor: any;
   
   // nameOrdInput: string = '';
   // ordemId: number | null = null;
@@ -118,12 +120,23 @@ export class FormularioComponent implements OnInit, OnChanges {
     });
   }
 
-  updateOrderName(): void {
-    if (!this.isNameManuallyEdited && this.selectedBranch && this.localidade) {
-      this.ordemCarregamento.U_nameOrdem = `${this.selectedBranch.Bplname || 'Filial'} Com Destino: ${this.localidade.Name || 'Localidade'}`;
+updateOrderName(): void {
+    if (this.isNameManuallyEdited) {
+        return;
     }
-  }
 
+    const nomeFilial = this.selectedBranch?.Bplname || 'Filial';
+
+    const localidadesUnicas = [...new Set(
+      this.selectedOrders
+        .map(pedido => pedido.Name) 
+        .filter(name => name && name.trim() !== '') 
+    )];
+
+    const destinosConcatenados = localidadesUnicas.join(' - ');
+    const sulfixo = destinosConcatenados ? destinosConcatenados : '';
+    this.ordemCarregamento.U_nameOrdem = `${nomeFilial} Com Destino: ${sulfixo}`;
+  }
   onNameInputChange(): void {
     this.isNameManuallyEdited = true;
   }
@@ -146,8 +159,8 @@ export class FormularioComponent implements OnInit, OnChanges {
     }
 
     this.isLoadingOrders = true;
-    this.orderSalesService
-      .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.Bplid, this.localidade!.Code)
+    this.ordemCarregamentoService
+      .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.Bplid, this.localidade!.Code, this.vendedor)
       .subscribe({
         next: (result: NextLink<PedidoVenda>) => {
           this.availableOrders = result.content.filter(
@@ -187,6 +200,11 @@ export class FormularioComponent implements OnInit, OnChanges {
 
   onSelectedOrdersChange(orders: PedidoVenda[]): void {
     this.selectedOrders = orders;
+    this.updateOrderName(); 
+  }
+
+  selectOriginSalesPerson(sp: SalesPerson | null): void {
+    this.vendedor = sp?.SalesEmployeeCode ?? null;
   }
 
   clearDataInicial(): void {

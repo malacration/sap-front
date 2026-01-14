@@ -35,7 +35,7 @@ export class BatchStock {
     return this.formatDate(this["InDate"]);
   }
 
-  quantitySelecionadaEditable : number
+  quantitySelecionadaEditable: number = null
   //TODO , precisa resolver o bug visual do table pois fica internamente o valor correto mas na tela fica o valor digitado
   // private _quantitySelecionada = 0
 

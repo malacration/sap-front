@@ -49,23 +49,52 @@ export class DualListBoxComponent {
     return uniqueDocNums.size;
   }
 
-  get groupedAvailableItems(): { docNum: number; items: PedidoVenda[] }[] {
+  get groupedAvailableItems(): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     return this.groupItems(this.availableItems, this.searchTermAvailable);
   }
 
-  get groupedSelectedItems(): { docNum: number; items: PedidoVenda[] }[] {
+  get groupedSelectedItems(): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     return this.groupItems(this.selectedItems, this.searchTermSelected);
   }
 
-  private groupItems(items: PedidoVenda[], searchTerm: string): { docNum: number; items: PedidoVenda[] }[] {
+  get totalSelectedFrete(): number {
+    return this.selectedItems.reduce((sum, item) => sum + (Number(item.DistribSum) || 0), 0);
+  }
+
+  selectGroup(group: { docNum: number, items: PedidoVenda[] }): void {
+    const itemsToMove = [...group.items];
+    this.selectedItems = this.sortItems([...this.selectedItems, ...itemsToMove]);
+    this.availableItems = this.availableItems.filter(i => i.DocNum !== group.docNum);
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
+  trackByDocNum(index: number, group: { docNum: number }) {
+    return group.docNum;
+  }
+
+  trackByItem(index: number, item: PedidoVenda) {
+    return `${item.DocNum}-${item.ItemCode}`;
+  }
+
+  removeGroup(group: { docNum: number, items: PedidoVenda[] }): void {
+    const itemsToMove = [...group.items];
+    this.availableItems = this.sortItems([...this.availableItems, ...itemsToMove]);
+    this.selectedItems = this.selectedItems.filter(i => i.DocNum !== group.docNum);
+    this.selectedItemsChange.emit(this.selectedItems);
+  }
+
+  private groupItems(items: PedidoVenda[], searchTerm: string): { docNum: number; items: PedidoVenda[], totalFrete: number }[] {
     const grouped = items.reduce((acc, item) => {
       const docNum = item.DocNum;
       if (!acc[docNum]) {
-        acc[docNum] = { docNum, items: [] };
+        acc[docNum] = { docNum, items: [], totalFrete: 0 };
       }
       acc[docNum].items.push(item);
+      
+      acc[docNum].totalFrete += Number(item.DistribSum) || 0;
+      
       return acc;
-    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[] } });
+    }, {} as { [key: number]: { docNum: number; items: PedidoVenda[], totalFrete: number } });
 
     return Object.values(grouped)
       .filter(group => group.items.some(item =>
@@ -143,4 +172,6 @@ export class DualListBoxComponent {
       }
     });
   }
+
+
 }

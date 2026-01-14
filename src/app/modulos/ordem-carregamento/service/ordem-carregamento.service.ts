@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { ConfigService } from '../../../core/services/config.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Page } from '../../../sap/model/page.model';
 import { LinhaItem } from '../../../sap/model/venda/venda-futura';
 import { OrdemCarregamento } from '../models/ordem-carregamento';
 import { OrdemCarregamentoDto } from '../models/ordem-carregamento-dto';
 import { DocumentList } from '../../../sap/model/markting/document-list';
+import { PedidoVenda } from '../../../sap/components/document/documento.statement.component';
+import { NextLink } from '../../../sap/model/next-link';
 
 export interface CarregamentoDetalhes {
   DocEntry: number;
@@ -84,7 +86,7 @@ export class OrdemCarregamentoService {
     return ordemCarregamento;
   }
 
-  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string, U_pesoCaminhao?: string | number | null }): Observable<any>{
+  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string, U_capacidadeCaminhao?: string | number | null, U_transportadora?: string | null}): Observable<any>{
     return this.http.post(`${this.url}/${docEntry}/logistica`, dados);
   }
 
@@ -102,4 +104,32 @@ export class OrdemCarregamentoService {
       )
     );
   }
+
+    search(dataInicial: string, dataFinal: string, filial: string, localidade: string, vendedor : number): Observable<NextLink<PedidoVenda>> {
+      let params = new HttpParams()
+        .set('filial', filial.toString())
+        .set('localidade', localidade.toString())
+        .set('vendedor', vendedor);
+
+      if (vendedor != null) {
+        params = params.set('vendedor', vendedor.toString());
+      }
+  
+      if (dataInicial) {
+        params = params.set('dataInicial', dataInicial);
+      }
+  
+      if (dataFinal) {
+        params = params.set('dataFinal', dataFinal);
+      }
+  
+      return this.http
+        .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
+        .pipe(
+          map((response) => {
+            response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
+            return response;
+          })
+        );
+    }
 }

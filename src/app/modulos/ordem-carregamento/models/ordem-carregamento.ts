@@ -1,3 +1,4 @@
+import { formatDate } from '@angular/common';
 import { Action, ActionReturn } from '../../../shared/components/action/action.model';
 
 export class OrdemCarregamento {
@@ -12,12 +13,15 @@ export class OrdemCarregamento {
   Ord_CRG_LINHACollection: any[] = [];
   U_placa: string 
   U_motorista: string 
-  U_pesoCaminhao: number 
+  U_capacidadeCaminhao: number 
+  U_transportadora: string 
   pedidosVenda: any[] = [];
   pedidosVendaCarregados = false;
 
   get dataCriacao(): string {
-    return new Date(this.CreateDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const d = new Date(this.CreateDate);
+    const local = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    return formatDate(new Date(this.CreateDate), 'dd/MM/yyyy', 'pt-BR');
   }
 
   get pesoTotalFormatted(): string {

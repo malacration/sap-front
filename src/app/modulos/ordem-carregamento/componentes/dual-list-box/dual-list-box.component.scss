@@ -261,6 +261,87 @@
   }
 }
 
+/* ... (estilos anteriores mantidos) ... */
+
+.order-header {
+  background-color: #ffc107;
+  color: #333;
+  padding: 8px 12px;
+  font-weight: 500;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 13px; // Reduzi levemente para caber mais info em uma linha
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; // Garante um espaço entre o texto e o botão
+}
+
+.order-info {
+  flex: 1;           /* Faz o texto ocupar todo o espaço restante */
+  max-width: 100%;   /* REMOVA o 50% que estava aqui */
+  white-space: normal;
+  line-height: 1.4;  /* Melhora o respiro entre as linhas se quebrar */
+  word-break: break-word; 
+}
+
+.btn-move-arrow {
+  border: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  
+  color: white;
+  
+  i {
+    font-size: 14px;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.left-list .btn-move-arrow {
+  background-color: #28a745; 
+
+  &:hover {
+    background-color: #218838; 
+    transform: scale(1.1);
+  }
+}
+
+.right-list .btn-move-arrow {
+  background-color: #dc3545; 
+
+  &:hover {
+    background-color: #c82333; 
+    transform: scale(1.1);
+  }
+}
+
+.list-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8ecef;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+
+  // Removido cursor pointer e hover de cor azul
+  &.no-click {
+    cursor: default;
+    &:hover {
+      background-color: transparent; 
+    }
+  }
+}
+
 @media (max-width: 768px) {
   .dual-list-container {
     gap: 12px;

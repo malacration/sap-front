@@ -238,6 +238,9 @@ export class PedidoVenda{
   Comments : string
   Frete : number
   VehicleState: string
+  DistribSum: number
+  Telephone : string
+  Mobil : string
 
   // Ordem de Carregamento
   DflWhs : string
@@ -269,6 +272,7 @@ export class PedidoVenda{
   ClosingRemarks : string
   AttachmentEntry : number
   Address2 : string
+  SlpName : string
 
   get totalCurrency() {
     return formatCurrency(this.DocTotal, 'pt', 'R$');
