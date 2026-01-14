@@ -123,8 +123,7 @@
               <div class="row">
                 <div class="col-md-6">
                   <div class="form-group">
-                    <label>Transportadora</label>
-                    <app-transportadora-search (selected)="selectBp($event)"></app-transportadora-search>
+                    <app-transportadora-search [(ngModel)]="businessPartner" (selected)="selectBp($event)"></app-transportadora-search>
                   </div>
                 </div>
                 <div class="col-md-6">

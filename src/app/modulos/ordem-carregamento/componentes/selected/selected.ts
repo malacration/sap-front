@@ -167,7 +167,7 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
 
       this.placa = this.selected.U_placa || '';
       this.nomeMotorista = this.selected.U_motorista || '';
-      this.pesoCaminhao = this.selected.U_pesoCaminhao || null;
+      this.pesoCaminhao = this.selected.U_capacidadeCaminhao || null;
 
       if (this.lastSelectedDocEntry !== this.selected.DocEntry) {
         this.lastSelectedDocEntry = this.selected.DocEntry ?? null;
@@ -252,11 +252,13 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
       
       this.loading = true;
       const pesoString = this.pesoCaminhao ? String(this.pesoCaminhao) : null;
+
       const dados = {
         U_placa: this.placa,
         U_motorista: this.nomeMotorista,
-        U_pesoCaminhao: pesoString
-      } as any;
+        U_capacidadeCaminhao: pesoString,
+        U_transportadora: this.businessPartner?.CardCode || null 
+      };
 
       this.ordemCarregamentoService.atualizarLogistica(this.selected!.DocEntry, dados).subscribe({
         next: () => {
@@ -264,7 +266,8 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
           if (this.selected) {
             this.selected.U_placa = this.placa;
             this.selected.U_motorista = this.nomeMotorista;
-            this.selected.U_pesoCaminhao = this.pesoCaminhao;
+            this.selected.U_capacidadeCaminhao = this.pesoCaminhao;
+            this.selected.U_transportadora = this.businessPartner?.CardCode; 
           }
         },
         error: (err) => {

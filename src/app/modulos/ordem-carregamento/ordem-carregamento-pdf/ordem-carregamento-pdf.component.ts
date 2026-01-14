@@ -111,7 +111,7 @@ export class OrdemCarregamentoPdfService {
 
     doc.setFont('helvetica', 'normal');
     doc.text(`${transportadora || 'N/A'}`, this.MARGIN_X + 35, lineY);
-    doc.text(`${selected.U_pesoCaminhao || '0.00'} kg`, col2 + 32, lineY);
+    doc.text(`${selected.U_capacidadeCaminhao || '0.00'} kg`, col2 + 32, lineY);
 
     return y + boxHeight + 8;
   }
