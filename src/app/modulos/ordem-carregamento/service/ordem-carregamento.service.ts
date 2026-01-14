@@ -109,7 +109,6 @@ export class OrdemCarregamentoService {
       let params = new HttpParams()
         .set('filial', filial.toString())
         .set('localidade', localidade.toString())
-        .set('vendedor', vendedor);
 
       if (vendedor != null) {
         params = params.set('vendedor', vendedor.toString());
