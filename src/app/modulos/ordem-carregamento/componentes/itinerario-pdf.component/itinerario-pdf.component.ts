@@ -87,18 +87,21 @@ export class ItinerarioPdfService {
       let totalParadaQtd = 0;
       let totalParadaPeso = 0;
 
-      doc.setFontSize(8);
-      const larguraTexto = pageW - (marginX * 2) - 10;
-      const enderecoLinhas = doc.splitTextToSize(pedido.Address2 || 'ENDEREÇO NÃO CADASTRADO', larguraTexto);
-      const obsLinhas = doc.splitTextToSize(pedido.Comments || 'SEM OBSERVAÇÕES', larguraTexto);
-      const alturaEstimada = 45 + (enderecoLinhas.length * 4) + (obsLinhas.length * 4) + (pedido.itens.length * 10);
+      doc.setFontSize(8.5);
+      const larguraTextoMultiLinha = pageW - marginX - 35; 
 
-      if (cursorY + alturaEstimada > pageH - 25) {
+      const enderecoLinhas = doc.splitTextToSize(pedido.Address2 || 'ENDEREÇO NÃO CADASTRADO', larguraTextoMultiLinha);
+      const obsLinhas = doc.splitTextToSize(pedido.Comments || 'SEM OBSERVAÇÕES', larguraTextoMultiLinha);
+
+      const alturaEstimadaParada = 40 + (enderecoLinhas.length * 4) + (obsLinhas.length * 4) + (pedido.itens.length * 7);
+
+      if (cursorY + alturaEstimadaParada > pageH - 20) {
         doc.addPage();
         desenharCabecalho();
       }
 
       const seqStartY = cursorY;
+      
       doc.setFillColor(245, 245, 245).rect(marginX, cursorY, pageW - (marginX * 2), 6, 'F');
       doc.setFontSize(9).setFont('helvetica', 'bold').setTextColor(...this.VERDE_SUSTEN);
       doc.text(`Parada ${index + 1}`, marginX + 2, cursorY + 4.5);
@@ -106,22 +109,23 @@ export class ItinerarioPdfService {
       
       cursorY += 10;
       doc.setTextColor(...this.PRETO_TEXTO);
+
       this.escreverCampo(doc, 'Cliente:', `${pedido.CardName} (${pedido.CardCode})`, marginX + 3, cursorY);
-      cursorY += 4;
+      cursorY += 4.5;
       this.escreverCampo(doc, 'Localidade:', localidadesMap.get(pedido.CardCode) || 'N/I', marginX + 3, cursorY);
-      cursorY += 4;
+      cursorY += 4.5;
       
       doc.setFont('helvetica', 'bold').text('Endereço:', marginX + 3, cursorY);
       doc.setFont('helvetica', 'normal').text(enderecoLinhas, marginX + 20, cursorY);
-      cursorY += (enderecoLinhas.length * 3.8) + 1;
+      cursorY += (enderecoLinhas.length * 4); 
       
-      this.escreverCampo(doc, 'Vendedor:', pedido.SlpName, marginX + 3, cursorY);
+      this.escreverCampo(doc, 'Vendedor:', pedido.SlpName || 'N/I', marginX + 3, cursorY);
       this.escreverCampo(doc, 'Contato:', pedido.Mobil || pedido.Telephone || 'N/I', col2, cursorY);
-      cursorY += 4;
+      cursorY += 4.5;
 
       doc.setFont('helvetica', 'bold').text('Obs:', marginX + 3, cursorY);
       doc.setFont('helvetica', 'normal').text(obsLinhas, marginX + 12, cursorY);
-      cursorY += (obsLinhas.length * 3.8) + 1.5; 
+      cursorY += (obsLinhas.length * 4) + 2; 
 
       pedido.itens.forEach((item: any, idxItem: number) => {
         const pesoLinha = (Number(item.Quantity || 0) * Number(item.Weight1 || 0));
@@ -129,10 +133,10 @@ export class ItinerarioPdfService {
         totalParadaPeso += pesoLinha;
 
         if (idxItem === 0) {
-          doc.setDrawColor(...this.VERDE_SUSTEN).setLineWidth(0.4).line(marginX + 3, cursorY, pageW - marginX - 3, cursorY);
-          cursorY += 6; 
-        } else {
+          doc.setDrawColor(...this.VERDE_SUSTEN).setLineWidth(0.3).line(marginX + 3, cursorY, pageW - marginX - 3, cursorY);
           cursorY += 5; 
+        } else {
+          cursorY += 4.5; 
         }
 
         doc.setFontSize(7.5);
@@ -146,15 +150,15 @@ export class ItinerarioPdfService {
 
       cursorY += 6;
       doc.setFillColor(250, 250, 250).rect(marginX + 2, cursorY - 4, pageW - (marginX * 2) - 4, 6, 'F');
-      doc.setDrawColor(...this.CINZA_LINHA).line(marginX + 3, cursorY - 4, pageW - marginX - 3, cursorY - 4);
+      doc.setDrawColor(...this.CINZA_LINHA).setLineWidth(0.2).line(marginX + 3, cursorY - 4, pageW - marginX - 3, cursorY - 4);
       doc.setFontSize(8).setFont('helvetica', 'bold').setTextColor(...this.VERDE_SUSTEN);
       doc.text('TOTAL DA PARADA:', marginX + 5, cursorY);
       this.escreverCampo(doc, 'Qtd:', totalParadaQtd.toString(), pageW - 85, cursorY, true);
       this.escreverCampo(doc, 'Peso:', this.formatDecimal(totalParadaPeso) + ' kg', pageW - 65, cursorY, true);
 
-      cursorY += 6;
+      cursorY += 4;
       doc.setDrawColor(...this.CINZA_LINHA).setLineWidth(0.2).roundedRect(marginX, seqStartY, pageW - (marginX * 2), cursorY - seqStartY, 1, 1, 'S');
-      cursorY += 6; 
+      cursorY += 8; 
     });
 
     this.desenharRodape(doc, pageW, pageH, marginX);
@@ -167,7 +171,7 @@ export class ItinerarioPdfService {
     doc.text(label, x, y);
     const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal').setTextColor(...this.PRETO_TEXTO);
-    doc.text(String(valor), x + labelW + 1.2, y);
+    doc.text(String(valor || 'N/I'), x + labelW + 1.2, y);
   }
 
   private desenharRodape(doc: jsPDF, pageW: number, pageH: number, marginX: number) {
@@ -176,10 +180,13 @@ export class ItinerarioPdfService {
       doc.setPage(i);
       doc.setFontSize(7).setTextColor(150);
       const footerY = pageH - 12;
+      
       doc.setDrawColor(200).line(marginX, footerY, marginX + 50, footerY);
       doc.text('Assinatura Motorista', marginX, footerY + 3);
+      
       doc.line(pageW - marginX - 50, footerY, pageW - marginX, footerY);
       doc.text('Conferência Logística', pageW - marginX, footerY + 3, { align: 'right' });
+      
       doc.text(`Página ${i} de ${totalPages}`, pageW / 2, pageH - 5, { align: 'center' });
     }
   }

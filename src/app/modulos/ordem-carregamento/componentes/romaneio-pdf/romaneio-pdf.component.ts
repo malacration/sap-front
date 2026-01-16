@@ -179,7 +179,15 @@ export class RomaneioPdfService {
     });
   }
 
-  private async getLogo(): Promise<string | null> {
-    return null; 
+  private getLogo(): Promise<HTMLImageElement | null> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = 'logo.png'; 
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        console.error('Erro ao carregar a logo');
+        resolve(null);
+      };
+    });
   }
 }
