@@ -132,25 +132,27 @@ import { OrderSalesService } from '../../../sap-shared/_services/documents/order
     }
 
     cancelarOrdem(): void {
-        if (!this.selected) return;
+      if (!this.selected) return;
 
-        if (this.alertService.confirm('Tem certeza que deseja cancelar esta Ordem de Carregamento? Isso irá desvincular todos os pedidos.')) {
+      this.alertService.confirm('Tem certeza que deseja cancelar esta Ordem de Carregamento? Isso irá desvincular todos os pedidos.')
+        .then((result) => {
+          if (result.isConfirmed) {
             this.loading = true;
-            this.ordemCarregamentoService.cancelar(this.selected.DocEntry).subscribe({
-                next: (res) => {
-                    this.alertService.info('Ordem de Carregamento cancelada com sucesso!');
-                    if (this.selected) {
-                        this.selected.U_Status = 'Cancelado';
-                    }
-                    this.loading = false;
-                },
-                error: (err) => {
-                    console.error(err);
-                    this.alertService.error('Erro ao cancelar a Ordem de Carregamento: ' + (err.error?.message || err.message));
-                    this.loading = false;
+            this.ordemCarregamentoService.cancelar(this.selected!.DocEntry).subscribe({
+              next: (res) => {
+                this.alertService.info('Ordem de Carregamento cancelada com sucesso!');
+                if (this.selected) {
+                  this.selected.U_Status = 'Cancelado';
                 }
+                this.loading = false;
+              },
+              error: (err) => {
+                this.alertService.error('Erro ao cancelar a Ordem: ' + (err.error?.message || err.message));
+                this.loading = false;
+              }
             });
-        }
+          }
+        });
     }
 
   imprimirRomaneioAgrupado(): void {
