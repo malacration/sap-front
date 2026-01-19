@@ -34,9 +34,12 @@ export class DualListBoxComponent {
       this.loadQuantidadesEmCarregamento();
     }
   }
-
+  
   get totalSelectedWeight(): number {
-    return this.selectedItems.reduce((sum, item) => sum + (item.Quantity * item.Weight1), 0);
+    return this.selectedItems.reduce(
+      (sum, item) => sum + (Number(item.Weight1) || 0),
+      0
+    );
   }
 
   get availableOrdersCount(): number {
