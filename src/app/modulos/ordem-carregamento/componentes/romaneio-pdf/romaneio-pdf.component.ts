@@ -167,7 +167,8 @@ export class RomaneioPdfService {
       }
       const item = map.get(key);
       item.quantidade += Number(p.Quantity || 0);
-      item.pesoTotal += (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
+      
+      item.pesoTotal += Number(p.Weight1 || 0);
     });
     return Array.from(map.values());
   }

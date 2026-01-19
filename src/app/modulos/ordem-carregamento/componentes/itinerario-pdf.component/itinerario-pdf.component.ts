@@ -21,7 +21,7 @@ export class ItinerarioPdfService {
   private carregarLogo(): Promise<HTMLImageElement | null> {
     return new Promise((resolve) => {
       const img = new Image();
-      img.src = 'logo.png'; 
+      img.src = 'logo.png'; // Recomendado usar o caminho relativo ao assets
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
     });
@@ -36,10 +36,11 @@ export class ItinerarioPdfService {
 
     let totalGeralQtd = 0;
     let totalGeralPeso = 0;
+
     pedidosAgrupados.forEach(p => {
       p.itens.forEach((i: any) => {
         totalGeralQtd += Number(i.Quantity || 0);
-        totalGeralPeso += (Number(i.Quantity || 0) * Number(i.Weight1 || 0));
+        totalGeralPeso += Number(i.Weight1 || 0); 
       });
     });
 
@@ -128,7 +129,8 @@ export class ItinerarioPdfService {
       cursorY += (obsLinhas.length * 4) + 2; 
 
       pedido.itens.forEach((item: any, idxItem: number) => {
-        const pesoLinha = (Number(item.Quantity || 0) * Number(item.Weight1 || 0));
+        // CORREÇÃO: Peso da linha é direto do Weight1
+        const pesoLinha = Number(item.Weight1 || 0);
         totalParadaQtd += Number(item.Quantity || 0);
         totalParadaPeso += pesoLinha;
 
