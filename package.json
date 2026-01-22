@@ -52,6 +52,7 @@
     "@ngx-loading-bar/core": "6.0.2",
     "@ngx-loading-bar/http-client": "6.0.2",
     "@ngx-loading-bar/router": "6.0.2",
+    "@stomp/stompjs": "7.2.1",
     "big.js": "6.2.2",
     "core-js": "3.25.0",
     "handlebars": "4.7.8",
@@ -65,6 +66,7 @@
     "ngx-pagination": "6.0.3",
     "ngx-toastr": "16.1.0",
     "rxjs": "7.8.0",
+    "sockjs-client": "1.6.1",
     "tslib": "^2.5.0",
     "uuid": "8.3.2",
     "zone.js": "~0.12.0"

@@ -5,9 +5,11 @@ import { TipoOperacao } from '../../sap/model/tipo-operacao';
 export class ConfigService {
 
   private host: string;
+  private webSocket: string;
   public title: string = 'SAP - A R Soluções';
   public commercial_phone : string = '69 9 9999 6666'
   private modoOperacao : string = "external"
+  subscribePrefix = '/user/queue'
   tipoOperacao : Array<TipoOperacao> = Array()
   hmg = false
   primaryColor : string = '#25A246'
@@ -21,6 +23,14 @@ export class ConfigService {
     if(storageHost)
       return storageHost
     return "http://localhost:8080"
+  }
+
+  getWebSocket(){
+    if(this.webSocket)
+      return this.webSocket
+    else if(this.host)
+      return this.host+"/ws"
+    return "http://localhost:8080/ws"
   }
 
   getModoOperacao() : string{

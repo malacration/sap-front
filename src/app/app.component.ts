@@ -6,6 +6,7 @@ import { UiState } from './store/ui/state';
 import { Observable, Subscribable, Subscription, delay, of } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ConfigService } from './core/services/config.service';
+import { WsService } from './shared/WsService';
 
 @Component({
   selector: 'app-root',
@@ -23,12 +24,16 @@ export class AppComponent {
   constructor(private renderer: Renderer2, 
     private titleService : Title,
     private config : ConfigService,
+    private wsService: WsService,
     private store: Store<AppState>) {}
 
   ngOnInit() {
     this.changeColors()
 
     this.titleService.setTitle(this.config.title)
+    
+    this.wsService.connect(this.config.getWebSocket());
+    
     this.ui = this.store.select('ui');
     this.renderer.removeClass(
         document.querySelector('body'),

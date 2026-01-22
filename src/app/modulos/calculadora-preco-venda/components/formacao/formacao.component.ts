@@ -23,7 +23,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
     private cdRef: ChangeDetectorRef,
     private service : CalculadoraService,
     private alertService : AlertService
-    ){
+  ){
 
   }
 
@@ -52,14 +52,14 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
     let fatorSubProduto = 40
   }
 
-imprimirPdf() {
-  if (this.calculadoraPdf) {
-    this.calculadoraPdf.gerarPdf();
-  } else {
-    console.error('Componente de PDF não foi carregado na tela.');
-    this.alertService.error("Erro ao gerar PDF: Componente não inicializado.");
+  imprimirPdf() {
+    if (this.calculadoraPdf) {
+      this.calculadoraPdf.gerarPdf();
+    } else {
+      console.error('Componente de PDF não foi carregado na tela.');
+      this.alertService.error("Erro ao gerar PDF: Componente não inicializado.");
+    }
   }
-}
 
   ngOnChanges(changes: SimpleChanges): void {
     if(this.analise)
@@ -160,8 +160,7 @@ imprimirPdf() {
           this.custoModal.forceDetectChanges()
           this.table.forceDetectChanges()
         })
-      )
-      .subscribe();
+      ).subscribe();
   }
 
 
@@ -236,7 +235,7 @@ imprimirPdf() {
     // )).subscribe(it => 
     //     console.log(it)
     // )
-}
+  }
 
   //TODO isso seria de um tableservice talvez
   removeKeys(obj){
