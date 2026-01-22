@@ -1,0 +1,36 @@
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 6px;
+}
+
+.header-actions {
+  gap: .5rem;
+}
+
+@media (max-width: 1366px) {
+  :host ::ng-deep table th,
+  :host ::ng-deep table td {
+    padding: .35rem .5rem;
+    font-size: .85rem;
+    white-space: nowrap; 
+  }
+}
+
+.header-preco {
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-right {
+  margin-left: auto;
+}
+
