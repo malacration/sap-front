@@ -1,24 +1,30 @@
 <div class="card card-primary">
-    <div class="card-header">
-        <h3 class="card-title"><b>Formação de Preços</b> - <small> </small></h3>
+<div class="card-header header-preco">
+  <div class="header-left">
+    <h3 class="card-title mb-0">
+      <b>Formação de Preços</b>
+    </h3>
+  </div>
 
-        <div class="float-right">
-            <button type="button" class="btn btn-secondary btn-sm" (click)="voltar()">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </button>
-        </div>
-    </div>
+  <div class="header-right">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="voltar()">
+      <i class="fas fa-arrow-left"></i> Voltar
+    </button>
+  </div>
+</div>
     <div class="card-body">
         <div class="form-group">
-            <div class="row">
-                <div class="col-sm">
-                    <div class="custom-switch ml-auto">
-                        <input class="custom-control-input" type="checkbox" id="all" [checked]="isCustoSap()" (change)="onToggleCustoSap()">
-                        <label class="custom-control-label" for="all">Custo Saco, receita ou contabil? {{isCustoSap() ? 'Contabil' : 'Receita'}}</label>
+            <div class="row align-items-center g-2 flex-wrap">
+                <div class="col-12 col-lg">
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="custom-switch ml-auto">
+                            <input class="custom-control-input" type="checkbox" id="all" [checked]="isCustoSap()" (change)="onToggleCustoSap()">
+                            <label class="custom-control-label" for="all">Custo Saco, receita ou contabil? {{isCustoSap() ? 'Contabil' : 'Receita'}}</label>
+                        </div>
                     </div>
                 </div>
-                <div class="col-auto">
-                    <div class="btn-group">
+                <div class="col-12 col-lg-auto">
+                    <div class="btn-group flex-wrap w-100 header-actions">
                         <button class="btn btn-default" (click)="modalChangeCustos($event)">Custos Materia Prima</button>
                         <button class="btn btn-default" (click)="modalAdicioanrItem($event)">Adicionar Itens</button>
                         <button class="btn btn-default" (click)="modalAtualizarCustos($event)">Atualizar Custo (media)</button>
@@ -41,12 +47,14 @@
             </div>
         </div>
         <div class="form-group">
-            <app-table
-                [editableDynamic]="true"
-                [content]="getProdutosPaginado()" 
-                [definition]="definition" 
-                (actionOutput)="action($event)">
-            </app-table>
+            <div class="table-scroll">
+                <app-table
+                    [editableDynamic]="true"
+                    [content]="getProdutosPaginado()" 
+                    [definition]="definition" 
+                    (actionOutput)="action($event)">
+                </app-table>
+            </div>
         </div>
     </div>
     <div class="card-footer clearfix">
