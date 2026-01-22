@@ -1,10 +1,12 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Analise } from '../../models/analise';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, map } from 'rxjs';
 import { Produto } from '../../models/produto';
 import { CalculadoraService } from '../../service/calculadora.service';
 import { ParameterService } from '../../../../shared/service/parameter.service';
+import { WsService } from '../../../../shared/WsService';
+import { SelecaoProdutoComponent } from '../selecao-produto/selecao-produto.component';
 
 @Component({
   selector: 'statement-calc',
@@ -13,8 +15,11 @@ import { ParameterService } from '../../../../shared/service/parameter.service';
 export class CalculadoraStatementComponent implements OnInit, OnDestroy {
   
 
+  @ViewChild(SelecaoProdutoComponent) selecaoProdutoComponent?: SelecaoProdutoComponent;
+
   analiseSelected : Analise = null
   routeSubscriptions : Array<Subscription> = new Array()
+  private wsSubscription: Subscription | null = null
   produtoSelecionado : Produto = null
   carregando = false
 
@@ -26,7 +31,8 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
     private service : CalculadoraService,
     private parameterService : ParameterService,
     private cdRef: ChangeDetectorRef,
-    private route: ActivatedRoute){
+    private route: ActivatedRoute,
+    private wsService: WsService){
   }
 
   ngOnInit(): void {
@@ -98,12 +104,40 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
     this.cdRef.detectChanges()
   }
 
+  solicitarProdutos($event: {codeStart: string; codeEnd: string; warehouse: number}){
+    if (!this.analiseSelected) return;
+    this.wsSubscription?.unsubscribe();
+    const jobId = crypto.randomUUID();
+    this.wsSubscription = this.wsService.request<Produto[]>(
+      '/calculadora-preco/get-async',
+      { jobId, params: {codeStart: $event.codeStart, codeEnd: $event.codeEnd, warehouse: $event.warehouse} }
+    ).pipe(
+      map((produtos) =>
+        produtos.map((produto) => {
+          const novoProduto = Object.assign(new Produto(), produto);
+          if (Array.isArray(novoProduto.Ingredientes)) {
+            novoProduto.Ingredientes = novoProduto.Ingredientes.map(
+              (ingrediente) => Object.assign(new Produto(), ingrediente)
+            );
+          }
+          return novoProduto;
+        })
+      )
+    ).subscribe((it) => {
+      this.selecaoProdutos(it);
+      this.selecaoProdutoComponent?.finalizarSelecao();
+    });
+  }
+
   selecaoProdutos($event){
-    this.analiseSelected.produtos = $event
+    const novosProdutos = $event ?? [];
+    const atuais = this.analiseSelected?.produtos ?? [];
+    this.analiseSelected.produtos = atuais.concat(novosProdutos);
   }
 
   ngOnDestroy(): void {
     this.routeSubscriptions.forEach(it => it.unsubscribe())
+    this.wsSubscription?.unsubscribe();
   }
 
   fecharAnalise() {
@@ -112,5 +146,3 @@ export class CalculadoraStatementComponent implements OnInit, OnDestroy {
   }
 
 }
-
-

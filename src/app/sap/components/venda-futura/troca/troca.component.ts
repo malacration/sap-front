@@ -55,6 +55,7 @@ export class TrocaComponent implements OnInit {
   }
 
   selecionado($event){
+    console.log($event)
     this.selectedItem = $event
   }
 
@@ -78,8 +79,12 @@ export class TrocaComponent implements OnInit {
         new ItemRetirada(
           this.selectedItem.U_itemCode,
           this.quantity,
-          this.selectedItem.U_description,this.selectedItem.U_precoNegociado));
+          this.selectedItem.U_description,
+          this.selectedItem.LineId,
+          this.selectedItem.U_precoNegociado));
+      console.log(this.selectedItem.U_precoNegociado)
       this.clearForm()
+      console.log(this.itensRetirados)
     }
   }
 

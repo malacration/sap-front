@@ -28,12 +28,14 @@ import { AlertService } from './service/alert.service';
 import { SelectComponent } from './components/select/select.component';
 import { SearchComponent } from './components/search/search.component';
 import { CardComponent } from './components/card/card.component';
+import { WsService } from './WsService';
 
 @NgModule({
   providers: [
     ParameterService,
     AuthService,
-    AlertService
+    AlertService,
+    WsService
   ],
   declarations: [
     PageNotFoundComponent,
@@ -84,7 +86,7 @@ import { CardComponent } from './components/card/card.component';
     TabComponent,
     ChangePassowrd,
     SearchComponent,
-    CardComponent
+    CardComponent,
   ]
 })
 export class SharedModule {}

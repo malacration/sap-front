@@ -23,7 +23,7 @@
 </div>
 
 
-<selecao-produto-calc *ngIf="isSelectProduto()" (selecaoProdutos)="selecaoProdutos($event)"></selecao-produto-calc>
+<selecao-produto-calc *ngIf="isSelectProduto()" (solicitarProdutos)="solicitarProdutos($event)"></selecao-produto-calc>
 
 <formacao-preco *ngIf="isFormacaoPreco()" [analise]="analiseSelected" (close)="fecharAnalise()"></formacao-preco>
 

@@ -1,7 +1,4 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { Produto } from '../../models/produto';
-import { CalculadoraService } from '../../service/calculadora.service';
-import { AlertService } from '../../../../shared/service/alert.service';
 
 @Component({
   selector: 'selecao-produto-calc',
@@ -10,9 +7,7 @@ import { AlertService } from '../../../../shared/service/alert.service';
 export class SelecaoProdutoComponent implements OnInit {
   
 
-  constructor(private service : CalculadoraService, private alertService : AlertService){
-
-  }
+  constructor(){}
 
   loading = false
   segundos: number = 0;
@@ -22,27 +17,25 @@ export class SelecaoProdutoComponent implements OnInit {
 
 
   @Output()
-  selecaoProdutos : EventEmitter<Array<Produto>> = new EventEmitter<Array<Produto>>();
+  solicitarProdutos = new EventEmitter<{codeStart: string; codeEnd: string; warehouse: number}>();
 
   ngOnInit(): void {
 
   }
 
-  selecionaTodosProdutos(){
+  selecionaTodosProdutos() {
     this.loading = true
     this.resetTimer()
-    this.service.range(this.start,this.end).subscribe({next : (it => {
-      this.selecaoProdutos.emit(it)
-      this.loading = false
-      this.stopTimer()
-      if(it.length == 0)
-        this.alertService.info("Nenhum registro foi encontrado com os criterios"+this.start + " - "+this.end)
-    }),
-    error : (it => {
-      this.loading = false
-      this.stopTimer()
+    this.solicitarProdutos.emit({
+      codeStart: this.start,
+      codeEnd: this.end,
+      warehouse: 500.01
     })
-   })
+  }
+
+  finalizarSelecao(): void {
+    this.stopTimer()
+    this.loading = false
   }
 
   startTimer(): void {
@@ -75,5 +68,4 @@ export class SelecaoProdutoComponent implements OnInit {
   }
 
 }
-
 

@@ -17,6 +17,9 @@
 /***************************************************************************************************
  * BROWSER POLYFILLS
  */
+ 
+// Some dependencies expect a Node-like `global` in the browser.
+(globalThis as any).global = globalThis;
 
 /**
  * By default, zone.js will patch all possible macroTask and DomEvents
