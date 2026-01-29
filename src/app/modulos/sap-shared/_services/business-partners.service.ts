@@ -83,11 +83,11 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
   }
 
   getPedidodeVendaBP(CardCode: string): Observable<Array<PedidoVenda>> {
-    return this.hppCliente.get<Array<PedidoVenda>>(this.url + "/pedido-venda-parceiro/", { params: { CardCode } });
+    return this.hppCliente.get<Array<PedidoVenda>>(this.url + "/pedido-venda-parceiro", { params: { CardCode } });
   }
 
   getContasReceberBP(CardCode: string): Observable<Page<ContaReceber>> {
-    return this.hppCliente.get<Page<ContaReceber>>(this.url + "/contas-receber/", { params: { CardCode } });
+    return this.hppCliente.get<Page<ContaReceber>>(this.url + "/contas-receber", { params: { CardCode } });
   }
   getContasReceberNextLink(nextLink: string): Observable<Page<ContaReceber>> {
     const url = this.url + '/contas-receber/nextlink';
