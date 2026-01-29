@@ -57,18 +57,30 @@ export class ItinerarioPdfService {
 
     desenharCabecalho();
 
-    const alturaBlocoVerde = 24;
+    const col2 = (pageW / 2);
+    const larguraMaxDesc = (pageW / 2) - marginX - 5;
+    const descLinhas = doc.splitTextToSize(ordem.U_nameOrdem || 'N/I', larguraMaxDesc);
+    const alturaExtraDesc = (descLinhas.length - 1) * 3.5;
+    const alturaBlocoVerde = 24 + alturaExtraDesc;
+
     doc.setFillColor(...this.VERDE_CLARO_BG).roundedRect(marginX, cursorY, pageW - (marginX * 2), alturaBlocoVerde, 1, 1, 'F');
     doc.setFontSize(9);
-    const col2 = (pageW / 2);
-    this.escreverCampo(doc, 'Ordem:', ordem.DocEntry.toString(), marginX + 3, cursorY + 6, true);
-    this.escreverCampo(doc, 'Descrição:', ordem.U_nameOrdem || 'N/I', col2, cursorY + 6, true);
-    this.escreverCampo(doc, 'Data:', ordem.dataCriacao || '', marginX + 3, cursorY + 12, true);
-    this.escreverCampo(doc, 'Status:', 'Aberto', col2, cursorY + 12, true);
     
-    doc.setDrawColor(...this.VERDE_SUSTEN).setLineWidth(0.1).line(marginX + 3, cursorY + 15, pageW - marginX - 3, cursorY + 15);
-    this.escreverCampo(doc, 'Total Geral Qtd:', totalGeralQtd.toString(), marginX + 3, cursorY + 20, true);
-    this.escreverCampo(doc, 'Total Geral Peso:', this.formatDecimal(totalGeralPeso) + ' kg', col2, cursorY + 20, true);
+    this.escreverCampo(doc, 'Ordem:', ordem.DocEntry.toString(), marginX + 3, cursorY + 6, true);
+    
+    doc.setFont('helvetica', 'bold').setTextColor(...this.VERDE_SUSTEN);
+    doc.text('Descrição:', col2, cursorY + 6);
+    const labelW = doc.getTextWidth('Descrição: ');
+    doc.setFont('helvetica', 'normal').setTextColor(...this.PRETO_TEXTO);
+    doc.text(descLinhas, col2 + labelW, cursorY + 6);
+
+    this.escreverCampo(doc, 'Data:', ordem.dataCriacao || '', marginX + 3, cursorY + 12 + alturaExtraDesc, true);
+    this.escreverCampo(doc, 'Status:', 'Aberto', col2, cursorY + 12 + alturaExtraDesc, true);
+    
+    doc.setDrawColor(...this.VERDE_SUSTEN).setLineWidth(0.1).line(marginX + 3, cursorY + 15 + alturaExtraDesc, pageW - marginX - 3, cursorY + 15 + alturaExtraDesc);
+    this.escreverCampo(doc, 'Total Geral Qtd:', totalGeralQtd.toString(), marginX + 3, cursorY + 20 + alturaExtraDesc, true);
+    this.escreverCampo(doc, 'Total Geral Peso:', this.formatDecimal(totalGeralPeso) + ' kg', col2, cursorY + 20 + alturaExtraDesc, true);
+    
     cursorY += alturaBlocoVerde + 5;
 
     pedidosAgrupados.forEach((pedido, index) => {
@@ -79,7 +91,6 @@ export class ItinerarioPdfService {
       const larguraTexto = pageW - (marginX * 2) - 10;
       const enderecoLinhas = doc.splitTextToSize(pedido.Address2 || 'ENDEREÇO NÃO CADASTRADO', larguraTexto);
       const obsLinhas = doc.splitTextToSize(pedido.Comments || 'SEM OBSERVAÇÕES', larguraTexto);
-      
       const alturaEstimada = 45 + (enderecoLinhas.length * 4) + (obsLinhas.length * 4) + (pedido.itens.length * 10);
 
       if (cursorY + alturaEstimada > pageH - 25) {
@@ -110,7 +121,6 @@ export class ItinerarioPdfService {
 
       doc.setFont('helvetica', 'bold').text('Obs:', marginX + 3, cursorY);
       doc.setFont('helvetica', 'normal').text(obsLinhas, marginX + 12, cursorY);
-      
       cursorY += (obsLinhas.length * 3.8) + 1.5; 
 
       pedido.itens.forEach((item: any, idxItem: number) => {
@@ -122,8 +132,6 @@ export class ItinerarioPdfService {
           doc.setDrawColor(...this.VERDE_SUSTEN).setLineWidth(0.4).line(marginX + 3, cursorY, pageW - marginX - 3, cursorY);
           cursorY += 6; 
         } else {
-          cursorY += 4; 
-          doc.setDrawColor(0, 0, 0).setLineWidth(0.1).line(marginX + 3, cursorY, pageW - marginX - 3, cursorY);
           cursorY += 5; 
         }
 

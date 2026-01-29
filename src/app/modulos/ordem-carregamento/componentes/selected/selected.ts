@@ -14,6 +14,7 @@
   import { ParameterService } from '../../../../shared/service/parameter.service';
 import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
+import { OrderSalesService } from '../../../sap-shared/_services/documents/order-sales.service';
 
   @Component({
     selector: 'app-ordem-selected',
@@ -43,6 +44,10 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
 
     private lastSelectedDocEntry: number | null = null;
     private lastPedidosRef: any[] | null = null;
+
+    pedidosVendaCarregados: boolean = false;
+
+    itemsParaSelecaoLote: any[] = [];
 
     definition: Column[] = [
       new Column('Núm. do Pedido', 'DocNum'),
@@ -76,7 +81,8 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
       private parameterService: ParameterService,
       private route: ActivatedRoute,
       private pdfService: OrdemCarregamentoPdfService,
-      private romaneioPdfService: RomaneioPdfService
+      private romaneioPdfService: RomaneioPdfService,
+      private orderSalesService : OrderSalesService
     ) {}
 
     ngOnInit(): void {
@@ -167,12 +173,37 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
 
       this.placa = this.selected.U_placa || '';
       this.nomeMotorista = this.selected.U_motorista || '';
-      this.pesoCaminhao = this.selected.U_pesoCaminhao || null;
+      this.pesoCaminhao = this.selected.U_capacidadeCaminhao || null;
+
+      if (this.selected.DocEntry) {
+          this.orderSalesService.getPedidosBy(this.selected.DocEntry).subscribe({
+            next: (pedidos) => {
+              if (this.selected) {
+                this.selected.pedidosVenda = pedidos;
+                this.selected.pedidosVendaCarregados = true;
+                this.agruparItensParaLote(pedidos);
+              }
+            }
+          });
+      }
 
       if (this.lastSelectedDocEntry !== this.selected.DocEntry) {
         this.lastSelectedDocEntry = this.selected.DocEntry ?? null;
         this.lastPedidosRef = null;
       }
+    }
+
+    private agruparItensParaLote(pedidos: any[]): void {
+      const grouped = pedidos.reduce((acc, current) => {
+        const key = current.ItemCode;
+        if (!acc[key]) {
+          acc[key] = { ...current, Quantity: 0 };
+        }
+        acc[key].Quantity += current.Quantity;
+        return acc;
+      }, {} as { [key: string]: any });
+      
+    this.itemsParaSelecaoLote = Object.values(grouped);
     }
 
     private resetState() {
@@ -221,6 +252,7 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
         next: () => {
           this.alertService.confirm('Nota fiscal confirmada com sucesso!');
           this.atualizarStatusParaFechado();
+          this.loadNotas();
           this.showLoteModal = false; 
         },
         error: (error) => {
@@ -252,11 +284,13 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
       
       this.loading = true;
       const pesoString = this.pesoCaminhao ? String(this.pesoCaminhao) : null;
+
       const dados = {
         U_placa: this.placa,
         U_motorista: this.nomeMotorista,
-        U_pesoCaminhao: pesoString
-      } as any;
+        U_capacidadeCaminhao: pesoString,
+        U_transportadora: this.businessPartner?.CardCode || null 
+      };
 
       this.ordemCarregamentoService.atualizarLogistica(this.selected!.DocEntry, dados).subscribe({
         next: () => {
@@ -264,7 +298,8 @@ import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
           if (this.selected) {
             this.selected.U_placa = this.placa;
             this.selected.U_motorista = this.nomeMotorista;
-            this.selected.U_pesoCaminhao = this.pesoCaminhao;
+            this.selected.U_capacidadeCaminhao = this.pesoCaminhao;
+            this.selected.U_transportadora = this.businessPartner?.CardCode; 
           }
         },
         error: (err) => {

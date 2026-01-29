@@ -66,6 +66,11 @@
               <app-localidade-search (selected)="selectLocalidade($event)"></app-localidade-search>
             </div>
           </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <app-sales-person-search (selected)="selectOriginSalesPerson($event)" [name]="'Vendedor'"></app-sales-person-search>
+            </div>
+          </div>
           <div class="col-sm-4 d-flex align-items-end">
             <div class="form-group mr-2">
               <button

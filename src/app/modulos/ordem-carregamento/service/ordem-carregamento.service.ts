@@ -86,7 +86,7 @@ export class OrdemCarregamentoService {
     return ordemCarregamento;
   }
 
-  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string, U_pesoCaminhao?: string | number | null }): Observable<any>{
+  atualizarLogistica(docEntry: number, dados: { U_placa: string, U_motorista: string, U_capacidadeCaminhao?: string | number | null, U_transportadora?: string | null}): Observable<any>{
     return this.http.post(`${this.url}/${docEntry}/logistica`, dados);
   }
 
@@ -105,10 +105,14 @@ export class OrdemCarregamentoService {
     );
   }
 
-    search(dataInicial: string, dataFinal: string, filial: string, localidade: string): Observable<NextLink<PedidoVenda>> {
+    search(dataInicial: string, dataFinal: string, filial: string, localidade: string, vendedor : number): Observable<NextLink<PedidoVenda>> {
       let params = new HttpParams()
         .set('filial', filial.toString())
-        .set('localidade', localidade.toString());
+        .set('localidade', localidade.toString())
+
+      if (vendedor != null) {
+        params = params.set('vendedor', vendedor.toString());
+      }
   
       if (dataInicial) {
         params = params.set('dataInicial', dataInicial);

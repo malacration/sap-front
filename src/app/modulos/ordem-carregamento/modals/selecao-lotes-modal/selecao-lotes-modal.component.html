@@ -5,16 +5,24 @@
         <h5>Pedidos Disponíveis</h5>
         <div class="list-group" style="max-height: 400px; overflow-y: auto;">
           <a *ngFor="let pedido of pedidos"
-             href="javascript:void(0)"
-             class="list-group-item list-group-item-action"
-             [class.active]="currentPedido?.ItemCode == pedido.ItemCode"
-             (click)="selecionarPedido(pedido)">
+            href="javascript:void(0)"
+            class="list-group-item list-group-item-action"
+            [class.active]="currentPedido?.ItemCode == pedido.ItemCode"
+            [style.background-color]="currentPedido?.ItemCode == pedido.ItemCode ? '#25A246' : ''"
+            [style.border-color]="currentPedido?.ItemCode == pedido.ItemCode ? '#25A246' : ''"
+            (click)="selecionarPedido(pedido)">
             <div class="d-flex w-100 justify-content-between">
-              <h6 class="mb-1">{{ pedido.ItemCode }}</h6>
-              <small>Qtd: {{ pedido.Quantity }}</small>
+              <h6 class="mb-1" [class.text-white]="currentPedido?.ItemCode == pedido.ItemCode">
+                {{ pedido.ItemCode }}
+              </h6>
+              <small [class.text-white]="currentPedido?.ItemCode == pedido.ItemCode">
+                Qtd: {{ pedido.Quantity }}
+              </small>
             </div>
-            <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="text-success mt-1">
-              <small>{{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)</small>
+            <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="mt-1">
+              <small [style.color]="currentPedido?.ItemCode == pedido.ItemCode ? 'white' : '#25A246'">
+                {{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)
+              </small>
             </div>
           </a>
         </div>

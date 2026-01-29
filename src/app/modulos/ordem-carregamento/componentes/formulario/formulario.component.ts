@@ -12,6 +12,7 @@ import { LocalidadeService } from '../../../sap-shared/_services/localidade.serv
 import { NextLink } from '../../../../sap/model/next-link';
 import { OrdemCarregamentoDto } from '../../models/ordem-carregamento-dto';
 import { CardComponent } from '../../../../shared/components/card/card.component';
+import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 
 @Component({
   selector: 'app-ordem-formulario',
@@ -34,6 +35,7 @@ export class FormularioComponent implements OnInit, OnChanges {
   nextLink: string = '';
   loading = false;
   isLoadingOrders = false;
+  vendedor: any;
   
   // nameOrdInput: string = '';
   // ordemId: number | null = null;
@@ -158,7 +160,7 @@ updateOrderName(): void {
 
     this.isLoadingOrders = true;
     this.ordemCarregamentoService
-      .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.Bplid, this.localidade!.Code)
+      .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.Bplid, this.localidade!.Code, this.vendedor)
       .subscribe({
         next: (result: NextLink<PedidoVenda>) => {
           this.availableOrders = result.content.filter(
@@ -199,6 +201,10 @@ updateOrderName(): void {
   onSelectedOrdersChange(orders: PedidoVenda[]): void {
     this.selectedOrders = orders;
     this.updateOrderName(); 
+  }
+
+  selectOriginSalesPerson(sp: SalesPerson | null): void {
+    this.vendedor = sp?.SalesEmployeeCode ?? null;
   }
 
   clearDataInicial(): void {

@@ -13,7 +13,8 @@ export class OrdemCarregamento {
   Ord_CRG_LINHACollection: any[] = [];
   U_placa: string 
   U_motorista: string 
-  U_pesoCaminhao: number 
+  U_capacidadeCaminhao: number 
+  U_transportadora: string 
   pedidosVenda: any[] = [];
   pedidosVendaCarregados = false;
 

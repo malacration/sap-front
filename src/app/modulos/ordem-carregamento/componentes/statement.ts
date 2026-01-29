@@ -49,13 +49,18 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if(this.hasParam("id")){
-      this.registerRouteParam('id');
-    }else if(this.hasParam('edit')){
-      this.registerRouteParam('edit');
-    }else{
-      this.pageChange(0);
-    }
+    this.route.queryParams.subscribe(params => {
+      if (params['id']) {
+        this.loadOrdemCarregamento(params['id']);
+      } else if (params['edit']) {
+        if (params['edit'] == '-1') {
+          this.selected = new OrdemCarregamento();
+        } else {
+          this.loadOrdemCarregamento(params['edit']);
+        }} else {
+          this.pageChange(0)
+        }
+    });
   }
 
   novo(){
@@ -108,9 +113,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     this.unsubscribe();
     this.removeParams(); 
     this.selected = null;
-    if (!this.pageContent || this.pageContent.content.length === 0) {
       this.pageChange(0);
-    }
   }
 
   close(): void {
