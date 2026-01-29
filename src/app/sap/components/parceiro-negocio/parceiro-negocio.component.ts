@@ -72,11 +72,8 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
   }
 
   close(){
-    this.router.navigate(['../'], { // Navega para a rota pai, removendo o parâmetro 'id'
-      relativeTo: this.route, // Navega em relação à rota atual
-      queryParamsHandling: 'preserve' // Mantém os parâmetros de consulta, se existirem
-    });
-    this.selected = null
+    this.router.navigate(['/clientes/parceiro-negocio']);
+    this.selected = null;
   }
 
   ngOnDestroy(): void {
