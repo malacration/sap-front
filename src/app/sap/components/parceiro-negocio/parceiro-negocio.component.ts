@@ -56,7 +56,15 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
 
   pageChange($event) {
     this.loading = true;
-    this.service.getClientes($event).subscribe({
+    const cardCode = (this.cardCodeFilter || '').trim();
+    const cardName = (this.cardNameFilter || '').trim();
+    const cpfCnpj = (this.cpfCnpjFilter || '').trim();
+    const filter = {
+      cardCode: cardCode.length ? cardCode : null,
+      cardName: cardName.length ? cardName : null,
+      cpfCnpj: cpfCnpj.length ? cpfCnpj : null
+    };
+    this.service.getClientes($event, filter).subscribe({
       next: (it: Page<any>) => {
         this.pageContent = it;
       },
@@ -84,5 +92,16 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
       this.routeSub.unsubscribe();
     }
   }
+
+  limpar(){
+    this.cardCodeFilter = '';
+    this.cardNameFilter = '';
+    this.cpfCnpjFilter = '';
+    this.pageChange(0);
+  }
+
+  cardCodeFilter : string
+  cardNameFilter : string
+  cpfCnpjFilter : string
 
 }
