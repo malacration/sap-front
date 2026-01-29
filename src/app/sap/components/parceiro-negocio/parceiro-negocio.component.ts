@@ -66,8 +66,9 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
 
 
   action(event : ActionReturn){
-    if(event.type == "selected"){
-      this.selected = event.data
+  if (event.type === "selected") {
+      const cardCode = event.data.CardCode;
+      this.router.navigate(['/clientes/parceiro-negocio', cardCode]);
     }
   }
 
