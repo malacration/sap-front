@@ -1,3 +1,4 @@
+import { Action, ActionReturn } from '../../shared/components/action/action.model';
 import { ReplaceFilial } from '../../utils/replaceFilial';
 
 export class ContaReceber {
@@ -11,6 +12,29 @@ export class ContaReceber {
   BPLName: string;
   TransType: number;
   documento: string;
+  pixDocType?: string;
+  sourceLine: number;
+  DocEntry: number;
+
+  autorizadoPixSemJuros = false;
+
+  get sourceID(): number {
+    return this.sourceLine;
+  }
+
+  getActions(): Action[] {
+    const actions: Action[] = [];
+    
+    if (this.pixDocType) {
+      actions.push(new Action('PIX', new ActionReturn('gerarPix', this), 'fas fa-qrcode', 'success'));
+      
+      if (this.autorizadoPixSemJuros) {
+        actions.push(new Action('PIX (Sem Juros)', new ActionReturn('gerarPixSemJuros', this), 'fas fa-percentage', 'warning'));
+      }
+    }
+
+    return actions;
+  }
 
   // formatar data dd/MM/yyyy
   get refDateFormat(): string {

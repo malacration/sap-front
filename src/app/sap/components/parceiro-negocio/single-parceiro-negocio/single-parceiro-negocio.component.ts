@@ -14,6 +14,12 @@ import { OrderSalesService } from '../../../../modulos/sap-shared/_services/docu
 import { PedidoVenda } from '../../document/documento.statement.component';
 import { ContaReceber } from '../../../model/contas-receber.model';
 import { Page } from '../../../model/page.model';
+import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { HttpClient } from '@angular/common/http';
+
+// SImular
+import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -23,7 +29,8 @@ import { Page } from '../../../model/page.model';
 export class ParceiroNegocioSingleComponent implements OnInit {
   constructor(
     private businessPartnerService: BusinessPartnerService,
-    private orderSales: OrderSalesService
+    private orderSales: OrderSalesService,
+    private hppCliente : HttpClient
   ) {}
 
   @Input()
@@ -36,8 +43,11 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   contasReceberEmpty = false;
   @Output()
   close = new EventEmitter();
+  autorizadoPixSemJuros = false; // Hardcode padrão
+  qrCodeData: any = null;
 
   @ViewChild('retirada', { static: true }) buscaModal: ModalComponent;
+  @ViewChild('modalPix') modalPix: ModalComponent;
 
   ngOnInit(): void {
     this.businessPartnerService
@@ -57,16 +67,23 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     this.loadContasReceber();
   }
 
-  loadContasReceber() {
+loadContasReceber() {
     this.contasReceberLoading = true;
+    
     this.businessPartnerService
       .getContasReceberBP(this.selected.CardCode)
       .subscribe({
-        next: (response) => {
-        this.pageContent = response;
-        this.contasReceber = response.content.map(it => Object.assign(new ContaReceber(), it));
-        this.contasReceberEmpty = this.contasReceber.length === 0;
-      },
+        next: (response) => { 
+          this.pageContent = response;
+          
+          this.contasReceber = response.content.map(it => {
+            const conta = Object.assign(new ContaReceber(), it);
+            conta.autorizadoPixSemJuros = this.autorizadoPixSemJuros; 
+            return conta;
+          });
+
+          this.contasReceberEmpty = this.contasReceber.length === 0;
+        }, 
         error: () => {
           this.contasReceberEmpty = true;
         },
@@ -99,7 +116,38 @@ changePageFunction(nextLink: string) {
     this.close.emit();
   }
 
-  action($event) {}
+  action(event: ActionReturn) {
+    if (event.type === 'gerarPix') {
+        this.solicitarPix(event.data, true);
+    } else if (event.type === 'gerarPixSemJuros') {
+        this.solicitarPix(event.data, false);
+    }
+}
+
+copiarPix() {
+    if (this.qrCodeData && this.qrCodeData.qrCodeCopyPaste) {
+      navigator.clipboard.writeText(this.qrCodeData.qrCodeCopyPaste);
+      alert('Código PIX copiado com sucesso!');
+    }
+  }
+
+  solicitarPix(conta: ContaReceber, comJuros: boolean) {
+      this.loading = true;
+
+      const mockResponse = {
+        qrCodeBase64: 'iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQMAAAD587ZfAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA70lEQVR4nGL4v58BDBiYGBgYmP8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSPyvAABfO4M42f6v8gAAAABJRU5ErkJggg==', 
+        qrCodeCopyPaste: '00020101021226870014br.gov.bcb.pix2565pix-qrcode.exemplo.com/v2/0123456789ABCDEF52040000530398654041.005802BR5913NOME RECEBEDOR6008BRASILIA62070503***6304E228',
+        expirationDate: new Date(new Date().getTime() + 3600000).toISOString()
+      };
+
+      of(mockResponse).pipe(delay(1500)).subscribe({
+        next: (res) => {
+          this.qrCodeData = res;
+          this.modalPix.openModal();
+        },
+        complete: () => this.loading = false
+      });
+  }
 
   openModal() {
     this.buscaModal.classeModal = 'modal-xl';
@@ -139,6 +187,7 @@ changePageFunction(nextLink: string) {
   contasReceberDefinition = [
     new Column('Nota', 'Ref1'),
     new Column('Tipo de documento', 'documento'),
+    new Column('Parcela', 'sourceID'),
     new Column('Data de Lançamento', 'refDateFormat'),
     new Column('Data de Vencimento', 'dueDateFormat'),
     new Column('Filial', 'filialFormatada'),

@@ -94,3 +94,28 @@
     </div>
   </div>
 </section>
+
+<app-modal #modalPix [title]="'Pagamento via PIX'" modalSize="sm">
+  <div *ngIf="qrCodeData" class="text-center p-2">
+    <p class="mb-2">Escaneie o QR Code abaixo:</p>
+    
+    <div class="d-flex justify-content-center my-3">
+      <img [src]="'data:image/png;base64,' + qrCodeData.qrCodeBase64" 
+           alt="QR Code PIX" 
+           style="width: 180px; height: 180px; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+    </div>
+    
+    <div class="input-group mb-3">
+      <input type="text" class="form-control form-control-sm" [value]="qrCodeData.qrCodeCopyPaste" readonly>
+      <div class="input-group-append">
+        <button class="btn btn-outline-success btn-sm" type="button" (click)="copiarPix()">
+          <i class="far fa-copy"></i> Copiar
+        </button>
+      </div>
+    </div>
+    
+    <div class="alert alert-light py-1 px-2 border">
+       <small class="text-muted">Vencimento em: {{ qrCodeData.expirationDate | date:'dd/MM/yyyy HH:mm' }}</small>
+    </div>
+  </div>
+</app-modal>
