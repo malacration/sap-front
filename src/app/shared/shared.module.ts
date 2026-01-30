@@ -29,6 +29,8 @@ import { SelectComponent } from './components/select/select.component';
 import { SearchComponent } from './components/search/search.component';
 import { CardComponent } from './components/card/card.component';
 import { WsService } from './WsService';
+import { QRCodeModule } from 'angularx-qrcode';
+import { QrcodeComponent } from './components/qrcode/qrcode.component';
 
 @NgModule({
   providers: [
@@ -55,7 +57,8 @@ import { WsService } from './WsService';
     ModalComponent,
     SearchComponent,
     CardComponent,
-    ChangePassowrd
+    ChangePassowrd,
+    QrcodeComponent
   ],
   imports: [
     CommonModule, 
@@ -65,7 +68,8 @@ import { WsService } from './WsService';
     TranslateModule,
     FormsModule,
     BrowserModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    QRCodeModule
   ],
   exports: [
     TranslateModule, 
@@ -87,6 +91,7 @@ import { WsService } from './WsService';
     ChangePassowrd,
     SearchComponent,
     CardComponent,
+    QrcodeComponent,
   ]
 })
 export class SharedModule {}
