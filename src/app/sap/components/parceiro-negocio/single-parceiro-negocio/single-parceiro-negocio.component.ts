@@ -135,8 +135,8 @@ copiarPix() {
       this.loading = true;
 
       const mockResponse = {
-        qrCodeBase64: 'iVBORw0KGgoAAAANSUhEUgAAAIAAAACAAQMAAAD587ZfAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA70lEQVR4nGL4v58BDBiYGBgYmP8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSByA8f8fSPyvAABfO4M42f6v8gAAAABJRU5ErkJggg==', 
-        qrCodeCopyPaste: '00020101021226870014br.gov.bcb.pix2565pix-qrcode.exemplo.com/v2/0123456789ABCDEF52040000530398654041.005802BR5913NOME RECEBEDOR6008BRASILIA62070503***6304E228',
+        qrCodeBase64: '...', 
+        qrCodeCopyPaste: 'franciscogf',
         expirationDate: new Date(new Date().getTime() + 3600000).toISOString()
       };
 

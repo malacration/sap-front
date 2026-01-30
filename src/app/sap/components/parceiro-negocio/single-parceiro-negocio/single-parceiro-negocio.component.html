@@ -100,9 +100,10 @@
     <p class="mb-2">Escaneie o QR Code abaixo:</p>
     
     <div class="d-flex justify-content-center my-3">
-      <img [src]="'data:image/png;base64,' + qrCodeData.qrCodeBase64" 
-           alt="QR Code PIX" 
-           style="width: 180px; height: 180px; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+      <app-qrcode 
+        [value]="qrCodeData.qrCodeCopyPaste" 
+        [size]="200">
+      </app-qrcode>
     </div>
     
     <div class="input-group mb-3">
