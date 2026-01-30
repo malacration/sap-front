@@ -56,7 +56,15 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
 
   pageChange($event) {
     this.loading = true;
-    this.service.getClientes($event).subscribe({
+    const cardCode = (this.cardCodeFilter || '').trim();
+    const cardName = (this.cardNameFilter || '').trim();
+    const cpfCnpj = (this.cpfCnpjFilter || '').trim();
+    const filter = {
+      cardCode: cardCode.length ? cardCode : null,
+      cardName: cardName.length ? cardName : null,
+      cpfCnpj: cpfCnpj.length ? cpfCnpj : null
+    };
+    this.service.getClientes($event, filter).subscribe({
       next: (it: Page<any>) => {
         this.pageContent = it;
       },
@@ -66,17 +74,15 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
 
 
   action(event : ActionReturn){
-    if(event.type == "selected"){
-      this.selected = event.data
+  if (event.type === "selected") {
+      const cardCode = event.data.CardCode;
+      this.router.navigate(['/clientes/parceiro-negocio', cardCode]);
     }
   }
 
   close(){
-    this.router.navigate(['../'], { // Navega para a rota pai, removendo o parâmetro 'id'
-      relativeTo: this.route, // Navega em relação à rota atual
-      queryParamsHandling: 'preserve' // Mantém os parâmetros de consulta, se existirem
-    });
-    this.selected = null
+    this.router.navigate(['/clientes/parceiro-negocio']);
+    this.selected = null;
   }
 
   ngOnDestroy(): void {
@@ -84,5 +90,16 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
       this.routeSub.unsubscribe();
     }
   }
+
+  limpar(){
+    this.cardCodeFilter = '';
+    this.cardNameFilter = '';
+    this.cpfCnpjFilter = '';
+    this.pageChange(0);
+  }
+
+  cardCodeFilter : string
+  cardNameFilter : string
+  cpfCnpjFilter : string
 
 }

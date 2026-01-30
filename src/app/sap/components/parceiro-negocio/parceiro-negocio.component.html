@@ -1,10 +1,61 @@
 <br>
 <section class="content">
+    
     <div *ngIf="!selected || selected == null" class="card card-primary">
         <div class="card-header">
             <h3 class="card-title"><b>Parceiro Negócio - {{nomeUsuario}}</b></h3>
         </div>
-        <div class="card-body">                
+        <div class="card-body">
+          <form class="container-fluid" (ngSubmit)="ngOnInit()" autocomplete="off">
+            <div class="form-row align-items-end">
+              <div class="col-auto">
+                  <label for="cardCode" class="col-form-label">Código do Parceiro</label>
+                  <input
+                    id="cardCode"
+                    name="cardCode"
+                    class="form-control"
+                    type="text"
+                    [(ngModel)]="cardCodeFilter"
+                    placeholder="Ex.: CLI0000000"
+                  />
+              </div>
+              <div class="col-auto">
+                  <label for="cardName" class="col-form-label">Nome do Parceiro</label>
+                  <input
+                    id="cardName"
+                    name="cardName"
+                    class="form-control"
+                    type="text"
+                    [(ngModel)]="cardNameFilter"
+                    placeholder="Ex.: ACME LTDA"
+                  />
+              </div>
+              <div class="col-auto">
+                  <label for="cpfCnpj" class="col-form-label">CPF/CNPJ</label>
+                  <input
+                    id="cpfCnpj"
+                    name="cpfCnpj"
+                    class="form-control"
+                    type="text"
+                    [(ngModel)]="cpfCnpjFilter"
+                    placeholder="Ex.: 000.000.000-00"
+                  />
+              </div>
+            
+                <!-- AÇÕES -->
+              <div class="col-auto">
+                <div class="btn-group">
+                  <button type="submit" [disabled]="loading" class="btn btn-success">
+                    {{ loading ? 'Filtrando...' : 'Filtrar' }}
+                  </button>
+                  <button type="button" (click)="limpar()" [disabled]="loading" class="btn btn-outline-secondary">
+                    Limpar
+                  </button>
+                </div>
+              </div>
+              </div>
+            </form>
+            <hr>
             <app-table
                 [content]="pageContent?.content" 
                 [definition]="definition" 

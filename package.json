@@ -60,6 +60,7 @@
     "jspdf": "2.5.2",
     "jspdf-autotable": "5.0.7",
     "luxon": "3.4.4",
+    "angularx-qrcode": "15.0.0",
     "ng": "0.0.0",
     "ngx-bootstrap": "10.3.0",
     "ngx-dropzone-wrapper": "15.0.0",

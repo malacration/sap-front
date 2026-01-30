@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -6,23 +6,26 @@ import { Column } from '../../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { ItemService } from '../../../../sap/service/item.service';
 import { LastPrice } from '../../models/last-price';
-import { Observable, concat, finalize, tap } from 'rxjs';
+import { Observable, Subscription, concat, finalize, map, tap } from 'rxjs';
 import { CalculadoraService } from '../../service/calculadora.service';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
 import { CalculadoraPdfComponent } from '../calculadora-pdf/calculadora-pdf.component';
 import { CalculadoraPreco } from '../../models/CalculadoraPreco';
+import { WsService } from '../../../../shared/WsService';
+import { SelecaoProdutoComponent } from '../selecao-produto/selecao-produto.component';
 
 @Component({
   selector: 'formacao-preco',
   templateUrl: './formacao.component.html',
 })
-export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
+export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDestroy {
   
   constructor(
     private cdRef: ChangeDetectorRef,
     private service : CalculadoraService,
-    private alertService : AlertService
+    private alertService : AlertService,
+    private wsService: WsService
   ){
 
   }
@@ -35,6 +38,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   @ViewChild('table', {static: true}) table: TableComponent;
 
   @ViewChild('modalPrazosPagamento', {static: true}) modalPrazos: ModalComponent;
+  @ViewChild(SelecaoProdutoComponent) selecaoProdutoComponent?: SelecaoProdutoComponent;
 
   @Input()
   analise : Analise
@@ -47,6 +51,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   
   uniqueIngredients : Map<string, Produto> = new Map<string, Produto>()
   showModalAtualizaCustos = false
+  private wsSubscription: Subscription | null = null
 
   ngOnInit(): void {
     let fatorSubProduto = 40
@@ -215,6 +220,31 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
     this.cdRef.detectChanges();
   }
 
+  solicitarProdutos($event: {codeStart: string; codeEnd: string; warehouse: number}){
+    if (!this.analise) return;
+    this.wsSubscription?.unsubscribe();
+    const jobId = crypto.randomUUID();
+    this.wsSubscription = this.wsService.request<Produto[]>(
+      '/calculadora-preco/get-async',
+      { jobId, params: {codeStart: $event.codeStart, codeEnd: $event.codeEnd, warehouse: $event.warehouse} }
+    ).pipe(
+      map((produtos) =>
+        produtos.map((produto) => {
+          const novoProduto = Object.assign(new Produto(), produto);
+          if (Array.isArray(novoProduto.Ingredientes)) {
+            novoProduto.Ingredientes = novoProduto.Ingredientes.map(
+              (ingrediente) => Object.assign(new Produto(), ingrediente)
+            );
+          }
+          return novoProduto;
+        })
+      )
+    ).subscribe((it) => {
+      this.adicionarItem(it);
+      this.selecaoProdutoComponent?.finalizarSelecao();
+    });
+  }
+
   adicionarItem(itens : Array<Produto>){
     this.analise.produtos.push(...itens)
     this.groupUniqueIngredients()
@@ -330,6 +360,10 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
       const index = this.analise.produtos.findIndex(obj => obj.ItemCode == action.data.ItemCode)
       this.analise.produtos.splice(index, 1);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.wsSubscription?.unsubscribe();
   }
 
   voltar(): void {
