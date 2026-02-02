@@ -12,7 +12,9 @@
   <div class="info-section">
     <p><strong>Nome:</strong> {{ vendaFutura?.U_cardName }}</p>
     <p><strong>Data:</strong> {{ vendaFutura?.dataCriacao }}</p>
-    <p><strong>Pagamento:</strong> {{ vendaFutura?.totalCurrencyContratoVenda }}</p>
+    <p>Produtos: {{ vendaFutura?.TotalProdutosCalculadoCurrency | currency }}</p>
+    <p>Valor Frete: {{ vendaFutura?.U_valorFrete | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</p>
+    <p><strong>Total a Pagar:</strong> {{vendaFutura.totalCurrency}} </p>
   </div>
 
   <div class="table-container">

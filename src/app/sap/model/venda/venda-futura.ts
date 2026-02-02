@@ -100,7 +100,7 @@ export class VendaFutura {
   get totalCurrency() {
     return formatCurrency(
       this.U_valorFrete + this.totalProdutos
-        ? this.totalProdutos
+        ? this.totalProdutos+this.U_valorFrete
         : this.TotalProdutosCalculado,
       'pt',
       'R$'
