@@ -1,0 +1,154 @@
+<app-modal [show]="show" (showChange)="close()" [title]="'Seleção de Lotes por Pedido'">
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-4 border-right">
+        <h5>Pedidos</h5>
+        <div class="list-group pedidos-list">
+          <a
+            *ngFor="let pedido of pedidosAuxiliares"
+            href="javascript:void(0)"
+            class="list-group-item list-group-item-action"
+            [class.active]="currentPedido?.pedidoId === pedido.pedidoId"
+            [class.pedido-completo]="pedidoCompleto(pedido)"
+            (click)="selecionarPedido(pedido)">
+            <div class="d-flex justify-content-between">
+              <strong>#{{ pedido.docNum || pedido.docEntry }}</strong>
+              <span class="badge badge-light">
+                {{ itensCompletosDoPedido(pedido) }}/{{ pedido.itens.length }}
+              </span>
+            </div>
+            <small>{{ pedido.cardCode }} - {{ pedido.cardName }}</small>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <ng-container *ngIf="currentPedido; else semPedidoSelecionado">
+          <h5 class="mb-3">Itens do Pedido #{{ currentPedido.docNum || currentPedido.docEntry }}</h5>
+
+          <div class="table-responsive mb-3">
+            <table class="table table-sm table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Descrição</th>
+                  <th class="text-right">Qtd</th>
+                  <th class="text-right">Selecionado</th>
+                  <th class="text-center">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of currentPedido.itens">
+                  <td>{{ item.itemCode }}</td>
+                  <td>{{ item.descricao }}</td>
+                  <td class="text-right">{{ item.quantidade }}</td>
+                  <td class="text-right">{{ quantidadeSelecionadaItem(item) }}</td>
+                  <td class="text-center">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      [class.btn-primary]="currentItem?.itemId === item.itemId"
+                      [class.text-white]="currentItem?.itemId === item.itemId"
+                      (click)="selecionarItem(item)">
+                      Selecionar lotes
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="currentItem" class="card card-outline card-success">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">
+                Lotes de {{ currentItem.itemCode }} (Depósito: {{ currentItem.deposito }}) - Selecione {{ currentItem.quantidade }} itens
+              </h6>
+              <span
+                class="badge"
+                [ngClass]="{
+                  'bg-warning text-dark': quantidadeRestanteItem() > 0,
+                  'bg-primary text-white': quantidadeRestanteItem() === 0,
+                  'bg-danger text-white': quantidadeRestanteItem() < 0
+                }">
+                <i class="fas fa-info-circle me-1"></i>
+                Falta selecionar {{ quantidadeRestanteItem() }} itens
+              </span>
+            </div>
+
+            <div class="card-body">
+              <div *ngIf="loadingLotes" class="text-center p-3">
+                <i class="fas fa-spinner fa-spin"></i> Carregando lotes...
+              </div>
+
+              <div *ngIf="!loadingLotes" class="table-responsive">
+                <table class="table table-sm table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Lote</th>
+                      <th class="text-right">Disponível</th>
+                      <th class="text-right">Selecionar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let lote of lotesEmEdicao">
+                      <td>{{ lote.DistNumber }}</td>
+                      <td class="text-right">{{ lote.quantidadeDisponivel }}</td>
+                      <td class="text-right">
+                        <input
+                          type="number"
+                          class="form-control form-control-sm text-right"
+                          min="0"
+                          [max]="lote.quantidadeDisponivel"
+                          [(ngModel)]="lote.quantidadeSelecionada"
+                          (ngModelChange)="onQuantidadeLoteChange(lote)">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'badge-warning': quantidadeRestanteItem() > 0,
+                    'badge-success': quantidadeRestanteItem() === 0,
+                    'badge-danger': quantidadeRestanteItem() < 0
+                  }">
+                  Falta selecionar: {{ quantidadeRestanteItem() }}
+                </span>
+
+                <button
+                  type="button"
+                  class="btn btn-success btn-sm"
+                  [disabled]="loadingLotes || quantidadeRestanteItem() !== 0"
+                  (click)="confirmarItem()">
+                  Confirmar lotes do item
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #semPedidoSelecionado>
+          <div class="text-center text-muted p-4">
+            <i class="fas fa-box-open fa-3x mb-3"></i>
+            <p>Selecione um pedido para iniciar.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
+    <button
+      type="button"
+      class="btn btn-success"
+      [disabled]="loading || !todosPedidosCompletos()"
+      (click)="confirmar()">
+      <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></span>
+      <span *ngIf="!loading"><i class="fas fa-file-invoice"></i> Confirmar Nota</span>
+    </button>
+  </div>
+</app-modal>
