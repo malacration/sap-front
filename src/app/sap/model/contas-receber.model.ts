@@ -1,6 +1,8 @@
+import { Action, ActionReturn } from '../../shared/components/action/action.model';
 import { ReplaceFilial } from '../../utils/replaceFilial';
 
 export class ContaReceber {
+
   TransId: number;
   Ref1: string;
   RefDate: string;
@@ -10,7 +12,37 @@ export class ContaReceber {
   LineMemo: string;
   BPLName: string;
   TransType: number;
-  documento: string;
+  Documento: string;
+  PixDocType?: string;
+  SourceLine: number;
+  CreatedBy : number;
+  DocEntry: number;
+  loadingPix : boolean = false
+  U_pix_reference? : string = null
+
+  autorizadoPixSemJuros = false;
+
+  get SourceID(): number {
+    return this.SourceLine;
+  }
+
+  getActions(): Action[] {
+    const actions: Action[] = [];
+    if (this.PixDocType && !this.loadingPix) {
+      actions.push(new Action('PIX', new ActionReturn('gerarPix', this), 'fas fa-qrcode'));
+      
+      if (this.autorizadoPixSemJuros) {
+        actions.push(new Action('PIX (Sem Juros)', new ActionReturn('gerarPixSemJuros', this), 'fas fa-percentage',));
+      }
+    } else if(this.PixDocType) {
+      actions.push(new Action('Carregando', new ActionReturn('carregando', this), 'fas fa-spinner fa-spin', 'warning'));
+    }
+
+    if(this.U_pix_reference)
+      actions.push(new Action('Verificar Pagamento', new ActionReturn('checarPagamento', this), 'fas fa-percentage',));
+
+    return actions;
+  }
 
   // formatar data dd/MM/yyyy
   get refDateFormat(): string {

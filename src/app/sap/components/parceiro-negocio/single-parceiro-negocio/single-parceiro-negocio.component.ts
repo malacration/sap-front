@@ -14,6 +14,8 @@ import { OrderSalesService } from '../../../../modulos/sap-shared/_services/docu
 import { PedidoVenda } from '../../document/documento.statement.component';
 import { ContaReceber } from '../../../model/contas-receber.model';
 import { Page } from '../../../model/page.model';
+import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { PixService } from '../../../service/pix.service';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -23,7 +25,8 @@ import { Page } from '../../../model/page.model';
 export class ParceiroNegocioSingleComponent implements OnInit {
   constructor(
     private businessPartnerService: BusinessPartnerService,
-    private orderSales: OrderSalesService
+    private orderSales: OrderSalesService,
+    private pixService: PixService
   ) {}
 
   @Input()
@@ -36,8 +39,16 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   contasReceberEmpty = false;
   @Output()
   close = new EventEmitter();
+  
+  autorizadoPixSemJuros = true; // Hardcode padrão
+  
+  qrCodeData: any = null;
+  pixCopiado = false;
+  pagamentoPixData: any = null;
 
   @ViewChild('retirada', { static: true }) buscaModal: ModalComponent;
+  @ViewChild('modalPix') modalPix: ModalComponent;
+  @ViewChild('modalPagamentoPix') modalPagamentoPix: ModalComponent;
 
   ngOnInit(): void {
     this.businessPartnerService
@@ -57,16 +68,23 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     this.loadContasReceber();
   }
 
-  loadContasReceber() {
+loadContasReceber() {
     this.contasReceberLoading = true;
+    
     this.businessPartnerService
       .getContasReceberBP(this.selected.CardCode)
       .subscribe({
-        next: (response) => {
-        this.pageContent = response;
-        this.contasReceber = response.content.map(it => Object.assign(new ContaReceber(), it));
-        this.contasReceberEmpty = this.contasReceber.length === 0;
-      },
+        next: (response) => { 
+          this.pageContent = response;
+          
+          this.contasReceber = response.content.map(it => {
+            const conta = Object.assign(new ContaReceber(), it);
+            conta.autorizadoPixSemJuros = this.autorizadoPixSemJuros; 
+            return conta;
+          });
+
+          this.contasReceberEmpty = this.contasReceber.length === 0;
+        }, 
         error: () => {
           this.contasReceberEmpty = true;
         },
@@ -99,7 +117,63 @@ changePageFunction(nextLink: string) {
     this.close.emit();
   }
 
-  action($event) {}
+  action(event: ActionReturn) {
+    if (event.type === 'gerarPix') {
+        this.solicitarPix(event.data, true);
+    } else if (event.type === 'gerarPixSemJuros') {
+        this.solicitarPix(event.data, false);
+    } else if (event.type === 'checarPagamento') {
+      this.checarPagamento(event.data)
+    }
+}
+
+  copiarPix() {
+    if (this.qrCodeData && this.qrCodeData.qrCodeCopyPaste) {
+      navigator.clipboard.writeText(this.qrCodeData.qrCodeCopyPaste);
+      this.pixCopiado = true;
+    }
+  }
+
+  solicitarPix(conta: ContaReceber, comJuros: boolean) {
+    conta.loadingPix = true
+    this.pixService
+      .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
+      .subscribe({
+        next: (res) => {
+          if (!res || res.length !== 1) {
+            throw new Error('PIX retornou múltiplos itens');
+          }
+          const item = res[0];
+          const juros = Number(item.JurosValor ?? 0);
+          const valorTitulo = Number(item.ValorTitulo ?? item.Total ?? 0);
+          const valorTotal = Number(item.ValorTotal ?? item.Total ?? valorTitulo + juros);
+          this.qrCodeData = {
+            qrCodeCopyPaste: item.U_QrCodePix,
+            expirationDate: item.U_pix_due_date ?? item.DueDate,
+            total: valorTotal,
+            valorTitulo,
+            juros,
+          };
+          this.modalPix.openModal();
+        },
+        error: () => {
+          conta.loadingPix = false
+        },
+        complete: () => {
+          conta.loadingPix = false
+        },
+      });
+  }
+
+  checarPagamento(conta: ContaReceber){
+    this.pixService
+      .checarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
+      .subscribe((res) => {
+        this.pagamentoPixData = res;
+        this.modalPagamentoPix.openModal();
+      });
+  }
+
 
   openModal() {
     this.buscaModal.classeModal = 'modal-xl';
@@ -138,7 +212,8 @@ changePageFunction(nextLink: string) {
 
   contasReceberDefinition = [
     new Column('Nota', 'Ref1'),
-    new Column('Tipo de documento', 'documento'),
+    new Column('Tipo de documento', 'Documento'),
+    new Column('Parcela', 'SourceID'),
     new Column('Data de Lançamento', 'refDateFormat'),
     new Column('Data de Vencimento', 'dueDateFormat'),
     new Column('Filial', 'filialFormatada'),
