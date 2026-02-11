@@ -95,9 +95,24 @@
   </div>
 </section>
 
-<app-modal #modalPix [title]="'Pagamento via PIX'" modalSize="sm">
+<app-modal #modalPix [title]="'Pagamento via PIX'" modalSize="lg">
   <div *ngIf="qrCodeData" class="text-center p-2">
     <p class="mb-2">Escaneie o QR Code abaixo:</p>
+
+    <div class="mb-2">
+      <div class="font-weight-bold">
+        Total: {{ qrCodeData.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+      </div>
+      <div *ngIf="qrCodeData.juros && qrCodeData.juros > 0">
+        <small class="text-muted">
+          Valor nominal: {{ qrCodeData.valorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+        </small>
+        <br>
+        <small class="text-muted">
+          Juros: {{ qrCodeData.juros | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+        </small>
+      </div>
+    </div>
     
     <div class="d-flex justify-content-center my-3">
       <app-qrcode 
@@ -109,8 +124,8 @@
     <div class="input-group mb-3">
       <input type="text" class="form-control form-control-sm" [value]="qrCodeData.qrCodeCopyPaste" readonly>
       <div class="input-group-append">
-        <button class="btn btn-outline-success btn-sm" type="button" (click)="copiarPix()">
-          <i class="far fa-copy"></i> Copiar
+        <button class="btn btn-sm" [ngClass]="pixCopiado ? 'btn-success' : 'btn-primary'" type="button" (click)="copiarPix()">
+          <i class="far fa-copy"></i> {{ pixCopiado ? 'Copiado' : 'Copiar' }}
         </button>
       </div>
     </div>
@@ -118,5 +133,36 @@
     <div class="alert alert-light py-1 px-2 border">
        <small class="text-muted">Vencimento em: {{ qrCodeData.expirationDate | date:'dd/MM/yyyy HH:mm' }}</small>
     </div>
+  </div>
+</app-modal>
+
+<app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
+  <div *ngIf="pagamentoPixData" class="p-2">
+    <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
+    <div class="mb-1">
+      <strong>Status:</strong>
+      <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
+        {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
+      </span>
+    </div>
+    <div class="mb-1">
+      <strong>Valor original:</strong>
+      <span *ngIf="pagamentoPixData.originalAmount != null; else valorOriginalVazio">
+        {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+      </span>
+      <ng-template #valorOriginalVazio>-</ng-template>
+    </div>
+    <div class="mb-1" *ngIf="pagamentoPixData.receivedAmount != null">
+      <strong>Valor recebido:</strong>
+      {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+    </div>
+    <div class="mb-1">
+      <strong>Data do pagamento:</strong>
+      <span *ngIf="pagamentoPixData.paymentDate; else dataPagamentoVazia">
+        {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
+      </span>
+      <ng-template #dataPagamentoVazia>-</ng-template>
+    </div>
+    <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType }}</div>
   </div>
 </app-modal>

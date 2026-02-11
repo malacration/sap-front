@@ -15,11 +15,7 @@ import { PedidoVenda } from '../../document/documento.statement.component';
 import { ContaReceber } from '../../../model/contas-receber.model';
 import { Page } from '../../../model/page.model';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
-import { HttpClient } from '@angular/common/http';
-
-// SImular
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { PixService } from '../../../service/pix.service';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -30,7 +26,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   constructor(
     private businessPartnerService: BusinessPartnerService,
     private orderSales: OrderSalesService,
-    private hppCliente : HttpClient
+    private pixService: PixService
   ) {}
 
   @Input()
@@ -43,11 +39,16 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   contasReceberEmpty = false;
   @Output()
   close = new EventEmitter();
-  autorizadoPixSemJuros = false; // Hardcode padrão
+  
+  autorizadoPixSemJuros = true; // Hardcode padrão
+  
   qrCodeData: any = null;
+  pixCopiado = false;
+  pagamentoPixData: any = null;
 
   @ViewChild('retirada', { static: true }) buscaModal: ModalComponent;
   @ViewChild('modalPix') modalPix: ModalComponent;
+  @ViewChild('modalPagamentoPix') modalPagamentoPix: ModalComponent;
 
   ngOnInit(): void {
     this.businessPartnerService
@@ -121,33 +122,58 @@ changePageFunction(nextLink: string) {
         this.solicitarPix(event.data, true);
     } else if (event.type === 'gerarPixSemJuros') {
         this.solicitarPix(event.data, false);
+    } else if (event.type === 'checarPagamento') {
+      this.checarPagamento(event.data)
     }
 }
 
-copiarPix() {
+  copiarPix() {
     if (this.qrCodeData && this.qrCodeData.qrCodeCopyPaste) {
       navigator.clipboard.writeText(this.qrCodeData.qrCodeCopyPaste);
-      alert('Código PIX copiado com sucesso!');
+      this.pixCopiado = true;
     }
   }
 
   solicitarPix(conta: ContaReceber, comJuros: boolean) {
-      this.loading = true;
-
-      const mockResponse = {
-        qrCodeBase64: '...', 
-        qrCodeCopyPaste: 'franciscogf',
-        expirationDate: new Date(new Date().getTime() + 3600000).toISOString()
-      };
-
-      of(mockResponse).pipe(delay(1500)).subscribe({
+    conta.loadingPix = true
+    this.pixService
+      .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
+      .subscribe({
         next: (res) => {
-          this.qrCodeData = res;
+          if (!res || res.length !== 1) {
+            throw new Error('PIX retornou múltiplos itens');
+          }
+          const item = res[0];
+          const juros = Number(item.JurosValor ?? 0);
+          const valorTitulo = Number(item.ValorTitulo ?? item.Total ?? 0);
+          const valorTotal = Number(item.ValorTotal ?? item.Total ?? valorTitulo + juros);
+          this.qrCodeData = {
+            qrCodeCopyPaste: item.U_QrCodePix,
+            expirationDate: item.U_pix_due_date ?? item.DueDate,
+            total: valorTotal,
+            valorTitulo,
+            juros,
+          };
           this.modalPix.openModal();
         },
-        complete: () => this.loading = false
+        error: () => {
+          conta.loadingPix = false
+        },
+        complete: () => {
+          conta.loadingPix = false
+        },
       });
   }
+
+  checarPagamento(conta: ContaReceber){
+    this.pixService
+      .checarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
+      .subscribe((res) => {
+        this.pagamentoPixData = res;
+        this.modalPagamentoPix.openModal();
+      });
+  }
+
 
   openModal() {
     this.buscaModal.classeModal = 'modal-xl';
@@ -186,8 +212,8 @@ copiarPix() {
 
   contasReceberDefinition = [
     new Column('Nota', 'Ref1'),
-    new Column('Tipo de documento', 'documento'),
-    new Column('Parcela', 'sourceID'),
+    new Column('Tipo de documento', 'Documento'),
+    new Column('Parcela', 'SourceID'),
     new Column('Data de Lançamento', 'refDateFormat'),
     new Column('Data de Vencimento', 'dueDateFormat'),
     new Column('Filial', 'filialFormatada'),
