@@ -16,6 +16,7 @@ import { CalculadoraPreco } from '../../models/CalculadoraPreco';
 @Component({
   selector: 'formacao-preco',
   templateUrl: './formacao.component.html',
+  styleUrls: ['./formacao.component.scss']
 })
 export class FormacaoPrecoStatementComponent implements OnInit, OnChanges {
   
