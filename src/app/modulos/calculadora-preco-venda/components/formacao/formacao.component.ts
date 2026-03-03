@@ -268,10 +268,6 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDes
     // )
   }
 
-  solicitarProdutos($event){
-
-  }
-
   //TODO isso seria de um tableservice talvez
   removeKeys(obj){
     for (const key in obj) {
