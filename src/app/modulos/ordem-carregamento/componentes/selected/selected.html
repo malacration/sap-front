@@ -169,11 +169,11 @@
     [localidadesMap]="localidadesMap">
   </app-itinerario-modal>
 
-  <app-selecao-lotes-modal
-    [(show)]="showLoteModal"
-    [pedidos]="itemsParaSelecaoLote" 
+  <app-selecao-lotes-modal-pedido
+    [(show)]="showLoteModalPedido"
+    [pedidosX]="pedidosXAuxiliares"
     [loading]="loading"
-    (confirm)="onLotesConfirmados($event)">
-  </app-selecao-lotes-modal>
+    (confirm)="onLotesPedidoConfirmados($event)">
+  </app-selecao-lotes-modal-pedido>
 
 </section>

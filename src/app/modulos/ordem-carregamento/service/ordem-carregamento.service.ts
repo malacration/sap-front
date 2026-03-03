@@ -61,7 +61,7 @@ export class OrdemCarregamentoService {
     return this.http.post(`${this.url}/${id}/cancel`, {});
   }
 
-  saveSelectedLotes(docEntry: number, lotes: any): Observable<any> {
+  saveSelectedLotes(docEntry: number, lotes: any[]): Observable<any> {
     return this.http.post(`${this.url}/generate-from-loading-order/${docEntry}`, lotes);
   }
 

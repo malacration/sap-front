@@ -18,6 +18,7 @@ import { SelecaoProdutoComponent } from '../selecao-produto/selecao-produto.comp
 @Component({
   selector: 'formacao-preco',
   templateUrl: './formacao.component.html',
+  styleUrls: ['./formacao.component.scss']
 })
 export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDestroy {
   
@@ -265,6 +266,10 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDes
     // )).subscribe(it => 
     //     console.log(it)
     // )
+  }
+
+  solicitarProdutos($event){
+
   }
 
   //TODO isso seria de um tableservice talvez
