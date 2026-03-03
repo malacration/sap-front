@@ -19,9 +19,8 @@ export class OrdemCarregamento {
   pedidosVendaCarregados = false;
 
   get dataCriacao(): string {
-    const d = new Date(this.CreateDate);
-    const local = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-    return formatDate(new Date(this.CreateDate), 'dd/MM/yyyy', 'pt-BR');
+    if (!this.CreateDate) return '';
+    return formatDate(this.CreateDate, 'dd/MM/yyyy', 'pt-BR', 'UTC');
   }
 
   get pesoTotalFormatted(): string {

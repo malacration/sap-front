@@ -27,7 +27,7 @@
             <ul class="order-list">
               <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
                 <div class="item-details">
-                  {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
+                  {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                 </div>
                 <div class="stock-info" *ngIf="showStock">
                     <span class="stock-green">Estoque: {{ item.OnHand }}</span>
@@ -95,7 +95,7 @@
               <ul class="order-list">
                 <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
                   <div class="item-details">
-                    {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Quantity * item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
+                    {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                   </div>
                 </li>
               </ul>
