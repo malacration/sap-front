@@ -167,7 +167,8 @@ export class RomaneioPdfService {
       }
       const item = map.get(key);
       item.quantidade += Number(p.Quantity || 0);
-      item.pesoTotal += (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
+      
+      item.pesoTotal += Number(p.Weight1 || 0);
     });
     return Array.from(map.values());
   }
@@ -179,7 +180,15 @@ export class RomaneioPdfService {
     });
   }
 
-  private async getLogo(): Promise<string | null> {
-    return null; 
+  private getLogo(): Promise<HTMLImageElement | null> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = 'logo.png'; 
+      img.onload = () => resolve(img);
+      img.onerror = () => {
+        console.error('Erro ao carregar a logo');
+        resolve(null);
+      };
+    });
   }
 }

@@ -22,7 +22,7 @@ export class OrdemCarregamentoPdfService {
 
     const totalItens = (selected.pedidosVenda || []).reduce((acc, p) => acc + Number(p.Quantity || 0), 0);
     const totalPesoGeral = (selected.pedidosVenda || []).reduce((acc, p) => 
-      acc + (Number(p.Quantity || 0) * Number(p.Weight1 || 0)), 0
+      acc + Number(p.Weight1 || 0), 0
     );
 
     const logo = await this.getLogo();
@@ -121,7 +121,7 @@ export class OrdemCarregamentoPdfService {
       startY: y,
       head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'PESO TOTAL (KG)', 'UN']],
       body: (selected.pedidosVenda || []).map(p => {
-        const pesoTotalRow = (Number(p.Quantity || 0) * Number(p.Weight1 || 0));
+      const pesoTotalRow = Number(p.Weight1 || 0);
         return [
           { content: p.DocNum, styles: { fontStyle: 'bold' } },
           p.CardCode,
