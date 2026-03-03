@@ -11,6 +11,7 @@ import { PainelExpedicaoPedidosComponent } from './componentes/painel-expedicao-
 import { DualListBoxComponent } from './componentes/dual-list-box/dual-list-box.component';
 import { FormularioComponent } from './componentes/formulario/formulario.component';
 import { SelecaoLotesModalComponent } from './modals/selecao-lotes-modal/selecao-lotes-modal.component';
+import { SelecaoLotesModalPedidoComponent } from './modals/selecao-lotes-modal-pedido/selecao-lotes-modal-pedido.component';
 import { ItinerarioModalComponent } from './modals/itinerario-modal/itinerario-modal.component';
 import { IncotermsSelectComponent } from '../../sap/components/form/select/incoterms/incoterms.select.component';
 import { EmOrdemDeCarregamentoSelectComponent } from '../../sap/components/form/select/em-ordem-de-carregamento/em-ordem-de-carregamento.select.component';
@@ -28,6 +29,7 @@ import { ItinerarioPdfService } from './componentes/itinerario-pdf.component/iti
     DualListBoxComponent,
     FormularioComponent,
     SelecaoLotesModalComponent,
+    SelecaoLotesModalPedidoComponent,
     ItinerarioModalComponent,
     IncotermsSelectComponent,
     EmOrdemDeCarregamentoSelectComponent
