@@ -77,9 +77,8 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: () => {
-            this.alertService.error('Erro ao carregar os detalhes das ordens.');
-            this.loading = false;
-          }
+          this.loading = false;
+      }
     })
   }
 
@@ -169,9 +168,6 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
         ordem.pedidosVenda = this.groupPedidos(this.normalizePedidosResponse(pedidos));
         ordem.pedidosVendaCarregados = true;
       },
-      error: () => {
-        this.alertService.error('Erro ao carregar os pedidos da ordem.');
-      }
     });
   }
 
