@@ -76,7 +76,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
         this.pageContent = pageData;
         this.loading = false;
       },
-      error: () => {
+      complete: () => {
           this.loading = false;
       }
     })
@@ -153,9 +153,6 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     this.service.get(id).subscribe({
       next: (ordem: OrdemCarregamento) => {
         this.handleOrdemSelection(ordem);
-      },
-      error: () => {
-        this.alertService.error('Erro ao carregar a ordem de carregamento.');
       }
     });
   }
