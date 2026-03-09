@@ -76,10 +76,9 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
         this.pageContent = pageData;
         this.loading = false;
       },
-      error: () => {
-            this.alertService.error('Erro ao carregar os detalhes das ordens.');
-            this.loading = false;
-          }
+      complete: () => {
+          this.loading = false;
+      }
     })
   }
 
@@ -154,9 +153,6 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     this.service.get(id).subscribe({
       next: (ordem: OrdemCarregamento) => {
         this.handleOrdemSelection(ordem);
-      },
-      error: () => {
-        this.alertService.error('Erro ao carregar a ordem de carregamento.');
       }
     });
   }
@@ -169,9 +165,6 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
         ordem.pedidosVenda = this.groupPedidos(this.normalizePedidosResponse(pedidos));
         ordem.pedidosVendaCarregados = true;
       },
-      error: () => {
-        this.alertService.error('Erro ao carregar os pedidos da ordem.');
-      }
     });
   }
 
