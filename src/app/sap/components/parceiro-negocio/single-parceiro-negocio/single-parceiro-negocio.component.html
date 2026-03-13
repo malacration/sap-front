@@ -133,6 +133,15 @@
     <div class="alert alert-light py-1 px-2 border">
        <small class="text-muted">Vencimento em: {{ qrCodeData.expirationDate | date:'dd/MM/yyyy HH:mm' }}</small>
     </div>
+
+    <button
+      *ngIf="contaPixAtual"
+      type="button"
+      class="btn btn-outline-primary mt-2"
+      (click)="checarPagamento(contaPixAtual)"
+    >
+      <i class="fas fa-search-dollar"></i> Verificar Pagamento
+    </button>
   </div>
 </app-modal>
 
