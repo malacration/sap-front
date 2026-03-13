@@ -45,6 +45,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   qrCodeData: any = null;
   pixCopiado = false;
   pagamentoPixData: any = null;
+  contaPixAtual: ContaReceber = null;
 
   @ViewChild('retirada', { static: true }) buscaModal: ModalComponent;
   @ViewChild('modalPix') modalPix: ModalComponent;
@@ -136,6 +137,8 @@ changePageFunction(nextLink: string) {
 
   solicitarPix(conta: ContaReceber, comJuros: boolean) {
     conta.loadingPix = true
+    this.contaPixAtual = conta;
+    this.pixCopiado = false;
     this.pixService
       .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
       .subscribe({
@@ -154,6 +157,8 @@ changePageFunction(nextLink: string) {
             valorTitulo,
             juros,
           };
+          conta.U_pix_reference = item.U_pix_reference ?? conta.U_pix_reference;
+          conta.pixGerado = true;
           this.modalPix.openModal();
         },
         error: () => {

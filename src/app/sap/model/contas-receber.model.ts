@@ -19,6 +19,7 @@ export class ContaReceber {
   DocEntry: number;
   loadingPix : boolean = false
   U_pix_reference? : string = null
+  pixGerado = false;
 
   autorizadoPixSemJuros = false;
 
@@ -38,7 +39,7 @@ export class ContaReceber {
       actions.push(new Action('Carregando', new ActionReturn('carregando', this), 'fas fa-spinner fa-spin', 'warning'));
     }
 
-    if(this.U_pix_reference)
+    if(this.U_pix_reference || this.pixGerado)
       actions.push(new Action('Verificar Pagamento', new ActionReturn('checarPagamento', this), 'fas fa-percentage',));
 
     return actions;
