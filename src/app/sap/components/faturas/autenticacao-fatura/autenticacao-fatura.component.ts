@@ -41,7 +41,7 @@ export class AutenticacaoFaturaComponent {
   next(){
     this.otpService.generateOtpByContact(this.cpf,this.selecionado.label).subscribe(it =>{
     })
-    this.alertService.info("Foi enviado uma mensagem").then(
+    this.alertService.info("Código de acesso enviado para o contato selecionado.").then(
       it => {
         this.count.timer(1)
         this.aguardaCodeReturn = true
