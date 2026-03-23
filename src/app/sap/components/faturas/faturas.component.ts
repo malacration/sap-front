@@ -80,7 +80,7 @@ export class FaturasComponent implements OnInit {
 
   recebeCodigo(codigo){
     this.otpService.loginOtp(this.cpfCnpjInput,codigo).subscribe({next: (it) => {
-        localStorage.setItem("token",it)
+        localStorage.setItem("token", JSON.parse(it).token)
         this.getCurrentBp()
       },
       error : (err) => {
