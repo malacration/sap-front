@@ -40,7 +40,7 @@ export class ItemSearchComponent implements OnInit {
 
   contentSelectedFun($event){
     this.contentSelected.emit($event)
-    this.search.clear()
+    if($event) this.search.clear()
   }
 }
 

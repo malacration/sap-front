@@ -152,7 +152,8 @@ export class DocumentStatementComponent implements OnInit {
 
     let service : DocumentAngularSave = this.quotationService
     
-    if(this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0].document == 'ordersales' && this.tipoEnvio == 'ret')
+    const tipoOperacaoSelecionado = this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0]
+    if(tipoOperacaoSelecionado?.document == 'ordersales' && this.tipoEnvio == 'ret')
       service = this.orderService
   
     this.agruparPorGroupNum().forEach((itens,groupNum) => {
