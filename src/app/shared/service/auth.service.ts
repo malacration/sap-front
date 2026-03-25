@@ -62,6 +62,14 @@ export class AuthService {
     return this.getDecodeToken().jti
   }
 
+  isCliente() : boolean {
+    try {
+      return this.isLoggedIn() && this.getId().length > 6
+    } catch {
+      return false
+    }
+  }
+
   private setToken(token: Token): boolean {
     localStorage.setItem(this.tokenKey, token.token);
     this.loginChange.next();
