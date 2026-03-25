@@ -151,11 +151,14 @@ export class DocumentStatementComponent implements OnInit {
     let subiscribers = Array<Observable<any>>();
 
     let service : DocumentAngularSave = this.quotationService
-    
+    let redirectRoute = 'venda/cotacao'
+
     const tipoOperacaoSelecionado = this.config.tipoOperacao.filter(it => it.id == this.tipoOperacao)[0]
-    if(tipoOperacaoSelecionado?.document == 'ordersales' && this.tipoEnvio == 'ret')
+    if(tipoOperacaoSelecionado?.document == 'ordersales' && this.tipoEnvio == 'ret') {
       service = this.orderService
-  
+      redirectRoute = 'venda/pedidos-venda'
+    }
+
     this.agruparPorGroupNum().forEach((itens,groupNum) => {
       let order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
@@ -172,9 +175,9 @@ export class DocumentStatementComponent implements OnInit {
       };
       subiscribers.push(service.save(order))
     })
-    forkJoin(subiscribers).subscribe({ 
+    forkJoin(subiscribers).subscribe({
       next:result => {
-        this.concluirEnvio();
+        this.concluirEnvio(redirectRoute);
       },
       error : result => {
         this.loading = false
@@ -182,16 +185,16 @@ export class DocumentStatementComponent implements OnInit {
     });
   }
 
-  concluirEnvio(){
+  concluirEnvio(redirectRoute: string){
     this.alertService.info("Seu pedido foi Enviado").then(() => {
       this.loading = false
-      this.limparFormulario()
+      this.limparFormulario(redirectRoute)
     })
   }
 
-  limparFormulario(){
+  limparFormulario(redirectRoute: string = 'venda/cotacao'){
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
-      this.router.navigate(['venda/cotacao']);
+      this.router.navigate([redirectRoute]);
     });
   }
 
