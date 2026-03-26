@@ -29,6 +29,15 @@ export interface PixPagamentoStatus {
   paymentType: string;
 }
 
+export interface PixPedidoRequest {
+  cardCode: string;
+  valor: number;
+  idFilial: number;
+  docEntry?: number;
+  documentTypes?: string;
+  ttlSeconds?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -59,5 +68,7 @@ export class PixService {
     );
   }
 
-  
+  gerarPixPedido(request: PixPedidoRequest): Observable<PixGeradoItem> {
+    return this.hppCliente.post<PixGeradoItem>(`${this.url}/gerar-pedido`, request);
+  }
 }

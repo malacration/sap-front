@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { DocumentLines, DocumentList } from '../../../../model/markting/document-list';
 import { Column } from '../../../../../shared/components/table/column.model';
 import { DocumentService } from '../documento.service';
+import { GerarPixComponent } from '../../../../../shared/components/gerar-pix/gerar-pix.component';
 
 @Component({
   selector: 'app-document-list-single',
@@ -16,11 +17,14 @@ export class DocumentListSingleComponent implements OnInit {
   @Input()
   service: DocumentService;
 
-  @Input() 
+  @Input()
   selectedDocumentList: DocumentList = null;
 
   @Output()
   close = new EventEmitter();
+
+  @ViewChild('modalPix') modalPix: GerarPixComponent;
+  @ViewChild('modalPixTeste') modalPixTeste: GerarPixComponent;
 
   ngOnInit(): void {
     this.selectedDocumentList.DocumentLines = this.selectedDocumentList.DocumentLines.map(it =>
@@ -32,8 +36,15 @@ export class DocumentListSingleComponent implements OnInit {
     this.close.emit();
   }
 
-  action($event){
-    // Implement your action logic here
+  action(_event: unknown){
+  }
+
+  abrirPix() {
+    this.modalPix.openModal();
+  }
+
+  abrirPixTeste() {
+    this.modalPixTeste.openModal();
   }
 
   definition = [

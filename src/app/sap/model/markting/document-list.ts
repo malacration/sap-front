@@ -1,13 +1,13 @@
 import { formatCurrency } from "@angular/common";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import * as moment from "moment";
-import { Input } from "@angular/core";
 import { RouteLink } from "../route-link";
 
 export class DocumentList{
     CardCode : string
     CardName : string
     DocNum  : string
+    DocEntry : number
     DocDate  : string
     DocDueDate : string
     DocTotal : number
