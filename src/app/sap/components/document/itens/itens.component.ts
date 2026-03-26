@@ -32,6 +32,7 @@ export class ItensComponent implements OnInit {
   }
 
   addItem(item){
+    if(!item) return;
     item.quantidade = 1
     this.itens.push(item)
     this.changeItens.emit(this.itens)

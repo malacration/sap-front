@@ -65,6 +65,7 @@ export class MenuSidebarComponent implements OnInit {
                 ||
                 (this.modoOperacao != "internal" && !this.isRouteInternal(it))
             )
+            && (this.authService.isLoggedIn() && !this.authService.isCliente() || ['home', 'faturas'].includes(it.path))
         )
         .forEach(route => {
             const item = new MenuItem(route, parentSegments);
