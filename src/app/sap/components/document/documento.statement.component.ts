@@ -47,7 +47,7 @@ export class DocumentStatementComponent implements OnInit {
     private router : Router,
     private alertService : AlertService){
 
-    }
+  }
   
   ngOnInit(): void {
     

@@ -63,7 +63,8 @@ export class GerarPixComponent {
     const request: PixPedidoRequest = {
       cardCode: this.modoPedido ? this.pedido.CardCode : this.parceiroCodigo,
       valor: this.resolverValor(),
-      idFilial: this.modoPedido ? null : Number(this.filialSelecionada.Bplid),
+      idFilial: this.modoPedido ? this.pedido.BPL_IDAssignedToInvoice : Number(this.filialSelecionada.Bplid),
+      documentTypes: this.pedido?.DocObjectCode
     };
 
     if (this.modoPedido && this.pedido.DocEntry != null) {
