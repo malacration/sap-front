@@ -1,20 +1,21 @@
-<app-header></app-header>
+<ng-container *ngIf="!isPublicRoute">
+  <app-header></app-header>
+  <app-menu-sidebar class="sidebar-dark-primary"></app-menu-sidebar>
+</ng-container>
 
-<app-menu-sidebar class="sidebar-dark-primary"></app-menu-sidebar>
-
-<div class="content-wrapper">
-    <div *ngIf="homologacao" class="row content hmg">
+<div [class]="isPublicRoute ? '' : 'content-wrapper'">
+    <div *ngIf="homologacao && !isPublicRoute" class="row content hmg">
         <div class="rb-mp ribbon-wrapper ribbon-xl">
             <div class="ribbon bg-danger">
                 Homologacao
             </div>
         </div>
     </div>
-    <section class="content content-mr pt-2">
+    <section [class]="isPublicRoute ? '' : 'content content-mr pt-2'">
         <router-outlet></router-outlet>
     </section>
-    <br>
+    <br *ngIf="!isPublicRoute">
 </div>
 <!-- <app-footer></app-footer> -->
 <!-- <app-control-sidebar></app-control-sidebar> -->
-<div id="sidebar-overlay" (click)="onToggleMenuSidebar()"></div>
+<div *ngIf="!isPublicRoute" id="sidebar-overlay" (click)="onToggleMenuSidebar()"></div>

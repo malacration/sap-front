@@ -81,6 +81,26 @@ export class GerarPixComponent {
     });
   }
 
+  gerarMock() {
+    this.pixData = {
+      U_QrCodePix: '00020126580014br.gov.bcb.pix013636c9f8e0-1234-5678-abcd-000000000000520400005303986540512.345802BR5913Empresa Teste6009SAO PAULO62070503***63041234',
+      U_pix_due_date: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      DueDate: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      ValorTotal: 1234.56,
+      ValorTitulo: 1200.00,
+      JurosValor: 34.56,
+      Total: 1234.56,
+      U_pix_link: '',
+      U_pix_reference: 'MOCK-REF-001',
+      U_pix_textContent: '',
+      InstallmentId: 1,
+      PaymentOrdered: '',
+      Percentage: '',
+      TaxaJurosMoraPercent: 2,
+    };
+    this.etapa = 'resultado';
+  }
+
   private resolverValor(): number {
     if (this.modoPedido) {
       return this.tipoPagamento === 'total' ? this.pedido.DocTotal : this.valorParcial;
@@ -93,6 +113,18 @@ export class GerarPixComponent {
       navigator.clipboard.writeText(this.pixData.U_QrCodePix);
       this.copiado = true;
     }
+  }
+
+  abrirLinkCliente() {
+    if (!this.pixData) return;
+    const payload = {
+      qrCode: this.pixData.U_QrCodePix,
+      valor: this.pixData.ValorTotal ?? this.pixData.Total,
+      vencimento: this.pixData.U_pix_due_date ?? this.pixData.DueDate,
+      nome: this.pedido?.CardName ?? null,
+    };
+    const encoded = btoa(JSON.stringify(payload));
+    window.open(`${window.location.origin}/pix-link?d=${encoded}`, '_blank');
   }
 
   voltar() {

@@ -8,6 +8,7 @@ import { CadastroComponent } from './sap/components/cadastro/cadastro.component'
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
+import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
 import { authGuard } from './core/auth.guard';
 import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
@@ -46,6 +47,12 @@ import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregament
     title: 'Login',
     data: ["hidden"],
     component: LoginComponent
+  },
+  {
+    path: 'pix-link',
+    title: 'Pagamento PIX',
+    data: ["hidden", "public"],
+    component: PixLinkComponent
   },
   {
     path: 'romaneio',

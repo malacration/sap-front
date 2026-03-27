@@ -7,6 +7,7 @@ import { Observable, Subscribable, Subscription, delay, of } from 'rxjs';
 import { Title } from '@angular/platform-browser';
 import { ConfigService } from './core/services/config.service';
 import { WsService } from './shared/WsService';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -14,24 +15,33 @@ import { WsService } from './shared/WsService';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  
+
   @HostBinding('class') class = 'wrapper';
   public ui: Observable<UiState>;
 
   public itens : Array<string> = ["item1","item2"]
   homologacao : boolean = false
+  isPublicRoute = false;
 
-  constructor(private renderer: Renderer2, 
+  constructor(private renderer: Renderer2,
     private titleService : Title,
     private config : ConfigService,
     private wsService: WsService,
+    private router: Router,
     private store: Store<AppState>) {}
 
   ngOnInit() {
     this.changeColors()
 
     this.titleService.setTitle(this.config.title)
-    
+
+    this.checkPublicRoute();
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.checkPublicRoute();
+      }
+    });
+
     this.wsService.connect(this.config.getWebSocket());
     
     this.ui = this.store.select('ui');
@@ -159,5 +169,9 @@ export class AppComponent {
 
   onToggleMenuSidebar() {
       this.store.dispatch(new ToggleSidebarMenu());
+  }
+
+  private checkPublicRoute(): void {
+    this.isPublicRoute = this.router.url.startsWith('/pix-link');
   }
 }

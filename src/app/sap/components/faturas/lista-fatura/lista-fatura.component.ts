@@ -22,6 +22,9 @@ export class ListaFaturaComponent implements OnInit {
   
   @Input()
   clienteSelecionado : BusinessPartner;
+
+  @Input()
+  showHeader = true;
   
   @Output() 
   closeEvent = new EventEmitter();

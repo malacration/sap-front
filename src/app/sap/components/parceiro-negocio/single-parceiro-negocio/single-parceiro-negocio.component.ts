@@ -6,6 +6,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { BusinessPartnerService } from '../../../../modulos/sap-shared/_services/business-partners.service';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -26,7 +27,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   constructor(
     private businessPartnerService: BusinessPartnerService,
     private orderSales: OrderSalesService,
-    private pixService: PixService
+    private pixService: PixService,
+    private router: Router
   ) {}
 
   @Input()
@@ -44,6 +46,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   
   qrCodeData: any = null;
   pixCopiado = false;
+  linkPixCopiado = false;
   pagamentoPixData: any = null;
   contaPixAtual: ContaReceber = null;
 
@@ -127,6 +130,21 @@ changePageFunction(nextLink: string) {
       this.checarPagamento(event.data)
     }
 }
+
+  compartilharLinkPix() {
+    if (!this.qrCodeData) return;
+    const payload = {
+      qrCode: this.qrCodeData.qrCodeCopyPaste,
+      valor: this.qrCodeData.total,
+      vencimento: this.qrCodeData.expirationDate,
+      nome: this.selected?.CardName,
+    };
+    const encoded = btoa(JSON.stringify(payload));
+    const url = `${window.location.origin}/pix-link?d=${encoded}`;
+    navigator.clipboard.writeText(url);
+    this.linkPixCopiado = true;
+    setTimeout(() => this.linkPixCopiado = false, 3000);
+  }
 
   copiarPix() {
     if (this.qrCodeData && this.qrCodeData.qrCodeCopyPaste) {

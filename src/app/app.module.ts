@@ -91,6 +91,7 @@ import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 import { GerarPixComponent } from './shared/components/gerar-pix/gerar-pix.component';
+import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
@@ -164,6 +165,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DescontoComponent,
     TrocaComponent,
     GerarPixComponent,
+    PixLinkComponent,
   ],
   imports: [
     NgxPaginationModule,

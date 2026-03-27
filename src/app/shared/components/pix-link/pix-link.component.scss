@@ -1,0 +1,40 @@
+.pix-wrapper {
+  height: 100vh;
+  overflow: hidden;
+  background: #f4f6f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+}
+
+.pix-card {
+  width: 100%;
+  max-width: 460px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,.10);
+}
+
+.pix-card__header {
+  background: var(--bs-primary, #007bff);
+  color: var(--bs-primary-text, #fff);
+  padding: 18px 16px 14px;
+  text-align: center;
+}
+
+.pix-valor {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.pix-copy-input {
+  font-size: .72rem;
+  background: #f8f9fa;
+}
+
+.pix-instrucoes {
+  font-size: .80rem;
+  line-height: 1.5;
+}

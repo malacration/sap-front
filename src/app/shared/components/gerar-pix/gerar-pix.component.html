@@ -93,7 +93,10 @@
         </div>
       </ng-container>
 
-      <div class="mt-4 text-right">
+      <div class="mt-4 d-flex justify-content-between align-items-center">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="gerarMock()">
+          <i class="fas fa-flask"></i> Testar (Mock)
+        </button>
         <button
           type="button"
           class="btn btn-success"
@@ -161,9 +164,12 @@
         </small>
       </div>
 
-      <div class="text-left">
+      <div class="d-flex justify-content-between align-items-center">
         <button type="button" class="btn btn-outline-secondary btn-sm" (click)="voltar()">
           <i class="fas fa-arrow-left"></i> Gerar outro
+        </button>
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="abrirLinkCliente()">
+          <i class="fas fa-external-link-alt"></i> Abrir link do cliente
         </button>
       </div>
     </div>

@@ -1,0 +1,92 @@
+<div class="pix-wrapper">
+
+  <!-- LOGO -->
+  <div class="mb-3">
+    <img src="logo.png" alt="Logo" height="44" style="max-width:160px; object-fit:contain;">
+  </div>
+
+  <!-- INVÁLIDO -->
+  <div *ngIf="invalido" class="pix-card card text-center p-4">
+    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+    <h5>Link inválido ou expirado.</h5>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div *ngIf="data && !invalido" class="pix-card card">
+
+    <!-- HEADER -->
+    <div class="pix-card__header">
+      <h5 class="mb-0"><i class="fas fa-qrcode mr-2"></i>Pagamento via PIX</h5>
+      <small *ngIf="data.nome" class="d-block mt-1" style="opacity:.85">{{ data.nome }}</small>
+    </div>
+
+    <div class="card-body px-3 py-4">
+
+      <!-- VALOR -->
+      <div *ngIf="!expirado" class="text-center mb-1">
+        <span class="pix-valor">{{ data.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+      </div>
+      <!-- EXPIRADO -->
+      <div *ngIf="expirado" class="alert alert-danger text-center mb-3">
+        <i class="fas fa-times-circle mr-1"></i><strong>PIX expirado.</strong> Solicite um novo código.
+      </div>
+
+      <!-- COUNTDOWN -->
+      <div *ngIf="!expirado" class="text-center mb-3">
+        <span
+          class="badge badge-pill px-3 py-2"
+          [ngClass]="countdown <= '01:00' ? 'badge-danger' : 'badge-success'"
+          style="font-size: 1.1rem; letter-spacing: 2px;"
+        >
+          <i class="far fa-clock mr-1"></i>{{ countdown }}
+        </span>
+        <p class="text-muted small mt-1 mb-0">Vence em {{ data.vencimento | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+
+      <ng-container *ngIf="!expirado">
+        <!-- QR CODE -->
+        <div class="d-flex justify-content-center mb-3">
+          <app-qrcode [value]="data.qrCode" [size]="210"></app-qrcode>
+        </div>
+
+        <!-- ABRIR NO BANCO (mobile) -->
+        <button
+          *ngIf="podeCompartilhar"
+          type="button"
+          class="btn btn-success btn-block mb-3"
+          style="font-size:1rem; padding:12px; border-radius:8px;"
+          (click)="abrirNoBanco()"
+        >
+          <i class="fas fa-university mr-2"></i>Abrir no app do banco
+        </button>
+
+        <!-- COPIAR -->
+        <p class="text-center text-muted small mb-2">Ou use o código copia e cola:</p>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control pix-copy-input" [value]="data.qrCode" readonly />
+          <div class="input-group-append">
+            <button
+              class="btn"
+              [ngClass]="copiado ? 'btn-success' : 'btn-primary'"
+              type="button"
+              (click)="copiar()"
+            >
+              <i class="far fa-copy"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- INSTRUÇÕES -->
+        <div class="alert alert-info pix-instrucoes mb-0">
+          <i class="fas fa-info-circle mr-1"></i>
+          Abra o app do seu banco &rsaquo; <strong>PIX</strong> &rsaquo;
+          <strong>Pagar com QR Code</strong> ou use a opção <strong>Copia e Cola</strong>.
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <small class="text-muted mt-3">Pagamento 100% seguro via PIX</small>
+
+</div>
