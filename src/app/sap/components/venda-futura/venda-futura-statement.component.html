@@ -7,13 +7,21 @@
             </h5>
         </div>
         <div class="card-body">
-            <form class="container-fluid" (ngSubmit)="loadInicial()" autocomplete="off">
-                <div class="form-row align-items-end">
+            <div class="container-fluid">
+                <div class="form-row align-items-end mb-2">
                   <!-- FILIAL -->
                   <div class="col-auto">
                     <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
                   </div>
-              
+
+                  <!-- PARCEIRO -->
+                  <div class="col-auto">
+                    <app-busines-partner-search (selected)="selectParceiro($event)"></app-busines-partner-search>
+                  </div>
+                </div>
+            </div>
+            <form class="container-fluid" (ngSubmit)="loadInicial()" autocomplete="off">
+                <div class="form-row align-items-end">
                   <!-- ID CONTRATO -->
                   <div class="col-auto">
                     <label for="idContrato" class="col-form-label">ID Contrato</label>

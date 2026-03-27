@@ -26,6 +26,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
 
   filialSelecioanda = '-1';
   idContrato = '';
+  cardCode = '-1';
 
   status: 'aberto' | 'concluido' | 'cancelado' = 'aberto';
 
@@ -85,7 +86,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     this.loading = true;
     const idContrato = this.idContrato == '' ? '-1' : this.idContrato;
     this.service
-      .getAll(this.filialSelecioanda, idContrato, this.status)
+      .getAll(this.filialSelecioanda, idContrato, this.status, this.cardCode)
       .subscribe({
         next: (it: Page<any>) => {
           this.pageContent = it;
@@ -138,7 +139,12 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   limpar() {
     this.filialSelecioanda = '-1';
     this.idContrato = '';
+    this.cardCode = '-1';
     this.status = 'aberto';
     this.ngOnInit();
+  }
+
+  selectParceiro($event) {
+    this.cardCode = $event?.CardCode ?? '-1';
   }
 }

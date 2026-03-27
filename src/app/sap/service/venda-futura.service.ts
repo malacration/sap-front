@@ -40,12 +40,13 @@ export class VendaFuturaService{
       );
     }
     
-    getAll(filialSelecionada : string, idContrato : string, status : string): Observable<Page<VendaFutura>> {
-      const parans = { params: 
-        { 
-          'filial' : filialSelecionada, 
+    getAll(filialSelecionada : string, idContrato : string, status : string, cardCode : string = '-1'): Observable<Page<VendaFutura>> {
+      const parans = { params:
+        {
+          'filial' : filialSelecionada,
           'idContrato' : idContrato,
           'status' : status,
+          'cliente' : cardCode,
         },
       }
       return this.http.get<Page<VendaFutura>>(this.url,parans).pipe(
