@@ -34,12 +34,6 @@ export class GerarPixComponent {
 
   openModal() {
     this.etapa = 'selecao';
-    this.tipoPagamento = 'total';
-    this.valorParcial = this.pedido?.DocTotal ?? null;
-    this.valorStandalone = null;
-    this.filialSelecionada = null;
-    this.parceiroCodigo = null;
-    this.parceiroNome = null;
     this.pixData = null;
     this.copiado = false;
     this.modal.openModal();
@@ -74,32 +68,10 @@ export class GerarPixComponent {
     this.etapa = 'loading';
     this.copiado = false;
 
-    console.log('[GerarPix] payload →', JSON.stringify(request, null, 2));
-
     this.pixService.gerarPixPedido(request).subscribe({
       next: (res) => { this.pixData = res; this.etapa = 'resultado'; },
       error: () => { this.etapa = 'erro'; },
     });
-  }
-
-  gerarMock() {
-    this.pixData = {
-      U_QrCodePix: '00020126580014br.gov.bcb.pix013636c9f8e0-1234-5678-abcd-000000000000520400005303986540512.345802BR5913Empresa Teste6009SAO PAULO62070503***63041234',
-      U_pix_due_date: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      DueDate: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      ValorTotal: 1234.56,
-      ValorTitulo: 1200.00,
-      JurosValor: 34.56,
-      Total: 1234.56,
-      U_pix_link: '',
-      U_pix_reference: 'MOCK-REF-001',
-      U_pix_textContent: '',
-      InstallmentId: 1,
-      PaymentOrdered: '',
-      Percentage: '',
-      TaxaJurosMoraPercent: 2,
-    };
-    this.etapa = 'resultado';
   }
 
   private resolverValor(): number {

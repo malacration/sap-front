@@ -24,7 +24,6 @@ export class DocumentListSingleComponent implements OnInit {
   close = new EventEmitter();
 
   @ViewChild('modalPix') modalPix: GerarPixComponent;
-  @ViewChild('modalPixTeste') modalPixTeste: GerarPixComponent;
 
   ngOnInit(): void {
     this.selectedDocumentList.DocumentLines = this.selectedDocumentList.DocumentLines.map(it =>
@@ -43,9 +42,6 @@ export class DocumentListSingleComponent implements OnInit {
     this.modalPix.openModal();
   }
 
-  abrirPixTeste() {
-    this.modalPixTeste.openModal();
-  }
 
   definition = [
     new Column('Código do Item', 'ItemCode'),

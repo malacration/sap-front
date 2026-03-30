@@ -40,24 +40,19 @@
         <div class="card-footer">
             <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
             <button
-                *ngIf="selectedDocumentList?.DocumentStatus === 'bost_Open'"
+                *ngIf="selectedDocumentList?.DocumentStatus === 'bost_Open' && selectedDocumentList?.DocObjectCode === 'oOrders'"
                 type="button"
                 class="btn btn-success ml-2"
                 (click)="abrirPix()"
             >
                 <i class="fas fa-qrcode"></i> Gerar PIX
             </button>
-            <button type="button" class="btn btn-warning ml-2" (click)="abrirPixTeste()">
-                <i class="fas fa-bug"></i> [TESTE] PIX Standalone
-            </button>
         </div>
     </div>
 </section>
 
 <app-gerar-pix
-    *ngIf="selectedDocumentList?.DocumentStatus === 'bost_Open'"
+    *ngIf="selectedDocumentList?.DocumentStatus === 'bost_Open' && selectedDocumentList?.DocObjectCode === 'oOrders'"
     #modalPix
     [pedido]="selectedDocumentList"
 ></app-gerar-pix>
-
-<app-gerar-pix #modalPixTeste></app-gerar-pix>
