@@ -18,6 +18,8 @@ export class DocumentList{
     DocStatus : string
     Devolucao : string
     SequenceSerial: string; 
+    BPL_IDAssignedToInvoice : number
+    DocObjectCode : string
 
     getActions(): Action[] {
         return [

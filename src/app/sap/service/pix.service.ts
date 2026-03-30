@@ -69,6 +69,6 @@ export class PixService {
   }
 
   gerarPixPedido(request: PixPedidoRequest): Observable<PixGeradoItem> {
-    return this.hppCliente.post<PixGeradoItem>(`${this.url}/gerar-pedido`, request);
+    return this.hppCliente.post<PixGeradoItem>(`${this.url}/gerar-chave`, request);
   }
 }
