@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ConfigService } from '../../core/services/config.service';
+import { Page } from '../model/page.model';
 
 export interface PixGeradoItem {
   DueDate: string;
@@ -29,6 +30,40 @@ export interface PixPagamentoStatus {
   paymentType: string;
 }
 
+export interface PixAdiantamentoResponse {
+  DueDate?: string | null;
+  Total?: number | null;
+  Status?: string | null;
+  InstallmentId?: number | null;
+  PaymentOrdered?: string | null;
+  Percentage?: string | null;
+  TotalFC?: number | null;
+  U_QrCodePix?: string | null;
+  U_pix_textContent?: string | null;
+  U_pix_link?: string | null;
+  U_pix_reference?: string | null;
+  U_pix_due_date?: string | null;
+  DocEntry?: number | null;
+  TaxaJurosMoraPercent?: number | null;
+  JurosValor?: number | null;
+  ValorTitulo?: number | null;
+  ValorTotal?: number | null;
+  DocNum?: number | null;
+  dueDate?: string | null;
+  total?: number | null;
+  status?: string | null;
+  installmentId?: number | null;
+  paymentOrdered?: string | null;
+  percentage?: string | null;
+  totalFC?: number | null;
+  docEntry?: number | null;
+  taxaJurosMoraPercent?: number | null;
+  jurosValor?: number | null;
+  valorTitulo?: number | null;
+  valorTotal?: number | null;
+  docNum?: number | null;
+}
+
 export interface PixPedidoRequest {
   cardCode: string;
   valor: number;
@@ -43,9 +78,11 @@ export interface PixPedidoRequest {
 })
 export class PixService {
   url = 'http://localhost:8080/pix';
+  pedidoVendaUrl = 'http://localhost:8080/pedido-venda';
 
   constructor(private config: ConfigService, private hppCliente: HttpClient) {
     this.url = `${config.getHost()}/pix`;
+    this.pedidoVendaUrl = `${config.getHost()}/pedido-venda`;
   }
 
   gerarPix(
@@ -65,6 +102,29 @@ export class PixService {
   ): Observable<PixPagamentoStatus> {
     return this.hppCliente.get<PixPagamentoStatus>(
       `${this.url}/checar-chave/docType/${pixDocType}/docEntry/${docEntry}/parcela/${parcela}`
+    );
+  }
+
+  listarAdiantamentosPedido(
+    docEntry: number | string,
+    page = 0,
+    size = 20
+  ): Observable<Page<PixAdiantamentoResponse>> {
+    return this.hppCliente.get<Page<PixAdiantamentoResponse>>(
+      `${this.pedidoVendaUrl}/pix/${docEntry}?page=${page}&size=${size}`
+    );
+  }
+
+  consultarTransacao(reference: string): Observable<PixPagamentoStatus> {
+    return this.hppCliente.get<PixPagamentoStatus>(`${this.url}/transaction/${reference}`);
+  }
+
+  checarPixAdiantamento(
+    docEntry: number | string,
+    parcela: number | string
+  ): Observable<PixPagamentoStatus> {
+    return this.hppCliente.get<PixPagamentoStatus>(
+      `${this.url}/checar-chave/docType/oDownPayments/docEntry/${docEntry}/parcela/${parcela}`
     );
   }
 
