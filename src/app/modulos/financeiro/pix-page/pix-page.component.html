@@ -1,0 +1,119 @@
+<section class="content">
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+
+        <div class="card card-primary">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-qrcode mr-2"></i>Gerar PIX</h3>
+          </div>
+
+          <div class="card-body">
+
+            <!-- SELEÇÃO -->
+            <div [hidden]="etapa !== 'selecao'">
+              <div class="form-group">
+                <label class="font-weight-bold">Parceiro de Negócio</label>
+                <app-busines-partner-search (selected)="onParceiroChange($event)"></app-busines-partner-search>
+                <small *ngIf="parceiroNome" class="text-success">
+                  <i class="fas fa-check"></i> {{ parceiroNome }}
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label class="font-weight-bold">Valor</label>
+                <app-currency-input [(ngModel)]="valorStandalone" placeholder="0,00"></app-currency-input>
+              </div>
+
+              <div class="form-group">
+                <app-branch-select (selectedOut)="onFilialChange($event)"></app-branch-select>
+              </div>
+
+              <div class="d-flex justify-content-end mt-3">
+                <button
+                  type="button"
+                  class="btn btn-success"
+                  [disabled]="gerarDesabilitado"
+                  (click)="gerar()"
+                >
+                  <i class="fas fa-qrcode"></i> Gerar PIX
+                </button>
+              </div>
+            </div>
+
+            <!-- LOADING -->
+            <div *ngIf="etapa === 'loading'" class="text-center py-5">
+              <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+              <p class="mt-2 text-muted">Gerando PIX...</p>
+            </div>
+
+            <!-- ERRO -->
+            <div *ngIf="etapa === 'erro'">
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> Erro ao gerar PIX. Tente novamente.
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="voltar()">
+                <i class="fas fa-arrow-left"></i> Voltar
+              </button>
+            </div>
+
+            <!-- RESULTADO -->
+            <div *ngIf="etapa === 'resultado' && pixData" class="text-center">
+              <div *ngIf="parceiroNome" class="mb-2 text-muted">
+                <i class="fas fa-user"></i> {{ parceiroNome }}
+              </div>
+              <div class="mb-3">
+                <span class="h4 font-weight-bold text-success">
+                  {{ (pixData.ValorTotal ?? pixData.Total) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                </span>
+                <div *ngIf="pixData.JurosValor > 0" class="mt-1">
+                  <small class="text-muted">
+                    Valor nominal: {{ pixData.ValorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                    &nbsp;|&nbsp;
+                    Juros: {{ pixData.JurosValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-center mb-3">
+                <app-qrcode [value]="pixData.U_QrCodePix" [size]="220"></app-qrcode>
+              </div>
+
+              <div class="input-group mb-3">
+                <input type="text" class="form-control form-control-sm" [value]="pixData.U_QrCodePix" readonly />
+                <div class="input-group-append">
+                  <button
+                    class="btn btn-sm"
+                    [ngClass]="copiado ? 'btn-success' : 'btn-primary'"
+                    type="button"
+                    (click)="copiar()"
+                  >
+                    <i class="far fa-copy"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="pixData.U_pix_due_date || pixData.DueDate" class="alert alert-light py-1 px-2 border mb-3">
+                <small class="text-muted">
+                  <i class="far fa-clock"></i>
+                  Vencimento: {{ (pixData.U_pix_due_date || pixData.DueDate) | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
+                </small>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="voltar()">
+                  <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="abrirLinkCliente()">
+                  <i class="fas fa-external-link-alt"></i> Abrir link do cliente
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

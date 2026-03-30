@@ -23,6 +23,7 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
 import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
+import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
 
  let routes: Routes = [
   {
@@ -175,6 +176,21 @@ import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregament
         data: ["icon:fas fa-user-check"],
         canActivate: [authGuard],
         component: AssignRoleComponent
+      },
+    ]
+  },
+  {
+    title: 'Financeiro',
+    path: 'financeiro',
+    data: ["icon:fas fa-dollar-sign"],
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'pix',
+        title: 'PIX',
+        data: ["icon:fas fa-qrcode"],
+        canActivate: [authGuard],
+        component: PixPageComponent,
       },
     ]
   },
