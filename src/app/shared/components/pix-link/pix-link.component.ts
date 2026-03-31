@@ -71,15 +71,34 @@ export class PixLinkComponent implements OnInit, OnDestroy {
     clearInterval(this.timer);
   }
 
+  get isMobile(): boolean {
+    return /Android|iPhone|iPad/i.test(navigator.userAgent);
+  }
+
   get podeCompartilhar(): boolean {
-    return !!navigator.share;
+    return this.isMobile;
   }
 
   copiar() {
     if (!this.data?.qrCode) return;
-    navigator.clipboard.writeText(this.data.qrCode);
-    this.copiado = true;
-    setTimeout(() => this.copiado = false, 3000);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(this.data.qrCode).then(() => {
+        this.copiado = true;
+        setTimeout(() => this.copiado = false, 3000);
+      });
+    } else {
+      const el = document.createElement('textarea');
+      el.value = this.data.qrCode;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.copiado = true;
+      setTimeout(() => this.copiado = false, 3000);
+    }
   }
 
   abrirNoBanco() {
