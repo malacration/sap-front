@@ -38,6 +38,7 @@ export class DocumentListSingleComponent implements OnInit {
   pixAdiantamentosPage = 0;
   readonly pixAdiantamentosDefaultPageSize = 20;
   pagamentoPixData: PixPagamentoStatus | null = null;
+  pagamentoPixLoading = false;
 
   constructor(
     private pixService: PixService,
@@ -58,11 +59,17 @@ export class DocumentListSingleComponent implements OnInit {
   action(event: ActionReturn){
     if (event.type === 'consultar-status-pix-adiantamento') {
       this.consultarStatusPagamento(event);
+    } else if (event.type === 'abrir-link-pix-adiantamento') {
+      this.abrirLinkPixAdiantamento(event.data as PixAdiantamento);
     }
   }
 
   abrirPix() {
     this.modalPix.openModal();
+  }
+
+  onPixGerado() {
+    this.loadPixAdiantamentos(this.pixAdiantamentosPage);
   }
 
   changePixAdiantamentosPage(page: number) {
@@ -75,6 +82,18 @@ export class DocumentListSingleComponent implements OnInit {
 
   get pixAdiantamentosPageSize(): number {
     return this.pixAdiantamentosPageData.size || this.pixAdiantamentosDefaultPageSize;
+  }
+
+  get hasOpenPixAdiantamento(): boolean {
+    return this.pixAdiantamentos.some((item) => (item.Status ?? item.status) === 'bost_Open');
+  }
+
+  get podeGerarPixAdiantamento(): boolean {
+    return !this.pixAdiantamentosLoading
+      && !this.pixAdiantamentosError
+      && !this.hasOpenPixAdiantamento
+      && this.selectedDocumentList?.DocumentStatus === 'bost_Open'
+      && this.selectedDocumentList?.DocObjectCode === 'oOrders';
   }
 
   private loadPixAdiantamentos(page = 0) {
@@ -131,6 +150,9 @@ export class DocumentListSingleComponent implements OnInit {
 
     action.carregando = true;
     item.checkingStatus = true;
+    this.pagamentoPixLoading = true;
+    this.pagamentoPixData = null;
+    this.modalPagamentoPix.openModal();
 
     const consulta$ = status === 'bost_Open'
       ? this.pixService.checarPixAdiantamento(docEntry, installmentId)
@@ -139,19 +161,27 @@ export class DocumentListSingleComponent implements OnInit {
     consulta$.subscribe({
       next: (response) => {
         this.pagamentoPixData = response;
-        this.modalPagamentoPix.openModal();
       },
       error: () => {
         action.carregando = false;
         item.checkingStatus = false;
+        this.pagamentoPixLoading = false;
         this.alertService.error('Não foi possível consultar o status do pagamento PIX.');
       },
       complete: () => {
         action.carregando = false;
         item.checkingStatus = false;
-        this.loadPixAdiantamentos();
+        this.pagamentoPixLoading = false;
       }
     });
+  }
+
+  private abrirLinkPixAdiantamento(item: PixAdiantamento) {
+    if (!item.pixLinkUrl) {
+      return;
+    }
+
+    window.open(item.pixLinkUrl, '_blank');
   }
 
 
@@ -168,7 +198,6 @@ export class DocumentListSingleComponent implements OnInit {
     new Column('DocNum', 'docNumLabel'),
     new Column('Data de Expiração', 'expirationDateLabel'),
     new Column('Status Adiantamento', 'statusAdiantamento'),
-    new Column('Valor do Pix', 'valorPix'),
-    new Column('Pix Link', 'pixLinkHtml')
+    new Column('Valor do Pix', 'valorPix')
   ];
 }

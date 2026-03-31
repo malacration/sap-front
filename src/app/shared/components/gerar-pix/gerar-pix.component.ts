@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { PixGeradoItem, PixPedidoRequest, PixService } from '../../../sap/service/pix.service';
 import { ModalComponent } from '../modal/modal.component';
 import { DocumentList } from '../../../sap/model/markting/document-list';
@@ -13,6 +13,8 @@ type TipoPagamento = 'total' | 'parcial';
 })
 export class GerarPixComponent {
   @Input() pedido?: DocumentList;
+
+  @Output() pixGerado = new EventEmitter<void>();
 
   @ViewChild('modal') modal: ModalComponent;
 
@@ -69,7 +71,11 @@ export class GerarPixComponent {
     this.copiado = false;
 
     this.pixService.gerarPixPedido(request).subscribe({
-      next: (res) => { this.pixData = res; this.etapa = 'resultado'; },
+      next: (res) => {
+        this.pixData = res;
+        this.etapa = 'resultado';
+        this.pixGerado.emit();
+      },
       error: () => { this.etapa = 'erro'; },
     });
   }

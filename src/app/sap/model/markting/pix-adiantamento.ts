@@ -74,26 +74,21 @@ export class PixAdiantamento {
     return formatCurrency(valor, 'pt', 'R$');
   }
 
-  get pixLinkHtml(): string {
-    const link = this.getPixLinkUrl();
-    if (!link) {
-      return '<span class="text-muted">-</span>';
+  getActions(): Action[] {
+    const actions: Action[] = [];
+    const consultarStatus = new ActionReturn('consultar-status-pix-adiantamento', this);
+    consultarStatus.carregando = this.checkingStatus;
+
+    actions.push(new Action('Consultar Status', consultarStatus, 'fas fa-search-dollar'));
+
+    if (this.isOpen() && this.hasPixLink()) {
+      actions.push(new Action('Abrir Link', new ActionReturn('abrir-link-pix-adiantamento', this), 'fas fa-external-link-alt'));
     }
 
-    const safeLink = link.replace(/"/g, '&quot;');
-    return `<a href="${safeLink}" target="_blank" rel="noopener noreferrer">Abrir link</a>`;
+    return actions;
   }
 
-  getActions(): Action[] {
-    const retorno = new ActionReturn('consultar-status-pix-adiantamento', this);
-    retorno.carregando = this.checkingStatus;
-
-    return [
-      new Action('Consultar Status', retorno, 'fas fa-search-dollar')
-    ];
-  }
-
-  private getPixLinkUrl(): string | null {
+  get pixLinkUrl(): string | null {
     const qrCode = this.U_QrCodePix ?? this.U_pix_textContent;
     if (!qrCode || !this.expirationDate) {
       return null;
@@ -106,5 +101,13 @@ export class PixAdiantamento {
     };
     const encoded = btoa(JSON.stringify(payload));
     return `${window.location.origin}/pix-link?d=${encoded}`;
+  }
+
+  hasPixLink(): boolean {
+    return !!this.pixLinkUrl;
+  }
+
+  isOpen(): boolean {
+    return (this.Status ?? this.status) === 'bost_Open';
   }
 }

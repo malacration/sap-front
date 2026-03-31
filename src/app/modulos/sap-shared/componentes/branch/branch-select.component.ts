@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { BranchService } from '../../../../sap/service/branch.service';
 import { Branch } from '../../../../sap/model/branch';
 import { Option } from '../../../../sap/model/form/option';
@@ -15,7 +15,7 @@ export class BranchSelectComponent implements OnInit {
   }
 
   @Input()
-  selected : string = null
+  selected : string | number = null
 
   branches: Array<Branch> = [];
   opcoes: Array<Option> = [];

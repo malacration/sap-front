@@ -37,7 +37,7 @@ export class PedidosVendaService implements DocumentService{
     get(pagina : number): Observable<Page<DocumentList>> {
         let params = `?page=${pagina}&size=20`;
         if (this.filtro.status)  params += `&status=${this.filtro.status}`;
-        if (this.filtro.filial)  params += `&filial=${this.filtro.filial}`;
+        if (this.filtro.filial != null && this.filtro.filial !== -1)  params += `&filial=${this.filtro.filial}`;
         if (this.filtro.cliente) params += `&cliente=${this.filtro.cliente}`;
         if (this.filtro.data)    params += `&data=${this.filtro.data}`;
 
