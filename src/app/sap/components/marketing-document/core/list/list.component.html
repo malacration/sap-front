@@ -1,31 +1,49 @@
 <section class="content">
-    <div *ngIf="!selectedDocumentList || selectedDocumentList == null" class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title"><b>{{title}} - {{nomeUsuario}}</b></h3>
+    <ng-container *ngIf="!selectedDocumentList">
+        <div *ngIf="showCard" class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><b>{{title}} - {{nomeUsuario}}</b></h3>
+            </div>
+            <div class="card-body">
+                <ng-container *ngTemplateOutlet="tabelaContent"></ng-container>
+            </div>
+            <div class="card-footer clearfix">
+                <ng-container *ngTemplateOutlet="paginacaoContent"></ng-container>
+            </div>
+            <div *ngIf="loading" class="overlay">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
         </div>
-        <div class="card-body">                
-            <app-table
-                [content]="pageContent?.content" 
-                [definition]="definition" 
-                (actionOutput)="action($event)">
-            </app-table>
+        <div *ngIf="!showCard" style="position: relative; min-height: 150px;">
+            <ng-container *ngTemplateOutlet="tabelaContent"></ng-container>
+            <ng-container *ngTemplateOutlet="paginacaoContent"></ng-container>
+            <div *ngIf="loading" style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.7);z-index:50;">
+                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
         </div>
-        <div class="card-footer clearfix">
-            <app-paginacao
-                (pageChange)="pageChange($event)" 
-                [totalItens]="pageContent?.totalElements" 
-                [pageSize]="pageContent?.size">
-            </app-paginacao>
-        </div>
-        <div *ngIf="loading" class="overlay">
-            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-        </div>
-    </div>
+    </ng-container>
+
     <div *ngIf="selectedDocumentList">
-        <app-document-list-single 
+        <app-document-list-single
             [title]="title"
             [selectedDocumentList]="selectedDocumentList"
             (close)="close()">
-        </app-document-list-single >
+        </app-document-list-single>
     </div>
 </section>
+
+<ng-template #tabelaContent>
+    <app-table
+        [content]="pageContent?.content"
+        [definition]="definition"
+        (actionOutput)="action($event)">
+    </app-table>
+</ng-template>
+
+<ng-template #paginacaoContent>
+    <app-paginacao
+        (pageChange)="pageChange($event)"
+        [totalItens]="pageContent?.totalElements"
+        [pageSize]="pageContent?.size">
+    </app-paginacao>
+</ng-template>

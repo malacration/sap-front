@@ -19,6 +19,9 @@ import { AuthService } from '../../../../../shared/service/auth.service';
   @Input()
   title = ''
 
+  @Input()
+  showCard = true
+
   constructor(private auth : AuthService){
     this.nomeUsuario = auth.getUser()
   }
@@ -65,6 +68,14 @@ import { AuthService } from '../../../../../shared/service/auth.service';
       },
       complete : () => {this.loading = false}
     })
+  }
+
+  reload() {
+    this.loading = true;
+    this.service.get(0).subscribe({
+      next: (it: Page<DocumentList>) => { this.pageContent = it; },
+      complete: () => { this.loading = false; }
+    });
   }
 
 }

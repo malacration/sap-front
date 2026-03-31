@@ -32,10 +32,18 @@ export class PedidosVendaService implements DocumentService{
     }
     
     
+    filtro: { status?: string; filial?: number; cliente?: string; data?: string } = {};
+
     get(pagina : number): Observable<Page<DocumentList>> {
+        let params = `?page=${pagina}&size=20`;
+        if (this.filtro.status)  params += `&status=${this.filtro.status}`;
+        if (this.filtro.filial)  params += `&filial=${this.filtro.filial}`;
+        if (this.filtro.cliente) params += `&cliente=${this.filtro.cliente}`;
+        if (this.filtro.data)    params += `&data=${this.filtro.data}`;
+
         return this.hppCliente
-            .get<Page<DocumentList>>(this.url+"/listar"+"?page="+pagina+"&size=20")
-            .pipe(map((f) => { 
+            .get<Page<DocumentList>>(this.url+"/listar"+params)
+            .pipe(map((f) => {
                 f.content = f.content.map((ff) => {
                     return Object.assign(new DocumentList(),ff)
                 })
