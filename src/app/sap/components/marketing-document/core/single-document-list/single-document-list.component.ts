@@ -45,10 +45,19 @@ export class DocumentListSingleComponent implements OnInit {
     private alertService: AlertService
   ) {}
 
+  linhasLoading = false;
+
   ngOnInit(): void {
     this.selectedDocumentList.DocumentLines = (this.selectedDocumentList.DocumentLines ?? []).map(it =>
       Object.assign(new DocumentLines(), it)
     );
+    if (this.selectedDocumentList.DocumentLines.length === 0 && this.service?.getLinhas) {
+      this.linhasLoading = true;
+      this.service.getLinhas(this.selectedDocumentList.DocEntry).subscribe({
+        next: (linhas) => { this.selectedDocumentList.DocumentLines = linhas; },
+        complete: () => { this.linhasLoading = false; }
+      });
+    }
     this.loadPixAdiantamentos();
   }
 
@@ -92,7 +101,7 @@ export class DocumentListSingleComponent implements OnInit {
     return !this.pixAdiantamentosLoading
       && !this.pixAdiantamentosError
       && !this.hasOpenPixAdiantamento
-      && this.selectedDocumentList?.DocumentStatus === 'bost_Open'
+      && (this.selectedDocumentList?.DocumentStatus === 'bost_Open' || this.selectedDocumentList?.DocumentStatus === 'O')
       && this.selectedDocumentList?.DocObjectCode === 'oOrders';
   }
 
@@ -189,7 +198,7 @@ export class DocumentListSingleComponent implements OnInit {
     new Column('Código do Item', 'ItemCode'),
     new Column('Descrição do Item', 'ItemDescription'),
     new Column('Quantidade do Item', 'quantityCurrency'),
-    new Column('Preço Unitário', 'precoUnitarioCurrency'),
+    new Column('Preço Negociado', 'precoUnitarioCurrency'),
     new Column('Total da Linha', 'lineTotalCurrency')
   ];
 

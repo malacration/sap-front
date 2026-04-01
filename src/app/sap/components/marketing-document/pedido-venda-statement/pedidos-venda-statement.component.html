@@ -5,6 +5,10 @@
     </div>
     <div class="card-body">
       <div class="row align-items-end mb-3">
+        <div class="col-md-3">
+          <label class="font-weight-bold">Data (a partir de)</label>
+          <input type="date" class="form-control" [value]="dataFiltro" (change)="onDataChange($event)">
+        </div>
         <div class="col-md-2">
           <label class="font-weight-bold">Status</label>
           <select class="form-control" (change)="onStatusChange($event)">
@@ -17,10 +21,6 @@
         </div>
         <div class="col-md-4">
           <app-busines-partner-search (selected)="onClienteChange($event)"></app-busines-partner-search>
-        </div>
-        <div class="col-md-3">
-          <label class="font-weight-bold">Data (a partir de)</label>
-          <input type="date" class="form-control" [value]="dataFiltro" (change)="onDataChange($event)">
         </div>
       </div>
     </div>

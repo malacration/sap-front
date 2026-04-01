@@ -70,6 +70,18 @@ import { AuthService } from '../../../../../shared/service/auth.service';
     })
   }
 
+  carregarMais() {
+    if (!this.pageContent?.nextLink || !this.service.getNextLink) return;
+    this.loading = true;
+    this.service.getNextLink(this.pageContent.nextLink).subscribe({
+      next: (it: Page<DocumentList>) => {
+        it.content = [...this.pageContent.content, ...it.content];
+        this.pageContent = it;
+      },
+      complete: () => { this.loading = false; }
+    });
+  }
+
   reload() {
     this.loading = true;
     this.service.get(0).subscribe({

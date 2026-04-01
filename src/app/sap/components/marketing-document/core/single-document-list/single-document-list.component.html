@@ -18,17 +18,27 @@
                 <dd class="col-sm-9">{{ selectedDocumentList.freteCurrency }}</dd>
 
                 <dt class="col-sm-3">Valor Total:</dt>
-                <dd class="col-sm-9">{{ selectedDocumentList.totalCurrency }}</dd>
+                <dd class="col-sm-9">{{ selectedDocumentList.x }}</dd>
 
                 <dt class="col-sm-3">Data de Criação:</dt>
                 <dd class="col-sm-9">{{ selectedDocumentList.dataCriacao }}</dd>
 
+                <dt class="col-sm-3">Vendedor:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.SlpName }}</dd>
+
+                <dt class="col-sm-3">Filial:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.filialFormatada }}</dd>
+
                 <dd class="col-sm">
                     <app-tabs>
                         <app-tab tabTitle="Produtos" [active]="true">
+                            <div *ngIf="linhasLoading" class="text-center p-3">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando produtos...
+                            </div>
                             <app-table
-                                [content]="selectedDocumentList?.DocumentLines" 
-                                [definition]="definition" 
+                                *ngIf="!linhasLoading"
+                                [content]="selectedDocumentList?.DocumentLines"
+                                [definition]="definition"
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
@@ -89,7 +99,7 @@
 </section>
 
 <app-gerar-pix
-    *ngIf="selectedDocumentList?.DocumentStatus === 'bost_Open' && selectedDocumentList?.DocObjectCode === 'oOrders'"
+    *ngIf="(selectedDocumentList?.DocumentStatus === 'bost_Open' || selectedDocumentList?.DocumentStatus === 'O') && selectedDocumentList?.DocObjectCode === 'oOrders'"
     #modalPix
     [pedido]="selectedDocumentList"
     (pixGerado)="onPixGerado()"
