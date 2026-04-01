@@ -1,5 +1,5 @@
 <div class="card card-primary">
-    <div class="card-header">
+    <div *ngIf="showHeader" class="card-header">
         <h3 class="card-title"><b>Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
         <div class="card-tools">
             <button (click)="close()" type="button" class="btn btn-warning btn-sm">

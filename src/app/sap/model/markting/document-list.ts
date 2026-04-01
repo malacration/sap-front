@@ -1,13 +1,14 @@
 import { formatCurrency } from "@angular/common";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import * as moment from "moment";
-import { Input } from "@angular/core";
 import { RouteLink } from "../route-link";
+import { ReplaceFilial } from "../../../utils/replaceFilial";
 
 export class DocumentList{
     CardCode : string
     CardName : string
     DocNum  : string
+    DocEntry : number
     DocDate  : string
     DocDueDate : string
     DocTotal : number
@@ -18,6 +19,10 @@ export class DocumentList{
     DocStatus : string
     Devolucao : string
     SequenceSerial: string; 
+    BPL_IDAssignedToInvoice : number
+    BPLName : string
+    SlpName : string
+    DocObjectCode : string
 
     getActions(): Action[] {
         return [
@@ -53,12 +58,9 @@ export class DocumentList{
     }
 
     get situacao(){
-        if(this.DocumentStatus == "bost_Open"){
-            return "Aberto"
-        }else{
-            return "Fechado"
-        }
-            
+        if(this.DocumentStatus === 'O' || this.DocumentStatus === 'bost_Open') return 'Aberto';
+        if(this.DocumentStatus === 'C' || this.DocumentStatus === 'bost_Close') return 'Fechado';
+        return '';
     }
 
     get situacaoBoleto(){
@@ -73,11 +75,15 @@ export class DocumentList{
     }
 
     get totalCurrency(){
-        return formatCurrency(this.DocTotal-this.frete,'pt','R$')
+        return formatCurrency(this.DocTotal,'pt','R$')
     }
 
     get vencimento(){
-        return moment(this.DocDueDate).format('DD/MM/YYYY'); 
+        return moment(this.DocDueDate).format('DD/MM/YYYY');
+    }
+
+    get filialFormatada(): string {
+        return ReplaceFilial.limparFilial(this.BPLName);
     }
 }
 

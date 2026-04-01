@@ -38,6 +38,10 @@
               >
               </app-table>
             </app-tab>
+            <app-tab tabTitle="Notas" [active]="false">
+              <app-lista-fatura [clienteSelecionado]="selected" [showHeader]="false"></app-lista-fatura>
+            </app-tab>
+
             <app-tab tabTitle="Contas a Receber" [active]="false">
               <div *ngIf="contasReceberLoading" class="text-center p-3">
                 <i class="fas fa-spinner fa-spin"></i> Carregando contas a
@@ -134,14 +138,19 @@
        <small class="text-muted">Vencimento em: {{ qrCodeData.expirationDate | date:'dd/MM/yyyy HH:mm' }}</small>
     </div>
 
-    <button
-      *ngIf="contaPixAtual"
-      type="button"
-      class="btn btn-outline-primary mt-2"
-      (click)="checarPagamento(contaPixAtual)"
-    >
-      <i class="fas fa-search-dollar"></i> Verificar Pagamento
-    </button>
+    <div class="d-flex justify-content-center gap-2 mt-2">
+      <button type="button" class="btn btn-outline-success" (click)="compartilharLinkPix()">
+        <i class="fas fa-share-alt"></i> {{ linkPixCopiado ? 'Link Copiado!' : 'Compartilhar Link' }}
+      </button>
+      <button
+        *ngIf="contaPixAtual"
+        type="button"
+        class="btn btn-outline-primary"
+        (click)="checarPagamento(contaPixAtual)"
+      >
+        <i class="fas fa-search-dollar"></i> Verificar Pagamento
+      </button>
+    </div>
   </div>
 </app-modal>
 

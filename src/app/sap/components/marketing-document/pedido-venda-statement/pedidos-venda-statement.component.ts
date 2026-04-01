@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { PedidosVendaService } from '../../../service/document/pedidos-venda.service';
-import { DocumentList } from '../../../model/markting/document-list';
-import { ActionReturn } from '../../../../shared/components/action/action.model';
-
+import { Branch } from '../../../model/branch';
+import { ListComponent } from '../core/list/list.component';
 
 
 @Component({
@@ -12,15 +11,42 @@ import { ActionReturn } from '../../../../shared/components/action/action.model'
 })
 export class PedidosVendaStatementComponent {
 
-  selectedDocumentList : DocumentList = null
-  
-  constructor(public pedidosVendaService : PedidosVendaService){
-    
+  @ViewChild('lista') lista: ListComponent;
+
+  statusOptions = [
+    { key: 'bost_Open', label: 'Aberto' },
+    { key: 'bost_Close', label: 'Fechado' },
+  ];
+
+  filialSelecionada: Branch | null = null;
+  dataFiltro: string = new Date().toISOString().split('T')[0];
+
+  constructor(public pedidosVendaService: PedidosVendaService) {
+    this.pedidosVendaService.filtro.data = this.dataFiltro;
+    this.pedidosVendaService.filtro.status = 'bost_Open';
   }
-  
-  action(event : ActionReturn){
-    if(event.type == "selected"){
-      this.selectedDocumentList = event.data
-    }
+
+  onStatusChange(event: Event) {
+    const status = (event.target as HTMLSelectElement).value;
+    this.pedidosVendaService.filtro.status = status || undefined;
+    this.lista.reload();
+  }
+
+  onFilialChange(branch: Branch) {
+    this.filialSelecionada = branch ?? null;
+    const filial = branch?.Bplid != null ? Number(branch.Bplid) : undefined;
+    this.pedidosVendaService.filtro.filial = filial === -1 ? undefined : filial;
+    this.lista.reload();
+  }
+
+  onClienteChange(parceiro: any) {
+    this.pedidosVendaService.filtro.cliente = parceiro?.CardCode ?? undefined;
+    this.lista.reload();
+  }
+
+  onDataChange(event: Event) {
+    const data = (event.target as HTMLInputElement).value;
+    this.pedidosVendaService.filtro.data = data || undefined;
+    this.lista.reload();
   }
 }

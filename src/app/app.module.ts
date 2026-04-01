@@ -90,6 +90,9 @@ import { AssignRoleComponent } from './sap/components/assign-role/assign-role.co
 import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
+import { GerarPixComponent } from './shared/components/gerar-pix/gerar-pix.component';
+import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
+import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
@@ -162,6 +165,9 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     PedidosVendaStatementComponent,
     DescontoComponent,
     TrocaComponent,
+    GerarPixComponent,
+    PixLinkComponent,
+    PixPageComponent,
   ],
   imports: [
     NgxPaginationModule,

@@ -18,19 +18,74 @@
                 <dd class="col-sm-9">{{ selectedDocumentList.freteCurrency }}</dd>
 
                 <dt class="col-sm-3">Valor Total:</dt>
-                <dd class="col-sm-9">{{ selectedDocumentList.totalCurrency }}</dd>
+                <dd class="col-sm-9">{{ selectedDocumentList.x }}</dd>
 
                 <dt class="col-sm-3">Data de Criação:</dt>
                 <dd class="col-sm-9">{{ selectedDocumentList.dataCriacao }}</dd>
 
+                <dt class="col-sm-3">Vendedor:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.SlpName }}</dd>
+
+                <dt class="col-sm-3">Filial:</dt>
+                <dd class="col-sm-9">{{ selectedDocumentList.filialFormatada }}</dd>
+
                 <dd class="col-sm">
                     <app-tabs>
                         <app-tab tabTitle="Produtos" [active]="true">
+                            <div *ngIf="linhasLoading" class="text-center p-3">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando produtos...
+                            </div>
                             <app-table
-                                [content]="selectedDocumentList?.DocumentLines" 
-                                [definition]="definition" 
+                                *ngIf="!linhasLoading"
+                                [content]="selectedDocumentList?.DocumentLines"
+                                [definition]="definition"
                                 (actionOutput)="action($event)">
                             </app-table>
+                        </app-tab>
+                        <app-tab tabTitle="Adiantamento Pix" [active]="false">
+                            <div class="d-flex justify-content-end mb-3">
+                                <button
+                                    *ngIf="podeGerarPixAdiantamento"
+                                    type="button"
+                                    class="btn btn-success"
+                                    (click)="abrirPix()"
+                                >
+                                    <i class="fas fa-qrcode"></i> Gerar PIX
+                                </button>
+                            </div>
+
+                            <div *ngIf="pixAdiantamentosLoading" class="text-center p-3">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando adiantamentos Pix...
+                            </div>
+
+                            <div *ngIf="!pixAdiantamentosLoading && pixAdiantamentosError" class="alert alert-danger mb-0">
+                                Não foi possível carregar os adiantamentos Pix do pedido.
+                            </div>
+
+                            <div *ngIf="!pixAdiantamentosLoading && !pixAdiantamentosError && hasOpenPixAdiantamento" class="alert alert-warning">
+                                Já existe um adiantamento Pix com status aberto para este pedido. Gere um novo Pix somente após a baixa ou fechamento do atual.
+                            </div>
+
+                            <div *ngIf="!pixAdiantamentosLoading && !pixAdiantamentosError && pixAdiantamentos.length === 0" class="text-center p-3 text-muted">
+                                Nenhum adiantamento Pix encontrado para este pedido.
+                            </div>
+
+                            <ng-container *ngIf="!pixAdiantamentosLoading && !pixAdiantamentosError && pixAdiantamentos.length > 0">
+                                <app-table
+                                    [content]="pixAdiantamentos"
+                                    [definition]="pixAdiantamentoDefinition"
+                                    (actionOutput)="action($event)">
+                                </app-table>
+
+                                <div class="mt-3">
+                                    <app-paginacao
+                                        (pageChange)="changePixAdiantamentosPage($event)"
+                                        [paginaAtual]="pixAdiantamentosPage"
+                                        [totalItens]="pixAdiantamentosPageData.totalElements"
+                                        [pageSize]="pixAdiantamentosPageSize">
+                                    </app-paginacao>
+                                </div>
+                            </ng-container>
                         </app-tab>
                     </app-tabs>
                 </dd>
@@ -42,3 +97,46 @@
         </div>
     </div>
 </section>
+
+<app-gerar-pix
+    *ngIf="(selectedDocumentList?.DocumentStatus === 'bost_Open' || selectedDocumentList?.DocumentStatus === 'O') && selectedDocumentList?.DocObjectCode === 'oOrders'"
+    #modalPix
+    [pedido]="selectedDocumentList"
+    (pixGerado)="onPixGerado()"
+></app-gerar-pix>
+
+<app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
+    <div *ngIf="pagamentoPixLoading" class="text-center p-4">
+        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+        <p class="mt-3 mb-0 text-muted">Consultando status do pagamento PIX...</p>
+    </div>
+
+    <div *ngIf="pagamentoPixData" class="p-2">
+        <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
+        <div class="mb-1">
+            <strong>Status:</strong>
+            <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
+                {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
+            </span>
+        </div>
+        <div class="mb-1">
+            <strong>Valor original:</strong>
+            <span *ngIf="pagamentoPixData.originalAmount != null; else valorOriginalVazio">
+                {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+            <ng-template #valorOriginalVazio>-</ng-template>
+        </div>
+        <div class="mb-1" *ngIf="pagamentoPixData.receivedAmount != null">
+            <strong>Valor recebido:</strong>
+            {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+        </div>
+        <div class="mb-1">
+            <strong>Data do pagamento:</strong>
+            <span *ngIf="pagamentoPixData.paymentDate; else dataPagamentoVazia">
+                {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+            <ng-template #dataPagamentoVazia>-</ng-template>
+        </div>
+        <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType || '-' }}</div>
+    </div>
+</app-modal>

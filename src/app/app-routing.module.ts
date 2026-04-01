@@ -8,6 +8,7 @@ import { CadastroComponent } from './sap/components/cadastro/cadastro.component'
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
+import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
 import { authGuard } from './core/auth.guard';
 import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
@@ -22,6 +23,7 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
 import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
+import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
 
  let routes: Routes = [
   {
@@ -46,6 +48,12 @@ import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregament
     title: 'Login',
     data: ["hidden"],
     component: LoginComponent
+  },
+  {
+    path: 'pix-link',
+    title: 'Pagamento PIX',
+    data: ["hidden", "public"],
+    component: PixLinkComponent
   },
   {
     path: 'romaneio',
@@ -168,6 +176,21 @@ import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregament
         data: ["icon:fas fa-user-check"],
         canActivate: [authGuard],
         component: AssignRoleComponent
+      },
+    ]
+  },
+  {
+    title: 'Financeiro',
+    path: 'financeiro',
+    data: ["icon:fas fa-dollar-sign"],
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'pix',
+        title: 'PIX',
+        data: ["icon:fas fa-qrcode"],
+        canActivate: [authGuard],
+        component: PixPageComponent,
       },
     ]
   },
