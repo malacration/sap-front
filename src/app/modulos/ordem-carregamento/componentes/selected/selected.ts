@@ -414,50 +414,28 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   private construirPayloadLotesPorItem(pedidosX: PedidoX[]): any[] {
-    const mapaItens = new Map<string, Map<string, BatchStock>>();
+    const resultado: any[] = [];
 
     pedidosX.forEach(pedido => {
       pedido.itens.forEach(item => {
-        item.lotesSelecionados.forEach(lote => {
-          const chaveItem = item.itemCode;
-          const chaveLote = `${lote.DistNumber}@@${lote.WhsCode}`;
-          const quantidade = Number(lote.quantitySelecionadaEditable ?? lote.Quantity) || 0;
+        if (item.lotesSelecionados.length === 0) return;
 
-          if (!mapaItens.has(chaveItem)) {
-            mapaItens.set(chaveItem, new Map<string, BatchStock>());
-          }
-
-          const mapaLotes = mapaItens.get(chaveItem)!;
-          const loteAtual = mapaLotes.get(chaveLote);
-
-          if (!loteAtual) {
-            mapaLotes.set(
-              chaveLote,
-              Object.assign(new BatchStock(), lote, {
-                Quantity: quantidade,
-                quantitySelecionadaEditable: quantidade
-              })
-            );
-          } else {
-            const total = (Number(loteAtual.Quantity) || 0) + quantidade;
-            loteAtual.Quantity = total;
-            loteAtual.quantitySelecionadaEditable = total;
-          }
+        resultado.push({
+          DocEntry: pedido.docEntry,
+          ItemCode: item.itemCode,
+          Batches: item.lotesSelecionados.map(lote => ({
+            BatchNumber: lote.DistNumber,
+            ExpDate: lote.ExpDate,
+            InDate: lote.InDate,
+            ItemName: lote.ItemName,
+            MnfDate: lote.MnfDate,
+            Quantity: Number(lote.quantitySelecionadaEditable ?? lote.Quantity) || 0,
+            WhsCode: lote.WhsCode
+          }))
         });
       });
     });
 
-    return Array.from(mapaItens.entries()).map(([itemCode, lotesMap]) => ({
-      ItemCode: itemCode,
-      Batches: Array.from(lotesMap.values()).map(lote => ({
-        BatchNumber: lote.DistNumber,
-        ExpDate: lote.ExpDate,
-        InDate: lote.InDate,
-        ItemName: lote.ItemName,
-        MnfDate: lote.MnfDate,
-        Quantity: lote.quantitySelecionadaEditable || lote.Quantity,
-        WhsCode: lote.WhsCode
-      }))
-    }));
+    return resultado;
   }
 }
