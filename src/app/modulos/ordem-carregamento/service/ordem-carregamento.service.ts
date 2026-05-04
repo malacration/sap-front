@@ -17,6 +17,13 @@ export interface CarregamentoDetalhes {
   docEntryQuantity: number;
 }
 
+export interface OrdemCarregamentoFilter {
+  id?: string | null;
+  status?: string | null;
+  createDateFrom?: string | null;
+  createDateTo?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,12 +40,35 @@ export class OrdemCarregamentoService {
     );
   }
 
-  getAll(page: number, allVendedores: boolean = false): Observable<Page<OrdemCarregamento>> {
+  getAll(
+    page: number,
+    allVendedores: boolean = false,
+    filters?: OrdemCarregamentoFilter
+  ): Observable<Page<OrdemCarregamento>> {
     const endpoint = allVendedores ? `${this.url}/all` : this.url;
-    return this.http.get<Page<OrdemCarregamento>>(`${endpoint}?page=${page}`).pipe(
+    let params = new HttpParams().set('page', page.toString());
+
+    if (filters?.id) {
+      params = params.set('id', filters.id);
+    }
+
+    if (filters?.status) {
+      params = params.set('status', filters.status);
+    }
+
+    if (filters?.createDateFrom) {
+      params = params.set('createDateFrom', filters.createDateFrom);
+    }
+
+    if (filters?.createDateTo) {
+      params = params.set('createDateTo', filters.createDateTo);
+    }
+
+    return this.http.get<Page<OrdemCarregamento>>(endpoint, { params }).pipe(
       map((page) => {
+        const shouldHideFailed = filters?.status !== 'Falhou';
         page.content = page.content
-          .filter((ordem) => ordem.U_Status !== 'Falhou')
+          .filter((ordem) => !shouldHideFailed || ordem.U_Status !== 'Falhou')
           .map((ordem) => this.ordemCarregamentoAssign(ordem));
         return page;
       })
