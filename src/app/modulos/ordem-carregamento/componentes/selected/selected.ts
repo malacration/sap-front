@@ -231,6 +231,10 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       return;
     }
 
+    if (!this.validateNotaFiscalLogistics()) {
+      return;
+    }
+
     this.pedidosXAuxiliares = this.criarEstruturaPedidoX(this.selected.pedidosVenda);
     this.showLoteModalPedido = true;
   }
@@ -359,13 +363,40 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.back.emit();
   }
 
+  canGenerateNotaFiscal(): boolean {
+    return this.hasRequiredPlate() && this.hasRequiredDriver() && this.hasRequiredTruckWeight();
+  }
+
   private validateForm(): boolean {
     this.formTouched = true;
-    if (!this.placa || !this.nomeMotorista) {
+    if (!this.hasRequiredPlate() || !this.hasRequiredDriver()) {
       this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return false;
     }
     return true;
+  }
+
+  private validateNotaFiscalLogistics(): boolean {
+    this.formTouched = true;
+
+    if (!this.hasRequiredPlate() || !this.hasRequiredDriver() || !this.hasRequiredTruckWeight()) {
+      this.alertService.error('Para gerar a nota fiscal, preencha placa, nome do motorista e peso do caminhão.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private hasRequiredPlate(): boolean {
+    return this.placa.trim().length > 0;
+  }
+
+  private hasRequiredDriver(): boolean {
+    return this.nomeMotorista.trim().length > 0;
+  }
+
+  private hasRequiredTruckWeight(): boolean {
+    return this.pesoCaminhao !== null && this.pesoCaminhao > 0;
   }
 
   private atualizarStatusParaFechado(): void {
