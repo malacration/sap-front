@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription, map } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { Page } from '../../../sap/model/page.model';
 import { AuthService } from '../../../shared/service/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService } from '../../../shared/service/alert.service';
 import { ParameterService } from '../../../shared/service/parameter.service';
-import { OrdemCarregamentoService } from '../service/ordem-carregamento.service';
+import { OrdemCarregamentoFilter, OrdemCarregamentoService } from '../service/ordem-carregamento.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { OrdemCarregamento } from '../models/ordem-carregamento';
 import { PedidosVendaService } from '../../../sap/service/document/pedidos-venda.service';
@@ -35,6 +35,11 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   private routeSubscriptions: Subscription[] = [];
   
   page: (page: number) => void;
+  filtroId = '';
+  filtroStatus = 'Aberto';
+  filtroCreateDateFrom = this.getTodayDate();
+  filtroCreateDateTo = this.getTodayDate();
+  readonly statusOptions: string[] = ['Aberto', 'Fechado', 'Cancelado'];
 
   constructor(
     private auth: AuthService,
@@ -71,7 +76,7 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
   pageChange(page: number): void {
     this.loading = true;
-    this.service.getAll(page, this.all).subscribe({
+    this.service.getAll(page, this.all, this.getFilters()).subscribe({
       next: (pageData: Page<OrdemCarregamento>) => {
         this.pageContent = pageData;
         this.loading = false;
@@ -80,6 +85,23 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
           this.loading = false;
       }
     })
+  }
+
+  filtrar(): void {
+    if (!this.isDateRangeValid()) {
+      this.alertService.error('A data final do filtro deve ser maior ou igual à data inicial.');
+      return;
+    }
+
+    this.pageChange(0);
+  }
+
+  limparFiltros(): void {
+    this.filtroId = '';
+    this.filtroStatus = 'Aberto';
+    this.filtroCreateDateFrom = this.getTodayDate();
+    this.filtroCreateDateTo = this.getTodayDate();
+    this.pageChange(0);
   }
 
   action(event: ActionReturn): void {
@@ -162,22 +184,10 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     ordem.pedidosVendaCarregados = false;
     this.pedidosVendaService.search(ordem.DocEntry).subscribe({
       next : (pedidos) => {
-        ordem.pedidosVenda = this.groupPedidos(this.normalizePedidosResponse(pedidos));
+        ordem.pedidosVenda = this.normalizePedidosResponse(pedidos);
         ordem.pedidosVendaCarregados = true;
       },
     });
-  }
-
-  private groupPedidos(content: any[]): any[] {
-    const groupedPedidos = content.reduce((acc: any, pedido: any) => {
-      const itemCode = pedido.ItemCode;
-      if (!acc[itemCode]) {
-        acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
-      }
-      acc[itemCode].Quantity += pedido.Quantity;
-      return acc;
-    }, {});
-    return Object.values(groupedPedidos);
   }
 
   private normalizePedidosResponse(response: any): any[] {
@@ -212,5 +222,28 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
   private hasParam(param: 'id' | 'edit'): boolean {
     return this.parameterService.hasParam(this.route, param);
+  }
+
+  private getFilters(): OrdemCarregamentoFilter {
+    const id = this.filtroId.trim();
+
+    return {
+      id: id.length ? id : null,
+      status: this.filtroStatus || null,
+      createDateFrom: this.filtroCreateDateFrom || null,
+      createDateTo: this.filtroCreateDateTo || null,
+    };
+  }
+
+  private isDateRangeValid(): boolean {
+    if (!this.filtroCreateDateFrom || !this.filtroCreateDateTo) {
+      return true;
+    }
+
+    return this.filtroCreateDateFrom <= this.filtroCreateDateTo;
+  }
+
+  private getTodayDate(): string {
+    return new Date().toISOString().split('T')[0];
   }
 }
