@@ -184,22 +184,10 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     ordem.pedidosVendaCarregados = false;
     this.pedidosVendaService.search(ordem.DocEntry).subscribe({
       next : (pedidos) => {
-        ordem.pedidosVenda = this.groupPedidos(this.normalizePedidosResponse(pedidos));
+        ordem.pedidosVenda = this.normalizePedidosResponse(pedidos);
         ordem.pedidosVendaCarregados = true;
       },
     });
-  }
-
-  private groupPedidos(content: any[]): any[] {
-    const groupedPedidos = content.reduce((acc: any, pedido: any) => {
-      const itemCode = pedido.ItemCode;
-      if (!acc[itemCode]) {
-        acc[itemCode] = { ...pedido, Quantity: 0, DocNum: pedido.DocNum };
-      }
-      acc[itemCode].Quantity += pedido.Quantity;
-      return acc;
-    }, {});
-    return Object.values(groupedPedidos);
   }
 
   private normalizePedidosResponse(response: any): any[] {

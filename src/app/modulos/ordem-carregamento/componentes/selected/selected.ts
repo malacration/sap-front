@@ -13,7 +13,6 @@ import { PedidosVendaService } from '../../../../sap/service/document/pedidos-ve
 import { ParameterService } from '../../../../shared/service/parameter.service';
 import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
-import { OrderSalesService } from '../../../sap-shared/_services/documents/order-sales.service';
 import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-modal-pedido.component';
 
 @Component({
@@ -83,8 +82,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     private parameterService: ParameterService,
     private route: ActivatedRoute,
     private pdfService: OrdemCarregamentoPdfService,
-    private romaneioPdfService: RomaneioPdfService,
-    private orderSalesService: OrderSalesService
+    private romaneioPdfService: RomaneioPdfService
   ) {}
 
   ngOnInit(): void {
@@ -95,6 +93,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selected']) {
       this.hydrateFromSelected();
+      this.loadNotas();
     }
   }
 
@@ -177,14 +176,14 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.nomeMotorista = this.selected.U_motorista || '';
     this.pesoCaminhao = this.selected.U_capacidadeCaminhao || null;
 
-    if (this.selected.DocEntry) {
-      this.orderSalesService.getPedidosBy(this.selected.DocEntry).subscribe({
+    if (this.selected.pedidosVendaCarregados && this.selected.pedidosVenda.length > 0) {
+      this.syncPedidosState(this.selected.pedidosVenda);
+    } else if (this.selected.DocEntry) {
+      this.selected.pedidosVendaCarregados = false;
+      this.pedidosVendaService.search(this.selected.DocEntry).subscribe({
         next: (pedidos) => {
           if (this.selected) {
-            this.selected.pedidosVenda = pedidos;
-            this.selected.pedidosVendaCarregados = true;
-            this.agruparItensParaLote(pedidos);
-            this.pedidosXAuxiliares = this.criarEstruturaPedidoX(pedidos);
+            this.syncPedidosState(this.normalizePedidosResponse(pedidos));
           }
         }
       });
@@ -397,6 +396,33 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
 
   private hasRequiredTruckWeight(): boolean {
     return this.pesoCaminhao !== null && this.pesoCaminhao > 0;
+  }
+
+  private syncPedidosState(pedidos: any[]): void {
+    if (!this.selected) {
+      return;
+    }
+
+    this.selected.pedidosVenda = pedidos;
+    this.selected.pedidosVendaCarregados = true;
+    this.agruparItensParaLote(pedidos);
+    this.pedidosXAuxiliares = this.criarEstruturaPedidoX(pedidos);
+  }
+
+  private normalizePedidosResponse(response: any): any[] {
+    if (!response) {
+      return [];
+    }
+
+    if (Array.isArray(response?.content)) {
+      return response.content;
+    }
+
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    return [response];
   }
 
   private atualizarStatusParaFechado(): void {
