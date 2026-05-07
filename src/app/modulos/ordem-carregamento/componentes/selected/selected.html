@@ -9,7 +9,7 @@
           type="button"
           class="btn btn-danger mr-2"
           [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
-          Cancelar
+          Cancelar Ordem
         </button>
         
         <button
@@ -18,7 +18,7 @@
           class="btn btn-warning"
           [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado' || !canGenerateNotaFiscal()"
           [title]="selected?.U_Status == 'Fechado' ? 'Esta ordem já foi fechada' : (!canGenerateNotaFiscal() ? 'Preencha os dados da aba logística para gerar a nota' : '')">
-          <span *ngIf="!loading">Gerar Nota Fiscal Saída</span>
+          <span *ngIf="!loading">Gerar NF de Saída</span>
           <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
         </button>
 
@@ -27,7 +27,7 @@
           type="button"
           class="btn btn-warning"
           [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
-          Editar
+          Editar Ordem
         </button>
 
         <button
@@ -35,7 +35,7 @@
           type="button"
           class="btn btn-warning"
           [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
-          Itinerário
+          Gerar Itinerário
         </button>
 
         <button
@@ -43,16 +43,26 @@
           type="button"
           class="btn btn-warning"
           [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
-          Romaneio
+          Exportar Romaneio
         </button>
 
-        <button
-          (click)="imprimirOrdemPdf()"
-          type="button"
-          class="btn btn-warning"
-          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
-          Pdf Carregamento
-        </button>
+        <div class="btn-group export-group">
+          <button
+            (click)="toggleExportMenu()"
+            type="button"
+            class="btn btn-warning dropdown-toggle"
+            [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
+            Exportar Ordem de Carregamento
+          </button>
+          <div class="dropdown-menu dropdown-menu-right" [class.show]="showExportMenu">
+            <button class="dropdown-item" type="button" (click)="imprimirOrdemPdf()">
+              PDF
+            </button>
+            <button class="dropdown-item" type="button" (click)="exportarOrdemImagem()">
+              Imagem
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -131,12 +141,12 @@
                 </div>
                 <div class="col-md-6">
                   <div class="form-group">
-                    <label>Peso do Caminhão (kg)</label>
-                    <input type="number" class="form-control"
-                      [ngClass]="{'is-valid': pesoCaminhao && pesoCaminhao > 0, 'is-invalid': formTouched && (!pesoCaminhao || pesoCaminhao <= 0)}"
-                      [(ngModel)]="pesoCaminhao" placeholder="0.00"
-                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
-                    <div class="invalid-feedback">O peso do caminhão é obrigatório para gerar nota fiscal.</div>
+                    <label>Peso Total dos Pedidos (kg)</label>
+                    <input type="text" class="form-control"
+                      [ngClass]="{'is-valid': totalPesoPedidos > 0, 'is-invalid': formTouched && totalPesoPedidos <= 0}"
+                      [value]="formatPesoPedidos()"
+                      readonly />
+                    <div class="invalid-feedback">É necessário ter peso nos pedidos para gerar nota fiscal.</div>
                   </div>
                 </div>
                 <div class="col-12 text-right">
@@ -183,3 +193,71 @@
   </app-selecao-lotes-modal-pedido>
 
 </section>
+
+<div class="export-image-wrapper" aria-hidden="true">
+  <div #ordemExportImagem class="ordem-export-image" *ngIf="selected">
+    <div class="ordem-export-header">
+      <img src="logo.png" alt="Logo" class="ordem-export-logo" />
+      <div class="ordem-export-title">ORDEM DE CARREGAMENTO</div>
+    </div>
+
+    <div class="ordem-export-separator"></div>
+
+    <div class="ordem-export-info">
+      <div><strong>Número da Ordem:</strong> {{ selected.DocEntry }}</div>
+      <div><strong>Data de Criação:</strong> {{ selected.dataCriacao }}</div>
+      <div><strong>Descrição:</strong> {{ selected.U_nameOrdem }}</div>
+      <div><strong>Status:</strong> {{ selected.U_Status?.toUpperCase() }}</div>
+      <div class="highlight"><strong>Quantidade Total:</strong> {{ totalItensPedidos }}</div>
+      <div class="highlight"><strong>Peso Total Ordem:</strong> {{ formatPesoPedidos() }} kg</div>
+    </div>
+
+    <div class="ordem-export-logistics">
+      <div class="ordem-export-logistics-row">
+        <div><strong>PLACA:</strong> {{ selected.U_placa || 'N/A' }}</div>
+        <div><strong>MOTORISTA:</strong> {{ selected.U_motorista || 'N/A' }}</div>
+      </div>
+      <div class="ordem-export-logistics-row">
+        <div><strong>TRANSPORTADORA:</strong> {{ transportadoraNome }}</div>
+        <div><strong>PESO CAMINHÃO:</strong> {{ formatPesoPedidos() }} kg</div>
+      </div>
+    </div>
+
+    <table class="ordem-export-table">
+      <thead>
+        <tr>
+          <th>PEDIDO</th>
+          <th>CÓD. CLI</th>
+          <th>CLIENTE</th>
+          <th>LOCALIDADE</th>
+          <th>VENDEDOR</th>
+          <th>CÓD. ITEM</th>
+          <th>PRODUTO</th>
+          <th>QTD</th>
+          <th>PESO TOTAL (KG)</th>
+          <th>UN</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pedido of selected.pedidosVenda">
+          <td class="bold">{{ pedido.DocNum }}</td>
+          <td>{{ pedido.CardCode }}</td>
+          <td>{{ pedido.CardName }}</td>
+          <td>{{ pedido.Name }}</td>
+          <td>{{ pedido.SlpName || 'N/A' }}</td>
+          <td>{{ pedido.ItemCode }}</td>
+          <td>{{ pedido.Dscription }}</td>
+          <td class="center bold">{{ pedido.Quantity }}</td>
+          <td class="center">{{ formatDecimal(pedido.Weight1) }}</td>
+          <td class="center">{{ pedido.UomCode }}</td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="7" class="bold right">TOTAIS GERAIS</td>
+          <td class="center bold">{{ totalItensPedidos }}</td>
+          <td class="center bold">{{ formatPesoPedidos() }}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

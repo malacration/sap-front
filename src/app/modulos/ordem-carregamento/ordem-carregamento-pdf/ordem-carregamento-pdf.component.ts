@@ -43,7 +43,7 @@ export class OrdemCarregamentoPdfService {
     currentY = this.drawInfoList(doc, selected, totalItens, totalPesoGeral, currentY);
 
     currentY += 5;
-    currentY = this.drawLogisticsBox(doc, selected, transportadoraNome, currentY, pageW);
+    currentY = this.drawLogisticsBox(doc, selected, transportadoraNome, totalPesoGeral, currentY, pageW);
 
     this.drawTable(doc, selected, currentY);
 
@@ -83,7 +83,7 @@ export class OrdemCarregamentoPdfService {
     return y;
   }
 
-  private drawLogisticsBox(doc: jsPDF, selected: OrdemCarregamento, transportadora: string, y: number, pageW: number): number {
+  private drawLogisticsBox(doc: jsPDF, selected: OrdemCarregamento, transportadora: string, totalPesoPedidos: number, y: number, pageW: number): number {
     const boxHeight = 18;
     const col2 = pageW / 2 + 5;
 
@@ -111,30 +111,41 @@ export class OrdemCarregamentoPdfService {
 
     doc.setFont('helvetica', 'normal');
     doc.text(`${transportadora || 'N/A'}`, this.MARGIN_X + 35, lineY);
-    doc.text(`${selected.U_capacidadeCaminhao || '0.00'} kg`, col2 + 32, lineY);
+    doc.text(`${this.formatDecimal(totalPesoPedidos)} kg`, col2 + 32, lineY);
 
     return y + boxHeight + 8;
   }
 
   private drawTable(doc: jsPDF, selected: OrdemCarregamento, y: number): void {
+    const totalQuantidade = (selected.pedidosVenda || []).reduce((acc, p) => acc + Number(p.Quantity || 0), 0);
+    const totalPeso = (selected.pedidosVenda || []).reduce((acc, p) => acc + Number(p.Weight1 || 0), 0);
+
     autoTable(doc, {
       startY: y,
       head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'PESO TOTAL (KG)', 'UN']],
-      body: (selected.pedidosVenda || []).map(p => {
-      const pesoTotalRow = Number(p.Weight1 || 0);
-        return [
-          { content: p.DocNum, styles: { fontStyle: 'bold' } },
-          p.CardCode,
-          p.CardName,
-          p.Name,
-          p.SlpName || 'N/A',
-          p.ItemCode,
-          p.Dscription,
-          { content: p.Quantity, styles: { halign: 'center', fontStyle: 'bold' } },
-          { content: this.formatDecimal(pesoTotalRow), styles: { halign: 'center' } },
-          { content: p.UomCode, styles: { halign: 'center' } }
-        ];
-      }),
+      body: [
+        ...(selected.pedidosVenda || []).map(p => {
+          const pesoTotalRow = Number(p.Weight1 || 0);
+          return [
+            { content: p.DocNum, styles: { fontStyle: 'bold' } },
+            p.CardCode,
+            p.CardName,
+            p.Name,
+            p.SlpName || 'N/A',
+            p.ItemCode,
+            p.Dscription,
+            { content: p.Quantity, styles: { halign: 'center', fontStyle: 'bold' } },
+            { content: this.formatDecimal(pesoTotalRow), styles: { halign: 'center' } },
+            { content: p.UomCode, styles: { halign: 'center' } }
+          ];
+        }),
+        [
+          { content: 'TOTAIS GERAIS', colSpan: 7, styles: { fontStyle: 'bold', halign: 'right', fillColor: [245, 245, 245] } },
+          { content: `${totalQuantidade}`, styles: { fontStyle: 'bold', halign: 'center', fillColor: [245, 245, 245] } },
+          { content: this.formatDecimal(totalPeso), styles: { fontStyle: 'bold', halign: 'center', fillColor: [245, 245, 245] } },
+          { content: '', styles: { fillColor: [245, 245, 245] } }
+        ]
+      ],
       theme: 'grid',
       styles: {
         font: 'helvetica',

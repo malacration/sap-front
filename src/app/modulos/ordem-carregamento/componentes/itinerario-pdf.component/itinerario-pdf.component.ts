@@ -121,7 +121,7 @@ export class ItinerarioPdfService {
       cursorY += (enderecoLinhas.length * 4); 
       
       this.escreverCampo(doc, 'Vendedor:', pedido.SlpName || 'N/I', marginX + 3, cursorY);
-      this.escreverCampo(doc, 'Contato:', pedido.Mobil || pedido.Telephone || 'N/I', col2, cursorY);
+      this.escreverCampo(doc, 'Contato Vendedor:', pedido.Mobil || pedido.Telephone || 'N/I', col2, cursorY);
       cursorY += 4.5;
 
       doc.setFont('helvetica', 'bold').text('Obs:', marginX + 3, cursorY);

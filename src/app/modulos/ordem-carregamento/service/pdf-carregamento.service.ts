@@ -7,6 +7,20 @@ import html2canvas from 'html2canvas';
 })
 export class PdfCarregamentoService {
 
+  async gerarImagem(element: HTMLElement, fileName: string): Promise<void> {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.download = `${fileName}.png`;
+    link.click();
+  }
+
   async gerarPdfMultiPagina(elements: NodeListOf<HTMLElement>, fileName: string): Promise<void> {
     
     const newWindow = window.open('', '_blank');
