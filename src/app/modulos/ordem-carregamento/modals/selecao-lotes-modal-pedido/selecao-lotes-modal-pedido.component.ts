@@ -90,6 +90,7 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
     this.adicionarConsumoGlobal(novosLotesSelecionados);
     this.currentItem.lotesSelecionados = novosLotesSelecionados;
     this.recalcularDisponibilidadeEmEdicao();
+    this.avancarParaProximoItem();
   }
 
   confirmar(): void {
@@ -225,6 +226,69 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
     }
 
     this.montarLotesEmEdicao(this.currentItem, this.lotesEmEdicao);
+  }
+
+  private avancarParaProximoItem(): void {
+    if (!this.currentPedido || !this.currentItem) {
+      return;
+    }
+
+    const proximoItemMesmoPedido = this.getProximoItemPendenteDoPedido(this.currentPedido, this.currentItem.itemId);
+    if (proximoItemMesmoPedido) {
+      this.selecionarItem(proximoItemMesmoPedido);
+      return;
+    }
+
+    const proximoPedido = this.getProximoPedidoPendente(this.currentPedido.pedidoId);
+    if (proximoPedido) {
+      this.selecionarPedido(proximoPedido);
+      const primeiroItemPendente = this.getPrimeiroItemPendente(proximoPedido);
+      if (primeiroItemPendente) {
+        this.selecionarItem(primeiroItemPendente);
+      }
+      return;
+    }
+
+    this.currentItem = null;
+    this.lotesEmEdicao = [];
+  }
+
+  private getProximoItemPendenteDoPedido(pedido: PedidoX, itemIdAtual: string): PedidoXItem | null {
+    const indiceAtual = pedido.itens.findIndex(item => item.itemId === itemIdAtual);
+    if (indiceAtual === -1) {
+      return this.getPrimeiroItemPendente(pedido);
+    }
+
+    for (let i = indiceAtual + 1; i < pedido.itens.length; i++) {
+      const item = pedido.itens[i];
+      if (this.quantidadeSelecionadaItem(item) !== (Number(item.quantidade) || 0)) {
+        return item;
+      }
+    }
+
+    return null;
+  }
+
+  private getPrimeiroItemPendente(pedido: PedidoX): PedidoXItem | null {
+    return pedido.itens.find(item =>
+      this.quantidadeSelecionadaItem(item) !== (Number(item.quantidade) || 0)
+    ) || null;
+  }
+
+  private getProximoPedidoPendente(pedidoIdAtual: string): PedidoX | null {
+    const indiceAtual = this.pedidosAuxiliares.findIndex(pedido => pedido.pedidoId === pedidoIdAtual);
+    if (indiceAtual === -1) {
+      return null;
+    }
+
+    for (let i = indiceAtual + 1; i < this.pedidosAuxiliares.length; i++) {
+      const pedido = this.pedidosAuxiliares[i];
+      if (!this.pedidoCompleto(pedido)) {
+        return pedido;
+      }
+    }
+
+    return null;
   }
 
   private adicionarConsumoGlobal(lotes: BatchStock[]): void {
