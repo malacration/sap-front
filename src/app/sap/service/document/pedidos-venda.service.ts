@@ -1,4 +1,4 @@
-import { Observable, map } from "rxjs";
+import { Observable, map, of, switchMap } from "rxjs";
 import { DocumentService } from "../../components/marketing-document/core/documento.service";
 import { Page } from "../../model/page.model";
 import { DocumentLines, DocumentList } from "../../model/markting/document-list";
@@ -67,8 +67,25 @@ export class PedidosVendaService implements DocumentService{
             })));
     }
 
-    search(U_Ordem_Carregamento: number): Observable<any> {
-        return this.hppCliente.get(`${this.url}/findLoadOrders?U_Ordem_Carregamento=${U_Ordem_Carregamento}`);
+    search(U_Ordem_Carregamento: number): Observable<any[]> {
+        return this.hppCliente
+            .get<{ content?: any[]; nextLink?: string } | any[]>(`${this.url}/findLoadOrders?U_Ordem_Carregamento=${U_Ordem_Carregamento}`)
+            .pipe(
+                switchMap((response) => {
+                    if (Array.isArray(response)) {
+                        return of(response);
+                    }
+
+                    const content = response?.content ?? [];
+                    const nextLink = response?.nextLink ?? '';
+
+                    if (!nextLink) {
+                        return of(content);
+                    }
+
+                    return this.fetchAllLoadOrders(nextLink, content);
+                })
+            );
     }
 
     searchLocalidade(Code: number): Observable<any> {
@@ -100,6 +117,28 @@ export class PedidosVendaService implements DocumentService{
         doc.DocObjectCode  = item.docObjectCode;
         doc.DocEntry       = item.docEntry;
         return doc;
+    }
+
+    private fetchAllLoadOrders(nextLink: string, acumulado: any[]): Observable<any[]> {
+        return this.hppCliente
+            .post<{ content?: any[]; nextLink?: string } | any[]>(`${this.url}/findAllLoadOrders`, nextLink)
+            .pipe(
+                switchMap((response) => {
+                    if (Array.isArray(response)) {
+                        return of([...acumulado, ...response]);
+                    }
+
+                    const content = response?.content ?? [];
+                    const merged = [...acumulado, ...content];
+                    const newNextLink = response?.nextLink ?? '';
+
+                    if (!newNextLink) {
+                        return of(merged);
+                    }
+
+                    return this.fetchAllLoadOrders(newNextLink, merged);
+                })
+            );
     }
 
 }
