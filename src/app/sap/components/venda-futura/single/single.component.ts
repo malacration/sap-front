@@ -102,21 +102,22 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   loadingCriaBoletos = false
   confirmEmitirBoletos(){
-    this.loadingCriaBoletos = true
     this.alertService.confirm("Emitir os boletos é uma ação irrevercivel, tem certeza que deseja continuar?")
     .then(it => {
       if(it.isConfirmed){
+        this.loadingCriaBoletos = true
         this.vendaFuturaService.emitirBoletos(this.selected.DocEntry).subscribe({
-          next(value) {
+          next: (value) => {
             this.alertService.info("Boleto Criado com sucesso")
           },
-          complete() {
+          error: () => {
             this.loadingCriaBoletos = false
-            this.OnInit()
+          },
+          complete: () => {
+            this.loadingCriaBoletos = false
+            this.ngOnInit()
           }
         })
-      }else{
-        this.loadingCriaBoletos = false
       }
     })
   }

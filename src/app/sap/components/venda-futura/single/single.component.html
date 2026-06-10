@@ -3,23 +3,31 @@
     <div class="card card-primary">
         <div class="card-header">
             <h3 class="card-title"><b>Detalhes da Venda Futura</b></h3>
-            <div *ngIf="!loadingEntregas" class="card-tools float-right">
-                <button (click)="confirmEmitirBoletos()" [disabled]="loadingCriaBoletos" 
-                type="button" class="btn btn-warning btn-sm mr-2">
-                    <i class="fa-solid fa-barcode"></i>  Emitir Boletos
-                </button>
-                <button (click)="openModalRetirada()" type="button" class="btn btn-warning btn-sm mr-2">
-                    Retirar
-                </button>
-                <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
-                    Troca
-                </button>
-                <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
-                    Minuta Contrato
-                </button>
-                <button (click)="encerrarContrato()" type="button" class="btn btn-danger btn-sm" style="margin-left: 8px;">
-                    Cancelar
-                </button>
+            <div class="card-tools float-right">
+                <ng-container *ngIf="loadingEntregas || loadingBoletos || loadingPedidos">
+                    <i class="fas fa-sync-alt fa-spin text-white mr-1"></i>
+                    <small class="text-white">Carregando contrato...</small>
+                </ng-container>
+                <ng-container *ngIf="!loadingEntregas && !loadingBoletos && !loadingPedidos">
+                    <button (click)="confirmEmitirBoletos()" [disabled]="loadingCriaBoletos"
+                    type="button" class="btn btn-warning btn-sm mr-2">
+                        <i *ngIf="!loadingCriaBoletos" class="fa-solid fa-barcode"></i>
+                        <i *ngIf="loadingCriaBoletos" class="fas fa-sync-alt fa-spin"></i>
+                        {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
+                    </button>
+                    <button (click)="openModalRetirada()" type="button" class="btn btn-warning btn-sm mr-2">
+                        Retirar
+                    </button>
+                    <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
+                        Troca
+                    </button>
+                    <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
+                        Minuta Contrato
+                    </button>
+                    <button (click)="encerrarContrato()" type="button" class="btn btn-danger btn-sm" style="margin-left: 8px;">
+                        Cancelar
+                    </button>
+                </ng-container>
             </div>
         </div>
         <div class="card-body">
@@ -46,7 +54,10 @@
                 <dd class="col-sm-9">{{ selected.frete }}</dd>
 
                 <dt class="col-sm-3">Valor Total:</dt>
-                <dd class="col-sm-9">{{ selected.totalCurrency }}</dd>
+                <dd class="col-sm-9">
+                    <i *ngIf="selected.itensLoading" class="fas fa-sync-alt fa-spin text-secondary mr-1"></i>
+                    <span *ngIf="!selected.itensLoading">{{ selected.totalCurrency }}</span>
+                </dd>
 
                 <dt class="col-sm-3">Data de Criação:</dt>
                 <dd class="col-sm-9">{{ selected.dataCriacao }}</dd>
@@ -54,44 +65,52 @@
                 <dd class="col-sm">
                     <app-tabs>
                         <app-tab tabTitle="Produtos" [active]="true">
+                            <div *ngIf="loadingEntregas" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando produtos...</p>
+                            </div>
                             <app-table
-                                [content]="selected?.AR_CF_LINHACollection" 
-                                [definition]="definition" 
+                                *ngIf="!loadingEntregas"
+                                [content]="selected?.AR_CF_LINHACollection"
+                                [definition]="definition"
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
 
                         <app-tab tabTitle="Pedidos">
-                            <div *ngIf="loadingPedidos" class="overlay">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            <div *ngIf="loadingPedidos" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando pedidos...</p>
                             </div>
                             <app-table
                                 *ngIf="!loadingPedidos"
-                                [content]="pedidos" 
+                                [content]="pedidos"
                                 [definition]="documentDefinition">
                             </app-table>
                         </app-tab>
 
                         <app-tab tabTitle="Boletos">
-                            <div *ngIf="loadingBoletos" class="overlay">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            <div *ngIf="loadingBoletos" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando boletos...</p>
                             </div>
                             <app-table
                                 *ngIf="!loadingBoletos"
-                                [content]="boletos" 
-                                [definition]="boletosDefinition" 
+                                [content]="boletos"
+                                [definition]="boletosDefinition"
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
 
                         <app-tab tabTitle="Entregas">
-                            <div *ngIf="loadingEntregas" class="overlay">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            <div *ngIf="loadingEntregas" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando entregas...</p>
                             </div>
                             <app-table
                                 *ngIf="!loadingEntregas"
-                                [content]="entregas" 
-                                [definition]="documentDefinition" 
+                                [content]="entregas"
+                                [definition]="documentDefinition"
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
@@ -102,6 +121,10 @@
         </div>
         <div class="card-footer">
             <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
+        </div>
+        <div *ngIf="loadingCriaBoletos" class="overlay d-flex align-items-center justify-content-center flex-column">
+            <i class="fas fa-3x fa-sync-alt fa-spin"></i>
+            <p class="mt-3">Emitindo boletos, aguarde...</p>
         </div>
     </div>
 </section>
