@@ -1,3 +1,15 @@
+.boleto-par {
+    background-color: #ffffff;
+}
+
+.boleto-impar {
+    background-color: #f8f9fa;
+
+    .card-header {
+        background-color: #f0f2f5;
+    }
+}
+
 .tab-loading {
     display: flex;
     flex-direction: column;
