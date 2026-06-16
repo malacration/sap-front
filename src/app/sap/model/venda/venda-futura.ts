@@ -93,6 +93,7 @@ export class VendaFutura {
   get statusLabel(): string {
     const labels: Record<string, string> = {
       aberto: 'Aberto',
+      entregue: 'Entregue',
       cancelado: 'Cancelado',
       concluido: 'Concluído',
     };

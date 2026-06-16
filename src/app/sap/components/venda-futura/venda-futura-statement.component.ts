@@ -28,7 +28,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   idContrato = '';
   cardCode = '-1';
 
-  status: 'aberto' | 'concluido' | 'cancelado' = 'aberto';
+  status: 'aberto' | 'entregue' | 'concluido' | 'cancelado' = 'aberto';
 
   routeSubscriptions: Array<Subscription> = new Array();
 
