@@ -113,9 +113,11 @@ export class AppComponent {
         const primary = this.config.primaryColor;
         const darkerPrimary = this.adjustColor(primary, -10);
         const textColorPrimary = this.colorContrast(primary);
+        const textColorPrimaryDark = this.colorContrast(darkerPrimary);
         document.documentElement.style.setProperty('--bs-primary', primary);
         document.documentElement.style.setProperty('--bs-primary-dark', darkerPrimary);
         document.documentElement.style.setProperty('--bs-primary-text', textColorPrimary);
+        document.documentElement.style.setProperty('--bs-primary-dark-text', textColorPrimaryDark);
         
 
         const success =  this.config.successColor;
