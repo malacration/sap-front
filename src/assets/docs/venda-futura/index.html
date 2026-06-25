@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>Venda Futura — Guia do Usuário</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">VF</span>
+        <span class="brand__text">
+          <strong>Venda Futura</strong>
+          <small>Guia do Usuário</small>
+        </span>
+      </div>
+      <label for="toc-toggle" class="topbar__menu" aria-label="Abrir índice">
+        <span></span><span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <input type="checkbox" id="toc-toggle" class="toc-toggle" hidden>
+
+  <div class="layout">
+
+    <!-- ===== Índice lateral ===== -->
+    <aside class="toc" id="toc">
+      <p class="toc__title">Conteúdo</p>
+      <nav>
+        <ol>
+          <li><a href="#o-que-e">O que é a Venda Futura</a></li>
+          <li><a href="#visao-geral">Como funciona (visão geral)</a></li>
+          <li><a href="#acesso">Onde acessar</a></li>
+          <li><a href="#passo-a-passo">Passo a passo</a></li>
+          <li><a href="#especiais">Operações especiais</a></li>
+          <li><a href="#status">Status do contrato</a></li>
+          <li><a href="#boletos">Entendendo os boletos</a></li>
+          <li><a href="#automatico">O que o sistema faz sozinho</a></li>
+          <li><a href="#regras">Regras e mensagens</a></li>
+          <li><a href="#faq">Perguntas frequentes</a></li>
+        </ol>
+      </nav>
+      <label for="toc-toggle" class="toc__backdrop" aria-hidden="true"></label>
+    </aside>
+
+    <!-- ===== Conteúdo ===== -->
+    <main class="content">
+
+      <section class="hero">
+        <h1>Venda Futura</h1>
+        <p class="hero__lead">
+          Como conduzir uma Venda Futura do início ao fim: criação do contrato,
+          emissão dos boletos, retiradas da mercadoria, trocas, devoluções e
+          encerramento.
+        </p>
+      </section>
+
+      <!-- 1. O QUE É -->
+      <section id="o-que-e" class="block">
+        <h2><span class="h2-num">1</span> O que é a Venda Futura</h2>
+        <p>
+          A <strong>Venda Futura</strong> é a venda em que o
+          <strong>cliente compra e paga (ou se compromete a pagar) os produtos hoje,
+          mas retira a mercadoria depois</strong>, aos poucos, conforme a sua
+          necessidade.
+        </p>
+        <p>Na prática, o sistema controla três coisas ao longo do tempo:</p>
+        <div class="cards-3">
+          <div class="mini-card">
+            <span class="mini-card__icon">📦</span>
+            <h4>O que foi vendido</h4>
+            <p>Produtos, quantidades e preços negociados, registrados no
+              <strong>Contrato de Venda Futura</strong>.</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-card__icon">💳</span>
+            <h4>O que o cliente paga</h4>
+            <p>Os <strong>boletos</strong> (parcelas), pagos por boleto bancário
+              ou PIX.</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-card__icon">🚚</span>
+            <h4>O que foi retirado/entregue</h4>
+            <p>As <strong>retiradas</strong>, que geram as entregas e vão consumindo
+              o saldo do contrato.</p>
+          </div>
+        </div>
+        <p class="mt">
+          Tudo fica amarrado a um <strong>número de contrato</strong>: pedidos,
+          boletos, entregas e devoluções daquele cliente ficam ligados a esse número.
+        </p>
+      </section>
+
+      <!-- 2. VISÃO GERAL -->
+      <section id="visao-geral" class="block">
+        <h2><span class="h2-num">2</span> Como funciona (visão geral)</h2>
+        <p>O caminho normal de uma Venda Futura é:</p>
+
+        <ol class="flow">
+          <li class="flow__step">
+            <span class="flow__dot">1</span>
+            <div class="flow__body">
+              <h4>Pedido de Venda</h4>
+              <p>Criado no SAP e marcado como Venda Futura.</p>
+            </div>
+          </li>
+          <li class="flow__step flow__step--auto">
+            <span class="flow__dot">2</span>
+            <div class="flow__body">
+              <h4>Contrato criado automaticamente <span class="tag tag--auto">automático</span></h4>
+              <p>O sistema gera o contrato sozinho. Ele nasce com status <strong>Aberto</strong>.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">3</span>
+            <div class="flow__body">
+              <h4>Emitir os boletos</h4>
+              <p>A cobrança do contrato é gerada em parcelas.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">4</span>
+            <div class="flow__body">
+              <h4>Cliente paga</h4>
+              <p>Por boleto bancário ou PIX.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">5</span>
+            <div class="flow__body">
+              <h4>Retiradas de mercadoria</h4>
+              <p>O cliente vai retirando os produtos; cada retirada gera a entrega/nota.</p>
+            </div>
+          </li>
+          <li class="flow__step flow__step--auto">
+            <span class="flow__dot">6</span>
+            <div class="flow__body">
+              <h4>Entregue → Concluído <span class="tag tag--auto">automático</span></h4>
+              <p>Quando tudo foi retirado e pago, o sistema conclui o contrato.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="callout callout--info">
+          <div class="callout__title">Boa parte do trabalho é automática</div>
+          <p>
+            O sistema cria o contrato, faz os lançamentos contábeis das entregas,
+            abate o que já foi pago e muda o status do contrato sozinho. Você cuida
+            das ações principais: <strong>emitir boletos</strong>,
+            <strong>registrar as retiradas</strong> e, quando necessário,
+            <strong>trocar produtos</strong>, <strong>registrar devoluções</strong>
+            ou <strong>encerrar o contrato</strong>. (Veja a seção
+            <a href="#automatico">8</a>.)
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. ACESSO -->
+      <section id="acesso" class="block">
+        <h2><span class="h2-num">3</span> Onde acessar</h2>
+        <p>
+          No menu lateral do sistema, acesse o item <strong>“Contratos”</strong>
+          (ícone de contrato). Você verá a tela <strong>Venda Futura</strong>, com a
+          lista dos contratos.
+        </p>
+        <figure class="shot">
+          <img class="shot__img" src="img/menu.png" alt="Menu lateral com o grupo Venda aberto e o item Contratos destacado">
+          <figcaption class="shot__cap">No menu lateral, abra o grupo <strong>Venda</strong> e clique em <strong>Contratos</strong>.</figcaption>
+        </figure>
+      </section>
+
+      <!-- 4. PASSO A PASSO -->
+      <section id="passo-a-passo" class="block">
+        <h2><span class="h2-num">4</span> Passo a passo</h2>
+
+        <!-- Passo 1 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">1</span>
+            <h3>O contrato nasce do Pedido de Venda <span class="tag tag--auto">automático</span></h3>
+          </header>
+          <div class="step__body">
+            <p>
+              Você <strong>não precisa cadastrar o contrato manualmente</strong>.
+              Basta criar o <strong>Pedido de Venda</strong> marcado como Venda Futura
+              (com a utilização específica de venda futura, na filial habilitada). Em
+              poucos segundos, o sistema:
+            </p>
+            <ul>
+              <li><strong>Cria o Contrato de Venda Futura</strong> copiando cliente,
+                vendedor, filial, frete e todos os itens (com preços, descontos e
+                comissões); e</li>
+              <li><strong>Fecha o pedido de venda</strong> de origem (ele já cumpriu
+                seu papel).</li>
+            </ul>
+            <p>O contrato sempre nasce com o status <span class="badge badge--aberto">Aberto</span>.</p>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação</div>
+              <p>Não é possível gerar dois contratos a partir do mesmo pedido. Se o
+                contrato não aparecer logo, aguarde alguns instantes e atualize a tela.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 2 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">2</span>
+            <h3>Localizar e abrir o contrato</h3>
+          </header>
+          <div class="step__body">
+            <p>Na tela <strong>Contratos</strong>, use os <strong>filtros</strong> no topo:</p>
+            <table class="tbl">
+              <thead><tr><th>Filtro</th><th>Para que serve</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Filial</strong></td><td>Mostra contratos de uma filial específica.</td></tr>
+                <tr><td><strong>Cliente</strong></td><td>Mostra contratos de um cliente específico.</td></tr>
+                <tr><td><strong>ID Contrato</strong></td><td>Busca um contrato pelo número (ex.: 12345).</td></tr>
+                <tr><td><strong>Status</strong></td><td>Filtra por <em>Aberto</em>, <em>Concluído</em> ou <em>Cancelado</em> (padrão: Aberto).</td></tr>
+              </tbody>
+            </table>
+            <p>
+              Clique em <span class="btnex btnex--success">Filtrar</span> para aplicar,
+              ou <span class="btnex btnex--ghost">Limpar</span> para voltar ao padrão.
+            </p>
+            <figure class="shot">
+              <img class="shot__img" src="img/listagem.png" alt="Tela de listagem de contratos de Venda Futura com filtros e tabela">
+              <figcaption class="shot__cap">Tela de listagem: filtros (Filial, Cliente, ID, Status) e a tabela de contratos.</figcaption>
+            </figure>
+            <p>A tabela mostra, para cada contrato: <strong>ID</strong>,
+              <strong>Nome do cliente</strong>, <strong>Vendedor</strong>,
+              <strong>Filial</strong>, valor de <strong>Produtos</strong>,
+              <strong>Valor Entregue</strong>, <strong>data de criação</strong> e
+              <strong>Status</strong>.</p>
+            <ul>
+              <li>A coluna <strong>Valor Entregue</strong> começa vazia
+                (<code>-</code>). Clique na ação <strong>“Carregar Entregas”</strong>
+                da linha para calcular e exibir esse valor.</li>
+              <li>Para abrir o contrato, clique em <strong>“Abrir”</strong> na linha
+                desejada.</li>
+              <li>Se houver muitos contratos, use <strong>“Carregar Mais”</strong> no
+                rodapé para ver os próximos.</li>
+            </ul>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação</div>
+              <p>O filtro de status oferece <strong>Aberto, Concluído e Cancelado</strong>.
+                O status <strong>Entregue</strong> existe (veja a seção
+                <a href="#status">6</a>), mas não é uma opção de filtro nesta tela —
+                contratos “entregues” aparecem junto aos demais conforme o restante da
+                busca.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 3 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">3</span>
+            <h3>Conferir os dados do contrato</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              Ao abrir o contrato, você vê a tela <strong>Detalhes da Venda Futura</strong>,
+              com os dados principais (número do contrato, filial, número do pedido,
+              cliente, vendedor, valor do frete, valor total e data de criação) e
+              <strong>quatro abas</strong>:
+            </p>
+            <div class="tabs-demo">
+              <div class="tabs-demo__item"><strong>Produtos</strong><span>Itens do contrato: preço negociado, quantidade, já retirada, disponível e total.</span></div>
+              <div class="tabs-demo__item"><strong>Pedidos</strong><span>Pedidos de venda vinculados ao contrato.</span></div>
+              <div class="tabs-demo__item"><strong>Boletos</strong><span>Parcelas, com vencimento, valor e situação (Aberto, Fechado, Cancelado).</span></div>
+              <div class="tabs-demo__item"><strong>Entregas</strong><span>Notas de entrega (saídas) e devoluções já realizadas.</span></div>
+            </div>
+            <figure class="shot">
+              <img class="shot__img" src="img/detalhe.png" alt="Tela Detalhes da Venda Futura com dados do contrato e abas">
+              <figcaption class="shot__cap">Detalhes do contrato: dados principais, botões de ação e as abas (Produtos, Pedidos, Boletos, Entregas).</figcaption>
+            </figure>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação</div>
+              <p>Os botões de ação (Emitir Boletos, Retirar, Troca etc.) só aparecem
+                <strong>depois</strong> que as entregas terminam de carregar. Se a tela
+                estiver lenta, aguarde alguns segundos.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 4 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">4</span>
+            <h3>Emitir os boletos</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              “Emitir boletos” é o ato de <strong>gerar a cobrança do contrato</strong>
+              — transformar o valor total em parcelas com vencimentos e gerar os boletos
+              (e o PIX) correspondentes.
+            </p>
+            <ol class="steps-inline">
+              <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Emitir Boletos</span>.</li>
+              <li>Confirme a mensagem: <em>“Emitir os boletos é uma ação irreversível,
+                tem certeza que deseja continuar?”</em>.</li>
+              <li>O sistema cria as parcelas conforme a <strong>condição de pagamento do
+                pedido</strong> e gera os boletos. Mensagem de sucesso:
+                <em>“Boleto Criado com sucesso”</em>.</li>
+            </ol>
+            <figure class="shot">
+              <img class="shot__img" src="img/emitir-boletos.png" alt="Botão Emitir Boletos e o diálogo de confirmação">
+              <figcaption class="shot__cap">Botão “Emitir Boletos” e o diálogo de confirmação (ação irreversível).</figcaption>
+            </figure>
+            <div class="callout callout--info">
+              <div class="callout__title">A emissão marca o início do contrato</div>
+              <p>
+                A emissão dos boletos é o marco que <strong>dá início ao contrato</strong>:
+                a partir dela, os <strong>prazos de vencimento já começam a contar</strong>,
+                mesmo que a primeira entrega ainda demore. Como costuma existir um intervalo
+                entre a emissão e a retirada da mercadoria,
+                <strong>deixe claro ao cliente que o prazo de pagamento corre desde a
+                emissão</strong> — e não a partir da primeira entrega. Isso evita
+                insatisfação com vencimentos que chegam antes da mercadoria.
+              </p>
+            </div>
+            <div class="callout callout--warn">
+              <div class="callout__title">Regras importantes</div>
+              <ul>
+                <li><strong>Os boletos só podem ser emitidos uma vez.</strong> Se o
+                  contrato já tiver boletos, o sistema bloqueia uma nova emissão.</li>
+                <li>O valor total (produtos + frete) é dividido entre as parcelas, e os
+                  centavos de arredondamento são ajustados para que a soma das parcelas
+                  seja exatamente igual ao total do contrato.</li>
+                <li>Cada boleto fica visível na aba <strong>Boletos</strong>, com número,
+                  vencimento, valor, situação e os dados de <strong>PIX</strong> (QR Code,
+                  copia-e-cola e link).</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 5 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">5</span>
+            <h3>Recebimento (cliente paga)</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              O cliente paga cada boleto por <strong>boleto bancário</strong> ou
+              <strong>PIX</strong>. À medida que os pagamentos entram, a situação de cada
+              boleto na aba <strong>Boletos</strong> muda de <span class="badge badge--aberto">Aberto</span>
+              para <span class="badge badge--ok">Fechado</span> (quitado). Esse
+              acompanhamento é <strong>automático</strong> — você não precisa dar baixa
+              manualmente.
+            </p>
+          </div>
+        </article>
+
+        <!-- Passo 6 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">6</span>
+            <h3>Retirada de produtos</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              A <strong>retirada</strong> é quando o cliente vem <strong>buscar parte
+              (ou todo) dos produtos</strong>. Cada retirada consome uma fatia do
+              contrato e gera a entrega no sistema.
+            </p>
+            <ol class="steps-inline">
+              <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Retirar</span>.</li>
+              <li>No campo <strong>Item</strong>, escolha o produto — a lista mostra
+                apenas itens com <strong>saldo disponível</strong>.</li>
+              <li>Informe a <strong>Quantidade</strong> (não pode ser maior que a
+                disponível) e clique em <span class="btnex btnex--success">Adicionar</span>.
+                Repita para outros itens.</li>
+              <li>Confira a lista. Use <span class="btnex btnex--danger">Remover</span>
+                se precisar tirar algum.</li>
+              <li>Clique em <span class="btnex btnex--primary">Criar Pedido de Retirada</span>.
+                Sucesso: <em>“Cotação de venda gerada com sucesso.”</em></li>
+            </ol>
+            <figure class="shot">
+              <img class="shot__img" src="img/retirada.png" alt="Modal Retirada de Produtos">
+              <figcaption class="shot__cap">Modal de Retirada: selecione o item e a quantidade e clique em “Adicionar”.</figcaption>
+            </figure>
+            <p><strong>O que acontece em seguida:</strong></p>
+            <ul>
+              <li>A retirada gera uma <strong>cotação de venda</strong> apenas com os
+                itens retirados, usando os preços negociados do contrato e, quando há
+                frete, uma <strong>parte proporcional do frete</strong>.</li>
+              <li>Essa cotação segue o fluxo normal até virar <strong>nota fiscal de
+                saída</strong>.</li>
+              <li>O saldo do contrato é atualizado e o valor é
+                <strong>abatido (conciliado) automaticamente</strong> contra os boletos
+                já pagos.</li>
+            </ul>
+            <div class="callout callout--warn">
+              <div class="callout__title">Regra importante</div>
+              <p><strong>Não é possível fazer retirada antes de emitir os boletos.</strong>
+                Se tentar, o sistema avisa: <em>“Não existem adiantamentos criados para o
+                contrato. Emita os boletos antes de realizar a retirada.”</em></p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 7 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">7</span>
+            <h3>Acompanhamento <span class="tag tag--auto">automático</span></h3>
+          </header>
+          <div class="step__body">
+            <p>Conforme o cliente paga e retira, o sistema cuida sozinho de:</p>
+            <ul>
+              <li>Fazer os <strong>lançamentos contábeis</strong> das entregas;</li>
+              <li><strong>Conciliar</strong> o valor já pago contra cada entrega; e</li>
+              <li><strong>Atualizar o status</strong> do contrato (de Aberto para
+                Entregue e, depois, para Concluído).</li>
+            </ul>
+            <p>Pode haver um pequeno atraso (alguns minutos) entre a sua ação e a
+              atualização do status/saldo na tela. Isso é normal. (Veja a seção
+              <a href="#automatico">8</a>.)</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 5. OPERAÇÕES ESPECIAIS -->
+      <section id="especiais" class="block">
+        <h2><span class="h2-num">5</span> Operações especiais</h2>
+
+        <!-- Troca -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">↺</span>
+            <h3>Troca de produtos</h3>
+          </header>
+          <div class="step__body">
+            <p>Use a <strong>troca</strong> quando o cliente quiser
+              <strong>trocar produtos do contrato por outros</strong>, antes de
+              retirá-los.</p>
+            <ol class="steps-inline">
+              <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Troca</span>.</li>
+              <li>Em <strong>“Itens a serem substituídos”</strong>, escolha o produto que
+                <strong>sai</strong> e a quantidade, e clique em
+                <span class="btnex btnex--success">Trocar</span>.</li>
+              <li>Em <strong>“Novos Produtos”</strong>, adicione os produtos que
+                <strong>entram</strong> no lugar.</li>
+              <li>O sistema mostra o <strong>Resultado financeiro</strong> (acréscimo ou
+                redução de valor).</li>
+              <li>Clique em <span class="btnex btnex--primary">Confirmar troca dos produtos</span>.
+                Sucesso: <em>“Pedido de troca foi feito com sucesso”</em>.</li>
+            </ol>
+            <figure class="shot">
+              <img class="shot__img" src="img/troca.png" alt="Modal Troca de Produtos com o aviso ao vendedor">
+              <figcaption class="shot__cap">Modal de Troca: aviso ao vendedor, itens a substituir e novos produtos.</figcaption>
+            </figure>
+            <div class="callout callout--warn">
+              <div class="callout__title">Atenção, Vendedor!</div>
+              <ul>
+                <li>Se a troca <strong>aumentar</strong> o valor, a diferença será cobrada
+                  em um <strong>novo boleto</strong>, com vencimento na <strong>mesma data
+                  da última parcela</strong> já existente. Se o cliente quiser outras
+                  condições de pagamento para esse valor a mais, não use a troca:
+                  <strong>encerre este contrato e crie um novo acordo</strong>.</li>
+                <li><strong>Recomendação:</strong> mantenha o total da troca próximo ao
+                  valor atual, para preservar as parcelas já acordadas; trate qualquer
+                  valor adicional em um contrato separado.</li>
+                <li>Se a troca <strong>reduzir</strong> o valor, os <strong>últimos
+                  boletos em aberto</strong> serão cancelados até o saldo refletir a
+                  mudança, e <strong>novos boletos</strong> poderão ser gerados. Avise o
+                  cliente sobre os novos títulos.</li>
+              </ul>
+            </div>
+            <div class="callout callout--danger">
+              <div class="callout__title">Bloqueios</div>
+              <ul>
+                <li>Não é possível trocar se houver <strong>entregas/retiradas
+                  programadas em aberto</strong>: <em>“Existe entregas programadas para
+                  esse contrato, cancele elas para realizar a troca!”</em></li>
+                <li>Não é possível trocar quantidade <strong>maior</strong> do que a
+                  contratada.</li>
+                <li>Na redução, se os boletos em aberto não somarem o suficiente:
+                  <em>“Valor insuficiente nos boletos pendentes para ajustar o
+                  pagamento.”</em></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Devolução -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">⟲</span>
+            <h3>Devolução de mercadoria</h3>
+          </header>
+          <div class="step__body">
+            <p>Quando houver <strong>devolução de mercadoria já entregue</strong>, use a
+              ação <strong>“Devolver”</strong>, disponível na linha da nota (nas abas
+              <strong>Pedidos</strong>/<strong>Entregas</strong>) para as notas de saída
+              já fechadas.</p>
+            <ol class="steps-inline">
+              <li>Clique em <span class="btnex btnex--danger">Devolver</span> na nota desejada.</li>
+              <li>Confirme: <em>“Tem certeza que deseja cancelar o documento? Entry
+                [número]”</em>.</li>
+              <li>O sistema libera o documento: <em>“Documento liberado para
+                cancelamento”</em>.</li>
+            </ol>
+            <p>A partir daí, o sistema <strong>reverte automaticamente</strong> os
+              lançamentos contábeis e, se aquele valor já tinha sido abatido de um boleto
+              pago, <strong>devolve o crédito</strong> ao contrato.</p>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação</div>
+              <p>Se a nota ainda não tiver sido conciliada, o sistema orientará a proceder
+                a devolução diretamente no SAP.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Encerrar -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">✕</span>
+            <h3>Encerrar (cancelar) o contrato</h3>
+          </header>
+          <div class="step__body">
+            <p>Para <strong>encerrar</strong> um contrato, no detalhe clique no botão
+              <span class="btnex btnex--danger">Cancelar</span> (ele encerra o contrato e
+              o coloca no status <span class="badge badge--cancelado">Cancelado</span>).</p>
+            <ol class="steps-inline">
+              <li>Clique em <span class="btnex btnex--danger">Cancelar</span>.</li>
+              <li>Confirme: <em>“Deseja encerrar o contrato?”</em>.</li>
+              <li>Sucesso: <em>“Contrato encerrado com sucesso.”</em></li>
+            </ol>
+            <div class="callout callout--warn">
+              <div class="callout__title">O sistema só permite encerrar um contrato “redondo”</div>
+              <p>O encerramento é bloqueado se houver:</p>
+              <ul>
+                <li><strong>Entregas não conciliadas</strong> — <em>“Existe entregas que
+                  não foram conciliadas.”</em></li>
+                <li><strong>Boletos em aberto</strong> (não pagos) — <em>“Existe boletos
+                  em abertos”</em></li>
+                <li><strong>Adiantamento pago e não utilizado</strong> — <em>“Existe
+                  adiantamento pagos e não utilizado”</em></li>
+              </ul>
+            </div>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação sobre o nome</div>
+              <p>O botão chama-se <strong>“Cancelar”</strong>, mas a ação é
+                <strong>encerrar</strong> o contrato (status final: Cancelado).</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Minuta -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">📄</span>
+            <h3>Gerar a minuta do contrato (PDF)</h3>
+          </header>
+          <div class="step__body">
+            <p>Para imprimir/salvar o contrato em PDF, no detalhe clique em
+              <span class="btnex btnex--warning">Minuta Contrato</span>.</p>
+            <ol class="steps-inline">
+              <li>Abre-se uma <strong>prévia</strong> do documento já preenchido (nome do
+                cliente, data, valor dos produtos, frete, total a pagar e a tabela de
+                produtos), seguido das <strong>cláusulas e condições</strong>.</li>
+              <li>Clique em <span class="btnex btnex--success">Gerar PDF</span> para abrir
+                o documento em uma nova janela, pronto para imprimir ou salvar.</li>
+            </ol>
+            <figure class="shot">
+              <img class="shot__img" src="img/minuta.png" alt="Prévia da Minuta do Contrato (Controle de Pedido) e botão Gerar PDF">
+              <figcaption class="shot__cap">Prévia da Minuta: dados, tabela de produtos e cláusulas. Botão “Gerar PDF” no topo.</figcaption>
+            </figure>
+            <p>A minuta inclui as condições contratuais padrão (entre elas: prazo máximo
+              de entrega de <strong>180 dias</strong>; entrega em até <strong>10 dias</strong>
+              após a solicitação; prazo de <strong>30 dias</strong> para o cliente informar
+              troca de produto; e, em caso de inadimplência, multa de <strong>2%</strong>
+              mais juros de <strong>1% ao mês</strong>).</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 6. STATUS -->
+      <section id="status" class="block">
+        <h2><span class="h2-num">6</span> Entendendo os status do contrato</h2>
+        <table class="tbl">
+          <thead><tr><th>Status</th><th>O que significa</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge--aberto">Aberto</span></td>
+              <td>Situação inicial. O contrato está ativo: é onde se emitem boletos e se
+                fazem retiradas e trocas.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--entregue">Entregue</span></td>
+              <td><strong>Toda a mercadoria já foi retirada/entregue</strong>, mas o
+                contrato ainda não foi totalmente quitado/baixado.
+                <span class="tag tag--auto">automático</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--ok">Concluído</span></td>
+              <td>O contrato está <strong>totalmente entregue e totalmente pago/baixado</strong>.
+                É o encerramento natural. <span class="tag tag--auto">automático</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--cancelado">Cancelado</span></td>
+              <td>Contrato <strong>encerrado</strong> (pela ação “Cancelar”, com as
+                validações da seção <a href="#especiais">5</a>). Não está mais ativo.
+                <span class="tag">manual</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="mt">
+          As mudanças <strong>Aberto → Entregue → Concluído</strong> acontecem
+          <strong>sozinhas</strong>, conforme as entregas e os pagamentos vão se
+          completando. O status <strong>Cancelado</strong> nunca é automático.
+        </p>
+      </section>
+
+      <!-- 7. BOLETOS -->
+      <section id="boletos" class="block">
+        <h2><span class="h2-num">7</span> Entendendo os boletos</h2>
+        <p>Na aba <strong>Boletos</strong> do contrato, cada parcela mostra sua situação:</p>
+        <table class="tbl">
+          <thead><tr><th>Situação</th><th>O que significa</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge--aberto">Aberto</span></td><td>Boleto ainda <strong>não pago</strong>.</td></tr>
+            <tr><td><span class="badge badge--ok">Fechado / Pago</span></td><td>Boleto <strong>quitado</strong>.</td></tr>
+            <tr><td><span class="badge badge--cancelado">Cancelado</span></td><td>Boleto que foi <strong>devolvido/cancelado</strong> (por exemplo, em uma troca que reduziu o valor).</td></tr>
+            <tr><td><span class="badge badge--vencido">Vencido</span></td><td>É um boleto <strong>em aberto cuja data de vencimento já passou</strong>.</td></tr>
+          </tbody>
+        </table>
+        <p class="mt">Cada boleto traz <strong>número, vencimento, valor</strong> e os
+          <strong>dados de PIX</strong> (QR Code, copia-e-cola e link) para facilitar o
+          pagamento.</p>
+      </section>
+
+      <!-- 8. AUTOMÁTICO -->
+      <section id="automatico" class="block">
+        <h2><span class="h2-num">8</span> O que o sistema faz sozinho</h2>
+        <div class="split">
+          <div class="split__col split__col--auto">
+            <h4><span class="dot dot--green"></span> Automático</h4>
+            <ul>
+              <li>Criar o contrato a partir do pedido (em segundos) e fechar o pedido de origem.</li>
+              <li>Lançar a contabilidade das entregas.</li>
+              <li>Conciliar (abater) o valor já pago contra cada entrega.</li>
+              <li>Tratar devoluções: reverter a contabilidade e devolver o crédito.</li>
+              <li>Atualizar o status (Aberto → Entregue → Concluído).</li>
+              <li>Conferir item a item se tudo foi entregue.</li>
+              <li>Gerar o PIX dos boletos em aberto.</li>
+            </ul>
+          </div>
+          <div class="split__col split__col--manual">
+            <h4><span class="dot dot--blue"></span> Sua responsabilidade</h4>
+            <ul>
+              <li>Criar o Pedido de Venda de venda futura (o ponto de partida).</li>
+              <li>Emitir os boletos do contrato.</li>
+              <li>Registrar as retiradas quando o cliente buscar a mercadoria.</li>
+              <li>Registrar a devolução quando houver.</li>
+              <li>Fazer trocas de produto, quando necessário.</li>
+              <li>Encerrar o contrato, quando for o caso.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout callout--note">
+          <div class="callout__title">Observação</div>
+          <p>Como há processos rodando em segundo plano, pode levar
+            <strong>alguns minutos</strong> até o status e o saldo refletirem uma ação.
+            Se algo não atualizou na hora, aguarde e atualize a tela.</p>
+        </div>
+      </section>
+
+      <!-- 9. REGRAS -->
+      <section id="regras" class="block">
+        <h2><span class="h2-num">9</span> Resumo das regras e mensagens</h2>
+        <table class="tbl">
+          <thead><tr><th>Situação</th><th>Regra / Mensagem</th></tr></thead>
+          <tbody>
+            <tr><td>Emitir boletos duas vezes</td><td>Bloqueado — os boletos só podem ser emitidos <strong>uma vez</strong>.</td></tr>
+            <tr><td>Retirar sem boletos</td><td><em>“…Emita os boletos antes de realizar a retirada.”</em></td></tr>
+            <tr><td>Quantidade maior que a disponível</td><td><em>“Formulário inválido ou quantidade superior ao disponível.”</em></td></tr>
+            <tr><td>Trocar com entregas em aberto</td><td><em>“Existe entregas programadas para esse contrato, cancele elas para realizar a troca!”</em></td></tr>
+            <tr><td>Troca reduz mais do que os boletos cobrem</td><td><em>“Valor insuficiente nos boletos pendentes para ajustar o pagamento.”</em></td></tr>
+            <tr><td>Encerrar com entregas não conciliadas</td><td><em>“Existe entregas que não foram conciliadas.”</em></td></tr>
+            <tr><td>Encerrar com boletos em aberto</td><td><em>“Existe boletos em abertos”</em></td></tr>
+            <tr><td>Encerrar com adiantamento pago não utilizado</td><td><em>“Existe adiantamento pagos e não utilizado”</em></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 10. FAQ -->
+      <section id="faq" class="block">
+        <h2><span class="h2-num">10</span> Perguntas frequentes</h2>
+
+        <details class="faq">
+          <summary>O contrato não apareceu depois que criei o pedido. O que faço?</summary>
+          <p>Aguarde alguns segundos e atualize a tela. O contrato é criado
+            automaticamente em ciclos curtos. Confirme também que o pedido foi marcado
+            como venda futura e está na filial habilitada.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Emiti os boletos errados. Posso emitir de novo?</summary>
+          <p>Não. A emissão é única. Será necessário ajustar pela <strong>troca</strong>
+            (que recompõe os boletos) ou encerrar o contrato e refazer o acordo, conforme
+            o caso.</p>
+        </details>
+
+        <details class="faq">
+          <summary>O cliente quer mudar as condições de pagamento do valor adicional de uma troca.</summary>
+          <p>Nesse caso, encerre este contrato e faça um novo acordo (conforme o aviso da
+            tela de troca).</p>
+        </details>
+
+        <details class="faq">
+          <summary>Mudei algo e o status/saldo não atualizou.</summary>
+          <p>Os processos automáticos rodam em segundo plano e podem levar alguns minutos.
+            Aguarde e atualize a tela.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Por que não consigo encerrar o contrato?</summary>
+          <p>Provavelmente há pendências: entregas não conciliadas, boletos em aberto ou
+            adiantamento pago não utilizado. Resolva-as e tente novamente (veja a seção
+            <a href="#especiais">5</a>).</p>
+        </details>
+      </section>
+
+      <footer class="docfoot">
+        <p>Documento elaborado para o usuário final. Para dúvidas sobre regras
+          específicas de configuração (filiais habilitadas, contas contábeis etc.),
+          consulte a equipe de TI.</p>
+      </footer>
+
+    </main>
+  </div>
+
+</body>
+</html>
