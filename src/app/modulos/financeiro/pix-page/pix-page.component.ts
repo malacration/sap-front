@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { PixGeradoItem, PixPedidoRequest, PixService } from '../../../sap/service/pix.service';
 import { Branch } from '../../../sap/model/branch';
+import { Icons } from '../../../shared/icons';
 
 type Etapa = 'selecao' | 'loading' | 'resultado' | 'erro';
 
@@ -9,6 +10,7 @@ type Etapa = 'selecao' | 'loading' | 'resultado' | 'erro';
   templateUrl: './pix-page.component.html',
 })
 export class PixPageComponent {
+  readonly icons = Icons;
   etapa: Etapa = 'selecao';
   valorStandalone: number | null = null;
   filialSelecionada: Branch | null = null;

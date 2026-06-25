@@ -16,7 +16,7 @@
 
     <!-- HEADER -->
     <div class="pix-card__header">
-      <h5 class="mb-0"><i class="fas fa-qrcode mr-2"></i>Pagamento via PIX</h5>
+      <h5 class="mb-0"><i class="mr-2" [ngClass]="icons.pix.emitir"></i>Pagamento via PIX</h5>
     </div>
 
     <div class="card-body px-3 py-4">
@@ -70,7 +70,7 @@
               type="button"
               (click)="copiar()"
             >
-              <i class="far fa-copy"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+              <i [ngClass]="icons.pix.copiar"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
             </button>
           </div>
         </div>

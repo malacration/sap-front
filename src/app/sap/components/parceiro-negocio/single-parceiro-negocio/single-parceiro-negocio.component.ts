@@ -17,6 +17,7 @@ import { ContaReceber } from '../../../model/contas-receber.model';
 import { Page } from '../../../model/page.model';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { PixService } from '../../../service/pix.service';
+import { Icons } from '../../../../shared/icons';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -30,6 +31,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     private pixService: PixService,
     private router: Router
   ) {}
+
+  readonly icons = Icons;
 
   @Input()
   selected: BusinessPartner = null;
@@ -126,6 +129,9 @@ changePageFunction(nextLink: string) {
         this.solicitarPix(event.data, true);
     } else if (event.type === 'gerarPixSemJuros') {
         this.solicitarPix(event.data, false);
+    } else if (event.type === 'exibirPix') {
+        // Título já possui PIX: reutiliza o mesmo fluxo para exibir o QR existente
+        this.solicitarPix(event.data, true);
     } else if (event.type === 'checarPagamento') {
       this.checarPagamento(event.data)
     }

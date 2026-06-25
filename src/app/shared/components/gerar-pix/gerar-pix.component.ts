@@ -3,6 +3,7 @@ import { PixGeradoItem, PixPedidoRequest, PixService } from '../../../sap/servic
 import { ModalComponent } from '../modal/modal.component';
 import { DocumentList } from '../../../sap/model/markting/document-list';
 import { Branch } from '../../../sap/model/branch';
+import { Icons } from '../../icons';
 
 type Etapa = 'selecao' | 'loading' | 'resultado' | 'erro';
 type TipoPagamento = 'total' | 'parcial';
@@ -12,6 +13,8 @@ type TipoPagamento = 'total' | 'parcial';
   templateUrl: './gerar-pix.component.html',
 })
 export class GerarPixComponent {
+  readonly icons = Icons;
+
   @Input() pedido?: DocumentList;
 
   @Output() pixGerado = new EventEmitter<void>();

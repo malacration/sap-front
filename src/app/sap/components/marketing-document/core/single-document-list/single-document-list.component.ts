@@ -9,6 +9,7 @@ import { AlertService } from '../../../../../shared/service/alert.service';
 import { PixPagamentoStatus, PixService } from '../../../../service/pix.service';
 import { PixAdiantamento } from '../../../../model/markting/pix-adiantamento';
 import { Page } from '../../../../model/page.model';
+import { Icons } from '../../../../../shared/icons';
 
 @Component({
   selector: 'app-document-list-single',
@@ -16,6 +17,8 @@ import { Page } from '../../../../model/page.model';
   styleUrls: ['./single-document-list.component.scss']
 })
 export class DocumentListSingleComponent implements OnInit {
+
+  readonly icons = Icons;
 
   @Input()
   title: string;
