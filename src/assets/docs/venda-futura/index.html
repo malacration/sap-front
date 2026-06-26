@@ -304,11 +304,11 @@
             </p>
             <ol class="steps-inline">
               <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Emitir Boletos</span>.</li>
-              <li>Confirme a mensagem: <em>“Emitir os boletos é uma ação irreversível,
-                tem certeza que deseja continuar?”</em>.</li>
+              <li>Confirme a mensagem: <em>”Ao emitir os boletos, os prazos de pagamento
+                passam a valer imediatamente. Essa ação é irreversível. Confirmar emissão?”</em>.</li>
               <li>O sistema cria as parcelas conforme a <strong>condição de pagamento do
                 pedido</strong> e gera os boletos. Mensagem de sucesso:
-                <em>“Boleto Criado com sucesso”</em>.</li>
+                <em>”Boletos emitidos com sucesso.”</em></li>
             </ol>
             <figure class="shot">
               <img class="shot__img" src="img/emitir-boletos.png" alt="Botão Emitir Boletos e o diálogo de confirmação">
@@ -382,7 +382,7 @@
               <li>Confira a lista. Use <span class="btnex btnex--danger">Remover</span>
                 se precisar tirar algum.</li>
               <li>Clique em <span class="btnex btnex--primary">Criar Pedido de Retirada</span>.
-                Sucesso: <em>“Cotação de venda gerada com sucesso.”</em></li>
+                Sucesso: <em>”Retirada registrada com sucesso.”</em></li>
             </ol>
             <figure class="shot">
               <img class="shot__img" src="img/retirada.png" alt="Modal Retirada de Produtos">
@@ -453,7 +453,7 @@
               <li>O sistema mostra o <strong>Resultado financeiro</strong> (acréscimo ou
                 redução de valor).</li>
               <li>Clique em <span class="btnex btnex--primary">Confirmar troca dos produtos</span>.
-                Sucesso: <em>“Pedido de troca foi feito com sucesso”</em>.</li>
+                Sucesso: <em>”Troca realizada com sucesso. Os boletos serão ajustados automaticamente.”</em></li>
             </ol>
             <figure class="shot">
               <img class="shot__img" src="img/troca.png" alt="Modal Troca de Produtos com o aviso ao vendedor">
@@ -499,24 +499,26 @@
             <h3>Devolução de mercadoria</h3>
           </header>
           <div class="step__body">
-            <p>Quando houver <strong>devolução de mercadoria já entregue</strong>, use a
-              ação <strong>“Devolver”</strong>, disponível na linha da nota (nas abas
-              <strong>Pedidos</strong>/<strong>Entregas</strong>) para as notas de saída
-              já fechadas.</p>
+            <p>Quando o cliente <strong>devolve uma mercadoria já entregue</strong>, a
+              devolução é feita em <strong>duas etapas</strong>: primeiro você libera a nota
+              fiscal de saída (desfazendo a conciliação dela com o pagamento) e, em seguida,
+              <strong>finaliza a devolução diretamente no SAP B1</strong>.</p>
             <ol class="steps-inline">
-              <li>Clique em <span class="btnex btnex--danger">Devolver</span> na nota desejada.</li>
-              <li>Confirme: <em>“Tem certeza que deseja cancelar o documento? Entry
-                [número]”</em>.</li>
-              <li>O sistema libera o documento: <em>“Documento liberado para
-                cancelamento”</em>.</li>
+              <li>Na aba <strong>Entregas</strong>, localize a nota de saída fechada.</li>
+              <li>Clique em <span class="btnex btnex--danger">Cancelar Conciliação</span>.</li>
+              <li>Confirme: <em>”Deseja liberar a nota fiscal Nº [número] para devolução?
+                A conciliação com o pagamento será desfeita.”</em></li>
+              <li>Sucesso: <em>”Nota fiscal liberada. Finalize a devolução diretamente
+                no SAP B1.”</em></li>
+              <li><strong>No SAP B1</strong>, conclua a devolução da nota fiscal liberada.</li>
             </ol>
-            <p>A partir daí, o sistema <strong>reverte automaticamente</strong> os
-              lançamentos contábeis e, se aquele valor já tinha sido abatido de um boleto
-              pago, <strong>devolve o crédito</strong> ao contrato.</p>
-            <div class="callout callout--note">
-              <div class="callout__title">Observação</div>
-              <p>Se a nota ainda não tiver sido conciliada, o sistema orientará a proceder
-                a devolução diretamente no SAP.</p>
+            <div class="callout callout--warn">
+              <div class="callout__title">A devolução só termina no SAP B1</div>
+              <p>O botão <strong>”Cancelar Conciliação”</strong> <strong>não devolve a
+                mercadoria sozinho</strong> — ele apenas desfaz o vínculo com o pagamento e
+                libera a nota. A devolução só se concretiza quando você
+                <strong>finaliza a devolução diretamente no SAP B1</strong>. Feito isso, o
+                sistema reverte os lançamentos contábeis e devolve o crédito ao contrato.</p>
             </div>
           </div>
         </article>
@@ -528,30 +530,26 @@
             <h3>Encerrar (cancelar) o contrato</h3>
           </header>
           <div class="step__body">
-            <p>Para <strong>encerrar</strong> um contrato, no detalhe clique no botão
-              <span class="btnex btnex--danger">Cancelar</span> (ele encerra o contrato e
-              o coloca no status <span class="badge badge--cancelado">Cancelado</span>).</p>
+            <p>Para <strong>cancelar</strong> um contrato, no detalhe clique no botão
+              <span class="btnex btnex--danger">Cancelar Contrato</span>. O contrato
+              passará para o status <span class="badge badge--cancelado">Cancelado</span>.</p>
             <ol class="steps-inline">
-              <li>Clique em <span class="btnex btnex--danger">Cancelar</span>.</li>
-              <li>Confirme: <em>“Deseja encerrar o contrato?”</em>.</li>
-              <li>Sucesso: <em>“Contrato encerrado com sucesso.”</em></li>
+              <li>Clique em <span class="btnex btnex--danger">Cancelar Contrato</span>.</li>
+              <li>Confirme: <em>”Deseja cancelar este contrato? Essa ação é irreversível
+                e encerrará todos os documentos vinculados.”</em></li>
+              <li>Sucesso: <em>”Contrato cancelado com sucesso.”</em></li>
             </ol>
             <div class="callout callout--warn">
-              <div class="callout__title">O sistema só permite encerrar um contrato “redondo”</div>
-              <p>O encerramento é bloqueado se houver:</p>
+              <div class="callout__title">O sistema só permite cancelar um contrato “redondo”</div>
+              <p>O cancelamento é bloqueado se houver:</p>
               <ul>
-                <li><strong>Entregas não conciliadas</strong> — <em>“Existe entregas que
+                <li><strong>Entregas não conciliadas</strong> — <em>”Existe entregas que
                   não foram conciliadas.”</em></li>
-                <li><strong>Boletos em aberto</strong> (não pagos) — <em>“Existe boletos
+                <li><strong>Boletos em aberto</strong> (não pagos) — <em>”Existe boletos
                   em abertos”</em></li>
-                <li><strong>Adiantamento pago e não utilizado</strong> — <em>“Existe
+                <li><strong>Adiantamento pago e não utilizado</strong> — <em>”Existe
                   adiantamento pagos e não utilizado”</em></li>
               </ul>
-            </div>
-            <div class="callout callout--note">
-              <div class="callout__title">Observação sobre o nome</div>
-              <p>O botão chama-se <strong>“Cancelar”</strong>, mas a ação é
-                <strong>encerrar</strong> o contrato (status final: Cancelado).</p>
             </div>
           </div>
         </article>
@@ -609,7 +607,7 @@
             </tr>
             <tr>
               <td><span class="badge badge--cancelado">Cancelado</span></td>
-              <td>Contrato <strong>encerrado</strong> (pela ação “Cancelar”, com as
+              <td>Contrato <strong>cancelado</strong> (pela ação “Cancelar Contrato”, com as
                 validações da seção <a href="#especiais">5</a>). Não está mais ativo.
                 <span class="tag">manual</span></td>
             </tr>
@@ -683,13 +681,14 @@
           <thead><tr><th>Situação</th><th>Regra / Mensagem</th></tr></thead>
           <tbody>
             <tr><td>Emitir boletos duas vezes</td><td>Bloqueado — os boletos só podem ser emitidos <strong>uma vez</strong>.</td></tr>
-            <tr><td>Retirar sem boletos</td><td><em>“…Emita os boletos antes de realizar a retirada.”</em></td></tr>
-            <tr><td>Quantidade maior que a disponível</td><td><em>“Formulário inválido ou quantidade superior ao disponível.”</em></td></tr>
-            <tr><td>Trocar com entregas em aberto</td><td><em>“Existe entregas programadas para esse contrato, cancele elas para realizar a troca!”</em></td></tr>
-            <tr><td>Troca reduz mais do que os boletos cobrem</td><td><em>“Valor insuficiente nos boletos pendentes para ajustar o pagamento.”</em></td></tr>
-            <tr><td>Encerrar com entregas não conciliadas</td><td><em>“Existe entregas que não foram conciliadas.”</em></td></tr>
-            <tr><td>Encerrar com boletos em aberto</td><td><em>“Existe boletos em abertos”</em></td></tr>
-            <tr><td>Encerrar com adiantamento pago não utilizado</td><td><em>“Existe adiantamento pagos e não utilizado”</em></td></tr>
+            <tr><td>Retirar sem boletos</td><td><em>”…Emita os boletos antes de realizar a retirada.”</em></td></tr>
+            <tr><td>Quantidade maior que a disponível (retirada ou troca)</td><td><em>”A quantidade informada supera o saldo disponível do item. Corrija e tente novamente.”</em></td></tr>
+            <tr><td>Trocar com entregas em aberto</td><td><em>”Existe entregas programadas para esse contrato, cancele elas para realizar a troca!”</em></td></tr>
+            <tr><td>Troca reduz mais do que os boletos cobrem</td><td><em>”Valor insuficiente nos boletos pendentes para ajustar o pagamento.”</em></td></tr>
+            <tr><td>Devolução (Cancelar Conciliação de nota fechada)</td><td>Confirmação: <em>”Deseja liberar a nota fiscal Nº [N] para devolução? A conciliação com o pagamento será desfeita.”</em><br>Sucesso: <em>”Nota fiscal liberada. Finalize a devolução diretamente no SAP B1.”</em></td></tr>
+            <tr><td>Cancelar contrato com entregas não conciliadas</td><td><em>”Existe entregas que não foram conciliadas.”</em></td></tr>
+            <tr><td>Cancelar contrato com boletos em aberto</td><td><em>”Existe boletos em abertos”</em></td></tr>
+            <tr><td>Cancelar contrato com adiantamento pago não utilizado</td><td><em>”Existe adiantamento pagos e não utilizado”</em></td></tr>
           </tbody>
         </table>
       </section>

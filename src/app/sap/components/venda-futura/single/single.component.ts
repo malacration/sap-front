@@ -103,12 +103,12 @@ export class VendaFuturaSingleComponent implements OnInit {
   loadingCriaBoletos = false
   confirmEmitirBoletos(){
     this.loadingCriaBoletos = true
-    this.alertService.confirm("Emitir os boletos é uma ação irrevercivel, tem certeza que deseja continuar?")
+    this.alertService.confirm("Ao emitir os boletos, os prazos de pagamento passam a valer imediatamente. Essa ação é irreversível. Confirmar emissão?")
     .then(it => {
       if(it.isConfirmed){
         this.vendaFuturaService.emitirBoletos(this.selected.DocEntry).subscribe({
           next(value) {
-            this.alertService.info("Boleto Criado com sucesso")
+            this.alertService.info("Boletos emitidos com sucesso.")
           },
           complete() {
             this.loadingCriaBoletos = false
@@ -135,10 +135,10 @@ export class VendaFuturaSingleComponent implements OnInit {
   }
 
   desfazerConcilicao(docEntry){
-    this.alertService.confirm("Tem certeza que deseja cancelar o documento? Entry ["+docEntry+"]").then(it => {
+    this.alertService.confirm("Deseja liberar a nota fiscal Nº " + docEntry + " para devolução? A conciliação com o pagamento será desfeita.").then(it => {
       if(it.isConfirmed){
         this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then( it =>
-          this.alertService.info("Documento liberado para cancelamento")
+          this.alertService.info("Nota fiscal liberada. Finalize a devolução diretamente no SAP B1.")
         )
       }
     })
@@ -167,10 +167,10 @@ export class VendaFuturaSingleComponent implements OnInit {
   }
 
   encerrarContrato(){
-    this.alertService.confirm("Deseja encerrar o contrato?").then(it => {
+    this.alertService.confirm("Deseja cancelar este contrato? Essa ação é irreversível e encerrará todos os documentos vinculados.").then(it => {
       if(it.isConfirmed){
         this.alertService.loading(this.vendaFuturaService.encerrarContrato(this.selected.DocEntry)).then( it =>{
-          this.alertService.info("Contrato encerrado com sucesso.");
+          this.alertService.info("Contrato cancelado com sucesso.");
         })
       }
     })

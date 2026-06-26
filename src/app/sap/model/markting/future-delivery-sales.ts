@@ -71,7 +71,7 @@ export class DocumentLines {
   getActions(): Action[] {
     if(this.isVenda() && this.DocumentStatus == "bost_Close")
       return [ 
-        new Action("Devolver", new ActionReturn("devolver", this), "far fa-times-circle", "danger")
+        new Action("Cancelar Conciliação", new ActionReturn("devolver", this), "far fa-times-circle", "danger")
       ]
     else
       return []
