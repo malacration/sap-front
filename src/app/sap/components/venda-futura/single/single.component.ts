@@ -87,11 +87,13 @@ export class VendaFuturaSingleComponent implements OnInit {
     });
 
     this.futureDeliverySalesService.getPedidosByContrato(this.selected.DocEntry).subscribe(response => {
-      this.pedidos = response.flatMap(entrega =>
-        entrega.DocumentLines.map(line => Object.assign(new DocumentLines(), line, entrega))
-      );
-      this.loadingPedidos = false;
-    });
+      this.pedidos = response.flatMap(entrega => 
+        entrega.DocumentLines.map(line => {
+          return Object.assign(new DocumentLines(), line, entrega)
+        }));
+        
+        this.loadingPedidos = false; 
+    })
   }
 
   carregarBoletos(): void {
