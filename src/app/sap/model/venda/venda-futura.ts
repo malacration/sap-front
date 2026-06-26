@@ -39,6 +39,7 @@ export class VendaFutura {
 
   entregas: Array<FutureDeliverySales> = null;
   entregaLoading = false;
+  itensLoading = false;
 
   routerLinkPn(): RouteLink {
     return new RouteLink(
@@ -87,6 +88,16 @@ export class VendaFutura {
         'R$'
       );
     else return '-';
+  }
+
+  get statusLabel(): string {
+    const labels: Record<string, string> = {
+      aberto: 'Aberto',
+      entregue: 'Entregue',
+      cancelado: 'Cancelado',
+      concluido: 'Concluído',
+    };
+    return labels[this.U_status] ?? this.U_status;
   }
 
   get dataCriacao() {

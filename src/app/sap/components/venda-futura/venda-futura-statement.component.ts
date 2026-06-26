@@ -28,7 +28,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   idContrato = '';
   cardCode = '-1';
 
-  status: 'aberto' | 'concluido' | 'cancelado' = 'aberto';
+  status: 'aberto' | 'entregue' | 'concluido' | 'cancelado' = 'aberto';
 
   routeSubscriptions: Array<Subscription> = new Array();
 
@@ -42,7 +42,7 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
     // new Column('Valor Total', 'totalCurrency'),
     new Column('Valor Entregue', 'valorEntregue'),
     new Column('Criado em', 'dataCriacao'),
-    new Column('Status', 'U_status'),
+    new Column('Status', 'statusLabel'),
   ];
 
   constructor(
@@ -69,8 +69,14 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
           );
           if (contrato) {
             this.selected = contrato;
-            this.service.getAllItens(contrato.DocEntry).subscribe((it) => {
-              contrato.AR_CF_LINHACollection = it;
+            contrato.itensLoading = true;
+            this.service.getAllItens(contrato.DocEntry).subscribe({
+              next: (it) => {
+                contrato.AR_CF_LINHACollection = it;
+              },
+              complete: () => {
+                contrato.itensLoading = false;
+              }
             });
           } else {
             this.service.get(id).subscribe((it) => {

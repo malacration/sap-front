@@ -46,7 +46,10 @@
                 <dd class="col-sm-9">{{ selected.frete }}</dd>
 
                 <dt class="col-sm-3">Valor Total:</dt>
-                <dd class="col-sm-9">{{ selected.totalCurrency }}</dd>
+                <dd class="col-sm-9">
+                    <i *ngIf="selected.itensLoading" class="fas fa-sync-alt fa-spin text-secondary mr-1"></i>
+                    <span *ngIf="!selected.itensLoading">{{ selected.totalCurrency }}</span>
+                </dd>
 
                 <dt class="col-sm-3">Data de Criação:</dt>
                 <dd class="col-sm-9">{{ selected.dataCriacao }}</dd>
@@ -54,48 +57,137 @@
                 <dd class="col-sm">
                     <app-tabs>
                         <app-tab tabTitle="Produtos" [active]="true">
+                            <div *ngIf="loadingEntregas" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando produtos...</p>
+                            </div>
                             <app-table
-                                [content]="selected?.AR_CF_LINHACollection" 
-                                [definition]="definition" 
+                                *ngIf="!loadingEntregas"
+                                [content]="selected?.AR_CF_LINHACollection"
+                                [definition]="definition"
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
 
                         <app-tab tabTitle="Pedidos">
-                            <div *ngIf="loadingPedidos" class="overlay">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            <div *ngIf="loadingPedidos" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando pedidos...</p>
                             </div>
                             <app-table
                                 *ngIf="!loadingPedidos"
-                                [content]="pedidos" 
+                                [content]="pedidos"
                                 [definition]="documentDefinition">
                             </app-table>
                         </app-tab>
 
                         <app-tab tabTitle="Boletos">
-                            <div *ngIf="loadingBoletos" class="overlay">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            <div *ngIf="loadingBoletos" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando boletos...</p>
+                            </div>
+
+                            <ng-container *ngIf="!loadingBoletos">
+                                <div *ngIf="boletos.length === 0" class="text-center text-muted py-4">
+                                    <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                                    <p>Nenhum boleto encontrado.</p>
+                                </div>
+
+                                <div *ngFor="let boleto of boletos; let i = index"
+                                    class="boleto-card card mb-2"
+                                    [ngClass]="i % 2 === 0 ? 'boleto-par' : 'boleto-impar'">
+                                    <div class="card-header py-2">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col-auto pr-3">
+                                                <span class="font-weight-bold">#{{ boleto.DocNum }}</span>
+                                            </div>
+                                            <div class="col-3">
+                                                <span class="badge badge-pill" style="font-size: 0.85rem;"
+                                                    [ngClass]="boleto.DocStatus === 'O' ? 'badge-success' : 'badge-secondary'">
+                                                    {{ statusBoletoLabel(boleto) }}
+                                                </span>
+                                            </div>
+                                            <div class="col text-right">
+                                                <div class="font-weight-bold">
+                                                    {{ boleto.DocTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                                                </div>
+                                                <div class="small text-muted">
+                                                    Venc.: {{ boleto.DocDueDate | date:'dd/MM/yyyy':'':'pt-BR' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body" *ngIf="possuiPix(boleto)">
+                                        <!-- Com PIX -->
+                                        <div>
+                                            <div class="row align-items-center">
+                                                <div class="col-auto text-center">
+                                                    <app-qrcode [value]="boleto.U_QrCodePix || ''" [size]="160"></app-qrcode>
+                                                </div>
+                                                <div class="col">
+                                                    <p class="text-muted small mb-1">Copia e Cola</p>
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control form-control-sm"
+                                                            [value]="boleto.U_pix_textContent" readonly />
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-sm"
+                                                                [ngClass]="foiCopiado(boleto) ? 'btn-success' : 'btn-outline-primary'"
+                                                                type="button"
+                                                                (click)="copiarPix(boleto)">
+                                                                <i class="far fa-copy"></i>
+                                                                {{ foiCopiado(boleto) ? 'Copiado!' : 'Copiar' }}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div *ngIf="boleto.U_pix_due_date"
+                                                        class="alert alert-light py-1 px-2 border mb-2">
+                                                        <small class="text-muted">
+                                                            <i class="far fa-clock"></i>
+                                                            Vencimento PIX:
+                                                            {{ boleto.U_pix_due_date | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
+                                                        </small>
+                                                    </div>
+
+                                                    <div class="d-flex gap-2">
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-info mr-2"
+                                                            [disabled]="isConsultando(boleto)"
+                                                            (click)="consultarPix(boleto)">
+                                                            <i *ngIf="!isConsultando(boleto)" class="fas fa-search-dollar"></i>
+                                                            <i *ngIf="isConsultando(boleto)" class="fas fa-sync-alt fa-spin"></i>
+                                                            {{ isConsultando(boleto) ? 'Consultando...' : 'Consultar Pagamento' }}
+                                                        </button>
+                                                        <button *ngIf="boleto.U_pix_link"
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            (click)="abrirLinkPix(boleto)">
+                                                            <i class="fas fa-external-link-alt"></i>
+                                                            Link do Cliente
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </app-tab>
+
+                        <app-tab tabTitle="Entregas">
+                            <div *ngIf="loadingEntregas" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando entregas...</p>
                             </div>
                             <app-table
-                                *ngIf="!loadingBoletos"
-                                [content]="boletos" 
-                                [definition]="boletosDefinition" 
+                                *ngIf="!loadingEntregas"
+                                [content]="entregas"
+                                [definition]="documentDefinition"
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
 
-                        <app-tab tabTitle="Entregas">
-                            <div *ngIf="loadingEntregas" class="overlay">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-                            </div>
-                            <app-table
-                                *ngIf="!loadingEntregas"
-                                [content]="entregas" 
-                                [definition]="documentDefinition" 
-                                (actionOutput)="action($event)">
-                            </app-table>
-                        </app-tab>
-                        
                     </app-tabs>
                 </dd>
             </dl>
@@ -103,28 +195,72 @@
         <div class="card-footer">
             <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
         </div>
+        <div *ngIf="loadingCriaBoletos" class="overlay d-flex align-items-center justify-content-center flex-column">
+            <i class="fas fa-3x fa-sync-alt fa-spin"></i>
+            <p class="mt-3">Emitindo boletos, aguarde...</p>
+        </div>
+        <div *ngIf="gerarPixLoading" class="overlay d-flex align-items-center justify-content-center flex-column">
+            <i class="fas fa-3x fa-qrcode fa-pulse"></i>
+            <i class="fas fa-sync-alt fa-spin mt-2"></i>
+            <p class="mt-3">Gerando PIX para os boletos, aguarde...</p>
+        </div>
     </div>
 </section>
 
 <app-modal #retirada [title]="'Retirada de Produtos'">
-    <app-venda-futura-retirada 
-        [vendaFutura]="selected" 
+    <app-venda-futura-retirada
+        [vendaFutura]="selected"
         (retirados)="closeModal($event)"
         (eventoRetirou)="ngOnInit()">
     </app-venda-futura-retirada>
 </app-modal>
 
 <app-modal #troca [title]="'Troca de Produtos'">
-    <app-venda-futura-troca 
-        [vendaFutura]="selected" 
+    <app-venda-futura-troca
+        [vendaFutura]="selected"
         (closeModal)="closeModal($event)"
         (eventoTrocou)="ngOnInit()">
     </app-venda-futura-troca>
 </app-modal>
 
-<app-modal 
-  #previewModal 
-  [title]="'Preview do PDF'" 
+<app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
+    <div *ngIf="pagamentoPixLoading" class="text-center p-4">
+        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+        <p class="mt-3 mb-0 text-muted">Consultando status do pagamento PIX...</p>
+    </div>
+    <div *ngIf="pagamentoPixData" class="p-2">
+        <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
+        <div class="mb-1">
+            <strong>Status:</strong>
+            <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
+                {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
+            </span>
+        </div>
+        <div class="mb-1">
+            <strong>Valor original:</strong>
+            <span *ngIf="pagamentoPixData.originalAmount != null; else valorOriginalVazio">
+                {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+            <ng-template #valorOriginalVazio>-</ng-template>
+        </div>
+        <div class="mb-1" *ngIf="pagamentoPixData.receivedAmount != null">
+            <strong>Valor recebido:</strong>
+            {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+        </div>
+        <div class="mb-1">
+            <strong>Data do pagamento:</strong>
+            <span *ngIf="pagamentoPixData.paymentDate; else dataPagamentoVazia">
+                {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+            <ng-template #dataPagamentoVazia>-</ng-template>
+        </div>
+        <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType || '-' }}</div>
+    </div>
+</app-modal>
+
+<app-modal
+  #previewModal
+  [title]="'Preview do PDF'"
   style="width: 90%; max-width: 1400px;">
   <div class="pdf-preview-container" style="height: 80vh; padding: 10px;">
     <div class="pdf-toolbar">

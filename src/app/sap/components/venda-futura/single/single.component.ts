@@ -1,15 +1,15 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { DownPaymentService } from '../../../service/DownPaymentService';
+import { BoletoVf, DownPaymentService } from '../../../service/DownPaymentService';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
 import { FutureDeliverySalesService } from '../../../service/FutureDeliverySales.service';
-import {VendaFutura } from '../../../model/venda/venda-futura';
+import { VendaFutura } from '../../../model/venda/venda-futura';
 import { DocumentLines, FutureDeliverySales } from '../../../model/markting/future-delivery-sales';
 import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
+import { PixPagamentoStatus, PixService } from '../../../service/pix.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
-import { Observable, delay, of } from 'rxjs';
 
 
 
@@ -20,75 +20,71 @@ import { Observable, delay, of } from 'rxjs';
 })
 export class VendaFuturaSingleComponent implements OnInit {
 
+  constructor(
+    private downPaymentService: DownPaymentService,
+    private alertService: AlertService,
+    private vendaFuturaService: VendaFuturaService,
+    private futureDeliverySalesService: FutureDeliverySalesService,
+    private pixService: PixService,
+  ) {}
 
-  constructor(private downPaymentService : DownPaymentService,
-    private alertService : AlertService,
-    private vendaFuturaService : VendaFuturaService,
-    private futureDeliverySalesService : FutureDeliverySalesService ){
-
-  }
-
-  cardName = "windson"
-  id = "666"
-  
-  @Input() 
+  @Input()
   selected: VendaFutura = null;
 
-  boletos = Array()
+  boletos: BoletoVf[] = [];
+  entregas = Array<DocumentLines>();
+  pedidos = Array<DocumentLines>();
 
-  entregas = Array<DocumentLines>()
+  loadingBoletos = true;
+  loadingEntregas = true;
+  loadingPedidos = true;
+  gerarPixLoading = false;
 
-  pedidos = Array<DocumentLines>()
-
-  loadingBoletos: boolean = true; 
-  loadingEntregas: boolean = true; 
-  loadingPedidos: boolean = true;
+  pixConsultandoMap: { [key: string]: boolean } = {};
+  copiadoSet: { [key: string]: boolean } = {};
 
   @Output()
   close = new EventEmitter();
 
-  @ViewChild('retirada', {static: true}) retiradaModal: ModalComponent;
-
-  @ViewChild('troca', {static: true}) trocaModal: ModalComponent;
-
+  @ViewChild('retirada', { static: true }) retiradaModal: ModalComponent;
+  @ViewChild('troca', { static: true }) trocaModal: ModalComponent;
   @ViewChild(GerarPdfComponent) gerarPdfComponent: GerarPdfComponent;
-
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
+  @ViewChild('modalPagamentoPix', { static: true }) modalPagamentoPix: ModalComponent;
+
+  pagamentoPixData: PixPagamentoStatus | null = null;
+  pagamentoPixLoading = false;
 
   ngOnInit(): void {
-    this.loadingBoletos= true; 
-    this.loadingEntregas= true; 
-    this.loadingPedidos= true;
-    this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe(it => {
-      this.boletos = it;
-      this.loadingBoletos = false;
-    });
+    this.loadingBoletos = true;
+    this.loadingEntregas = true;
+    this.loadingPedidos = true;
+
+    this.carregarBoletos();
 
     this.selected?.AR_CF_LINHACollection?.forEach(it => {
-      it.entregue = 0
+      it.entregue = 0;
       it.produtoEntregueLoading = true;
     });
-    
-    this.vendaFuturaService.getEntregas(this.selected.DocEntry).subscribe(response => {
-      this.entregas = response.flatMap(entrega => 
-        entrega.DocumentLines.map(line => {
-          return Object.assign(new DocumentLines(), line, entrega)
-        }));
-        
-        this.entregas.forEach(item => {
-          let produto = this.selected?.AR_CF_LINHACollection?.find(
-            it => it.U_itemCode == item.ItemCode.toString() && it.U_precoNegociado == item.U_preco_negociado
-          );
-          if(produto)
-            produto.entregue += item.formattedQuantityInvoice | 0
-        });
 
-        this.loadingEntregas = false; 
-        
-        this.selected?.AR_CF_LINHACollection?.forEach(it => {
-          it.produtoEntregueLoading = false;
-        });
-    })
+    this.vendaFuturaService.getEntregas(this.selected.DocEntry).subscribe(response => {
+      this.entregas = response.flatMap(entrega =>
+        entrega.DocumentLines.map(line => Object.assign(new DocumentLines(), line, entrega))
+      );
+
+      this.entregas.forEach(item => {
+        let produto = this.selected?.AR_CF_LINHACollection?.find(
+          it => it.U_itemCode == item.ItemCode.toString() && it.U_precoNegociado == item.U_preco_negociado
+        );
+        if (produto)
+          produto.entregue += item.formattedQuantityInvoice | 0;
+      });
+
+      this.loadingEntregas = false;
+      this.selected?.AR_CF_LINHACollection?.forEach(it => {
+        it.produtoEntregueLoading = false;
+      });
+    });
 
     this.futureDeliverySalesService.getPedidosByContrato(this.selected.DocEntry).subscribe(response => {
       this.pedidos = response.flatMap(entrega => 
@@ -118,18 +114,82 @@ export class VendaFuturaSingleComponent implements OnInit {
       }else{
         this.loadingCriaBoletos = false
       }
-    })
+    });
   }
 
-  voltar(){
-    this.close.emit()
+  private recarregarBoletosBackground(): void {
+    this.downPaymentService.getByContrato(this.selected.DocEntry).subscribe({
+      next: (it) => { this.boletos = it; }
+    });
   }
 
-  abrirModalPreview() {
-    this.previewModal.openModal();
+  isConsultando(boleto: BoletoVf): boolean {
+    return this.pixConsultandoMap[this.pixKey(boleto)] ?? false;
   }
-  
-  gerarPDF() {
+
+  copiarPix(boleto: BoletoVf): void {
+    const texto = boleto.U_pix_textContent;
+    if (!texto) return;
+    navigator.clipboard.writeText(texto);
+    const key = this.pixKey(boleto);
+    this.copiadoSet[key] = true;
+    setTimeout(() => { this.copiadoSet[key] = false; }, 3000);
+  }
+
+  foiCopiado(boleto: BoletoVf): boolean {
+    return this.copiadoSet[this.pixKey(boleto)] ?? false;
+  }
+
+  abrirLinkPix(boleto: BoletoVf): void {
+    const qrCode = boleto.U_pix_textContent || boleto.U_QrCodePix;
+    if (!qrCode) return;
+    const payload = {
+      qrCode,
+      valor: parseFloat(boleto.DocTotal),
+      vencimento: boleto.U_pix_due_date || boleto.DocDueDate,
+      nome: this.selected?.U_cardName ?? null,
+    };
+    const encoded = btoa(JSON.stringify(payload));
+    window.open(`${window.location.origin}/pix-link?d=${encoded}`, '_blank');
+  }
+
+  // ── Boletos ──────────────────────────────────────────────────────────────
+
+  statusBoletoLabel(boleto: BoletoVf): string {
+    return boleto.DocStatus === 'O' ? 'Aberto' : 'Pago/Cancelado';
+  }
+
+  // ── Emitir boletos ───────────────────────────────────────────────────────
+
+  loadingCriaBoletos = false;
+  confirmEmitirBoletos(): void {
+    this.alertService.confirm('Emitir os boletos é uma ação irrevercivel, tem certeza que deseja continuar?')
+      .then(it => {
+        if (it.isConfirmed) {
+          this.loadingCriaBoletos = true;
+          this.vendaFuturaService.emitirBoletos(this.selected.DocEntry).subscribe({
+            next: () => {
+              this.alertService.info('Boleto Criado com sucesso');
+            },
+            error: () => {
+              this.loadingCriaBoletos = false;
+            },
+            complete: () => {
+              this.loadingCriaBoletos = false;
+              this.ngOnInit();
+            }
+          });
+        }
+      });
+  }
+
+  // ── Navegação e modais ───────────────────────────────────────────────────
+
+  voltar(): void { this.close.emit(); }
+
+  abrirModalPreview(): void { this.previewModal.openModal(); }
+
+  gerarPDF(): void {
     const headContent = document.head.innerHTML;
     this.gerarPdfComponent.gerarPdf(headContent);
   }
@@ -141,29 +201,28 @@ export class VendaFuturaSingleComponent implements OnInit {
           this.alertService.info("Nota fiscal liberada. Finalize a devolução diretamente no SAP B1.")
         )
       }
-    })
+    });
   }
 
-  action(event : ActionReturn){
-    if(event.type == "devolver"){
-      this.desfazerConcilicao(event.data.DocEntry)
+  action(event: ActionReturn): void {
+    if (event.type === 'devolver') {
+      this.desfazerConcilicao(event.data.DocEntry);
     }
   }
 
-  openModalRetirada(){
-    this.retiradaModal.classeModal = "modal-xl"
-    this.retiradaModal.openModal()
+  openModalRetirada(): void {
+    this.retiradaModal.classeModal = 'modal-xl';
+    this.retiradaModal.openModal();
   }
 
-  openModalTroca(){
-    this.trocaModal.classeModal = "modal-xl"
-    this.trocaModal.openModal()
+  openModalTroca(): void {
+    this.trocaModal.classeModal = 'modal-xl';
+    this.trocaModal.openModal();
   }
 
-
-  closeModal($event){
-    this.retiradaModal.closeModal()
-    this.trocaModal.closeModal()
+  closeModal($event): void {
+    this.retiradaModal.closeModal();
+    this.trocaModal.closeModal();
   }
 
   encerrarContrato(){
@@ -173,8 +232,10 @@ export class VendaFuturaSingleComponent implements OnInit {
           this.alertService.info("Contrato cancelado com sucesso.");
         })
       }
-    })
+    });
   }
+
+  // ── Definições de tabela ─────────────────────────────────────────────────
 
   definition = [
     new Column('Código do Item', 'U_itemCode'),
@@ -183,14 +244,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Quantidade', 'U_quantity'),
     new Column('Qtd. Retirado', 'quantidadeEntregue'),
     new Column('Qtd. Disponível', 'qtdDisponivel'),
-    new Column('Total', 'totalCurrency')
-  ];
-
-  boletosDefinition = [
-    new Column('Código', 'DocNum'),
-    new Column('Vencimento', 'vencimento'),
     new Column('Total', 'totalCurrency'),
-    new Column('Status', 'situacaoBoleto'),
   ];
 
   documentDefinition = [
@@ -206,4 +260,3 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Total', 'totalLinhaCurrency'),
   ];
 }
-
