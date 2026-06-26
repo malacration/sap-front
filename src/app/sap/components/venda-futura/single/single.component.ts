@@ -202,13 +202,13 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   loadingCriaBoletos = false;
   confirmEmitirBoletos(): void {
-    this.alertService.confirm('Emitir os boletos é uma ação irrevercivel, tem certeza que deseja continuar?')
+    this.alertService.confirm('Ao emitir os boletos, os prazos de pagamento passam a valer imediatamente. Essa ação é irreversível. Confirmar emissão?')
       .then(it => {
         if (it.isConfirmed) {
           this.loadingCriaBoletos = true;
           this.vendaFuturaService.emitirBoletos(this.selected.DocEntry).subscribe({
             next: () => {
-              this.alertService.info('Boleto Criado com sucesso');
+              this.alertService.info('Boletos emitidos com sucesso.');
             },
             error: () => {
               this.loadingCriaBoletos = false;
