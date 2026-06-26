@@ -86,12 +86,23 @@
 </div>
 
 
-<div *ngIf="totalBalanco() != 0" class="row">
+<div *ngIf="totalBalanco() != 0" class="row mt-3">
     <div class="col">
-        <h4>Resultado financeiro</h4>
-        <p *ngIf="totalBalanco() > 0"> O contrato sera acrescido no valor de: {{totalBalanco() | currency}}</p>
-        <p *ngIf="totalBalanco() < 0"> O contrato sera reduzido no valor de: {{totalBalanco() | currency}}</p>
-        <p></p>
+        <div [ngClass]="totalBalanco() > 0 ? 'alert alert-success' : 'alert alert-danger'" role="alert">
+            <h4 class="alert-heading">
+                <i [ngClass]="totalBalanco() > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                Resultado Financeiro
+            </h4>
+            <hr>
+            <p *ngIf="totalBalanco() > 0" class="mb-0 fs-5">
+                O contrato será <strong>acrescido</strong> no valor de:
+                <strong>{{ totalBalanco() | currency }}</strong>
+            </p>
+            <p *ngIf="totalBalanco() < 0" class="mb-0 fs-5">
+                O contrato será <strong>reduzido</strong> no valor de:
+                <strong>{{ totalBalanco() | currency }}</strong>
+            </p>
+        </div>
     </div>
 </div>
 
