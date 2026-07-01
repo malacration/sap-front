@@ -87,11 +87,13 @@ export class VendaFuturaSingleComponent implements OnInit {
     });
 
     this.futureDeliverySalesService.getPedidosByContrato(this.selected.DocEntry).subscribe(response => {
-      this.pedidos = response.flatMap(entrega =>
-        entrega.DocumentLines.map(line => Object.assign(new DocumentLines(), line, entrega))
-      );
-      this.loadingPedidos = false;
-    });
+      this.pedidos = response.flatMap(entrega => 
+        entrega.DocumentLines.map(line => {
+          return Object.assign(new DocumentLines(), line, entrega)
+        }));
+        
+        this.loadingPedidos = false; 
+    })
   }
 
   carregarBoletos(): void {
@@ -202,13 +204,13 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   loadingCriaBoletos = false;
   confirmEmitirBoletos(): void {
-    this.alertService.confirm('Emitir os boletos é uma ação irrevercivel, tem certeza que deseja continuar?')
+    this.alertService.confirm('Ao emitir os boletos, os prazos de pagamento passam a valer imediatamente. Essa ação é irreversível. Confirmar emissão?')
       .then(it => {
         if (it.isConfirmed) {
           this.loadingCriaBoletos = true;
           this.vendaFuturaService.emitirBoletos(this.selected.DocEntry).subscribe({
             next: () => {
-              this.alertService.info('Boleto Criado com sucesso');
+              this.alertService.info('Boletos emitidos com sucesso.');
             },
             error: () => {
               this.loadingCriaBoletos = false;
@@ -234,10 +236,10 @@ export class VendaFuturaSingleComponent implements OnInit {
   }
 
   desfazerConcilicao(docEntry): void {
-    this.alertService.confirm('Tem certeza que deseja cancelar o documento? Entry [' + docEntry + ']').then(it => {
+    this.alertService.confirm('Deseja liberar a nota fiscal Nº ' + docEntry + ' para devolução? A conciliação com o pagamento será desfeita.').then(it => {
       if (it.isConfirmed) {
         this.alertService.loading(this.vendaFuturaService.cancelarConciliacao(docEntry)).then(() =>
-          this.alertService.info('Documento liberado para cancelamento')
+          this.alertService.info('Nota fiscal liberada. Finalize a devolução diretamente no SAP B1.')
         );
       }
     });
@@ -265,10 +267,10 @@ export class VendaFuturaSingleComponent implements OnInit {
   }
 
   encerrarContrato(): void {
-    this.alertService.confirm('Deseja encerrar o contrato?').then(it => {
+    this.alertService.confirm('Deseja cancelar este contrato? Essa ação é irreversível e encerrará todos os documentos vinculados.').then(it => {
       if (it.isConfirmed) {
         this.alertService.loading(this.vendaFuturaService.encerrarContrato(this.selected.DocEntry)).then(() => {
-          this.alertService.info('Contrato encerrado com sucesso.');
+          this.alertService.info('Contrato cancelado com sucesso.');
         });
       }
     });

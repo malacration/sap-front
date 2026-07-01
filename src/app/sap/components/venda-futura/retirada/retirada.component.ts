@@ -60,7 +60,7 @@ export class RetiradaComponent implements OnInit {
 
   validateEhAdiciona() {
     if (this.selectedItem && this.quantity && this.quantity > this.selectedItem.U_quantity) {
-      this.alertService.info("Formulário inválido ou quantidade superior ao disponível.");
+      this.alertService.info("A quantidade informada supera o saldo disponível do item. Corrija e tente novamente.");
     } else {
       this.adiciona();
     }
@@ -90,7 +90,7 @@ export class RetiradaComponent implements OnInit {
     let pedidoRetireada = this.vendaFutura.getPedidoRetirada(this.itensRetirados,this.dtEntrega)
     this.service.retirar(pedidoRetireada).subscribe({
       next : documento => {
-        this.alertService.info("Cotação de venda gerada com sucesso.").then(it => {
+        this.alertService.info("Retirada registrada com sucesso.").then(it => {
           this.retirados.emit(this.itensRetirados)
           this.eventoRetirou.emit()
           this.clearForm()

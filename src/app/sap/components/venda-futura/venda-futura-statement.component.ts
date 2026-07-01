@@ -153,4 +153,9 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   selectParceiro($event) {
     this.cardCode = $event?.CardCode ?? '-1';
   }
+
+  abrirManual(): void {
+    const url = new URL('assets/docs/venda-futura/index.html', document.baseURI).href;
+    window.open(url, '_blank');
+  }
 }
