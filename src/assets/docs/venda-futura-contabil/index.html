@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>Venda Futura — Manual Técnico Contábil</title>
+  <link rel="stylesheet" href="../venda-futura/style.css">
+  <style>
+    /* Complementos específicos do manual contábil */
+    .razonete{
+      font-family: var(--mono, ui-monospace, monospace);
+      font-size: .82rem;
+      line-height: 1.45;
+      background: var(--card, #fff);
+      border: 1px solid var(--line, #e5e7eb);
+      border-radius: 10px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .partidas{width:100%;border-collapse:collapse;margin:10px 0}
+    .partidas th,.partidas td{border:1px solid var(--line,#e5e7eb);padding:7px 10px;font-size:.86rem;text-align:left}
+    .partidas th{background:rgba(0,0,0,.035)}
+    .partidas td.num{text-align:right;font-family:var(--mono,monospace);white-space:nowrap}
+    .dr{color:#1d4ed8;font-weight:600}
+    .cr{color:#b45309;font-weight:600}
+    .zera{background:rgba(22,163,74,.08)}
+    .zera td:first-child::after{content:" ✓ zera";color:#16a34a;font-size:.75rem;font-weight:700}
+    .saldo-neg{color:#b91c1c}
+    .conta-role{display:inline-block;background:rgba(0,0,0,.05);border:1px solid var(--line,#e5e7eb);border-radius:6px;padding:1px 7px;font-size:.78rem;font-family:var(--mono,monospace);white-space:nowrap}
+  </style>
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">VF</span>
+        <span class="brand__text">
+          <strong>Venda Futura</strong>
+          <small>Manual Técnico Contábil</small>
+        </span>
+      </div>
+      <label for="toc-toggle" class="topbar__menu" aria-label="Abrir índice">
+        <span></span><span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <input type="checkbox" id="toc-toggle" class="toc-toggle" hidden>
+
+  <div class="layout">
+
+    <!-- ===== Índice lateral ===== -->
+    <aside class="toc" id="toc">
+      <p class="toc__title">Conteúdo</p>
+      <nav>
+        <ol>
+          <li><a href="#objetivo">Objetivo deste manual</a></li>
+          <li><a href="#conceito">O conceito contábil</a></li>
+          <li><a href="#contas">Contas e parametrização</a></li>
+          <li><a href="#ciclo">O ciclo em 5 lançamentos</a></li>
+          <li><a href="#lancamentos">Lançamento a lançamento</a></li>
+          <li><a href="#balancete">Exemplo completo até o balancete</a></li>
+          <li><a href="#devolucao">Devoluções e estornos</a></li>
+          <li><a href="#rotinas">Rotinas automáticas</a></li>
+          <li><a href="#rastreio">Rastreabilidade</a></li>
+          <li><a href="#conferencia">Conferências e sinais de problema</a></li>
+        </ol>
+      </nav>
+      <label for="toc-toggle" class="toc__backdrop" aria-hidden="true"></label>
+    </aside>
+
+    <!-- ===== Conteúdo ===== -->
+    <main class="content">
+
+      <section class="hero">
+        <h1>Conciliação Contábil da Venda Futura</h1>
+        <p class="hero__lead">
+          Como o sistema realiza, de forma automática, os lançamentos contábeis e as
+          reconciliações internas da Venda Futura — do adiantamento à entrega — para
+          que as contas transitórias zerem e o balancete feche consolidado.
+        </p>
+      </section>
+
+      <!-- 1. OBJETIVO -->
+      <section id="objetivo" class="block">
+        <h2><span class="h2-num">1</span> Objetivo deste manual</h2>
+        <p>
+          Este é um manual <strong>técnico</strong>, voltado à equipe
+          <strong>contábil e de TI</strong>. Ele documenta cada lançamento que o
+          sistema (integração <em>sap-rovema</em>) executa no SAP Business One para a
+          Venda Futura, e o raciocínio de consolidação por trás deles.
+        </p>
+        <p>A pergunta que este documento responde é:</p>
+        <div class="callout callout--info">
+          <div class="callout__title">A pergunta central</div>
+          <p>
+            O cliente <strong>paga hoje</strong> e <strong>retira depois</strong>.
+            Como registrar cada etapa de modo que, ao final do ciclo, o balancete
+            mostre apenas <strong>Banco</strong>, <strong>Receita</strong> e
+            <strong>CPV/Estoque</strong> — com o contas a receber, o passivo de
+            adiantamento e as contas de controle <strong>zerados</strong>?
+          </p>
+        </div>
+        <p>
+          Para o guia operacional (telas, botões, passo a passo do vendedor),
+          consulte o <a href="../venda-futura/index.html">Guia do Usuário da Venda
+          Futura</a>.
+        </p>
+      </section>
+
+      <!-- 2. CONCEITO -->
+      <section id="conceito" class="block">
+        <h2><span class="h2-num">2</span> O conceito contábil</h2>
+        <p>
+          Na Venda Futura o dinheiro entra <strong>antes</strong> da entrega da
+          mercadoria. Contabilmente, esse dinheiro <strong>não é receita</strong> no
+          momento do recebimento: é uma <strong>obrigação de entregar mercadoria</strong>
+          — um <strong>passivo</strong> (adiantamento de clientes).
+        </p>
+        <div class="cards-3">
+          <div class="mini-card">
+            <span class="mini-card__icon">💰</span>
+            <h4>Antes da entrega</h4>
+            <p>O valor recebido fica no <strong>passivo</strong>, na conta de
+              adiantamento de clientes vinculada ao item de adiantamento.</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-card__icon">🚚</span>
+            <h4>Na entrega</h4>
+            <p>A NF de saída reconhece a <strong>receita</strong> e baixa o
+              <strong>estoque</strong> (CPV) normalmente.</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-card__icon">⚖️</span>
+            <h4>Depois da entrega</h4>
+            <p>Rotinas automáticas <strong>reclassificam e conciliam</strong>: o
+              passivo é consumido na proporção do que foi entregue.</p>
+          </div>
+        </div>
+        <p class="mt">
+          O desafio é que a NF de entrega gera um novo <em>contas a receber</em> — mas
+          o cliente <strong>não deve mais nada</strong> (pagou antecipado). Para
+          resolver isso sem interferir na emissão fiscal, o sistema usa duas contas
+          transitórias (<strong>conta controle</strong> e <strong>conta redutora do
+          passivo</strong>) e as zera por meio de <strong>lançamentos contábeis
+          manuais + reconciliações internas</strong>, como detalhado a seguir.
+        </p>
+      </section>
+
+      <!-- 3. CONTAS -->
+      <section id="contas" class="block">
+        <h2><span class="h2-num">3</span> Contas e parametrização</h2>
+        <p>
+          As contas e itens usados pelos lançamentos automáticos são
+          <strong>parametrizáveis</strong> (propriedades da integração). Este manual
+          usa os papéis genéricos; os números reais do plano de contas estão na
+          configuração de cada ambiente.
+        </p>
+        <table class="tbl">
+          <thead><tr><th>Papel contábil</th><th>Parâmetro de configuração</th><th>Função</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Item de adiantamento</strong></td>
+              <td><span class="conta-role">venda-futura.adiantamento-item</span></td>
+              <td>Item (de serviço) usado nas faturas de adiantamento e nas notas de
+                apropriação. A <strong>conta contábil vinculada a este item</strong> é a
+                conta de <strong>passivo — Adiantamento de Clientes</strong>: é nela que
+                o crédito é registrado quando a fatura de adiantamento é emitida.</td>
+            </tr>
+            <tr>
+              <td><strong>Conta controle (redutora do passivo)</strong></td>
+              <td><span class="conta-role">venda-futura.conta-controle</span></td>
+              <td>Conta transitória usada na <strong>reclassificação da entrega</strong>
+                e como conta de controle das notas de apropriação. Deve zerar a cada
+                ciclo entrega → apropriação.</td>
+            </tr>
+            <tr>
+              <td><strong>Conta de adiantamento (estornos)</strong></td>
+              <td><span class="conta-role">venda-futura.conta-adiantamento</span></td>
+              <td>Usada nos lançamentos de <strong>devolução após apropriação</strong>,
+                para devolver o crédito ao passivo de adiantamento.</td>
+            </tr>
+            <tr>
+              <td>Sequência das notas de apropriação</td>
+              <td><span class="conta-role">venda-futura.sequencia_adiantamento</span></td>
+              <td>Identifica (SequenceCode) as notas fiscais de apropriação geradas pela
+                conciliação, distinguindo-as das notas de venda.</td>
+            </tr>
+            <tr>
+              <td>Utilizações</td>
+              <td><span class="conta-role">venda-futura.adiantamento-utilizacao</span> /
+                  <span class="conta-role">venda-futura.utilizacao.baixa</span></td>
+              <td>Utilização (Usage) aplicada às linhas do adiantamento e das
+                baixas/apropriações.</td>
+            </tr>
+            <tr>
+              <td>Filiais habilitadas</td>
+              <td><span class="conta-role">venda-futura.filiais</span></td>
+              <td>Somente documentos destas filiais entram nas rotinas automáticas.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout--note">
+          <div class="callout__title">Códigos de transação (rastreio no Razão)</div>
+          <p>Todo lançamento contábil manual gerado pelo sistema carrega um
+            <strong>TransactionCode</strong>, o que permite filtrá-los no SAP:</p>
+          <ul>
+            <li><code>VFET</code> — Entrega Venda Futura (reclassificação da entrega);</li>
+            <li><code>VFEC</code> — Entrega VF <strong>Conciliada</strong> (o VFET vira VFEC após a apropriação);</li>
+            <li><code>VFDV</code> — Devolução Venda Futura;</li>
+            <li><code>AROU</code> — Outros (estorno de apropriação na devolução).</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 4. CICLO -->
+      <section id="ciclo" class="block">
+        <h2><span class="h2-num">4</span> O ciclo em 5 lançamentos</h2>
+        <p>O caminho feliz de um contrato, do ponto de vista contábil:</p>
+        <ol class="flow">
+          <li class="flow__step">
+            <span class="flow__dot">1</span>
+            <div class="flow__body">
+              <h4>Fatura de adiantamento (por parcela)</h4>
+              <p><span class="dr">D</span> Clientes &nbsp;|&nbsp; <span class="cr">C</span> Adiantamento de Clientes (passivo, via item de adiantamento).</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">2</span>
+            <div class="flow__body">
+              <h4>Recebimento (boleto/PIX)</h4>
+              <p><span class="dr">D</span> Banco &nbsp;|&nbsp; <span class="cr">C</span> Clientes. O título do adiantamento é baixado.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">3</span>
+            <div class="flow__body">
+              <h4>Entrega (NF de saída)</h4>
+              <p><span class="dr">D</span> Clientes (conta controle da NF) &nbsp;|&nbsp; <span class="cr">C</span> Receita; e <span class="dr">D</span> CPV &nbsp;|&nbsp; <span class="cr">C</span> Estoque.</p>
+            </div>
+          </li>
+          <li class="flow__step flow__step--auto">
+            <span class="flow__dot">4</span>
+            <div class="flow__body">
+              <h4>Reclassificação da entrega <code>VFET</code> <span class="tag tag--auto">automático</span></h4>
+              <p>LC manual: <span class="dr">D</span> Conta controle redutora &nbsp;|&nbsp; <span class="cr">C</span> Clientes (PN) + <strong>reconciliação interna</strong> com a NF → o título da entrega zera.</p>
+            </div>
+          </li>
+          <li class="flow__step flow__step--auto">
+            <span class="flow__dot">5</span>
+            <div class="flow__body">
+              <h4>Apropriação do adiantamento <code>VFET → VFEC</code> <span class="tag tag--auto">automático</span></h4>
+              <p>NF de apropriação consome o adiantamento: <span class="dr">D</span> Adiantamento de Clientes &nbsp;|&nbsp; <span class="cr">C</span> Conta controle redutora + reconciliação interna com o LC do passo 4 → passivo e redutora zeram.</p>
+            </div>
+          </li>
+        </ol>
+        <div class="callout callout--info">
+          <div class="callout__title">Resultado</div>
+          <p>Ao fim do ciclo, sobram apenas <strong>Banco (D)</strong>,
+            <strong>Receita (C)</strong> e <strong>CPV/Estoque</strong>. Clientes,
+            Adiantamento de Clientes e a conta controle redutora ficam
+            <strong>zerados e reconciliados</strong>.</p>
+        </div>
+      </section>
+
+      <!-- 5. LANÇAMENTO A LANÇAMENTO -->
+      <section id="lancamentos" class="block">
+        <h2><span class="h2-num">5</span> Lançamento a lançamento</h2>
+
+        <!-- 5.1 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">1</span>
+            <h3>Fatura de adiantamento (DownPayment)</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              Ao <strong>emitir os boletos</strong> do contrato, o sistema cria
+              <strong>uma fatura de adiantamento por parcela</strong> da condição de
+              pagamento. Cada fatura usa o <strong>item de adiantamento</strong>
+              (<span class="conta-role">venda-futura.adiantamento-item</span>) — e é a
+              <strong>conta contábil vinculada a esse item</strong> que recebe o crédito
+              no <strong>passivo</strong>.
+            </p>
+            <table class="partidas">
+              <thead><tr><th>Conta</th><th>Natureza</th><th>D/C</th></tr></thead>
+              <tbody>
+                <tr><td>Clientes (contas a receber do PN)</td><td>Ativo</td><td class="dr">D</td></tr>
+                <tr><td>Adiantamento de Clientes <em>(conta do item de adiantamento)</em></td><td>Passivo</td><td class="cr">C</td></tr>
+              </tbody>
+            </table>
+            <p>
+              Cada fatura carrega o campo <code>U_venda_futura</code> com o número do
+              contrato — é esse vínculo que as rotinas de conciliação usam para achar
+              os adiantamentos do contrato.
+            </p>
+            <div class="callout callout--note">
+              <div class="callout__title">Memo padrão</div>
+              <p><em>“Fatura de adiantamento venda futura. Contrato {N}”</em></p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5.2 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">2</span>
+            <h3>Recebimento (boleto bancário ou PIX)</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              Quando o cliente paga (boleto via banco, ou PIX com baixa automática pela
+              integração), entra o <strong>pagamento recebido</strong> (Incoming
+              Payment) vinculado à fatura de adiantamento:
+            </p>
+            <table class="partidas">
+              <thead><tr><th>Conta</th><th>Natureza</th><th>D/C</th></tr></thead>
+              <tbody>
+                <tr><td>Banco / Disponibilidades</td><td>Ativo</td><td class="dr">D</td></tr>
+                <tr><td>Clientes (contas a receber do PN)</td><td>Ativo</td><td class="cr">C</td></tr>
+              </tbody>
+            </table>
+            <p>
+              O título do adiantamento é <strong>fechado</strong>. Neste ponto o
+              cliente está com saldo <strong>zero</strong> em contas a receber, e o
+              valor pago está representado no <strong>passivo</strong> (Adiantamento de
+              Clientes) — a obrigação de entregar mercadoria.
+            </p>
+          </div>
+        </article>
+
+        <!-- 5.3 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">3</span>
+            <h3>Entrega — NF de saída (<code>U_entrega_vf = 1</code>)</h3>
+          </header>
+          <div class="step__body">
+            <p>
+              A retirada gera a <strong>nota fiscal de saída</strong> normal (receita,
+              impostos, baixa de estoque). A particularidade é que a NF é emitida com
+              uma <strong>conta de controle</strong> própria e marcada com
+              <code>U_venda_futura</code>, <code>U_entrega_vf = 1</code> e
+              <code>U_conciliar_automatico = 1</code>:
+            </p>
+            <table class="partidas">
+              <thead><tr><th>Conta</th><th>Natureza</th><th>D/C</th></tr></thead>
+              <tbody>
+                <tr><td>Clientes — título na <strong>conta controle</strong> da NF</td><td>Ativo</td><td class="dr">D</td></tr>
+                <tr><td>Receita de Vendas (+ impostos conforme a NF)</td><td>Resultado</td><td class="cr">C</td></tr>
+                <tr><td>CPV</td><td>Resultado</td><td class="dr">D</td></tr>
+                <tr><td>Estoque</td><td>Ativo</td><td class="cr">C</td></tr>
+              </tbody>
+            </table>
+            <p>
+              A <strong>receita é reconhecida aqui</strong>, no fato gerador (entrega).
+              Mas repare: nasceu um novo título em aberto contra o cliente — que já
+              pagou. Os passos 4 e 5 existem para eliminar esse título e consumir o
+              passivo, sem tocar na NF.
+            </p>
+          </div>
+        </article>
+
+        <!-- 5.4 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">4</span>
+            <h3>Reclassificação da entrega — LC <code>VFET</code> <span class="tag tag--auto">automático</span></h3>
+          </header>
+          <div class="step__body">
+            <p>
+              A cada ciclo (rotina de ~10 min), o sistema busca as NFs de entrega em
+              aberto (<code>U_entrega_vf = 1</code>, <code>U_conciliar_automatico = 1</code>,
+              filiais habilitadas) e, para cada uma, gera um <strong>lançamento contábil
+              manual</strong> no valor total do documento:
+            </p>
+            <table class="partidas">
+              <thead><tr><th>Conta</th><th>Detalhe</th><th>D/C</th></tr></thead>
+              <tbody>
+                <tr><td>Conta controle redutora do passivo</td><td><span class="conta-role">venda-futura.conta-controle</span></td><td class="dr">D</td></tr>
+                <tr><td>Conta controle da NF, no PN (ShortName = cliente)</td><td>mesma conta/PN do título da entrega</td><td class="cr">C</td></tr>
+              </tbody>
+            </table>
+            <p>Em seguida, grava uma <strong>reconciliação interna</strong>
+              (<code>InternalReconciliations</code>) casando o <strong>débito do título
+              da NF</strong> com o <strong>crédito deste LC</strong>:</p>
+            <ul>
+              <li>O título da entrega <strong>fecha</strong> — o cliente volta a dever zero;</li>
+              <li>O valor entregue fica “estacionado” <strong>a débito na conta redutora</strong>,
+                aguardando a apropriação (passo 5);</li>
+              <li>O LC recebe <code>TransactionCode = VFET</code> e
+                <code>Reference = DocNum da NF</code>.</li>
+            </ul>
+            <div class="callout callout--note">
+              <div class="callout__title">Memo padrão</div>
+              <p><em>“Reclassificação entrega. Mercadoria venda futura [{contrato}]. NF Num {N}”</em></p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5.5 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">5</span>
+            <h3>Apropriação do adiantamento — <code>VFET → VFEC</code> <span class="tag tag--auto">automático</span></h3>
+          </header>
+          <div class="step__body">
+            <p>
+              Outra rotina (~15 min) procura os LCs <code>VFET</code> ainda não
+              conciliados. Para cada um, localiza a NF de entrega pela referência e os
+              <strong>adiantamentos pagos e ainda não utilizados</strong> do contrato
+              (fechados, sem devolução, com saldo a apropriar) e então:
+            </p>
+            <ol class="steps-inline">
+              <li>Emite uma <strong>NF de apropriação</strong> — nota de serviço com o
+                item de adiantamento (valor da linha zero), cuja função é somente
+                <strong>consumir o adiantamento</strong> via
+                <code>DownPaymentsToDraw</code>, limitada ao valor da entrega;</li>
+              <li>Essa nota usa a <strong>conta controle redutora</strong> como conta de
+                controle e a sequência própria
+                (<span class="conta-role">venda-futura.sequencia_adiantamento</span>);</li>
+              <li>Grava a <strong>reconciliação interna</strong> entre o LC
+                <code>VFET</code> (débito na redutora) e a NF de apropriação (crédito na
+                redutora);</li>
+              <li>Altera o código do LC de <code>VFET</code> para <code>VFEC</code>
+                (“Entrega VF Conciliada”) — os passos 3 e 4 são feitos em
+                <strong>batch atômico</strong>: ou tudo grava, ou nada.</li>
+            </ol>
+            <p>Efeito contábil da NF de apropriação (via consumo do adiantamento):</p>
+            <table class="partidas">
+              <thead><tr><th>Conta</th><th>Detalhe</th><th>D/C</th></tr></thead>
+              <tbody>
+                <tr><td>Adiantamento de Clientes</td><td>passivo — conta do item de adiantamento</td><td class="dr">D</td></tr>
+                <tr><td>Conta controle redutora do passivo</td><td><span class="conta-role">venda-futura.conta-controle</span></td><td class="cr">C</td></tr>
+              </tbody>
+            </table>
+            <ul>
+              <li>O <strong>passivo de adiantamento baixa</strong> na exata medida do
+                valor entregue;</li>
+              <li>A <strong>conta redutora zera</strong> (débito do VFET × crédito da
+                apropriação, reconciliados);</li>
+              <li>Se a apropriação falhar após a emissão da nota, o sistema
+                <strong>cancela a nota de apropriação</strong> automaticamente
+                (rollback) e tenta no próximo ciclo.</li>
+            </ul>
+            <div class="callout callout--note">
+              <div class="callout__title">Memo padrão</div>
+              <p><em>“Apropriacao adt Com LC {JdtNum} da entrega. NF {N} | Cont {contrato}”</em></p>
+            </div>
+            <div class="callout callout--warn">
+              <div class="callout__title">Entrega maior que o saldo de adiantamento</div>
+              <p>A apropriação consome <strong>no máximo o saldo disponível</strong> dos
+                adiantamentos pagos. Se a entrega supera o que foi pago, a diferença
+                permanece a débito na conta redutora até que novos adiantamentos sejam
+                quitados — o LC segue <code>VFET</code> (não vira <code>VFEC</code>) e a
+                rotina reprocessa nos próximos ciclos.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- 6. BALANCETE -->
+      <section id="balancete" class="block">
+        <h2><span class="h2-num">6</span> Exemplo completo até o balancete</h2>
+        <p>
+          Contrato de <strong>R$ 10.000</strong> em 2 parcelas de R$ 5.000, pago
+          integralmente, entregue em duas retiradas (R$ 6.000 e R$ 4.000; custo da
+          mercadoria R$ 4.200 e R$ 2.800). Acompanhe os saldos:
+        </p>
+
+        <h3 class="mt">Fase A — Emissão dos boletos (2 faturas de adiantamento)</h3>
+<pre class="razonete">
+      Clientes (Ativo)              Adiantamento de Clientes (Passivo)
+   ┌──────────┬──────────┐            ┌──────────┬──────────┐
+   │ 5.000    │          │            │          │ 5.000    │
+   │ 5.000    │          │            │          │ 5.000    │
+   └──────────┴──────────┘            └──────────┴──────────┘
+      Saldo: 10.000 D                    Saldo: 10.000 C
+</pre>
+
+        <h3 class="mt">Fase B — Cliente paga as duas parcelas</h3>
+<pre class="razonete">
+        Banco (Ativo)                    Clientes (Ativo)
+   ┌──────────┬──────────┐            ┌──────────┬──────────┐
+   │ 5.000    │          │            │ 10.000   │ 5.000    │
+   │ 5.000    │          │            │          │ 5.000    │
+   └──────────┴──────────┘            └──────────┴──────────┘
+      Saldo: 10.000 D                    Saldo: 0  ✓ (títulos baixados)
+
+   Passivo Adiantamento permanece: 10.000 C  (obrigação de entregar)
+</pre>
+
+        <h3 class="mt">Fase C — 1ª retirada: NF de R$ 6.000 (custo 4.200)</h3>
+<pre class="razonete">
+   Clientes/controle (Ativo)      Receita (Resultado)       CPV / Estoque
+   ┌──────────┬──────────┐     ┌─────────┬─────────┐     D CPV 4.200
+   │ 6.000    │          │     │         │ 6.000   │     C Estoque 4.200
+   └──────────┴──────────┘     └─────────┴─────────┘
+      Saldo: 6.000 D              Saldo: 6.000 C
+</pre>
+
+        <h3 class="mt">Fase D — Reclassificação <code>VFET</code> + reconciliação (automático)</h3>
+<pre class="razonete">
+   LC VFET:  D Redutora 6.000   |   C Clientes/controle (PN) 6.000
+   Reconciliação interna: título da NF (D 6.000) × LC (C 6.000)
+
+   Clientes/controle: 0 ✓        Redutora: 6.000 D (transitório)
+</pre>
+
+        <h3 class="mt">Fase E — Apropriação <code>VFEC</code> + reconciliação (automático)</h3>
+<pre class="razonete">
+   NF de apropriação (consome adiantamento de 6.000):
+       D Adiantamento de Clientes 6.000   |   C Redutora 6.000
+   Reconciliação interna: LC VFET (D 6.000) × NF apropriação (C 6.000)
+
+   Redutora: 0 ✓        Adiantamento de Clientes: 4.000 C (saldo a entregar)
+</pre>
+
+        <h3 class="mt">Fase F — 2ª retirada (R$ 4.000) repete C→D→E</h3>
+        <p>Ao final, o contrato é marcado <strong>Entregue</strong> e depois
+          <strong>Concluído</strong> pelas rotinas de status. O balancete consolidado
+          do ciclo fica:</p>
+
+        <table class="partidas">
+          <thead><tr><th>Conta</th><th class="num">Débito</th><th class="num">Crédito</th><th class="num">Saldo</th></tr></thead>
+          <tbody>
+            <tr><td>Banco</td><td class="num">10.000</td><td class="num">—</td><td class="num">10.000 D</td></tr>
+            <tr class="zera"><td>Clientes (adiantamentos)</td><td class="num">10.000</td><td class="num">10.000</td><td class="num">0</td></tr>
+            <tr class="zera"><td>Clientes / conta controle (entregas)</td><td class="num">10.000</td><td class="num">10.000</td><td class="num">0</td></tr>
+            <tr class="zera"><td>Adiantamento de Clientes (passivo)</td><td class="num">10.000</td><td class="num">10.000</td><td class="num">0</td></tr>
+            <tr class="zera"><td>Conta controle redutora do passivo</td><td class="num">10.000</td><td class="num">10.000</td><td class="num">0</td></tr>
+            <tr><td>Receita de Vendas</td><td class="num">—</td><td class="num">10.000</td><td class="num">10.000 C</td></tr>
+            <tr><td>CPV</td><td class="num">7.000</td><td class="num">—</td><td class="num">7.000 D</td></tr>
+            <tr><td>Estoque</td><td class="num">—</td><td class="num">7.000</td><td class="num">7.000 C</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout--info">
+          <div class="callout__title">Leitura do resultado</div>
+          <p>
+            Todas as contas <strong>transitórias zeraram e estão reconciliadas</strong>
+            (sem partidas em aberto no PN nem nas contas de controle). Sobram os fatos
+            econômicos definitivos: caixa recebido, receita reconhecida na entrega e o
+            custo correspondente. É este o estado que caracteriza uma Venda Futura
+            <strong>corretamente consolidada</strong>.
+          </p>
+        </div>
+      </section>
+
+      <!-- 7. DEVOLUÇÕES -->
+      <section id="devolucao" class="block">
+        <h2><span class="h2-num">7</span> Devoluções e estornos</h2>
+        <p>
+          Quando uma entrega é devolvida (nota de devolução vinculada à NF de saída,
+          concluída no SAP B1 após liberar a conciliação na tela), a rotina de estorno
+          detecta a devolução e desfaz o ciclo na medida certa. Há dois cenários:
+        </p>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">⟲</span>
+            <h3>Cenário 1 — Entrega ainda não apropriada (só <code>VFET</code>)</h3>
+          </header>
+          <div class="step__body">
+            <p>A devolução reverte receita/estoque (lançamento próprio da nota de
+              devolução) e o sistema gera o LC <code>VFDV</code>, espelho da
+              reclassificação:</p>
+            <table class="partidas">
+              <thead><tr><th>Conta</th><th>D/C</th></tr></thead>
+              <tbody>
+                <tr><td>Conta controle da devolução, no PN (ShortName = cliente)</td><td class="dr">D</td></tr>
+                <tr><td>Conta controle redutora do passivo</td><td class="cr">C</td></tr>
+              </tbody>
+            </table>
+            <p>Resultado: o crédito gerado pela devolução no PN é fechado e a redutora
+              volta a zero. O saldo do contrato volta a ficar disponível para nova
+              retirada.</p>
+          </div>
+        </article>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">⟲</span>
+            <h3>Cenário 2 — Entrega já apropriada (<code>VFEC</code>)</h3>
+          </header>
+          <div class="step__body">
+            <p>Aqui o passivo de adiantamento já foi consumido; a devolução precisa
+              <strong>recompô-lo</strong>. O sistema gera:</p>
+            <ol class="steps-inline">
+              <li>LC <code>VFDV</code>: <span class="dr">D</span> conta controle do PN /
+                <span class="cr">C</span> <strong>conta de adiantamento</strong>
+                (<span class="conta-role">venda-futura.conta-adiantamento</span>);</li>
+              <li>LC <code>AROU</code> (estorno da apropriação):
+                <span class="dr">D</span> conta de adiantamento /
+                <span class="cr">C</span> conta controle do PN;</li>
+              <li>Uma <strong>nova fatura de adiantamento</strong>
+                (“Reconhecimento de adiantamento de devolução”) recriando o crédito no
+                passivo — <span class="dr">D</span> Clientes /
+                <span class="cr">C</span> Adiantamento de Clientes — reconciliada com o
+                LC <code>AROU</code>.</li>
+            </ol>
+            <p>Efeito líquido: o valor devolvido volta a existir como
+              <strong>adiantamento pago e disponível</strong>, e o cliente pode retirar
+              novamente (ou o contrato pode ser encerrado com devolução do valor,
+              conforme o processo comercial).</p>
+            <div class="callout callout--note">
+              <div class="callout__title">Idempotência</div>
+              <p>A rotina marca a devolução com <code>U_conciliar_automatico = 0</code>
+                ao final e usa <code>U_TX_DocEntryRef</code>/referências para
+                <strong>não duplicar</strong> lançamentos caso reprocessada.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">⏱</span>
+            <h3>PIX expirado (adiantamento não pago)</h3>
+          </header>
+          <div class="step__body">
+            <p>Adiantamentos com PIX vencido e não pago são estornados por
+              <strong>nota de devolução automática</strong> (“Estorno automático de
+              adiantamento PIX expirado”), revertendo o <span class="dr">D</span>
+              Clientes / <span class="cr">C</span> Passivo da fatura de adiantamento.
+              Nenhuma conta fica pendurada por cobrança que não se concretizou.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 8. ROTINAS -->
+      <section id="rotinas" class="block">
+        <h2><span class="h2-num">8</span> Rotinas automáticas (agendas)</h2>
+        <table class="tbl">
+          <thead><tr><th>Rotina</th><th>Frequência</th><th>O que faz</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Reclassificação de entregas</strong></td>
+              <td>a cada ~10 min</td>
+              <td>Gera o LC <code>VFET</code> de cada NF de entrega em aberto e a
+                reconciliação interna com o título. Também processa os
+                <strong>estornos de devolução</strong> (<code>VFDV</code>/<code>AROU</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Conciliação / apropriação</strong></td>
+              <td>a cada ~15 min</td>
+              <td>Para cada LC <code>VFET</code>: emite a NF de apropriação consumindo
+                os adiantamentos pagos, reconcilia e promove o código a
+                <code>VFEC</code> (batch atômico, com rollback da nota em falha).</td>
+            </tr>
+            <tr>
+              <td><strong>Conclusão de contratos</strong></td>
+              <td>a cada ~30 min</td>
+              <td>Atualiza status: <em>Entregue</em> (tudo retirado) e
+                <em>Concluído</em> (entregue + financeiro liquidado).</td>
+            </tr>
+            <tr>
+              <td><strong>Expiração de PIX</strong></td>
+              <td>agenda própria</td>
+              <td>Estorna (devolução) adiantamentos cujo PIX venceu sem pagamento.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout callout--note">
+          <div class="callout__title">Pré-condições de execução</div>
+          <p>As rotinas só rodam com os parâmetros
+            <span class="conta-role">venda-futura.adiantamento-item</span> e
+            <span class="conta-role">venda-futura.conta-controle</span> configurados, e
+            processam apenas as filiais de
+            <span class="conta-role">venda-futura.filiais</span>. Documentos fora das
+            datas de corte configuradas no código são ignorados.</p>
+        </div>
+      </section>
+
+      <!-- 9. RASTREABILIDADE -->
+      <section id="rastreio" class="block">
+        <h2><span class="h2-num">9</span> Rastreabilidade</h2>
+        <p>Para auditar qualquer contrato, use as chaves que o sistema grava em cada
+          documento:</p>
+        <table class="tbl">
+          <thead><tr><th>Chave</th><th>Onde aparece</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>U_venda_futura</code></td>
+              <td>Faturas de adiantamento, NFs de entrega, notas de apropriação e devoluções</td>
+              <td>Nº do contrato — reúne todos os documentos do ciclo.</td>
+            </tr>
+            <tr>
+              <td><code>TransactionCode</code></td>
+              <td>Lançamentos contábeis manuais</td>
+              <td><code>VFET</code> (pendente), <code>VFEC</code> (conciliado),
+                <code>VFDV</code>/<code>AROU</code> (devolução).</td>
+            </tr>
+            <tr>
+              <td><code>Reference</code></td>
+              <td>LCs <code>VFET</code>/<code>VFDV</code></td>
+              <td>DocNum da NF de entrega/devolução que originou o LC.</td>
+            </tr>
+            <tr>
+              <td><code>U_TX_DocEntryRef</code></td>
+              <td>Notas de apropriação e estornos</td>
+              <td>DocEntry do documento de origem (garante idempotência).</td>
+            </tr>
+            <tr>
+              <td><code>SequenceCode</code></td>
+              <td>Notas de apropriação</td>
+              <td>Identifica notas geradas pela conciliação
+                (<span class="conta-role">venda-futura.sequencia_adiantamento</span>).</td>
+            </tr>
+            <tr>
+              <td>Memos padronizados</td>
+              <td>Todos os documentos gerados</td>
+              <td>“Fatura de adiantamento…”, “Reclassificação entrega…”,
+                “Apropriacao adt Com LC…”, “Baixa adiantamento com devolucao…”.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 10. CONFERÊNCIAS -->
+      <section id="conferencia" class="block">
+        <h2><span class="h2-num">10</span> Conferências e sinais de problema</h2>
+        <p>Checklist de fechamento: em um ambiente saudável, valem as três igualdades
+          abaixo para cada contrato encerrado (e para o agregado das contas):</p>
+        <ul>
+          <li><strong>Conta controle redutora = 0</strong> — todo <code>VFET</code> tem
+            sua apropriação (<code>VFEC</code>) reconciliada;</li>
+          <li><strong>Adiantamento de Clientes = soma dos contratos com saldo a
+            entregar</strong> — nada além disso;</li>
+          <li><strong>PN sem partidas em aberto</strong> de adiantamento/entrega de
+            contratos concluídos.</li>
+        </ul>
+
+        <details class="faq">
+          <summary>Existem LCs <code>VFET</code> antigos que nunca viram <code>VFEC</code>. O que significa?</summary>
+          <p>A apropriação não encontrou <strong>adiantamento pago com saldo</strong>
+            para aquele contrato (boletos em aberto, adiantamento devolvido, ou entrega
+            maior que o pago). O débito fica na conta redutora até a quitação. Verifique
+            os boletos do contrato e o saldo de apropriação dos adiantamentos.</p>
+        </details>
+
+        <details class="faq">
+          <summary>A conta redutora tem saldo devedor crescente.</summary>
+          <p>Entregas reclassificadas sem apropriação correspondente (mesmo caso acima,
+            em escala) — ou falhas recorrentes na rotina de conciliação. Consulte os
+            logs da integração; a rotina cancela a nota de apropriação quando a
+            reconciliação falha e tenta novamente, mas erros persistentes (ex.: período
+            contábil bloqueado) exigem intervenção.</p>
+        </details>
+
+        <details class="faq">
+          <summary>O passivo de adiantamento não bate com os contratos em aberto.</summary>
+          <p>Procure: devoluções concluídas no B1 sem o processamento do estorno
+            (<code>U_conciliar_automatico</code> ainda em 1), adiantamentos pagos de
+            contratos cancelados, ou lançamentos manuais feitos fora do fluxo nas contas
+            paramétricas — as contas de controle devem ser de uso <strong>exclusivo</strong>
+            da integração.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Posso lançar manualmente nas contas de controle?</summary>
+          <p><strong>Não recomendado.</strong> As reconciliações internas casam débitos
+            e créditos por documento; um lançamento manual quebra o pareamento e deixa
+            resíduos permanentes nas transitórias. Se um ajuste for inevitável,
+            replique o padrão (mesmo PN, mesmo valor, reconciliação interna manual) e
+            documente no memo.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Quanto tempo até uma entrega aparecer conciliada?</summary>
+          <p>No pior caso, a soma das janelas: reclassificação (~10 min) + conciliação
+            (~15 min). Se após ~30 minutos o LC segue <code>VFET</code>, trate como o
+            primeiro item deste checklist.</p>
+        </details>
+      </section>
+
+      <footer class="docfoot">
+        <p>Manual técnico — contabilidade da Venda Futura. Os números de conta reais
+          (plano de contas) estão na parametrização da integração
+          (<em>venda-futura.*</em>) de cada ambiente; consulte a equipe de TI.
+          Guia operacional: <a href="../venda-futura/index.html">Venda Futura — Guia do
+          Usuário</a>.</p>
+      </footer>
+
+    </main>
+  </div>
+
+</body>
+</html>

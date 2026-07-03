@@ -14,6 +14,7 @@ export class LoginComponent {
   password : string
   loading = false
   returnUrl = "/"
+  keycloak = false
 
   constructor(
     private router : Router,
@@ -24,8 +25,21 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
-    // Get the return URL from the route parameters or default to '/'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    // Apos o login vai para a tela de boas-vindas (home), salvo quando veio
+    // de uma rota protegida (returnUrl preenchido pelo guard).
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+    this.keycloak = this.authService.isKeycloak()
+    if (this.keycloak && this.authService.isLoggedIn()) {
+      this.router.navigateByUrl(this.returnUrl)
+    } else if (this.keycloak) {
+      // modo Keycloak: redireciona direto para a tela de login do KC
+      this.entrarKeycloak()
+    }
+  }
+
+  entrarKeycloak(){
+    this.loading = true
+    this.authService.loginKeycloak(this.returnUrl)
   }
 
   entrar(){

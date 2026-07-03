@@ -30,7 +30,7 @@
                     {{ userName() }}   
                 </a>
             </div>
-            <div class="info">
+            <div *ngIf="!isKeycloak()" class="info">
                 <small><a [routerLink]="['change-passowrd']">Trocar Senha</a></small>
             </div>
         </div>

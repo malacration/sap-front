@@ -51,6 +51,10 @@ export class MenuSidebarComponent implements OnInit {
         return this.authService.isLoggedIn()
     }
 
+    isKeycloak() : boolean {
+        return this.authService.isKeycloak()
+    }
+
     userName() {
         return this.authService.getUser()
     }

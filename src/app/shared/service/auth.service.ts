@@ -31,10 +31,29 @@ export class AuthService {
   private loginChange = new Subject<void>()
   loginChange$ = this.loginChange.asObservable();
 
+  /** Modo de autenticacao informado pelo backend via /auth/config. */
+  getAuthMode(): 'internal' | 'keycloak' {
+    return (window as any)['auth-config']?.mode ?? 'internal'
+  }
+
+  isKeycloak(): boolean {
+    return this.getAuthMode() === 'keycloak'
+  }
 
   login(username: string, password: string): Observable<boolean> {
     return this.http.post<Token>(`${this.apiUrl}/logar`,new UserPassword(username,password))
-      .pipe(map((response) => this.setToken(response))) 
+      .pipe(map((response) => this.setToken(response)))
+  }
+
+  /** Inicia o fluxo OIDC do Keycloak (redirect para a tela de login do KC). */
+  loginKeycloak(returnUrl: string = '/home'): void {
+    const keycloak = (window as any).keycloak
+    if (!keycloak) {
+      console.error('Keycloak nao inicializado')
+      return
+    }
+    const target = returnUrl && returnUrl !== '/login' && returnUrl !== '/' ? returnUrl : '/home'
+    keycloak.login({ redirectUri: window.location.origin + target })
   }
 
   changePassword(password : String){
@@ -45,7 +64,24 @@ export class AuthService {
     return JSON.parse(window.atob(this.getToken().split('.')[1]));
   }
 
+  /** Verdadeiro se o token atual foi emitido pelo Keycloak. */
+  private isKeycloakToken(): boolean {
+    try {
+      return !!this.getDecodeToken().iss
+    } catch {
+      return false
+    }
+  }
+
   logout(): void {
+    if (this.isKeycloak()) {
+      this.removeToken();
+      localStorage.removeItem('kc_refresh_token');
+      this.loginChange.next();
+      const keycloak = (window as any).keycloak
+      keycloak?.logout({ redirectUri: window.location.origin })
+      return
+    }
     this.removeToken();
     this.loginChange.next();
   }
@@ -55,15 +91,20 @@ export class AuthService {
   }
 
   getUser() : string {
-    return this.getDecodeToken().sub
+    const token = this.getDecodeToken()
+    return token.name ?? token.preferred_username ?? token.sub
   }
 
   getId() : string {
-    return this.getDecodeToken().jti
+    const token = this.getDecodeToken()
+    return token.jti ?? token.sub
   }
 
   isCliente() : boolean {
     try {
+      // Cliente externo = sessao via OTP (token interno, sem issuer Keycloak).
+      if (this.isKeycloakToken())
+        return false
       return this.isLoggedIn() && this.getId().length > 6
     } catch {
       return false

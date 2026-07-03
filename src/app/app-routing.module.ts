@@ -28,7 +28,7 @@ import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.compone
  let routes: Routes = [
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'faturas',
     pathMatch: 'full',
   },
   {

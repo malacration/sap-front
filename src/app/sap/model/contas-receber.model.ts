@@ -47,8 +47,10 @@ export class ContaReceber {
       actions.push(new Action('Carregando', new ActionReturn('carregando', this), Icons.loading, 'warning'));
     }
 
-    if(pixExistente)
+    if (pixExistente) {
+      actions.push(new Action('Compartilhar Link', new ActionReturn('compartilharLinkPix', this), Icons.pix.compartilhar, 'success'));
       actions.push(new Action('Verificar Pagamento', new ActionReturn('checarPagamento', this), Icons.pix.verificarPagamento));
+    }
 
     return actions;
   }

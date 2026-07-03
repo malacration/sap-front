@@ -1,7 +1,15 @@
 <div class="login-page">
     <div class="login-box">
         <div class="card">
-            <div class="card-body login-card-body">
+            <div *ngIf="keycloak" class="card-body login-card-body">
+                <p class="login-box-msg">Redirecionando para o login...</p>
+                <div class="row">
+                    <div class="col-12">
+                        <button (click)="entrarKeycloak()" type="button" class="btn btn-primary btn-block">Entrar com Keycloak</button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="!keycloak" class="card-body login-card-body">
                 <p class="login-box-msg">Sign in to start your session</p>
                 <div class="input-group mb-3">
                     <input [(ngModel)]="username" type="text" class="form-control" placeholder="Nome de Usuario">
