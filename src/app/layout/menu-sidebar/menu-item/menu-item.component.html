@@ -1,7 +1,8 @@
 <li [ngClass]="containerClasses">
   <a
     class="nav-link"
-    [class.active]="isMainActive || hasActiveChild"
+    [class.active]="isMainActive"
+    [class.tree-active]="hasActiveChild && !isMainActive"
     [routerLink]="menuItem.routerLink || undefined"
     [attr.href]="menuItem.routerLink ? null : '#'"
     [attr.role]="menuItem.routerLink ? null : 'button'"

@@ -1,6 +1,7 @@
 import { formatCurrency } from '@angular/common';
 import * as moment from 'moment';
 import { Action, ActionReturn } from '../../../shared/components/action/action.model';
+import { Icons } from '../../../shared/icons';
 import { StatusTypes } from '../labels/status-types';
 
 export class PixAdiantamento {
@@ -79,10 +80,10 @@ export class PixAdiantamento {
     const consultarStatus = new ActionReturn('consultar-status-pix-adiantamento', this);
     consultarStatus.carregando = this.checkingStatus;
 
-    actions.push(new Action('Consultar Status', consultarStatus, 'fas fa-search-dollar'));
+    actions.push(new Action('Consultar Status', consultarStatus, Icons.pix.verificarPagamento));
 
     if (this.isOpen() && this.hasPixLink()) {
-      actions.push(new Action('Abrir Link', new ActionReturn('abrir-link-pix-adiantamento', this), 'fas fa-external-link-alt'));
+      actions.push(new Action('Abrir Link', new ActionReturn('abrir-link-pix-adiantamento', this), Icons.pix.abrirLink));
     }
 
     return actions;

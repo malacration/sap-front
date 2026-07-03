@@ -129,7 +129,7 @@
       <input type="text" class="form-control form-control-sm" [value]="qrCodeData.qrCodeCopyPaste" readonly>
       <div class="input-group-append">
         <button class="btn btn-sm" [ngClass]="pixCopiado ? 'btn-success' : 'btn-primary'" type="button" (click)="copiarPix()">
-          <i class="far fa-copy"></i> {{ pixCopiado ? 'Copiado' : 'Copiar' }}
+          <i [ngClass]="icons.pix.copiar"></i> {{ pixCopiado ? 'Copiado' : 'Copiar' }}
         </button>
       </div>
     </div>
@@ -140,7 +140,7 @@
 
     <div class="d-flex justify-content-center gap-2 mt-2">
       <button type="button" class="btn btn-outline-success" (click)="compartilharLinkPix()">
-        <i class="fas fa-share-alt"></i> {{ linkPixCopiado ? 'Link Copiado!' : 'Compartilhar Link' }}
+        <i [ngClass]="icons.pix.compartilhar"></i> {{ linkPixCopiado ? 'Link Copiado!' : 'Compartilhar Link' }}
       </button>
       <button
         *ngIf="contaPixAtual"
@@ -148,7 +148,7 @@
         class="btn btn-outline-primary"
         (click)="checarPagamento(contaPixAtual)"
       >
-        <i class="fas fa-search-dollar"></i> Verificar Pagamento
+        <i [ngClass]="icons.pix.verificarPagamento"></i> Verificar Pagamento
       </button>
     </div>
   </div>

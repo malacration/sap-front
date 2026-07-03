@@ -10,6 +10,7 @@ import { AlertService } from '../../../../shared/service/alert.service';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { PixPagamentoStatus, PixService } from '../../../service/pix.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { Icons } from '../../../../shared/icons';
 
 
 
@@ -19,6 +20,8 @@ import { ActionReturn } from '../../../../shared/components/action/action.model'
   styleUrls: ['./single.component.scss']
 })
 export class VendaFuturaSingleComponent implements OnInit {
+
+  readonly icons = Icons;
 
   constructor(
     private downPaymentService: DownPaymentService,

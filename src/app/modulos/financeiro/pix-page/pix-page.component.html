@@ -5,7 +5,7 @@
 
         <div class="card card-primary">
           <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-qrcode mr-2"></i>Gerar PIX</h3>
+            <h3 class="card-title"><i class="mr-2" [ngClass]="icons.pix.emitir"></i>Gerar PIX</h3>
           </div>
 
           <div class="card-body">
@@ -36,7 +36,7 @@
                   [disabled]="gerarDesabilitado"
                   (click)="gerar()"
                 >
-                  <i class="fas fa-qrcode"></i> Gerar PIX
+                  <i [ngClass]="icons.pix.emitir"></i> Gerar PIX
                 </button>
               </div>
             </div>
@@ -88,7 +88,7 @@
                     type="button"
                     (click)="copiar()"
                   >
-                    <i class="far fa-copy"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+                    <i [ngClass]="icons.pix.copiar"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
                   </button>
                 </div>
               </div>
@@ -105,7 +105,7 @@
                   <i class="fas fa-arrow-left"></i> Voltar
                 </button>
                 <button type="button" class="btn btn-outline-primary btn-sm" (click)="abrirLinkCliente()">
-                  <i class="fas fa-external-link-alt"></i> Abrir link do cliente
+                  <i [ngClass]="icons.pix.abrirLink"></i> Abrir link do cliente
                 </button>
               </div>
             </div>

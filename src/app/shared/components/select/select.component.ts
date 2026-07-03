@@ -41,4 +41,11 @@ export class SelectComponent implements OnInit {
   unselect(){
     this.selected = 'inicial'
   }
+
+  // Mantém os <option> estáveis entre ciclos de change detection.
+  // Sem isso, getters que retornam um novo array a cada CD fazem o Angular
+  // recriar todos os <option>, o que no Firefox fecha o dropdown nativo aberto.
+  trackByOption(_: number, it: Option){
+    return it?.value;
+  }
 }

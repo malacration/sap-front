@@ -1,4 +1,5 @@
 import { Action, ActionReturn } from '../../shared/components/action/action.model';
+import { Icons } from '../../shared/icons';
 import { ReplaceFilial } from '../../utils/replaceFilial';
 
 export class ContaReceber {
@@ -29,18 +30,27 @@ export class ContaReceber {
 
   getActions(): Action[] {
     const actions: Action[] = [];
+    const pixExistente = !!(this.U_pix_reference || this.pixGerado);
+
     if (this.PixDocType && !this.loadingPix) {
-      actions.push(new Action('PIX', new ActionReturn('gerarPix', this), 'fas fa-qrcode'));
-      
-      if (this.autorizadoPixSemJuros) {
-        actions.push(new Action('PIX (Sem Juros)', new ActionReturn('gerarPixSemJuros', this), 'fas fa-percentage',));
+      if (pixExistente) {
+        // Título já possui PIX emitido: oferece apenas a exibição do existente
+        actions.push(new Action('Exibir PIX', new ActionReturn('exibirPix', this), Icons.pix.exibir));
+      } else {
+        actions.push(new Action('Emitir PIX', new ActionReturn('gerarPix', this), Icons.pix.emitir));
+
+        if (this.autorizadoPixSemJuros) {
+          actions.push(new Action('PIX (Sem Juros)', new ActionReturn('gerarPixSemJuros', this), Icons.pix.semJuros));
+        }
       }
     } else if(this.PixDocType) {
-      actions.push(new Action('Carregando', new ActionReturn('carregando', this), 'fas fa-spinner fa-spin', 'warning'));
+      actions.push(new Action('Carregando', new ActionReturn('carregando', this), Icons.loading, 'warning'));
     }
 
-    if(this.U_pix_reference || this.pixGerado)
-      actions.push(new Action('Verificar Pagamento', new ActionReturn('checarPagamento', this), 'fas fa-percentage',));
+    if (pixExistente) {
+      actions.push(new Action('Compartilhar Link', new ActionReturn('compartilharLinkPix', this), Icons.pix.compartilhar, 'success'));
+      actions.push(new Action('Verificar Pagamento', new ActionReturn('checarPagamento', this), Icons.pix.verificarPagamento));
+    }
 
     return actions;
   }

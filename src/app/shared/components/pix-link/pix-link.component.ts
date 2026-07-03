@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Icons } from '../../icons';
 
 interface PixLinkData {
   qrCode: string;
@@ -14,6 +15,7 @@ interface PixLinkData {
   styleUrls: ['./pix-link.component.scss'],
 })
 export class PixLinkComponent implements OnInit, OnDestroy {
+  readonly icons = Icons;
   data: PixLinkData | null = null;
   copiado = false;
   invalido = false;

@@ -26,7 +26,10 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 403) {
-          this.alertService.error('Acesso negado');
+          const msg = (typeof error.error === 'string' && error.error.trim())
+            ? error.error
+            : 'Acesso negado';
+          this.alertService.error(msg);
         } else if (error.status != 200 && error.error) {
           let titulo = "Erro"
           if(error.error.traceId)

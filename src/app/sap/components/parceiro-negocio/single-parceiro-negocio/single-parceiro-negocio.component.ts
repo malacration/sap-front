@@ -17,6 +17,7 @@ import { ContaReceber } from '../../../model/contas-receber.model';
 import { Page } from '../../../model/page.model';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { PixService } from '../../../service/pix.service';
+import { Icons } from '../../../../shared/icons';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -30,6 +31,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     private pixService: PixService,
     private router: Router
   ) {}
+
+  readonly icons = Icons;
 
   @Input()
   selected: BusinessPartner = null;
@@ -126,24 +129,72 @@ changePageFunction(nextLink: string) {
         this.solicitarPix(event.data, true);
     } else if (event.type === 'gerarPixSemJuros') {
         this.solicitarPix(event.data, false);
+    } else if (event.type === 'exibirPix') {
+        // Título já possui PIX: reutiliza o mesmo fluxo para exibir o QR existente
+        this.solicitarPix(event.data, true);
+    } else if (event.type === 'compartilharLinkPix') {
+      this.compartilharLinkPix(event.data);
     } else if (event.type === 'checarPagamento') {
       this.checarPagamento(event.data)
     }
 }
 
-  compartilharLinkPix() {
+  compartilharLinkPix(conta?: ContaReceber) {
+    if (conta) {
+      this.copiarLinkPixConta(conta);
+      return;
+    }
+
     if (!this.qrCodeData) return;
+    navigator.clipboard.writeText(this.montarLinkPix(
+      this.qrCodeData.qrCodeCopyPaste,
+      this.qrCodeData.total,
+      this.qrCodeData.expirationDate,
+    ));
+    this.linkPixCopiado = true;
+    setTimeout(() => this.linkPixCopiado = false, 3000);
+  }
+
+  private copiarLinkPixConta(conta: ContaReceber): void {
+    conta.loadingPix = true;
+    this.pixService
+      .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
+      .subscribe({
+        next: (res) => {
+          if (!res || res.length !== 1) {
+            throw new Error('PIX retornou múltiplos itens');
+          }
+          const item = res[0];
+          const valorTitulo = Number(item.ValorTitulo ?? item.Total ?? 0);
+          const juros = Number(item.JurosValor ?? 0);
+          const valorTotal = Number(item.ValorTotal ?? item.Total ?? valorTitulo + juros);
+          const qrCode = item.U_QrCodePix || item.U_pix_textContent;
+          const vencimento = item.U_pix_due_date ?? item.DueDate;
+
+          if (qrCode) {
+            navigator.clipboard.writeText(this.montarLinkPix(qrCode, valorTotal, vencimento));
+            conta.U_pix_reference = item.U_pix_reference ?? conta.U_pix_reference;
+            conta.pixGerado = true;
+          }
+        },
+        error: () => {
+          conta.loadingPix = false
+        },
+        complete: () => {
+          conta.loadingPix = false
+        },
+      });
+  }
+
+  private montarLinkPix(qrCode: string, valor: number, vencimento: string): string {
     const payload = {
-      qrCode: this.qrCodeData.qrCodeCopyPaste,
-      valor: this.qrCodeData.total,
-      vencimento: this.qrCodeData.expirationDate,
+      qrCode,
+      valor,
+      vencimento,
       nome: this.selected?.CardName,
     };
     const encoded = btoa(JSON.stringify(payload));
-    const url = `${window.location.origin}/pix-link?d=${encoded}`;
-    navigator.clipboard.writeText(url);
-    this.linkPixCopiado = true;
-    setTimeout(() => this.linkPixCopiado = false, 3000);
+    return `${window.location.origin}/pix-link?d=${encoded}`;
   }
 
   copiarPix() {
@@ -157,6 +208,7 @@ changePageFunction(nextLink: string) {
     conta.loadingPix = true
     this.contaPixAtual = conta;
     this.pixCopiado = false;
+    this.linkPixCopiado = false;
     this.pixService
       .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine, comJuros)
       .subscribe({

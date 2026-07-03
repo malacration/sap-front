@@ -76,7 +76,7 @@
           [disabled]="gerarDesabilitado"
           (click)="gerar()"
         >
-          <i class="fas fa-qrcode"></i> Gerar PIX
+          <i [ngClass]="icons.pix.emitir"></i> Gerar PIX
         </button>
       </div>
     </div>
@@ -128,7 +128,7 @@
             type="button"
             (click)="copiar()"
           >
-            <i class="far fa-copy"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+            <i [ngClass]="icons.pix.copiar"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
           </button>
         </div>
       </div>
@@ -142,7 +142,7 @@
 
       <div class="d-flex justify-content-end">
         <button type="button" class="btn btn-outline-primary btn-sm" (click)="abrirLinkCliente()">
-          <i class="fas fa-external-link-alt"></i> Abrir link do cliente
+          <i [ngClass]="icons.pix.abrirLink"></i> Abrir link do cliente
         </button>
       </div>
     </div>

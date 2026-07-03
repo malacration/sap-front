@@ -77,7 +77,8 @@ body {
 :root {
     --bs-primary: #25A246; /* Cor primária padrão do Bootstrap */
     --bs-primary-dark: #25A246; /* Cor escura personalizada para hover */
-    --bs-primary-text: white; /* Cor do texto padrão */
+    --bs-primary-text: white; /* Cor do texto sobre a primária */
+    --bs-primary-dark-text: white; /* Cor do texto sobre a primária escura (contraste) */
     --bs-success: #198754; /* Cor de sucesso padrão do Bootstrap */
     --bs-success-dark: #157347; /* Cor escura personalizada para hover */
     --bs-success-text: white; /* Cor do texto padrão */

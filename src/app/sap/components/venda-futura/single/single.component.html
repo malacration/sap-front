@@ -18,7 +18,7 @@
                     <button *ngIf="podeGerarPix"
                         (click)="gerarPixContrato()" [disabled]="gerarPixLoading"
                         type="button" class="btn btn-success btn-sm mr-2">
-                        <i *ngIf="!gerarPixLoading" class="fas fa-qrcode"></i>
+                        <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
                         <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
                         {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
                     </button>
@@ -150,7 +150,7 @@
                                                                 [ngClass]="foiCopiado(boleto) ? 'btn-success' : 'btn-outline-primary'"
                                                                 type="button"
                                                                 (click)="copiarPix(boleto)">
-                                                                <i class="far fa-copy"></i>
+                                                                <i [ngClass]="icons.pix.copiar"></i>
                                                                 {{ foiCopiado(boleto) ? 'Copiado!' : 'Copiar' }}
                                                             </button>
                                                         </div>
@@ -170,7 +170,7 @@
                                                             class="btn btn-sm btn-outline-info mr-2"
                                                             [disabled]="isConsultando(boleto)"
                                                             (click)="consultarPix(boleto)">
-                                                            <i *ngIf="!isConsultando(boleto)" class="fas fa-search-dollar"></i>
+                                                            <i *ngIf="!isConsultando(boleto)" [ngClass]="icons.pix.verificarPagamento"></i>
                                                             <i *ngIf="isConsultando(boleto)" class="fas fa-sync-alt fa-spin"></i>
                                                             {{ isConsultando(boleto) ? 'Consultando...' : 'Consultar Pagamento' }}
                                                         </button>
@@ -178,7 +178,7 @@
                                                             type="button"
                                                             class="btn btn-sm btn-outline-secondary"
                                                             (click)="abrirLinkPix(boleto)">
-                                                            <i class="fas fa-external-link-alt"></i>
+                                                            <i [ngClass]="icons.pix.abrirLink"></i>
                                                             Link do Cliente
                                                         </button>
                                                     </div>
@@ -215,7 +215,7 @@
             <p class="mt-3">Emitindo boletos, aguarde...</p>
         </div>
         <div *ngIf="gerarPixLoading" class="overlay d-flex align-items-center justify-content-center flex-column">
-            <i class="fas fa-3x fa-qrcode fa-pulse"></i>
+            <i class="fa-3x fa-pulse" [ngClass]="icons.pix.emitir"></i>
             <i class="fas fa-sync-alt fa-spin mt-2"></i>
             <p class="mt-3">Gerando PIX para os boletos, aguarde...</p>
         </div>

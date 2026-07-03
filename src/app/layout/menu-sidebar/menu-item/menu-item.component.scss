@@ -7,7 +7,12 @@
   align-items: center;
   gap: 0.5rem;
   min-height: 2.5rem;
-  transition: padding-left 200ms ease;
+  margin: 0.1rem 0.5rem;
+  border: 0;
+  border-radius: 0.4rem;
+  position: relative;
+  transition: background-color 160ms ease, color 160ms ease,
+    padding-left 200ms ease;
 }
 
 .nav-link .nav-icon {
@@ -24,20 +29,41 @@
   justify-content: space-between;
 }
 
-.nav-link:hover,
-.nav-link.active:focus,
-.nav-link.active {
-  background-color: var(--bs-primary-dark) !important;
-  border-color: var(--bs-primary-dark) !important;
-  color: var(--bs-primary-text) !important;
+/* Hover — sobreposição clara e neutra (boa sobre sidebar escuro), texto realçado */
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
 }
 
-.nav-item.menu-open > a:not(.active) {
-  background-color: transparent !important;
-  border-top-color: var(--bs-primary);
-  outline: 0.18rem solid var(--bs-primary);
-  outline-offset: -1px;
-  border-radius: 0.25rem;
+/* Ramo ativo: ancestral da página atual — sobreposição neutra + barra de acento na cor primária */
+.nav-link.tree-active {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #fff !important;
+}
+
+.nav-link.tree-active:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Página atual — realce cheio; texto por contraste calculado sobre a primária escura */
+.nav-link.active,
+.nav-link.active:hover,
+.nav-link.active:focus {
+  background-color: var(--bs-primary-dark) !important;
+  color: var(--bs-primary-dark-text) !important;
+}
+
+/* Barra de acento "você está aqui" para a página atual e o ramo ativo */
+.nav-link.active::before,
+.nav-link.tree-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 0.2rem;
+  border-radius: 0 0.2rem 0.2rem 0;
+  background-color: var(--bs-primary);
 }
 
 .nav.nav-treeview {
