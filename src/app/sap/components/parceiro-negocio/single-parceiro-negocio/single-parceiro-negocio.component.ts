@@ -158,7 +158,7 @@ changePageFunction(nextLink: string) {
     this.contaPixAtual = conta;
     this.pixCopiado = false;
     this.pixService
-      .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine)
+      .gerarPix(conta.PixDocType, conta.CreatedBy, conta.SourceLine, comJuros)
       .subscribe({
         next: (res) => {
           if (!res || res.length !== 1) {

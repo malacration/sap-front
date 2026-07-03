@@ -88,10 +88,11 @@ export class PixService {
   gerarPix(
     pixDocType: string,
     docEntry: number | string,
-    parcela: number | string
+    parcela: number | string,
+    comJuros: boolean = true
   ): Observable<PixGeradoItem[]> {
     return this.hppCliente.get<PixGeradoItem[]>(
-      `${this.url}/gerar-chave/docType/${pixDocType}/docEntry/${docEntry}/parcela/${parcela}`
+      `${this.url}/gerar-chave/docType/${pixDocType}/docEntry/${docEntry}/parcela/${parcela}?juros=${comJuros}`
     );
   }
 
