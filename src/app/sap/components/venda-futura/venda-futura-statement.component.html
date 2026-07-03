@@ -1,10 +1,16 @@
 
 <section class="content">
     <div *ngIf="!selected || selected == null" class="card card-primary">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">
+        <div class="card-header">
+            <h5 class="card-title">
                 <b>Venda Futura - {{nomeUsuario}}</b>
             </h5>
+            <div class="card-tools">
+                <button type="button" class="btn btn-light btn-sm" (click)="abrirManual()"
+                    title="Abrir o manual da Venda Futura">
+                    <i class="fas fa-question-circle"></i> Manual
+                </button>
+            </div>
         </div>
         <div class="card-body">
             <div class="container-fluid">

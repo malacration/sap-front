@@ -58,6 +58,7 @@ export class FormularioComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
+    this.applyDefaultDatesForCreation();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -309,8 +310,21 @@ updateOrderName(): void {
       return;
     }
 
+    this.applyDefaultDatesForCreation();
     this.selectedOrders = [];
     this.initialSelectedOrders = [];
+  }
+
+  private applyDefaultDatesForCreation(): void {
+    if (this.ordemCarregamento?.DocEntry || this.dtFinal) {
+      return;
+    }
+
+    this.dtFinal = this.getTodayDate();
+  }
+
+  private getTodayDate(): string {
+    return new Date().toISOString().split('T')[0];
   }
 
 goBack(): void {

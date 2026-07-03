@@ -40,7 +40,7 @@ export class RomaneioPdfService {
     currentY = this.drawHeaderInfo(doc, selected, currentY, pageW);
 
     currentY += 10;
-    this.drawItensTable(doc, selected, currentY);
+    this.drawRomaneioTable(doc, selected, currentY);
 
     this.desenharRodape(doc, pageW, pageH, this.MARGIN_X);
 
@@ -88,7 +88,7 @@ export class RomaneioPdfService {
     }
   }
 
-  private drawItensTable(doc: jsPDF, selected: OrdemCarregamento, y: number): void {
+  private drawRomaneioTable(doc: jsPDF, selected: OrdemCarregamento, y: number): void {
     doc.setFillColor(240, 248, 242);
     doc.rect(this.MARGIN_X, y, doc.internal.pageSize.getWidth() - (this.MARGIN_X * 2), 8, 'F');
     doc.setFillColor(this.VERDE_SUSTEN[0], this.VERDE_SUSTEN[1], this.VERDE_SUSTEN[2]);
@@ -97,17 +97,19 @@ export class RomaneioPdfService {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(0);
-    doc.text('Itens do Romaneio', this.MARGIN_X + 5, y + 5.5);
+    doc.text('Romaneio', this.MARGIN_X + 5, y + 5.5);
 
-    const itensAgrupados = this.agruparItens(selected.pedidosVenda || []);
-    const totalQtd = itensAgrupados.reduce((acc, item) => acc + item.quantidade, 0);
-    const totalPeso = itensAgrupados.reduce((acc, item) => acc + item.pesoTotal, 0);
+    const itensPorPedido = this.montarItensPorPedido(selected.pedidosVenda || []);
+    const totalQtd = itensPorPedido.reduce((acc, item) => acc + item.quantidade, 0);
+    const totalPeso = itensPorPedido.reduce((acc, item) => acc + item.pesoTotal, 0);
 
     autoTable(doc, {
       startY: y + 10,
-      head: [['Item', 'Descrição', 'Quantidade', 'Peso Total (kg)', 'Lote']],
+      head: [['Pedido', 'Cliente', 'Item', 'Descrição', 'Quantidade', 'Peso Total (kg)', 'Lote']],
       body: [
-        ...itensAgrupados.map(i => [
+        ...itensPorPedido.map(i => [
+          i.docNum,
+          i.cliente,
           i.itemCode,
           i.descricao,
           i.quantidade,
@@ -115,7 +117,7 @@ export class RomaneioPdfService {
           '' 
         ]),
         [
-          { content: 'TOTAIS GERAIS:', colSpan: 2, styles: { halign: 'left', fontStyle: 'bold', textColor: 0 } },
+          { content: 'TOTAIS GERAIS:', colSpan: 4, styles: { halign: 'left', fontStyle: 'bold', textColor: 0 } },
           { content: totalQtd.toString(), styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
           { content: this.formatDecimal(totalPeso) + ' kg', styles: { fontStyle: 'bold', halign: 'center', textColor: 0 } },
           { content: '', styles: { halign: 'right' } }
@@ -123,13 +125,15 @@ export class RomaneioPdfService {
       ],
       theme: 'plain',
       headStyles: { fillColor: this.VERDE_SUSTEN, textColor: 255, fontStyle: 'bold' },
-      styles: { fontSize: 9, cellPadding: 3, textColor: 0, lineWidth: { bottom: 0.1 }, lineColor: [0, 0, 0] },
+      styles: { fontSize: 8, cellPadding: 2.5, textColor: 0, lineWidth: { bottom: 0.1 }, lineColor: [0, 0, 0] },
       columnStyles: {
-        0: { cellWidth: 30 },
-        1: { cellWidth: 'auto' },
-        2: { halign: 'center', cellWidth: 25 },
-        3: { halign: 'center', cellWidth: 35 },
-        4: { halign: 'center', cellWidth: 30 }
+        0: { cellWidth: 18, halign: 'center' },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 26 },
+        3: { cellWidth: 'auto' },
+        4: { halign: 'center', cellWidth: 24 },
+        5: { halign: 'center', cellWidth: 25 },
+        6: { halign: 'center', cellWidth: 18 }
       }
     });
   }
@@ -153,24 +157,22 @@ export class RomaneioPdfService {
     }
   }
 
-  private agruparItens(pedidos: any[]): any[] {
-    const map = new Map();
-    pedidos.forEach(p => {
-      const key = p.ItemCode;
-      if (!map.has(key)) {
-        map.set(key, {
-          itemCode: p.ItemCode,
-          descricao: p.Dscription,
-          quantidade: 0,
-          pesoTotal: 0
-        });
-      }
-      const item = map.get(key);
-      item.quantidade += Number(p.Quantity || 0);
-      
-      item.pesoTotal += Number(p.Weight1 || 0);
-    });
-    return Array.from(map.values());
+  private montarItensPorPedido(pedidos: any[]): Array<{
+    docNum: string;
+    cliente: string;
+    itemCode: string;
+    descricao: string;
+    quantidade: number;
+    pesoTotal: number;
+  }> {
+    return pedidos.map((pedido) => ({
+      docNum: `${pedido.DocNum ?? pedido.docNum ?? pedido.DocEntry ?? ''}`,
+      cliente: `${pedido.CardCode ?? pedido.cardCode ?? ''} - ${pedido.CardName ?? pedido.cardName ?? ''}`,
+      itemCode: `${pedido.ItemCode ?? ''}`,
+      descricao: `${pedido.Dscription ?? ''}`,
+      quantidade: Number(pedido.Quantity || 0),
+      pesoTotal: Number(pedido.Weight1 || 0)
+    }));
   }
 
   private formatDecimal(value: any): string {

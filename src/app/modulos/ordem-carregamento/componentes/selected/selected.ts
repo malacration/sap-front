@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Column } from '../../../../shared/components/table/column.model';
@@ -13,8 +13,8 @@ import { PedidosVendaService } from '../../../../sap/service/document/pedidos-ve
 import { ParameterService } from '../../../../shared/service/parameter.service';
 import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
-import { OrderSalesService } from '../../../sap-shared/_services/documents/order-sales.service';
 import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-modal-pedido.component';
+import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
 
 @Component({
   selector: 'app-ordem-selected',
@@ -25,6 +25,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   @Input() selected: OrdemCarregamento | null = null;
   @Output() back = new EventEmitter<void>();
   @Output() atualizaPedidos = new EventEmitter<OrdemCarregamento>();
+  @ViewChild('ordemExportImagem') ordemExportImagem?: ElementRef<HTMLElement>;
 
   placa: string = '';
   nomeMotorista: string = '';
@@ -37,6 +38,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   showItinerarioModal: boolean = false;
   showLoteModal: boolean = false;
   showLoteModalPedido: boolean = false;
+  showExportMenu: boolean = false;
 
   notas: DocumentList[] = [];
   flattened: any[] = [];
@@ -84,7 +86,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     private route: ActivatedRoute,
     private pdfService: OrdemCarregamentoPdfService,
     private romaneioPdfService: RomaneioPdfService,
-    private orderSalesService: OrderSalesService
+    private pdfCarregamentoService: PdfCarregamentoService
   ) {}
 
   ngOnInit(): void {
@@ -95,14 +97,41 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selected']) {
       this.hydrateFromSelected();
+      this.loadNotas();
     }
   }
 
   imprimirOrdemPdf(): void {
+    this.showExportMenu = false;
+
     if (this.selected) {
       const transportadora = this.businessPartner?.CardName || '';
       this.pdfService.gerarPdf(this.selected, transportadora);
     }
+  }
+
+  async exportarOrdemImagem(): Promise<void> {
+    this.showExportMenu = false;
+
+    if (!this.selected || !this.ordemExportImagem?.nativeElement) {
+      return;
+    }
+
+    try {
+      this.loading = true;
+      await this.pdfCarregamentoService.gerarImagem(
+        this.ordemExportImagem.nativeElement,
+        `Ordem_Carregamento_${this.selected.DocEntry}`
+      );
+    } catch (error: any) {
+      this.alertService.error('Erro ao exportar imagem: ' + (error?.message || error));
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  toggleExportMenu(): void {
+    this.showExportMenu = !this.showExportMenu;
   }
 
   private loadNotas() {
@@ -156,6 +185,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   imprimirRomaneioAgrupado(): void {
+    this.showExportMenu = false;
+
     if (!this.validateForm()) {
       return;
     }
@@ -175,16 +206,16 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
 
     this.placa = this.selected.U_placa || '';
     this.nomeMotorista = this.selected.U_motorista || '';
-    this.pesoCaminhao = this.selected.U_capacidadeCaminhao || null;
+    this.pesoCaminhao = this.totalPesoPedidos || null;
 
-    if (this.selected.DocEntry) {
-      this.orderSalesService.getPedidosBy(this.selected.DocEntry).subscribe({
+    if (this.selected.pedidosVendaCarregados && this.selected.pedidosVenda.length > 0) {
+      this.syncPedidosState(this.selected.pedidosVenda);
+    } else if (this.selected.DocEntry) {
+      this.selected.pedidosVendaCarregados = false;
+      this.pedidosVendaService.search(this.selected.DocEntry).subscribe({
         next: (pedidos) => {
           if (this.selected) {
-            this.selected.pedidosVenda = pedidos;
-            this.selected.pedidosVendaCarregados = true;
-            this.agruparItensParaLote(pedidos);
-            this.pedidosXAuxiliares = this.criarEstruturaPedidoX(pedidos);
+            this.syncPedidosState(this.normalizePedidosResponse(pedidos));
           }
         }
       });
@@ -228,6 +259,10 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   iniciarGeracaoNota(): void {
     if (!this.selected || this.selected.pedidosVenda.length === 0) {
       this.alertService.error('Nenhum pedido disponível para gerar nota fiscal.');
+      return;
+    }
+
+    if (!this.validateNotaFiscalLogistics()) {
       return;
     }
 
@@ -317,7 +352,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     if (!this.validateForm()) return;
 
     this.loading = true;
-    const pesoString = this.pesoCaminhao ? String(this.pesoCaminhao) : null;
+    const pesoTotalPedidos = this.totalPesoPedidos;
+    const pesoString = pesoTotalPedidos ? String(pesoTotalPedidos) : null;
 
     const dados = {
       U_placa: this.placa,
@@ -332,7 +368,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
         if (this.selected) {
           this.selected.U_placa = this.placa;
           this.selected.U_motorista = this.nomeMotorista;
-          this.selected.U_capacidadeCaminhao = this.pesoCaminhao;
+          this.selected.U_capacidadeCaminhao = pesoTotalPedidos;
           this.selected.U_transportadora = this.businessPartner?.CardCode;
         }
       },
@@ -359,13 +395,98 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.back.emit();
   }
 
+  canGenerateNotaFiscal(): boolean {
+    return this.hasRequiredPlate() && this.hasRequiredDriver() && this.hasRequiredTruckWeight();
+  }
+
   private validateForm(): boolean {
     this.formTouched = true;
-    if (!this.placa || !this.nomeMotorista) {
+    if (!this.hasRequiredPlate() || !this.hasRequiredDriver()) {
       this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return false;
     }
     return true;
+  }
+
+  private validateNotaFiscalLogistics(): boolean {
+    this.formTouched = true;
+
+    if (!this.hasRequiredPlate() || !this.hasRequiredDriver() || !this.hasRequiredTruckWeight()) {
+      this.alertService.error('Para gerar a nota fiscal, preencha placa, nome do motorista e peso do caminhão.');
+      return false;
+    }
+
+    return true;
+  }
+
+  private hasRequiredPlate(): boolean {
+    return this.placa.trim().length > 0;
+  }
+
+  private hasRequiredDriver(): boolean {
+    return this.nomeMotorista.trim().length > 0;
+  }
+
+  private hasRequiredTruckWeight(): boolean {
+    return this.totalPesoPedidos > 0;
+  }
+
+  private syncPedidosState(pedidos: any[]): void {
+    if (!this.selected) {
+      return;
+    }
+
+    this.selected.pedidosVenda = pedidos;
+    this.selected.pedidosVendaCarregados = true;
+    this.pesoCaminhao = this.totalPesoPedidos || null;
+    this.agruparItensParaLote(pedidos);
+    this.pedidosXAuxiliares = this.criarEstruturaPedidoX(pedidos);
+  }
+
+  get totalPesoPedidos(): number {
+    return (this.selected?.pedidosVenda || []).reduce((acc, pedido) =>
+      acc + Number(pedido.Weight1 || 0), 0
+    );
+  }
+
+  get totalItensPedidos(): number {
+    return (this.selected?.pedidosVenda || []).reduce((acc, pedido) =>
+      acc + Number(pedido.Quantity || 0), 0
+    );
+  }
+
+  formatPesoPedidos(): string {
+    return this.totalPesoPedidos.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  formatDecimal(value: number | string | null | undefined): string {
+    return (Number(value) || 0).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  get transportadoraNome(): string {
+    return this.businessPartner?.CardName || 'N/A';
+  }
+
+  private normalizePedidosResponse(response: any): any[] {
+    if (!response) {
+      return [];
+    }
+
+    if (Array.isArray(response?.content)) {
+      return response.content;
+    }
+
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    return [response];
   }
 
   private atualizarStatusParaFechado(): void {
@@ -414,50 +535,28 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   private construirPayloadLotesPorItem(pedidosX: PedidoX[]): any[] {
-    const mapaItens = new Map<string, Map<string, BatchStock>>();
+    const resultado: any[] = [];
 
     pedidosX.forEach(pedido => {
       pedido.itens.forEach(item => {
-        item.lotesSelecionados.forEach(lote => {
-          const chaveItem = item.itemCode;
-          const chaveLote = `${lote.DistNumber}@@${lote.WhsCode}`;
-          const quantidade = Number(lote.quantitySelecionadaEditable ?? lote.Quantity) || 0;
+        if (item.lotesSelecionados.length === 0) return;
 
-          if (!mapaItens.has(chaveItem)) {
-            mapaItens.set(chaveItem, new Map<string, BatchStock>());
-          }
-
-          const mapaLotes = mapaItens.get(chaveItem)!;
-          const loteAtual = mapaLotes.get(chaveLote);
-
-          if (!loteAtual) {
-            mapaLotes.set(
-              chaveLote,
-              Object.assign(new BatchStock(), lote, {
-                Quantity: quantidade,
-                quantitySelecionadaEditable: quantidade
-              })
-            );
-          } else {
-            const total = (Number(loteAtual.Quantity) || 0) + quantidade;
-            loteAtual.Quantity = total;
-            loteAtual.quantitySelecionadaEditable = total;
-          }
+        resultado.push({
+          DocEntry: pedido.docEntry,
+          ItemCode: item.itemCode,
+          Batches: item.lotesSelecionados.map(lote => ({
+            BatchNumber: lote.DistNumber,
+            ExpDate: lote.ExpDate,
+            InDate: lote.InDate,
+            ItemName: lote.ItemName,
+            MnfDate: lote.MnfDate,
+            Quantity: Number(lote.quantitySelecionadaEditable ?? lote.Quantity) || 0,
+            WhsCode: lote.WhsCode
+          }))
         });
       });
     });
 
-    return Array.from(mapaItens.entries()).map(([itemCode, lotesMap]) => ({
-      ItemCode: itemCode,
-      Batches: Array.from(lotesMap.values()).map(lote => ({
-        BatchNumber: lote.DistNumber,
-        ExpDate: lote.ExpDate,
-        InDate: lote.InDate,
-        ItemName: lote.ItemName,
-        MnfDate: lote.MnfDate,
-        Quantity: lote.quantitySelecionadaEditable || lote.Quantity,
-        WhsCode: lote.WhsCode
-      }))
-    }));
+    return resultado;
   }
 }

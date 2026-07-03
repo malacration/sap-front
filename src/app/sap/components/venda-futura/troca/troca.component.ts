@@ -61,7 +61,7 @@ export class TrocaComponent implements OnInit {
 
   validateEhAdiciona() {
     if (this.selectedItem && this.quantity && this.quantity > this.selectedItem.U_quantity) {
-      this.alertService.info("Formulário inválido ou quantidade superior ao disponível.");
+      this.alertService.info("A quantidade informada supera o saldo disponível do item. Corrija e tente novamente.");
     } else {
       this.adiciona();
     }
@@ -96,7 +96,7 @@ export class TrocaComponent implements OnInit {
     )
     this.service.trocar(pedido).subscribe({
       next: (it) => {
-        this.alertService.info("Pedido de troca foi feito com sucesso").then(it =>{
+        this.alertService.info("Troca realizada com sucesso. Os boletos serão ajustados automaticamente.").then(it =>{
           this.clearForm()
           this.closeModal.emit()
           this.eventoTrocou.emit()

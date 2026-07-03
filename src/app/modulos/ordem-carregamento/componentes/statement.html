@@ -10,6 +10,64 @@
             </div>
     </div>
     <div class="card-body">
+      <form class="container-fluid px-0" (ngSubmit)="filtrar()" autocomplete="off">
+        <div class="form-row align-items-end">
+          <div class="col-md-2 col-sm-6">
+            <label for="filtroId" class="col-form-label">ID</label>
+            <input
+              id="filtroId"
+              name="filtroId"
+              class="form-control"
+              type="text"
+              [(ngModel)]="filtroId"
+              placeholder="Ex.: 123"
+            />
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label for="filtroStatus" class="col-form-label">Status</label>
+            <select
+              id="filtroStatus"
+              name="filtroStatus"
+              class="form-control"
+              [(ngModel)]="filtroStatus"
+            >
+              <option value="">Todos</option>
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label for="filtroCreateDateFrom" class="col-form-label">Criado de</label>
+            <input
+              id="filtroCreateDateFrom"
+              name="filtroCreateDateFrom"
+              class="form-control"
+              type="date"
+              [(ngModel)]="filtroCreateDateFrom"
+            />
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label for="filtroCreateDateTo" class="col-form-label">Criado até</label>
+            <input
+              id="filtroCreateDateTo"
+              name="filtroCreateDateTo"
+              class="form-control"
+              type="date"
+              [(ngModel)]="filtroCreateDateTo"
+            />
+          </div>
+          <div class="col-auto">
+            <div class="btn-group d-flex">
+              <button type="submit" [disabled]="loading" class="btn btn-success">
+                {{ loading ? '...' : 'Filtrar' }}
+              </button>
+              <button type="button" (click)="limparFiltros()" [disabled]="loading" class="btn btn-outline-secondary">
+                Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+      <hr>
       <ordem-carregamento-list
             [pageContent]="pageContent"
             [pageChangeFn]="pageChangeHandler"

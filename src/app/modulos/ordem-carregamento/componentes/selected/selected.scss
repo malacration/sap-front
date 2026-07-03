@@ -84,3 +84,132 @@
   height: 5px;
   background-color: blue; /* Linha azul para indicar posição de drop; pode mudar para black se preferir */
 }
+
+:host ::ng-deep .card-header .card-tools > .btn {
+  margin-left: 8px;
+}
+
+:host ::ng-deep .card-header .card-tools > .btn:first-child {
+  margin-left: 0;
+}
+
+.export-group {
+  margin-left: 8px;
+}
+
+.export-group .dropdown-menu {
+  display: none;
+  margin-top: 6px;
+}
+
+.export-group .dropdown-menu.show {
+  display: block;
+}
+
+.export-image-wrapper {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  pointer-events: none;
+}
+
+.ordem-export-image {
+  width: 794px;
+  background: #fff;
+  color: #000;
+  padding: 15px 10px 20px;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.ordem-export-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.ordem-export-logo {
+  width: 118px;
+  height: auto;
+}
+
+.ordem-export-title {
+  color: #25a246;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.ordem-export-separator {
+  margin: 12px 0 8px;
+  border-top: 1px solid #c8c8c8;
+}
+
+.ordem-export-info {
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.ordem-export-info .highlight {
+  color: #25a246;
+  font-weight: 700;
+}
+
+.ordem-export-logistics {
+  margin-top: 10px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid #9d9d9d;
+  background: #f5f5f5;
+  font-size: 8.5px;
+}
+
+.ordem-export-logistics-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.ordem-export-logistics-row + .ordem-export-logistics-row {
+  margin-top: 7px;
+}
+
+.ordem-export-logistics-row > div {
+  width: calc(50% - 10px);
+}
+
+.ordem-export-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 6.5px;
+}
+
+.ordem-export-table th,
+.ordem-export-table td {
+  border: 1px solid #9d9d9d;
+  padding: 4px 5px;
+  vertical-align: top;
+}
+
+.ordem-export-table th {
+  background: #25a246;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ordem-export-table .center {
+  text-align: center;
+}
+
+.ordem-export-table .bold {
+  font-weight: 700;
+}
+
+.ordem-export-table .right {
+  text-align: right;
+}
+
+.ordem-export-table .total-row td {
+  background: #f5f5f5;
+  font-weight: 700;
+}
