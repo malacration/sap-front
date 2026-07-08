@@ -32,7 +32,9 @@ export class DocumentLines {
   DocObjectCode: string
   ItemDescription: string;
   U_preco_negociado: number;
-  Quantity: number; 
+  Quantity: number;
+  LineTotal: number;
+  LineTotalDesonerado: number;
   DocDate: string;
   DocumentStatus : string
 
@@ -53,7 +55,7 @@ export class DocumentLines {
   }
 
   get totalLinhaCurrency() {
-    return formatCurrency(this.U_preco_negociado* this.Quantity, 'pt', 'R$');
+    return formatCurrency(this.LineTotalDesonerado, 'pt', 'R$');
   }
 
   get formattedDocDate() {
