@@ -282,10 +282,17 @@
               <figcaption class="shot__cap">Detalhes do contrato: dados principais, botões de ação e as abas (Produtos, Pedidos, Boletos, Entregas).</figcaption>
             </figure>
             <div class="callout callout--note">
-              <div class="callout__title">Observação</div>
-              <p>Os botões de ação (Emitir Boletos, Retirar, Troca etc.) só aparecem
-                <strong>depois</strong> que as entregas terminam de carregar. Se a tela
-                estiver lenta, aguarde alguns segundos.</p>
+              <div class="callout__title">As ações ficam agrupadas em botões coloridos</div>
+              <p>No topo do detalhe, as ações estão organizadas em <strong>grupos</strong>.
+                Clique no grupo para abrir as opções:</p>
+              <ul>
+                <li><span class="btnex btnex--success">Financeiro</span> — Emitir Boletos e Gerar PIX;</li>
+                <li><span class="btnex btnex--info">Produtos</span> — Retirar e Troca;</li>
+                <li><span class="btnex btnex--warning">Minutar Contrato</span> — gera a minuta em PDF (botão direto);</li>
+                <li><span class="btnex btnex--danger">Reversões</span> — Vincular Devolução e Cancelar Contrato.</li>
+              </ul>
+              <p>Os grupos só aparecem <strong>depois</strong> que as entregas terminam de
+                carregar. Se a tela estiver lenta, aguarde alguns segundos.</p>
             </div>
           </div>
         </article>
@@ -303,7 +310,8 @@
               (e o PIX) correspondentes.
             </p>
             <ol class="steps-inline">
-              <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Emitir Boletos</span>.</li>
+              <li>No detalhe do contrato, abra o grupo <span class="btnex btnex--success">Financeiro</span>
+                e clique em <span class="btnex btnex--warning">Emitir Boletos</span>.</li>
               <li>Confirme a mensagem: <em>”Ao emitir os boletos, os prazos de pagamento
                 passam a valer imediatamente. Essa ação é irreversível. Confirmar emissão?”</em>.</li>
               <li>O sistema cria as parcelas conforme a <strong>condição de pagamento do
@@ -373,7 +381,8 @@
               contrato e gera a entrega no sistema.
             </p>
             <ol class="steps-inline">
-              <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Retirar</span>.</li>
+              <li>No detalhe do contrato, abra o grupo <span class="btnex btnex--info">Produtos</span>
+                e clique em <span class="btnex btnex--warning">Retirar</span>.</li>
               <li>No campo <strong>Item</strong>, escolha o produto — a lista mostra
                 apenas itens com <strong>saldo disponível</strong>.</li>
               <li>Informe a <strong>Quantidade</strong> (não pode ser maior que a
@@ -444,7 +453,8 @@
               <strong>trocar produtos do contrato por outros</strong>, antes de
               retirá-los.</p>
             <ol class="steps-inline">
-              <li>No detalhe do contrato, clique em <span class="btnex btnex--warning">Troca</span>.</li>
+              <li>No detalhe do contrato, abra o grupo <span class="btnex btnex--info">Produtos</span>
+                e clique em <span class="btnex btnex--warning">Troca</span>.</li>
               <li>Em <strong>“Itens a serem substituídos”</strong>, escolha o produto que
                 <strong>sai</strong> e a quantidade, e clique em
                 <span class="btnex btnex--success">Trocar</span>.</li>
@@ -520,6 +530,61 @@
                 <strong>finaliza a devolução diretamente no SAP B1</strong>. Feito isso, o
                 sistema reverte os lançamentos contábeis e devolve o crédito ao contrato.</p>
             </div>
+            <div class="callout callout--info">
+              <div class="callout__title">Já lançou a devolução avulsa no SAP? Use “Vincular Devolução”</div>
+              <p>Se a devolução <strong>já foi lançada no SAP B1 sem estar vinculada</strong>
+                ao contrato, não use “Cancelar Conciliação”: use o recurso
+                <strong>Vincular Devolução</strong> (grupo <span class="btnex btnex--danger">Reversões</span>),
+                descrito no próximo passo, para vincular a nota e fazer o acerto financeiro
+                automaticamente.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Vincular Devolução -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">🔗</span>
+            <h3>Vincular nota fiscal de devolução ao contrato</h3>
+          </header>
+          <div class="step__body">
+            <p>Às vezes uma <strong>devolução de venda é lançada no SAP B1 “avulsa”</strong>
+              — sem estar vinculada ao contrato de venda futura. Este recurso
+              <strong>vincula essa devolução ao contrato</strong> e faz todo o acerto
+              financeiro automaticamente (cancela a conciliação da reclassificação, concilia
+              o cliente — nota de saída × devolução — e reverte a reclassificação).</p>
+            <ol class="steps-inline">
+              <li>No detalhe do contrato, abra o grupo <span class="btnex btnex--danger">Reversões</span>
+                e clique em <span class="btnex btnex--danger">Vincular Devolução</span>.</li>
+              <li>Informe o <strong>número (DocNum) da devolução</strong>.</li>
+              <li><strong>Selecione a nota de saída</strong> correspondente — a lista já traz
+                as notas de saída deste contrato.</li>
+              <li>Confirme. Em caso de sucesso: <em>”Devolução vinculada e conciliada com
+                sucesso.”</em></li>
+            </ol>
+            <div class="callout callout--info">
+              <div class="callout__title">O sistema confere tudo antes de lançar</div>
+              <p>Nenhum lançamento é feito enquanto todas as validações não passarem. A
+                devolução precisa:</p>
+              <ul>
+                <li>ser do <strong>mesmo cliente</strong> do contrato;</li>
+                <li>estar na <strong>mesma filial</strong> da nota de saída;</li>
+                <li>conter <strong>apenas itens que existem no contrato</strong>;</li>
+                <li>ter o <strong>total igual</strong> ao da nota de saída selecionada;</li>
+                <li>que a nota <strong>ainda não esteja conciliada com outra devolução</strong>
+                  (evita cancelamento em duplicidade);</li>
+                <li>que a reclassificação da nota <strong>ainda não tenha tido o adiantamento
+                  apropriado</strong> — esse caso é tratado à parte, manualmente no SAP.</li>
+              </ul>
+              <p>Se alguma condição falhar, o sistema mostra uma mensagem clara e
+                <strong>não faz nenhum lançamento</strong>.</p>
+            </div>
+            <div class="callout callout--note">
+              <div class="callout__title">Depois de vincular</div>
+              <p>A nota de saída deixa de aparecer na seleção e o botão
+                <span class="btnex btnex--danger">Cancelar Conciliação</span> dela some — ela
+                já foi tratada, não pode ser estornada de novo.</p>
+            </div>
           </div>
         </article>
 
@@ -530,11 +595,13 @@
             <h3>Encerrar (cancelar) o contrato</h3>
           </header>
           <div class="step__body">
-            <p>Para <strong>cancelar</strong> um contrato, no detalhe clique no botão
+            <p>Para <strong>cancelar</strong> um contrato, no detalhe abra o grupo
+              <span class="btnex btnex--danger">Reversões</span> e clique em
               <span class="btnex btnex--danger">Cancelar Contrato</span>. O contrato
               passará para o status <span class="badge badge--cancelado">Cancelado</span>.</p>
             <ol class="steps-inline">
-              <li>Clique em <span class="btnex btnex--danger">Cancelar Contrato</span>.</li>
+              <li>Abra o grupo <span class="btnex btnex--danger">Reversões</span> e clique em
+                <span class="btnex btnex--danger">Cancelar Contrato</span>.</li>
               <li>Confirme: <em>”Deseja cancelar este contrato? Essa ação é irreversível
                 e encerrará todos os documentos vinculados.”</em></li>
               <li>Sucesso: <em>”Contrato cancelado com sucesso.”</em></li>
@@ -561,8 +628,8 @@
             <h3>Gerar a minuta do contrato (PDF)</h3>
           </header>
           <div class="step__body">
-            <p>Para imprimir/salvar o contrato em PDF, no detalhe clique em
-              <span class="btnex btnex--warning">Minuta Contrato</span>.</p>
+            <p>Para imprimir/salvar o contrato em PDF, no detalhe clique no botão
+              <span class="btnex btnex--warning">Minutar Contrato</span>.</p>
             <ol class="steps-inline">
               <li>Abre-se uma <strong>prévia</strong> do documento já preenchido (nome do
                 cliente, data, valor dos produtos, frete, total a pagar e a tabela de
@@ -686,6 +753,10 @@
             <tr><td>Trocar com entregas em aberto</td><td><em>”Existe entregas programadas para esse contrato, cancele elas para realizar a troca!”</em></td></tr>
             <tr><td>Troca reduz mais do que os boletos cobrem</td><td><em>”Valor insuficiente nos boletos pendentes para ajustar o pagamento.”</em></td></tr>
             <tr><td>Devolução (Cancelar Conciliação de nota fechada)</td><td>Confirmação: <em>”Deseja liberar a nota fiscal Nº [N] para devolução? A conciliação com o pagamento será desfeita.”</em><br>Sucesso: <em>”Nota fiscal liberada. Finalize a devolução diretamente no SAP B1.”</em></td></tr>
+            <tr><td>Vincular Devolução — sucesso</td><td><em>”Devolução vinculada e conciliada com sucesso.”</em></td></tr>
+            <tr><td>Vincular Devolução — total diverge</td><td><em>”O total da devolução não bate com a nota de saída informada”</em></td></tr>
+            <tr><td>Vincular Devolução — nota já conciliada com devolução</td><td><em>”A nota de saída já está conciliada com uma devolução (provável cancelamento em duplicidade)”</em></td></tr>
+            <tr><td>Vincular Devolução — reclassificação já apropriada</td><td><em>”A reclassificação desta nota já teve o adiantamento apropriado; faça o acerto dessa devolução manualmente no SAP por enquanto”</em></td></tr>
             <tr><td>Cancelar contrato com entregas não conciliadas</td><td><em>”Existe entregas que não foram conciliadas.”</em></td></tr>
             <tr><td>Cancelar contrato com boletos em aberto</td><td><em>”Existe boletos em abertos”</em></td></tr>
             <tr><td>Cancelar contrato com adiantamento pago não utilizado</td><td><em>”Existe adiantamento pagos e não utilizado”</em></td></tr>

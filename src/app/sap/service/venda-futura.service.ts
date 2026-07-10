@@ -110,4 +110,11 @@ export class VendaFuturaService{
       return this.http.get<any>(this.url+"/emitir-boletos/"+docEntry)
     }
 
+    vincularDevolucao(docEntryContrato : number, devolucaoDocNum : number, notaSaidaDocEntry : number) : Observable<any> {
+      return this.http.post<any>(this.url+"/"+docEntryContrato+"/vincular-devolucao", {
+        devolucaoDocNum,
+        notaSaidaDocEntry,
+      })
+    }
+
 }

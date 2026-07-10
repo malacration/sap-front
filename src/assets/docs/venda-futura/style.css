@@ -452,6 +452,7 @@ li { margin: 5px 0; }
 .btnex--success { background: #198754;        color: #fff; }
 .btnex--warning { background: #ffc107;        color: #3a2f00; }
 .btnex--danger  { background: #dc3545;        color: #fff; }
+.btnex--info    { background: #17a2b8;        color: #fff; }
 .btnex--ghost   { background: #fff; color: var(--body); border-color: #c7ced4; }
 
 /* ===== Split (auto x manual) ===== */
