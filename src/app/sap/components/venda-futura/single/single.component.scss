@@ -1,3 +1,50 @@
+// Dropdowns de ações do contrato (toggle manual via [class.show], sem Bootstrap JS)
+.acoes-dropdown .dropdown-menu {
+    display: none;
+    margin-top: 4px;
+}
+
+.acoes-dropdown .dropdown-menu.show {
+    display: block;
+}
+
+.acoes-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+}
+
+.acoes-dropdown .dropdown-item i {
+    width: 1rem;
+    text-align: center;
+}
+
+// Separador entre os itens do menu
+.acoes-dropdown .dropdown-item + .dropdown-item {
+    border-top: 1px solid #e2e6ea;
+}
+
+// Realce forte no hover (visível em qualquer monitor)
+.acoes-dropdown .dropdown-item:hover:not(:disabled),
+.acoes-dropdown .dropdown-item:focus:not(:disabled) {
+    background-color: #007bff;
+    color: #fff;
+}
+
+// Item destrutivo destaca em vermelho no hover
+.acoes-dropdown .dropdown-item.text-danger:hover:not(:disabled),
+.acoes-dropdown .dropdown-item.text-danger:focus:not(:disabled) {
+    background-color: #dc3545;
+    color: #fff !important;
+}
+
+.acoes-dropdown .dropdown-item:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
 .boleto-par {
     background-color: #ffffff;
 }

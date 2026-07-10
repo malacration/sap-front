@@ -9,31 +9,61 @@
                     <small class="text-white">Carregando contrato...</small>
                 </ng-container>
                 <ng-container *ngIf="!loadingEntregas && !loadingBoletos && !loadingPedidos">
-                    <button (click)="confirmEmitirBoletos()" [disabled]="loadingCriaBoletos"
-                    type="button" class="btn btn-warning btn-sm mr-2">
-                        <i *ngIf="!loadingCriaBoletos" class="fa-solid fa-barcode"></i>
-                        <i *ngIf="loadingCriaBoletos" class="fas fa-sync-alt fa-spin"></i>
-                        {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
+                    <!-- Financeiro -->
+                    <div class="btn-group btn-group-sm acoes-dropdown mr-2">
+                        <button type="button" class="btn btn-success dropdown-toggle" (click)="toggleMenu('financeiro')">
+                            <i class="fa-solid fa-coins"></i> Financeiro
+                        </button>
+                        <div class="dropdown-menu" [class.show]="menuAberto === 'financeiro'">
+                            <button class="dropdown-item" type="button" [disabled]="loadingCriaBoletos"
+                                (click)="menuAberto = null; confirmEmitirBoletos()">
+                                <i *ngIf="!loadingCriaBoletos" class="fa-solid fa-barcode"></i>
+                                <i *ngIf="loadingCriaBoletos" class="fas fa-sync-alt fa-spin"></i>
+                                {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
+                            </button>
+                            <button *ngIf="podeGerarPix" class="dropdown-item" type="button" [disabled]="gerarPixLoading"
+                                (click)="menuAberto = null; gerarPixContrato()">
+                                <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
+                                <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
+                                {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Produtos -->
+                    <div class="btn-group btn-group-sm acoes-dropdown mr-2">
+                        <button type="button" class="btn btn-info dropdown-toggle" (click)="toggleMenu('produtos')">
+                            <i class="fa-solid fa-boxes-stacked"></i> Produtos
+                        </button>
+                        <div class="dropdown-menu" [class.show]="menuAberto === 'produtos'">
+                            <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalRetirada()">
+                                <i class="fa-solid fa-box-open"></i> Retirar
+                            </button>
+                            <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalTroca()">
+                                <i class="fa-solid fa-right-left"></i> Troca
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Minutar Contrato -->
+                    <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm mr-2">
+                        <i class="fa-solid fa-file-lines"></i> Minutar Contrato
                     </button>
-                    <button *ngIf="podeGerarPix"
-                        (click)="gerarPixContrato()" [disabled]="gerarPixLoading"
-                        type="button" class="btn btn-success btn-sm mr-2">
-                        <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
-                        <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
-                        {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
-                    </button>
-                    <button (click)="openModalRetirada()" type="button" class="btn btn-warning btn-sm mr-2">
-                        Retirar
-                    </button>
-                    <button (click)="openModalTroca()" type="button" class="btn btn-warning btn-sm">
-                        Troca
-                    </button>
-                    <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm" style="margin-left: 8px;">
-                        Minuta Contrato
-                    </button>
-                    <button (click)="encerrarContrato()" type="button" class="btn btn-danger btn-sm" style="margin-left: 8px;">
-                        Cancelar Contrato
-                    </button>
+
+                    <!-- Reversões -->
+                    <div class="btn-group btn-group-sm acoes-dropdown">
+                        <button type="button" class="btn btn-danger dropdown-toggle" (click)="toggleMenu('reversoes')">
+                            <i class="fa-solid fa-rotate-left"></i> Reversões
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" [class.show]="menuAberto === 'reversoes'">
+                            <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalVincularDevolucao()">
+                                <i class="fa-solid fa-link"></i> Vincular Devolução
+                            </button>
+                            <button class="dropdown-item text-danger" type="button" (click)="menuAberto = null; encerrarContrato()">
+                                <i class="fa-solid fa-ban"></i> Cancelar Contrato
+                            </button>
+                        </div>
+                    </div>
                 </ng-container>
             </div>
         </div>
@@ -236,6 +266,40 @@
         (closeModal)="closeModal($event)"
         (eventoTrocou)="ngOnInit()">
     </app-venda-futura-troca>
+</app-modal>
+
+<app-modal #vincularDevolucao [title]="'Vincular Devolução ao Contrato'" modalSize="lg">
+    <div class="p-2">
+        <div class="form-group">
+            <label>Número da devolução (DocNum)</label>
+            <input type="number" class="form-control" [(ngModel)]="vincularDevolucaoDocNum"
+                   placeholder="Ex: 12345">
+            <small class="text-muted d-block">Devolução avulsa ainda não vinculada ao contrato.</small>
+        </div>
+        <div class="form-group">
+            <label>Nota de saída</label>
+            <select class="form-control" [(ngModel)]="vincularNotaSaidaDocEntry">
+                <option [ngValue]="null" disabled>Selecione a nota de saída...</option>
+                <option *ngFor="let nota of notasSaida" [ngValue]="nota.DocEntry">
+                    Nº {{ nota.DocNum }} — {{ nota.formattedDocDate }} — {{ nota.totalCurrency }}
+                </option>
+            </select>
+            <small class="text-muted d-block">Notas de saída (entregas) já lançadas neste contrato.</small>
+            <small *ngIf="notasSaida.length === 0" class="text-danger d-block">
+                Nenhuma nota de saída carregada para este contrato.
+            </small>
+        </div>
+        <div class="text-right mt-3">
+            <button type="button" class="btn btn-secondary btn-sm mr-2"
+                    (click)="vincularDevolucaoModal.closeModal()">Cancelar</button>
+            <button type="button" class="btn btn-primary btn-sm"
+                    [disabled]="vinculandoDevolucao"
+                    (click)="confirmarVincularDevolucao()">
+                <i *ngIf="vinculandoDevolucao" class="fas fa-sync-alt fa-spin"></i>
+                Vincular
+            </button>
+        </div>
+    </div>
 </app-modal>
 
 <app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">

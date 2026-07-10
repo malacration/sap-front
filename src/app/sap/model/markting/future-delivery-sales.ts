@@ -15,8 +15,9 @@ export class FutureDeliverySales {
   SequenceSerial: number;
   DocDate: string;
   DocTotal: number;
-  DocumentLines: DocumentLines[]; 
+  DocumentLines: DocumentLines[];
   DocObjectCode : string
+  U_vf_estornada: number = 0;
 
   get formattedDocDate() {
     return moment(this.DocDate).format('DD/MM/YYYY');
@@ -37,6 +38,7 @@ export class DocumentLines {
   LineTotalDesonerado: number;
   DocDate: string;
   DocumentStatus : string
+  U_vf_estornada: number = 0;
 
   get labelDocumentType(){
     return DocumentTypes[this.DocObjectCode as keyof typeof DocumentTypes];
@@ -70,9 +72,13 @@ export class DocumentLines {
     return this.isVenda() ? this.Quantity : this.Quantity * -1;
   }
 
+  get estornada(): boolean {
+    return Number(this.U_vf_estornada) === 1;
+  }
+
   getActions(): Action[] {
-    if(this.isVenda() && this.DocumentStatus == "bost_Close")
-      return [ 
+    if(this.isVenda() && this.DocumentStatus == "bost_Close" && !this.estornada)
+      return [
         new Action("Cancelar Conciliação", new ActionReturn("devolver", this), "far fa-times-circle", "danger")
       ]
     else

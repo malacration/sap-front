@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { BoletoVf, DownPaymentService } from '../../../service/DownPaymentService';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
@@ -36,7 +36,26 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   boletos: BoletoVf[] = [];
   entregas = Array<DocumentLines>();
+  entregasDocs = Array<FutureDeliverySales>();
   pedidos = Array<DocumentLines>();
+
+  vincularDevolucaoDocNum: number = null;
+  vincularNotaSaidaDocEntry: number = null;
+  vinculandoDevolucao = false;
+
+  // Grupo de ações aberto no momento ('financeiro' | 'produtos' | 'reversoes' | null)
+  menuAberto: string | null = null;
+
+  toggleMenu(nome: string): void {
+    this.menuAberto = this.menuAberto === nome ? null : nome;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!(event.target as HTMLElement).closest('.acoes-dropdown')) {
+      this.menuAberto = null;
+    }
+  }
 
   loadingBoletos = true;
   loadingEntregas = true;
@@ -51,6 +70,7 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   @ViewChild('retirada', { static: true }) retiradaModal: ModalComponent;
   @ViewChild('troca', { static: true }) trocaModal: ModalComponent;
+  @ViewChild('vincularDevolucao', { static: true }) vincularDevolucaoModal: ModalComponent;
   @ViewChild(GerarPdfComponent) gerarPdfComponent: GerarPdfComponent;
   @ViewChild('previewModal', { static: true }) previewModal: ModalComponent;
   @ViewChild('modalPagamentoPix', { static: true }) modalPagamentoPix: ModalComponent;
@@ -71,6 +91,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     });
 
     this.vendaFuturaService.getEntregas(this.selected.DocEntry).subscribe(response => {
+      this.entregasDocs = response;
       this.entregas = response.flatMap(entrega =>
         entrega.DocumentLines.map(line => Object.assign(new DocumentLines(), line, entrega))
       );
@@ -265,6 +286,47 @@ export class VendaFuturaSingleComponent implements OnInit {
   openModalTroca(): void {
     this.trocaModal.classeModal = 'modal-xl';
     this.trocaModal.openModal();
+  }
+
+  get notasSaida(): FutureDeliverySales[] {
+    return this.entregasDocs.filter(d => d.DocObjectCode === 'oInvoices' && Number(d.U_vf_estornada) !== 1);
+  }
+
+  openModalVincularDevolucao(): void {
+    this.vincularDevolucaoDocNum = null;
+    this.vincularNotaSaidaDocEntry = null;
+    this.vincularDevolucaoModal.classeModal = 'modal-lg';
+    this.vincularDevolucaoModal.openModal();
+  }
+
+  confirmarVincularDevolucao(): void {
+    if (!this.vincularDevolucaoDocNum || !this.vincularNotaSaidaDocEntry) {
+      this.alertService.info('Informe o número da devolução e selecione a nota de saída.');
+      return;
+    }
+    this.alertService.confirm(
+      'Vincular a devolução Nº ' + this.vincularDevolucaoDocNum + ' a este contrato? ' +
+      'Serão feitos o cancelamento da conciliação da reclassificação, a conciliação do cliente ' +
+      'e a reversão da reclassificação. Essa ação faz lançamentos no SAP.'
+    ).then(res => {
+      if (!res.isConfirmed) return;
+      this.vinculandoDevolucao = true;
+      this.alertService.loading(
+        this.vendaFuturaService.vincularDevolucao(
+          this.selected.DocEntry,
+          this.vincularDevolucaoDocNum,
+          this.vincularNotaSaidaDocEntry,
+        )
+      ).then(() => {
+        this.vinculandoDevolucao = false;
+        this.vincularDevolucaoModal.closeModal();
+        this.alertService.info('Devolução vinculada e conciliada com sucesso.');
+        this.ngOnInit();
+      }).catch(err => {
+        this.vinculandoDevolucao = false;
+        this.alertService.error(err?.error?.mensagem ?? 'Não foi possível vincular a devolução.');
+      });
+    });
   }
 
   closeModal($event): void {
