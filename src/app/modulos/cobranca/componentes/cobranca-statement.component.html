@@ -1,0 +1,137 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Cobrança</b></h3>
+    </div>
+
+    <div class="card-body">
+      <form class="container-fluid px-0" (ngSubmit)="filtrar()" autocomplete="off">
+        <div class="form-row align-items-end">
+          <div class="col-md-2 col-sm-6">
+            <label>Tipo</label>
+            <select class="form-control" name="filtroTipo" [(ngModel)]="filtroTipo">
+              <option value="">Todos</option>
+              <option value="NF">Nota Fiscal</option>
+              <option value="AD">Adiantamento</option>
+            </select>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <app-branch-select [selected]="filialSelecionada?.Bplid" (selectedOut)="onFilialChange($event)"></app-branch-select>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <app-sales-person-search [name]="'Vendedor'" (selected)="onVendedorChange($event)"></app-sales-person-search>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <app-busines-partner-search (selected)="onClienteChange($event)"></app-busines-partner-search>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Status</label>
+            <select class="form-control" name="filtroStatus" [(ngModel)]="filtroStatus">
+              <option value="">Todos</option>
+              <option *ngFor="let d of dominios.status" [value]="d.rotulo">{{ d.rotulo }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row align-items-end mt-2">
+          <div class="col-md-3 col-sm-6">
+            <label>Situação</label>
+            <select class="form-control" name="filtroSituacao" [(ngModel)]="filtroSituacao">
+              <option value="">Todas</option>
+              <option *ngFor="let d of dominios.situacao" [value]="d.rotulo">{{ d.rotulo }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <label>Cobrador</label>
+            <select class="form-control" name="filtroCobrador" [(ngModel)]="filtroCobrador">
+              <option value="">Todos</option>
+              <option *ngFor="let c of cobradoresDisponiveis" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Dias em atraso (mín.)</label>
+            <input type="number" min="0" class="form-control" name="filtroDiasAtrasoMin" [(ngModel)]="filtroDiasAtrasoMin">
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Vencimento de</label>
+            <input type="date" class="form-control" name="filtroVencimentoDe" [(ngModel)]="filtroVencimentoDe">
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Vencimento até</label>
+            <input type="date" class="form-control" name="filtroVencimentoAte" [(ngModel)]="filtroVencimentoAte">
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>
+              Situação SAP
+              <i class="fas fa-info-circle text-muted"
+                 title="Só entram aqui título em aberto ou título que já teve alguma ação de cobrança registrada. Título quitado que nunca precisou de cobrança não aparece nem em &quot;Pago&quot; nem em &quot;Todos&quot;.">
+              </i>
+            </label>
+            <select class="form-control" name="filtroSituacaoSap" [(ngModel)]="filtroSituacaoSap">
+              <option value="ABERTO">Aberto</option>
+              <option value="PAGO">Pago (rastreado)</option>
+              <option value="">Todos (rastreado)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row align-items-center mt-3">
+          <div class="col-auto">
+            <button type="button" class="btn" [ngClass]="filtroCobrador === nomeUsuario ? 'btn-info' : 'btn-outline-info'" (click)="minhasCobrancas()">
+              Minhas cobranças
+            </button>
+          </div>
+          <div class="col-auto ml-auto">
+            <div class="btn-group d-flex">
+              <button type="submit" [disabled]="loading" class="btn btn-success">
+                {{ loading ? '...' : 'Filtrar' }}
+              </button>
+              <button type="button" (click)="limparFiltros()" [disabled]="loading" class="btn btn-outline-secondary">
+                Limpar
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <hr>
+
+      <div class="mb-2">
+        <button type="button" class="btn btn-outline-secondary mr-2" [disabled]="titulos.length === 0" (click)="alternarSelecaoTodos()">
+          {{ todosSelecionados ? 'Desmarcar todos' : 'Marcar todos da tela' }}
+        </button>
+        <button type="button" class="btn btn-primary" [disabled]="selecionados.length === 0" (click)="abrirLote()">
+          Aplicar em lote ({{ selecionados.length }})
+        </button>
+      </div>
+
+      <div *ngIf="!loading && titulos.length === 0" class="text-muted">
+        Nenhuma parcela em atraso encontrada para os filtros selecionados.
+      </div>
+
+      <app-table
+        *ngIf="titulos.length > 0"
+        [content]="titulos"
+        [definition]="definition"
+        [actionsLabel]="'Ações'"
+        (actionOutput)="action($event)">
+      </app-table>
+
+      <div class="text-center mt-3" *ngIf="temMais">
+        <button type="button" class="btn btn-outline-primary" [disabled]="carregandoMais" (click)="carregarMais()">
+          {{ carregandoMais ? 'Carregando...' : 'Carregar mais' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+  </div>
+
+  <app-registrar-acao-modal
+    [dominios]="dominios"
+    [nomeUsuario]="nomeUsuario"
+    (salvo)="onSalvo()">
+  </app-registrar-acao-modal>
+</section>

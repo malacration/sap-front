@@ -24,6 +24,7 @@ import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { CobrancaStatementComponent } from './modulos/cobranca/componentes/cobranca-statement.component';
 
  let routes: Routes = [
   {
@@ -156,6 +157,13 @@ import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.compone
     data: ["icon:fas fa-truck"],
     path: 'ordem-carregamento',
     component: OrdemCarregamentoStatementComponent
+  },
+  {
+    title: 'Cobrança',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-hand-holding-usd"],
+    path: 'cobranca',
+    component: CobrancaStatementComponent
   },
   {
     title: 'Administrador',

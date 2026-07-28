@@ -24,6 +24,9 @@ export class TableComponent implements OnInit {
   @Input()
   editableDynamic : boolean = false
 
+  @Input()
+  actionsLabel : string = ''
+
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
