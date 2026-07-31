@@ -18,6 +18,7 @@ import { Page } from '../../../model/page.model';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { PixService } from '../../../service/pix.service';
 import { Icons } from '../../../../shared/icons';
+import { AuthService } from '../../../../shared/service/auth.service';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -29,7 +30,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     private businessPartnerService: BusinessPartnerService,
     private orderSales: OrderSalesService,
     private pixService: PixService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   readonly icons = Icons;
@@ -45,7 +47,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   @Output()
   close = new EventEmitter();
   
-  autorizadoPixSemJuros = true; // Hardcode padrão
+  /** Só quem tem a role pix_admin pode dispensar o juros de mora. */
+  autorizadoPixSemJuros = false;
   
   qrCodeData: any = null;
   pixCopiado = false;
@@ -58,6 +61,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   @ViewChild('modalPagamentoPix') modalPagamentoPix: ModalComponent;
 
   ngOnInit(): void {
+    this.autorizadoPixSemJuros = this.authService.podePixSemJuros;
     this.businessPartnerService
       .getPedidodeVendaBP(this.selected.CardCode)
       .subscribe((response) => {

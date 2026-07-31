@@ -64,6 +64,40 @@ export class AuthService {
     return JSON.parse(window.atob(this.getToken().split('.')[1]));
   }
 
+  /**
+   * Roles do usuario lidas do proprio token, cobrindo os dois modos de autenticacao:
+   *  - Keycloak: `realm_access.roles` + `resource_access[client].roles` (mesmas claims que o
+   *    KeycloakUserMapper le no backend);
+   *  - token interno: claim `authorities` no formato `[{ authority: 'pix' }, ...]`.
+   */
+  getRoles(): string[] {
+    try {
+      const token = this.getDecodeToken()
+      const realm = token?.realm_access?.roles ?? []
+      const client = Object.values(token?.resource_access ?? {})
+        .flatMap((it: any) => it?.roles ?? [])
+      const interno = (token?.authorities ?? [])
+        .map((it: any) => it?.authority)
+        .filter((it: any) => !!it)
+      return [...realm, ...client, ...interno]
+    } catch {
+      return []
+    }
+  }
+
+  hasRole(role: string): boolean {
+    return this.getRoles().includes(role)
+  }
+
+  /**
+   * Espelha `User.isAllCreatePix` do backend: apenas `pix_admin` pode gerar PIX sem juros.
+   * Nao inclui `admin` de proposito — o backend tambem nao inclui, e um front mais permissivo
+   * que o backend faria o usuario ver o botao e levar erro ao clicar.
+   */
+  get podePixSemJuros(): boolean {
+    return this.hasRole('pix_admin')
+  }
+
   /** Verdadeiro se o token atual foi emitido pelo Keycloak. */
   private isKeycloakToken(): boolean {
     try {
