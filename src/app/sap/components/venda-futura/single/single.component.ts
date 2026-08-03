@@ -11,6 +11,7 @@ import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { PixPagamentoStatus, PixService } from '../../../service/pix.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { Icons } from '../../../../shared/icons';
+import { AuthService } from '../../../../shared/service/auth.service';
 
 
 
@@ -29,7 +30,11 @@ export class VendaFuturaSingleComponent implements OnInit {
     private vendaFuturaService: VendaFuturaService,
     private futureDeliverySalesService: FutureDeliverySalesService,
     private pixService: PixService,
+    private authService: AuthService,
   ) {}
+
+  /** Só quem tem a role pix_admin pode dispensar o juros de mora. */
+  autorizadoPixSemJuros = false;
 
   @Input()
   selected: VendaFutura = null;
@@ -82,6 +87,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.loadingBoletos = true;
     this.loadingEntregas = true;
     this.loadingPedidos = true;
+    this.autorizadoPixSemJuros = this.authService.podePixSemJuros;
 
     this.carregarBoletos();
 
@@ -133,8 +139,20 @@ export class VendaFuturaSingleComponent implements OnInit {
 
   // ── PIX ──────────────────────────────────────────────────────────────────
 
+  /**
+   * Mesma noção de elegibilidade do backend: o RequestPixDueDateSemContaBuilder regera o PIX de
+   * parcelas cujo QR já expirou (filtra por !isPixValido()). Olhar só o U_pix_reference esconderia
+   * o botão justamente nos boletos vencidos com PIX expirado — que são os que precisam de juros.
+   */
   get podeGerarPix(): boolean {
-    return this.boletos.some(b => b.DocStatus === 'O' && !b.U_pix_reference);
+    return this.boletos.some(b => b.DocStatus === 'O' && (!b.U_pix_reference || this.pixExpirado(b)));
+  }
+
+  pixExpirado(boleto: BoletoVf): boolean {
+    if (!boleto.U_pix_consultar_ate) return false;
+    const validade = new Date(boleto.U_pix_consultar_ate).getTime();
+    if (isNaN(validade)) return false;
+    return validade <= Date.now();
   }
 
   pixKey(boleto: BoletoVf): string {
@@ -145,9 +163,9 @@ export class VendaFuturaSingleComponent implements OnInit {
     return Boolean(boleto.U_pix_reference);
   }
 
-  gerarPixContrato(): void {
+  gerarPixContrato(comJuros: boolean = true): void {
     this.gerarPixLoading = true;
-    this.downPaymentService.gerarPixContrato(this.selected.DocEntry).subscribe({
+    this.downPaymentService.gerarPixContrato(this.selected.DocEntry, comJuros).subscribe({
       next: (boletos) => { this.boletos = boletos; },
       error: () => {
         this.alertService.info('Erro ao gerar PIX. Tente novamente.');
@@ -213,7 +231,7 @@ export class VendaFuturaSingleComponent implements OnInit {
     if (!qrCode) return;
     const payload = {
       qrCode,
-      valor: parseFloat(boleto.DocTotal),
+      valor: boleto.JurosValor > 0 ? boleto.ValorTotal : parseFloat(boleto.DocTotal),
       vencimento: boleto.U_pix_due_date || boleto.DocDueDate,
       nome: this.selected?.U_cardName ?? null,
     };
