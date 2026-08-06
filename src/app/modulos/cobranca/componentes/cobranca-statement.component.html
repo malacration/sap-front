@@ -5,6 +5,20 @@
     </div>
 
     <div class="card-body">
+      <!-- Filtro que chegou pela URL fica escrito aqui. Dois desses filtros não têm controle
+           na tela e o vendedor não pode ser pré-selecionado no componente compartilhado - sem
+           essa faixa, a lista apareceria misteriosamente curta e ninguém saberia por quê. -->
+      <div class="alert alert-info d-flex align-items-center flex-wrap" *ngIf="veioDoDashboard && filtrosHerdados().length">
+        <i class="fas fa-filter mr-2"></i>
+        <span>
+          Filtrado a partir do <b>Resultado</b>:
+          <b>{{ filtrosHerdados().join(' · ') }}</b>
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-secondary ml-auto" (click)="limparFiltros()">
+          Limpar filtros
+        </button>
+      </div>
+
       <form class="container-fluid px-0" (ngSubmit)="filtrar()" autocomplete="off">
         <div class="form-row align-items-end">
           <div class="col-md-2 col-sm-6">

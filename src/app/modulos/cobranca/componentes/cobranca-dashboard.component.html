@@ -1,0 +1,271 @@
+<section class="content cobranca-dashboard">
+
+  <!-- Uma linha de filtro pra tudo. Filtro dentro de card de gráfico faz cada card
+       responder por um recorte diferente sem ninguém perceber. -->
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Resultado da Cobrança</b></h3>
+    </div>
+    <div class="card-body">
+      <form class="container-fluid px-0" (ngSubmit)="buscar()" autocomplete="off">
+        <div class="form-row align-items-end">
+          <div class="col-md-2 col-sm-6">
+            <app-branch-select [selected]="filialSelecionada?.Bplid" (selectedOut)="onFilialChange($event)"></app-branch-select>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <app-sales-person-search [name]="'Vendedor'" (selected)="onVendedorChange($event)"></app-sales-person-search>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Recuperação de</label>
+            <input type="date" class="form-control" name="filtroDe" [(ngModel)]="filtroDe" />
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>até</label>
+            <input type="date" class="form-control" name="filtroAte" [(ngModel)]="filtroAte" />
+          </div>
+          <div class="col-md-3 col-sm-12 mt-2 mt-md-0">
+            <button type="submit" class="btn btn-primary" [disabled]="carregandoResumo">
+              <i class="fas fa-filter"></i> Filtrar
+            </button>
+            <button type="button" class="btn btn-default ml-2" (click)="limpar()">Limpar</button>
+          </div>
+        </div>
+      </form>
+
+      <small class="text-muted d-block mt-2">
+        <i class="fas fa-info-circle"></i>
+        Carteira, sem ação e promessas são a foto de <b>hoje</b>. Recuperado e títulos
+        trabalhados são do período escolhido. Só conta como recuperado o pagamento que
+        entrou <b>depois</b> de haver ação de cobrança registrada.
+      </small>
+    </div>
+  </div>
+
+  <div *ngIf="erro" class="alert alert-warning">{{ erro }}</div>
+
+  <!-- Segura o render anterior com opacidade reduzida em vez de trocar por skeleton,
+       pra não pular layout a cada troca de filtro. Na primeira carga (ainda sem
+       dashboard.De) não há "render anterior" nenhum pra segurar - só zeros - então
+       entra o spinner cheio, pra não parecer que a tela travou. -->
+  <div class="dashboard-conteudo" [class.recarregando]="carregandoResumo">
+
+    <div *ngIf="carregandoResumo && !dashboard.De" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+
+    <!-- Todo card é um link para a lista que o gerou: sem isso o cobrador tem que decorar o
+         número, ir na aba Títulos e refazer o filtro à mão. -->
+    <div class="row">
+      <div class="col-md-3 col-sm-6">
+        <div class="info-box clicavel" (click)="verCarteira()" title="Ver as parcelas em atraso">
+          <span class="info-box-icon bg-primary"><i class="fas fa-wallet"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">Carteira em atraso</span>
+            <span class="info-box-number">{{ dashboard.carteiraCurrency }}</span>
+            <span class="progress-description">{{ dashboard.CarteiraParcelas }} parcelas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="info-box clicavel" (click)="verRecuperado()" title="Ver as parcelas já quitadas com acompanhamento">
+          <span class="info-box-icon bg-success"><i class="fas fa-hand-holding-usd"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">Recuperado no período</span>
+            <span class="info-box-number">{{ dashboard.recuperadoCurrency }}</span>
+            <!-- Seta E texto: a cor nunca carrega o sinal sozinha. -->
+            <span class="progress-description">
+              <span *ngIf="dashboard.variacaoRecuperado !== null"
+                    [class.texto-bom]="dashboard.recuperadoSubiu"
+                    [class.texto-ruim]="!dashboard.recuperadoSubiu">
+                {{ dashboard.variacaoRecuperadoLabel }}
+              </span>
+              <span *ngIf="dashboard.variacaoRecuperado !== null">
+                vs {{ dashboard.anteriorCurrency }}
+              </span>
+              <span *ngIf="dashboard.variacaoRecuperado === null" class="text-muted">
+                {{ dashboard.variacaoRecuperadoLabel || dashboard.RecuperadoDocumentos + ' documentos' }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <!-- Cor de status só onde significa estado, e sempre com ícone + rótulo: a cor
+             nunca é o único portador da informação. -->
+        <div class="info-box clicavel" (click)="verSemAcao()" title="Ver as parcelas que ninguém tocou">
+          <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">Sem nenhuma ação</span>
+            <span class="info-box-number">{{ dashboard.semAcaoCurrency }}</span>
+            <span class="progress-description">
+              {{ dashboard.SemAcaoParcelas }} parcelas
+              <span class="text-muted" *ngIf="dashboard.semAcaoPercentual"> · {{ dashboard.semAcaoPercentual }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="info-box clicavel" (click)="verPromessasVencidas()" title="Ver as parcelas com promessa vencida">
+          <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">Promessas vencidas</span>
+            <span class="info-box-number">{{ dashboard.promessaVencidaCurrency }}</span>
+            <span class="progress-description">
+              {{ dashboard.PromessaVencidaParcelas }} parcelas
+              <span class="text-muted" *ngIf="dashboard.promessaVencidaPercentual"> · {{ dashboard.promessaVencidaPercentual }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Carteira por faixa de atraso</h3></div>
+          <div class="card-body">
+            <div class="grafico">
+              <canvas #graficoAging></canvas>
+            </div>
+            <p *ngIf="dashboard.Faixas.length === 0" class="text-muted mb-0">Nada em atraso no recorte atual.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Carteira por filial</h3></div>
+          <div class="card-body">
+            <div class="grafico">
+              <canvas #graficoFilial></canvas>
+            </div>
+            <p *ngIf="dashboard.PorFilial.length === 0" class="text-muted mb-0">Sem dados de filial no recorte atual.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card" [class.recarregando]="carregandoEvolucao">
+          <div class="card-header">
+            <h3 class="card-title">Recuperado por mês (últimos {{ mesesEvolucao }})</h3>
+          </div>
+          <div class="card-body">
+            <div class="grafico">
+              <canvas #graficoEvolucao></canvas>
+            </div>
+            <p *ngIf="evolucao.length === 0 && !carregandoEvolucao" class="text-muted mb-0">
+              Nenhuma recuperação registrada no período.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Recuperado por cobrador</h3></div>
+          <div class="card-body">
+            <div class="grafico">
+              <canvas #graficoCobrador></canvas>
+            </div>
+            <p *ngIf="dashboard.PorCobrador.length === 0" class="text-muted mb-0">
+              Nenhuma ação de cobrança registrada no período.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- O número exato de cada gráfico vive aqui também: nada fica preso no tooltip. -->
+    <div class="row">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Cobradores — esforço e resultado</h3></div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-striped mb-0 tabela-numeros">
+              <thead>
+                <tr>
+                  <th>Cobrador</th>
+                  <th class="text-right">Títulos trabalhados</th>
+                  <th class="text-right">Recuperado</th>
+                  <th class="text-right">Promessas vencidas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cobrador of dashboard.PorCobrador">
+                  <td>{{ cobrador.Cobrador }}</td>
+                  <td class="text-right">{{ cobrador.TitulosTrabalhados }}</td>
+                  <td class="text-right">{{ cobrador.recuperadoCurrency }}</td>
+                  <td class="text-right">{{ cobrador.ParcelasComPromessaVencida }}</td>
+                </tr>
+                <tr *ngIf="dashboard.PorCobrador.length === 0">
+                  <td colspan="4" class="text-muted">Nada registrado no período.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Carteira por status de cobrança</h3></div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-striped mb-0 tabela-numeros">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th class="text-right">Parcelas</th>
+                  <th class="text-right">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let status of dashboard.PorStatus"
+                    [class.clicavel]="statusEhClicavel(status.Status)"
+                    (click)="verStatus(status.Status)">
+                  <td>{{ status.Status }}</td>
+                  <td class="text-right">{{ status.Parcelas }}</td>
+                  <td class="text-right">{{ status.saldoCurrency }}</td>
+                </tr>
+                <tr *ngIf="dashboard.PorStatus.length === 0">
+                  <td colspan="3" class="text-muted">Nada em atraso no recorte atual.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Faixas de atraso — valores exatos</h3></div>
+          <div class="card-body p-0">
+            <table class="table table-sm table-striped mb-0 tabela-numeros">
+              <thead>
+                <tr>
+                  <th>Faixa</th>
+                  <th class="text-right">Parcelas</th>
+                  <th class="text-right">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let faixa of dashboard.Faixas">
+                  <td>{{ faixa.Faixa }}</td>
+                  <td class="text-right">{{ faixa.Parcelas }}</td>
+                  <td class="text-right">{{ faixa.saldoCurrency }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

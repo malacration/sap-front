@@ -1,0 +1,55 @@
+.cobranca-dashboard {
+
+  // .overlay (AdminLTE) é position:absolute com left/top/right/bottom:0 - precisa de um
+  // ancestral posicionado pra cobrir só o dashboard, e não subir até o primeiro ancestral
+  // posicionado da página (ex.: o content-wrapper inteiro).
+  .dashboard-conteudo {
+    position: relative;
+  }
+
+  // Altura fixa que inclui a faixa do eixo X. Se o container couber só o plot, os
+  // rótulos do eixo ficam de fora e o card ganha um scroll interno minúsculo.
+  .grafico {
+    position: relative;
+    height: 300px;
+  }
+
+  // Refetch não troca o conteúdo por skeleton: escurece de leve o que já está na tela,
+  // sem mexer no layout.
+  .recarregando {
+    opacity: 0.55;
+    transition: opacity 0.15s ease-in-out;
+    pointer-events: none;
+  }
+
+  // Coluna de número alinha vertical, então aqui tabular-nums é o certo (o oposto vale
+  // pros números grandes dos cards, que ficam com as figuras proporcionais do tema).
+  .tabela-numeros {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .info-box-number {
+    font-size: 1.35rem;
+  }
+
+  // Card e linha que levam à lista precisam parecer clicáveis, senão ninguém descobre.
+  .clicavel {
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(0.97);
+    }
+  }
+
+  // Cor do delta acompanha um símbolo (↑/↓) e o texto do valor comparado — cor sozinha não
+  // carrega o sinal.
+  .texto-bom {
+    color: #0ca30c;
+    font-weight: 600;
+  }
+
+  .texto-ruim {
+    color: #d03b3b;
+    font-weight: 600;
+  }
+}

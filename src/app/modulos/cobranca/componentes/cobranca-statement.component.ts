@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../../../shared/service/auth.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
@@ -49,9 +50,17 @@ export class CobrancaStatementComponent implements OnInit {
   filtroVencimentoDe = '';
   filtroVencimentoAte = '';
 
+  // Só chegam por navegação a partir do dashboard - não têm controle próprio na tela, e por
+  // isso aparecem listados na faixa do topo enquanto estiverem valendo.
+  filtroSemAcompanhamento: boolean | null = null;
+  filtroPromessaVencidaAte = '';
+  vendedorHerdado: number | null = null;
+  veioDoDashboard = false;
+
   constructor(
     private auth: AuthService,
     private service: CobrancaService,
+    private route: ActivatedRoute,
   ) {
     this.nomeUsuario = this.auth.getUser();
     this.definition = this.service.getDefinition();
@@ -67,7 +76,40 @@ export class CobrancaStatementComponent implements OnInit {
       this.dominios = dominios;
     });
 
-    this.filtrar();
+    // O callback é o ÚNICO lugar que dispara carga, inclusive quando não veio parâmetro
+    // nenhum — subscrever e também chamar filtrar() aqui buscaria a lista duas vezes.
+    // Mesmo formato de modulos/ordem-carregamento/componentes/statement.ts.
+    this.route.queryParams.subscribe((params) => {
+      this.aplicarParametrosDeNavegacao(params);
+      this.filtrar();
+    });
+  }
+
+  // Texto do que veio pela URL, para nenhum filtro ficar aplicado sem estar escrito na tela.
+  filtrosHerdados(): string[] {
+    const partes: string[] = [];
+    if (this.filialSelecionada?.Bplid != null) {
+      partes.push(`Filial ${this.filialSelecionada.Bplid}`);
+    }
+    if (this.vendedorHerdado != null) {
+      partes.push(`Vendedor ${this.vendedorHerdado}`);
+    }
+    if (this.filtroSemAcompanhamento) {
+      partes.push('sem nenhuma ação registrada');
+    }
+    if (this.filtroPromessaVencidaAte) {
+      partes.push(`promessa vencida até ${this.filtroPromessaVencidaAte}`);
+    }
+    if (this.filtroVencimentoDe || this.filtroVencimentoAte) {
+      partes.push(`vencimento ${this.filtroVencimentoDe || '...'} a ${this.filtroVencimentoAte || '...'}`);
+    }
+    if (this.filtroStatus) {
+      partes.push(`status ${this.filtroStatus}`);
+    }
+    if (this.filtroCobrador) {
+      partes.push(`cobrador ${this.filtroCobrador}`);
+    }
+    return partes;
   }
 
   // O backend pagina no SAP (nao busca tudo de uma vez), entao aqui e "carregar mais"
@@ -115,6 +157,10 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtroDiasAtrasoMin = 1;
     this.filtroVencimentoDe = '';
     this.filtroVencimentoAte = '';
+    this.filtroSemAcompanhamento = null;
+    this.filtroPromessaVencidaAte = '';
+    this.vendedorHerdado = null;
+    this.veioDoDashboard = false;
     this.filtrar();
   }
 
@@ -179,13 +225,62 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtrar();
   }
 
+  // Vindo do dashboard (/cobranca/resultado), o filtro chega pela URL. Dois desses filtros não
+  // têm controle na tela e o vendedor não pode ser pré-selecionado (app-sales-person-search não
+  // tem @Input) - por isso o que chegou aqui é escrito na faixa do topo, via filtrosHerdados().
+  private aplicarParametrosDeNavegacao(params: Record<string, any>): void {
+    this.veioDoDashboard = params.origem === 'resultado';
+    if (!this.veioDoDashboard) {
+      return;
+    }
+
+    if (params.filial) {
+      // filialSelecionada é lida só via ?.Bplid (template e getFiltro), então preencher só o id
+      // é funcionalmente completo - e o app-branch-select resolve o nome pelo id sozinho.
+      const filial = new Branch();
+      filial.Bplid = params.filial;
+      this.filialSelecionada = filial;
+    }
+    if (params.vendedor) {
+      this.vendedorHerdado = Number(params.vendedor);
+    }
+    if (params.situacaoSap != null) {
+      this.filtroSituacaoSap = params.situacaoSap;
+    }
+    if (params.status) {
+      this.filtroStatus = params.status;
+    }
+    if (params.cobrador) {
+      this.filtroCobrador = params.cobrador;
+    }
+    if (params.vencimentoDe) {
+      this.filtroVencimentoDe = params.vencimentoDe;
+    }
+    if (params.vencimentoAte) {
+      this.filtroVencimentoAte = params.vencimentoAte;
+    }
+    if (params.semAcompanhamento === 'true') {
+      this.filtroSemAcompanhamento = true;
+    }
+    if (params.promessaVencidaAte) {
+      this.filtroPromessaVencidaAte = params.promessaVencidaAte;
+    }
+    // A faixa de atraso já vem como janela de vencimento; manter o mínimo de dias junto
+    // apertaria o filtro duas vezes e faria a lista discordar do card.
+    if (params.vencimentoDe || params.vencimentoAte) {
+      this.filtroDiasAtrasoMin = null;
+    }
+  }
+
   private getFiltro(): CobrancaFiltro {
     return {
       filial: this.filialSelecionada?.Bplid != null ? Number(this.filialSelecionada.Bplid) : null,
       cliente: this.clienteSelecionado?.CardCode ?? null,
+      // O vendedor escolhido na tela ganha do herdado pela URL: se a pessoa mexer no campo,
+      // é isso que ela quer, mesmo tendo chegado aqui por drill-down.
       vendedor: this.vendedorSelecionado?.SalesEmployeeCode != null
         ? Number(this.vendedorSelecionado.SalesEmployeeCode)
-        : null,
+        : this.vendedorHerdado,
       tipo: this.filtroTipo || null,
       status: this.filtroStatus || null,
       situacao: this.filtroSituacao || null,
@@ -194,6 +289,8 @@ export class CobrancaStatementComponent implements OnInit {
       diasAtrasoMin: this.filtroDiasAtrasoMin ?? null,
       vencimentoDe: this.filtroVencimentoDe || null,
       vencimentoAte: this.filtroVencimentoAte || null,
+      semAcompanhamento: this.filtroSemAcompanhamento,
+      promessaVencidaAte: this.filtroPromessaVencidaAte || null,
     };
   }
 }

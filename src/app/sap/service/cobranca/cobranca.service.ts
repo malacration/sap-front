@@ -6,6 +6,7 @@ import { Column } from '../../../shared/components/table/column.model';
 import { CobrancaTitulo } from '../../model/cobranca/cobranca-titulo';
 import { CobrancaDominio } from '../../model/cobranca/cobranca-dominio';
 import { CobrancaHistorico } from '../../model/cobranca/cobranca-historico';
+import { CobrancaDashboard, CobrancaMes } from '../../model/cobranca/cobranca-dashboard';
 
 export interface CobrancaFiltro {
   filial?: number | null;
@@ -19,9 +20,21 @@ export interface CobrancaFiltro {
   situacaoSap?: string | null;
   vencimentoDe?: string | null;
   vencimentoAte?: string | null;
+  // Vêm do drill-down do dashboard: não têm controle próprio na tela de Títulos, e por isso
+  // aparecem escritos na faixa "Filtrado a partir do Resultado" — filtro aplicado sem estar
+  // visível deixa a lista misteriosamente curta.
+  semAcompanhamento?: boolean | null;
+  promessaVencidaAte?: string | null;
   tipo?: string | null;
   pagina?: number | null;
   tamanho?: number | null;
+}
+
+export interface CobrancaDashboardFiltro {
+  filial?: number | null;
+  vendedor?: number | null;
+  de?: string | null;
+  ate?: string | null;
 }
 
 export interface CobrancaAcaoPayload {
@@ -58,16 +71,8 @@ export class CobrancaService {
   }
 
   listar(filtro: CobrancaFiltro = {}): Observable<CobrancaTitulo[]> {
-    let params = new HttpParams();
-    Object.keys(filtro).forEach((chave) => {
-      const valor = (filtro as any)[chave];
-      if (valor !== null && valor !== undefined && valor !== '') {
-        params = params.set(chave, valor.toString());
-      }
-    });
-
     return this.http
-      .get<any[]>(`${this.url}/titulos`, { params })
+      .get<any[]>(`${this.url}/titulos`, { params: this.montarParams(filtro) })
       .pipe(map((lista) => (lista ?? []).map((item) => CobrancaTitulo.from(item))));
   }
 
@@ -83,6 +88,22 @@ export class CobrancaService {
 
   registrarAcaoEmLote(itens: CobrancaAcaoLoteItem[]): Observable<CobrancaAcaoResultado[]> {
     return this.http.post<CobrancaAcaoResultado[]>(`${this.url}/titulos/acoes`, itens);
+  }
+
+  // Duas chamadas separadas de propósito: o resumo custa ~16 consultas no SAP e a série
+  // mensal custa mais uma paginada. Buscando em paralelo, os KPIs e o aging aparecem sem
+  // esperar o gráfico de evolução.
+  dashboard(filtro: CobrancaDashboardFiltro = {}): Observable<CobrancaDashboard> {
+    return this.http
+      .get<any>(`${this.url}/dashboard`, { params: this.montarParams(filtro) })
+      .pipe(map((json) => CobrancaDashboard.from(json)));
+  }
+
+  evolucao(filtro: CobrancaDashboardFiltro = {}, meses = 6): Observable<CobrancaMes[]> {
+    const params = this.montarParams({ ...filtro, de: null, ate: null }).set('meses', meses.toString());
+    return this.http
+      .get<any[]>(`${this.url}/dashboard/evolucao`, { params })
+      .pipe(map((lista) => (lista ?? []).map((item) => Object.assign(new CobrancaMes(), item))));
   }
 
   dominios(tipo?: string): Observable<CobrancaDominio[]> {
@@ -115,5 +136,16 @@ export class CobrancaService {
       new Column('Ocorrência', 'U_Ocorrencia'),
       new Column('Situação SAP', 'situacaoSapLabel'),
     ];
+  }
+
+  private montarParams(filtro: object): HttpParams {
+    let params = new HttpParams();
+    Object.keys(filtro).forEach((chave) => {
+      const valor = (filtro as any)[chave];
+      if (valor !== null && valor !== undefined && valor !== '') {
+        params = params.set(chave, valor.toString());
+      }
+    });
+    return params;
   }
 }
