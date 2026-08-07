@@ -1,0 +1,55 @@
+.cobranca-dashboard {
+
+  .dashboard-conteudo {
+    position: relative;
+  }
+
+  .overlay .fa-spin {
+    animation: fa-spin 2s infinite linear !important;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .grafico {
+    position: relative;
+    height: 300px;
+  }
+
+  .recarregando {
+    opacity: 0.55;
+    transition: opacity 0.15s ease-in-out;
+    pointer-events: none;
+  }
+
+  .tabela-numeros {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .info-box-number {
+    font-size: 1.35rem;
+  }
+
+  .clicavel {
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(0.97);
+    }
+  }
+
+  .texto-bom {
+    color: #0ca30c;
+    font-weight: 600;
+  }
+
+  .texto-ruim {
+    color: #d03b3b;
+    font-weight: 600;
+  }
+}

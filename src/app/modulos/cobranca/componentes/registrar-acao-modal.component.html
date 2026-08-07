@@ -1,0 +1,107 @@
+<app-modal #modalRef [title]="tituloModal" modalSize="lg">
+  <div class="card card-primary mb-0">
+    <div class="card-body" *ngIf="!somenteHistorico">
+      <div class="form-row">
+        <div class="col-md-6">
+          <label>Status</label>
+          <select class="form-control" name="status" [(ngModel)]="form.status">
+            <option value="">Não alterar</option>
+            <option *ngFor="let d of dominios.status" [value]="d.rotulo">{{ d.rotulo }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label>Ação de Cobrança</label>
+          <select class="form-control" name="acao" [(ngModel)]="form.acao">
+            <option value="">Não alterar</option>
+            <option *ngFor="let d of dominios.acao" [value]="d.rotulo">{{ d.rotulo }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row mt-2">
+        <div class="col-md-6">
+          <label>Situação</label>
+          <select class="form-control" name="situacao" [(ngModel)]="form.situacao">
+            <option value="">Não alterar</option>
+            <option *ngFor="let d of dominios.situacao" [value]="d.rotulo">{{ d.rotulo }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label>Ocorrência</label>
+          <select class="form-control" name="ocorrencia" [(ngModel)]="form.ocorrencia">
+            <option value="">Nenhuma</option>
+            <option *ngFor="let d of dominios.ocorrencia" [value]="d.rotulo">{{ d.rotulo }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row mt-2">
+        <div class="col-md-12">
+          <label>Observação (o que foi feito)</label>
+          <textarea
+            class="form-control"
+            name="observacao"
+            rows="3"
+            [(ngModel)]="form.observacao"
+            placeholder="Ex.: cliente confirmou pagamento via PIX ate sexta-feira"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="form-row mt-2">
+        <div class="col-md-4">
+          <label>Data prometida (opcional)</label>
+          <input type="date" class="form-control" name="dataPromessa" [(ngModel)]="form.dataPromessa">
+        </div>
+        <div class="col-md-4">
+          <label>Cobrador</label>
+          <input type="text" class="form-control" [value]="nomeUsuario" disabled>
+        </div>
+      </div>
+
+      <div class="text-right mt-3">
+        <button type="button" class="btn btn-secondary mr-2" [disabled]="salvando" (click)="cancelar()">Cancelar</button>
+        <button type="button" class="btn btn-primary" [disabled]="salvando" (click)="salvar()">
+          {{ salvando ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card-footer" *ngIf="isUnico()">
+      <h6 *ngIf="!somenteHistorico">Histórico</h6>
+
+      <div *ngIf="carregandoHistorico" class="text-muted">Carregando...</div>
+      <div *ngIf="!carregandoHistorico && historico.length === 0" class="text-muted">
+        Nenhuma ação registrada ainda.
+      </div>
+
+      <div class="timeline" *ngIf="!carregandoHistorico && historicoExibido.length > 0">
+        <div *ngFor="let h of historicoExibido">
+          <i class="fas fa-comment-dots bg-info"></i>
+          <div class="timeline-item">
+            <span class="time"><i class="far fa-clock"></i> {{ h.dataFormatada }}</span>
+            <h3 class="timeline-header">{{ h.U_Cobrador }}</h3>
+            <div class="timeline-body">
+              <span class="badge badge-primary mr-1 mb-1" *ngIf="h.U_Status"><b>Status:</b> {{ h.U_Status }}</span>
+              <span class="badge badge-info mr-1 mb-1" *ngIf="h.U_Acao"><b>Ação:</b> {{ h.U_Acao }}</span>
+              <span class="badge badge-warning mr-1 mb-1" *ngIf="h.U_Situacao"><b>Situação:</b> {{ h.U_Situacao }}</span>
+              <span class="badge badge-secondary mr-1 mb-1" *ngIf="h.U_Ocorrencia"><b>Ocorrência:</b> {{ h.U_Ocorrencia }}</span>
+              <div *ngIf="h.U_Observacao" class="mt-1"><b>Observação:</b> {{ h.U_Observacao }}</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <i class="fas fa-flag-checkered bg-gray"></i>
+        </div>
+      </div>
+
+      <div class="text-muted small mt-2" *ngIf="!somenteHistorico && historico.length > 1">
+        Mostrando a última ação. Use "Histórico" para ver tudo.
+      </div>
+
+      <div class="text-right mt-2" *ngIf="somenteHistorico">
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</app-modal>
