@@ -129,11 +129,11 @@ export class CobrancaService {
       new Column('Data Lançamento', 'docDateFormatado'),
       new Column('Vencimento', 'vencimentoFormatado'),
       new Column('Saldo', 'saldoCurrency'),
-      new Column('Status', 'U_Status'),
-      new Column('Cobrador', 'U_Cobrador'),
-      new Column('Ação de Cobrança', 'U_Acao'),
-      new Column('Situação', 'U_Situacao'),
-      new Column('Ocorrência', 'U_Ocorrencia'),
+      new Column('Status', 'statusFormatado'),
+      new Column('Cobrador', 'cobradorFormatado'),
+      new Column('Ação de Cobrança', 'acaoFormatada'),
+      new Column('Situação', 'situacaoFormatada'),
+      new Column('Ocorrência', 'ocorrenciaFormatada'),
       new Column('Situação SAP', 'situacaoSapLabel'),
     ];
   }

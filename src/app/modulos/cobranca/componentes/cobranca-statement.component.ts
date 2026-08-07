@@ -64,6 +64,16 @@ export class CobrancaStatementComponent implements OnInit {
   ) {
     this.nomeUsuario = this.auth.getUser();
     this.definition = this.service.getDefinition();
+
+    // Padrao de entrada direta na tela (sem vir de drill-down do dashboard): uma janela de
+    // vencimento em vez de "tudo em atraso", que sem filtro nenhum costuma virar uma lista
+    // gigante. aplicarParametrosDeNavegacao() sobrescreve isso quando vem do dashboard.
+    const hoje = new Date();
+    this.filtroVencimentoDe = this.paraInput(this.somarDias(hoje, -30));
+    this.filtroVencimentoAte = this.paraInput(new Date(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate()));
+    // A janela ja inclui vencimento futuro (proximo mes); o minimo de dias em atraso (default 1)
+    // cortaria justamente essa parte, igual ja acontece no drill-down por faixa/vencimento.
+    this.filtroDiasAtrasoMin = null;
   }
 
   ngOnInit(): void {
@@ -253,12 +263,11 @@ export class CobrancaStatementComponent implements OnInit {
     if (params.cobrador) {
       this.filtroCobrador = params.cobrador;
     }
-    if (params.vencimentoDe) {
-      this.filtroVencimentoDe = params.vencimentoDe;
-    }
-    if (params.vencimentoAte) {
-      this.filtroVencimentoAte = params.vencimentoAte;
-    }
+    // Drill-down do dashboard sem vencimento explícito quer o recorte inteiro (ex.: carteira
+    // completa em atraso), não a janela padrão de entrada direta na tela - por isso limpa em
+    // vez de manter o valor do construtor.
+    this.filtroVencimentoDe = params.vencimentoDe || '';
+    this.filtroVencimentoAte = params.vencimentoAte || '';
     if (params.semAcompanhamento === 'true') {
       this.filtroSemAcompanhamento = true;
     }
@@ -292,5 +301,17 @@ export class CobrancaStatementComponent implements OnInit {
       semAcompanhamento: this.filtroSemAcompanhamento,
       promessaVencidaAte: this.filtroPromessaVencidaAte || null,
     };
+  }
+
+  private paraInput(data: Date): string {
+    const mes = `${data.getMonth() + 1}`.padStart(2, '0');
+    const dia = `${data.getDate()}`.padStart(2, '0');
+    return `${data.getFullYear()}-${mes}-${dia}`;
+  }
+
+  private somarDias(data: Date, dias: number): Date {
+    const nova = new Date(data.getTime());
+    nova.setDate(nova.getDate() + dias);
+    return nova;
   }
 }

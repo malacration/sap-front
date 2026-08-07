@@ -101,6 +101,29 @@ export class CobrancaTitulo {
     return !!this.U_Status;
   }
 
+  // Sem acompanhamento, essas colunas ficavam vazias na tabela - "1 - NÃO INICIADO" já é
+  // a opção do domínio Status pra esse caso, então usa ela em vez de deixar em branco. As
+  // outras não têm um valor de domínio equivalente a "nada ainda", então só um traço.
+  get statusFormatado(): string {
+    return this.U_Status || '1 - NÃO INICIADO';
+  }
+
+  get cobradorFormatado(): string {
+    return this.U_Cobrador || '—';
+  }
+
+  get acaoFormatada(): string {
+    return this.U_Acao || '—';
+  }
+
+  get situacaoFormatada(): string {
+    return this.U_Situacao || '—';
+  }
+
+  get ocorrenciaFormatada(): string {
+    return this.U_Ocorrencia || '—';
+  }
+
   get situacaoSapLabel(): string {
     return this.SituacaoSap === 'PAGO' ? 'Pago' : 'Aberto';
   }
