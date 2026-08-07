@@ -20,9 +20,6 @@ export interface CobrancaFiltro {
   situacaoSap?: string | null;
   vencimentoDe?: string | null;
   vencimentoAte?: string | null;
-  // Vêm do drill-down do dashboard: não têm controle próprio na tela de Títulos, e por isso
-  // aparecem escritos na faixa "Filtrado a partir do Resultado" — filtro aplicado sem estar
-  // visível deixa a lista misteriosamente curta.
   semAcompanhamento?: boolean | null;
   promessaVencidaAte?: string | null;
   tipo?: string | null;
@@ -90,9 +87,6 @@ export class CobrancaService {
     return this.http.post<CobrancaAcaoResultado[]>(`${this.url}/titulos/acoes`, itens);
   }
 
-  // Duas chamadas separadas de propósito: o resumo custa ~16 consultas no SAP e a série
-  // mensal custa mais uma paginada. Buscando em paralelo, os KPIs e o aging aparecem sem
-  // esperar o gráfico de evolução.
   dashboard(filtro: CobrancaDashboardFiltro = {}): Observable<CobrancaDashboard> {
     return this.http
       .get<any>(`${this.url}/dashboard`, { params: this.montarParams(filtro) })

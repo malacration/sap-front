@@ -53,8 +53,6 @@ export class RegistrarAcaoModalComponent {
     this.modal.openModal();
   }
 
-  // Entrada separada de "Registrar": so consulta o historico, sem abrir o
-  // formulario de acao - pra nao dar a impressao de que so de abrir ja registra algo.
   abrirHistorico(titulo: CobrancaTitulo): void {
     this.somenteHistorico = true;
     this.titulos = [titulo];
@@ -68,9 +66,6 @@ export class RegistrarAcaoModalComponent {
     return this.titulos.length === 1;
   }
 
-  // No form de registrar, mostra só a última ação (o histórico vem ordenado do
-  // mais recente pro mais antigo) pra não competir visualmente com o form. A
-  // lista completa fica no botão "Histórico", separado.
   get historicoExibido(): CobrancaHistorico[] {
     return this.somenteHistorico ? this.historico : this.historico.slice(0, 1);
   }

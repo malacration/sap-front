@@ -1,18 +1,10 @@
 import { formatCurrency } from '@angular/common';
 import { ReplaceFilial } from '../../../utils/replaceFilial';
 
-// Duas unidades de contagem convivem aqui, e a diferença é de propósito:
-//  - PARCELA na carteira/aging/SLA, porque o total soma as quatro faixas e uma nota com
-//    parcelas em faixas diferentes seria contada mais de uma vez se a chave fosse a nota.
-//    É também a unidade que o time usa (as linhas da planilha eram parcelas).
-//  - DOCUMENTO no recuperado, que não é quebrado em faixas — ali "quantas notas voltaram"
-//    é o que o gestor pergunta.
 export class CobrancaFaixa {
   Faixa: string;
   Saldo: number;
   Parcelas: number;
-  // As bordas vêm do backend (enum FaixaAtraso) em vez de serem redefinidas aqui: é o que
-  // garante que a janela de vencimento do drill-down é a MESMA que gerou o número.
   DiasMin: number;
   DiasMax: number | null;
 
@@ -92,8 +84,6 @@ export class CobrancaDashboard {
   PorStatus: CobrancaPorStatus[] = [];
   PorCobrador: CobrancaPorCobrador[] = [];
 
-  // O backend serializa com NON_EMPTY, então lista vazia simplesmente não vem no JSON -
-  // por isso cada coleção tem fallback em vez de confiar no Object.assign.
   static from(json: any): CobrancaDashboard {
     const dashboard = Object.assign(new CobrancaDashboard(), json ?? {});
     dashboard.Faixas = (json?.Faixas ?? []).map((it: any) => Object.assign(new CobrancaFaixa(), it));
@@ -119,13 +109,6 @@ export class CobrancaDashboard {
     return formatCurrency(this.PromessaVencidaSaldo ?? 0, 'pt', 'R$') ?? '';
   }
 
-  // Delta só existe para Recuperado, que é a única grandeza de período. Carteira, "sem ação" e
-  // promessas são foto de hoje — dar a elas um "vs mês anterior" exigiria reconstruir o estado
-  // passado da carteira, então essas usam percentualDaCarteira, que compara dois números que
-  // já existem em vez de inventar história.
-  //
-  // Retorna null (não 0, não Infinity) quando não há base de comparação: período anterior
-  // zerado faz a variação percentual não existir, e "↑ ∞%" é pior que não mostrar nada.
   get variacaoRecuperado(): number | null {
     const anterior = this.RecuperadoAnterior ?? 0;
     if (anterior === 0) {

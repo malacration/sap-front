@@ -37,21 +37,15 @@ export class CobrancaStatementComponent implements OnInit {
   clienteSelecionado: any | null = null;
   vendedorSelecionado: SalesPerson | null = null;
 
-  filtroTipo = ''; // '' = Todos, 'NF' = Nota Fiscal, 'AD' = Adiantamento
+  filtroTipo = '';
   filtroStatus = '';
   filtroSituacao = '';
-  // Titulos ja quitados continuam aparecendo (baixa automatica via SituacaoSap, ver
-  // "OR C.Code IS NOT NULL" na view) para mostrar que o acompanhamento virou PAGO -
-  // mas isso nao deve poluir a lista por padrao, so quando o usuario pedir "Todos"/"Pago".
   filtroSituacaoSap = 'ABERTO';
   filtroCobrador = '';
-  // Padrao 1: sem isso, parcela que vence hoje (0 dias de atraso) tambem aparece.
   filtroDiasAtrasoMin: number | null = 1;
   filtroVencimentoDe = '';
   filtroVencimentoAte = '';
 
-  // Só chegam por navegação a partir do dashboard - não têm controle próprio na tela, e por
-  // isso aparecem listados na faixa do topo enquanto estiverem valendo.
   filtroSemAcompanhamento: boolean | null = null;
   filtroPromessaVencidaAte = '';
   vendedorHerdado: number | null = null;
@@ -65,14 +59,9 @@ export class CobrancaStatementComponent implements OnInit {
     this.nomeUsuario = this.auth.getUser();
     this.definition = this.service.getDefinition();
 
-    // Padrao de entrada direta na tela (sem vir de drill-down do dashboard): uma janela de
-    // vencimento em vez de "tudo em atraso", que sem filtro nenhum costuma virar uma lista
-    // gigante. aplicarParametrosDeNavegacao() sobrescreve isso quando vem do dashboard.
     const hoje = new Date();
     this.filtroVencimentoDe = this.paraInput(this.somarDias(hoje, -30));
     this.filtroVencimentoAte = this.paraInput(new Date(hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate()));
-    // A janela ja inclui vencimento futuro (proximo mes); o minimo de dias em atraso (default 1)
-    // cortaria justamente essa parte, igual ja acontece no drill-down por faixa/vencimento.
     this.filtroDiasAtrasoMin = null;
   }
 
@@ -86,16 +75,12 @@ export class CobrancaStatementComponent implements OnInit {
       this.dominios = dominios;
     });
 
-    // O callback é o ÚNICO lugar que dispara carga, inclusive quando não veio parâmetro
-    // nenhum — subscrever e também chamar filtrar() aqui buscaria a lista duas vezes.
-    // Mesmo formato de modulos/ordem-carregamento/componentes/statement.ts.
     this.route.queryParams.subscribe((params) => {
       this.aplicarParametrosDeNavegacao(params);
       this.filtrar();
     });
   }
 
-  // Texto do que veio pela URL, para nenhum filtro ficar aplicado sem estar escrito na tela.
   filtrosHerdados(): string[] {
     const partes: string[] = [];
     if (this.filialSelecionada?.Bplid != null) {
@@ -122,8 +107,6 @@ export class CobrancaStatementComponent implements OnInit {
     return partes;
   }
 
-  // O backend pagina no SAP (nao busca tudo de uma vez), entao aqui e "carregar mais"
-  // acumulando no array, e nao paginas numeradas com total conhecido de antemao.
   filtrar(): void {
     this.loading = true;
     this.paginaAtual = 0;
@@ -235,9 +218,6 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtrar();
   }
 
-  // Vindo do dashboard (/cobranca/resultado), o filtro chega pela URL. Dois desses filtros não
-  // têm controle na tela e o vendedor não pode ser pré-selecionado (app-sales-person-search não
-  // tem @Input) - por isso o que chegou aqui é escrito na faixa do topo, via filtrosHerdados().
   private aplicarParametrosDeNavegacao(params: Record<string, any>): void {
     this.veioDoDashboard = params.origem === 'resultado';
     if (!this.veioDoDashboard) {
@@ -245,8 +225,6 @@ export class CobrancaStatementComponent implements OnInit {
     }
 
     if (params.filial) {
-      // filialSelecionada é lida só via ?.Bplid (template e getFiltro), então preencher só o id
-      // é funcionalmente completo - e o app-branch-select resolve o nome pelo id sozinho.
       const filial = new Branch();
       filial.Bplid = params.filial;
       this.filialSelecionada = filial;
@@ -263,9 +241,6 @@ export class CobrancaStatementComponent implements OnInit {
     if (params.cobrador) {
       this.filtroCobrador = params.cobrador;
     }
-    // Drill-down do dashboard sem vencimento explícito quer o recorte inteiro (ex.: carteira
-    // completa em atraso), não a janela padrão de entrada direta na tela - por isso limpa em
-    // vez de manter o valor do construtor.
     this.filtroVencimentoDe = params.vencimentoDe || '';
     this.filtroVencimentoAte = params.vencimentoAte || '';
     if (params.semAcompanhamento === 'true') {
@@ -274,8 +249,6 @@ export class CobrancaStatementComponent implements OnInit {
     if (params.promessaVencidaAte) {
       this.filtroPromessaVencidaAte = params.promessaVencidaAte;
     }
-    // A faixa de atraso já vem como janela de vencimento; manter o mínimo de dias junto
-    // apertaria o filtro duas vezes e faria a lista discordar do card.
     if (params.vencimentoDe || params.vencimentoAte) {
       this.filtroDiasAtrasoMin = null;
     }
@@ -285,8 +258,6 @@ export class CobrancaStatementComponent implements OnInit {
     return {
       filial: this.filialSelecionada?.Bplid != null ? Number(this.filialSelecionada.Bplid) : null,
       cliente: this.clienteSelecionado?.CardCode ?? null,
-      // O vendedor escolhido na tela ganha do herdado pela URL: se a pessoa mexer no campo,
-      // é isso que ela quer, mesmo tendo chegado aqui por drill-down.
       vendedor: this.vendedorSelecionado?.SalesEmployeeCode != null
         ? Number(this.vendedorSelecionado.SalesEmployeeCode)
         : this.vendedorHerdado,

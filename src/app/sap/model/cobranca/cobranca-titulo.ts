@@ -4,7 +4,7 @@ import { Action, ActionReturn } from '../../../shared/components/action/action.m
 import { ReplaceFilial } from '../../../utils/replaceFilial';
 
 export class CobrancaTitulo {
-  Tipo: string; // "NF" (fatura) ou "AD" (adiantamento) - obrigatório em toda chamada de escrita
+  Tipo: string;
   DocEntry: number;
   DocNum: number;
   Serial: string;
@@ -33,7 +33,6 @@ export class CobrancaTitulo {
   U_DataAcao: string;
   U_DataPromessa: string;
 
-  // Somente no front, para marcar linhas antes de aplicar uma ação em lote.
   selecionado = false;
 
   static from(json: any): CobrancaTitulo {
@@ -101,9 +100,6 @@ export class CobrancaTitulo {
     return !!this.U_Status;
   }
 
-  // Sem acompanhamento, essas colunas ficavam vazias na tabela - "1 - NÃO INICIADO" já é
-  // a opção do domínio Status pra esse caso, então usa ela em vez de deixar em branco. As
-  // outras não têm um valor de domínio equivalente a "nada ainda", então só um traço.
   get statusFormatado(): string {
     return this.U_Status || '1 - NÃO INICIADO';
   }

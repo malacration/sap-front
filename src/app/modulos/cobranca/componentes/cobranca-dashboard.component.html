@@ -1,7 +1,5 @@
 <section class="content cobranca-dashboard">
 
-  <!-- Uma linha de filtro pra tudo. Filtro dentro de card de gráfico faz cada card
-       responder por um recorte diferente sem ninguém perceber. -->
   <div class="card card-primary">
     <div class="card-header">
       <h3 class="card-title"><b>Resultado da Cobrança</b></h3>
@@ -55,8 +53,6 @@
       <div class="mt-2">Buscando indicadores | Tempo: {{ formatTime() }}</div>
     </div>
 
-    <!-- Todo card é um link para a lista que o gerou: sem isso o cobrador tem que decorar o
-         número, ir na aba Títulos e refazer o filtro à mão. -->
     <div class="row">
       <div class="col-md-3 col-sm-6">
         <div class="info-box clicavel" (click)="verCarteira()" title="Ver as parcelas em atraso">
@@ -75,7 +71,6 @@
           <div class="info-box-content">
             <span class="info-box-text">Recuperado no período</span>
             <span class="info-box-number">{{ dashboard.recuperadoCurrency }}</span>
-            <!-- Seta E texto: a cor nunca carrega o sinal sozinha. -->
             <span class="progress-description">
               <span *ngIf="dashboard.variacaoRecuperado !== null"
                     [class.texto-bom]="dashboard.recuperadoSubiu"
@@ -94,8 +89,6 @@
       </div>
 
       <div class="col-md-3 col-sm-6">
-        <!-- Cor de status só onde significa estado, e sempre com ícone + rótulo: a cor
-             nunca é o único portador da informação. -->
         <div class="info-box clicavel" (click)="verSemAcao()" title="Ver as parcelas que ninguém tocou">
           <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
           <div class="info-box-content">
@@ -182,7 +175,6 @@
       </div>
     </div>
 
-    <!-- O número exato de cada gráfico vive aqui também: nada fica preso no tooltip. -->
     <div class="row">
       <div class="col-lg-6">
         <div class="card">

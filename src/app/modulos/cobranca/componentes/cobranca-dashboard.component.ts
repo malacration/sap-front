@@ -14,16 +14,6 @@ import {
 } from '../../../sap/model/cobranca/cobranca-dashboard';
 import { CobrancaDashboardFiltro, CobrancaService } from '../../../sap/service/cobranca/cobranca.service';
 
-// Paleta validada com o validador de cor contra as superfícies reais do AdminLTE
-// (card claro #ffffff, card escuro #343a40) — todos os checks passaram nos dois modos.
-//
-// Duas regras que valem aqui e não são estéticas:
-//  - Faixa de atraso é escala ORDENADA, então usa rampa de um só tom, mais atraso = mais
-//    escuro. Em modo escuro a rampa inverte de direção (o passo mais forte é o mais claro),
-//    porque é o contraste contra a superfície que tem que crescer.
-//  - Filial e cobrador são categorias NOMINAIS: todas as barras usam UMA cor. Pintar mais
-//    escuro onde o valor é maior duplicaria o comprimento da barra em tom, gastando o
-//    único canal livre em informação que a barra já mostra.
 const TEMA = {
   claro: {
     serie: '#2a78d6',
@@ -53,8 +43,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
   @ViewChild('graficoEvolucao') graficoEvolucao: ElementRef<HTMLCanvasElement>;
   @ViewChild('graficoCobrador') graficoCobrador: ElementRef<HTMLCanvasElement>;
 
-  // Sem skeleton: no refetch a tela segura o render anterior com opacidade reduzida, pra
-  // não pular layout nem piscar a cada troca de filtro.
   carregandoResumo = false;
   carregandoEvolucao = false;
   erro = '';
@@ -86,8 +74,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
   }
 
   ngOnInit(): void {
-    // O Chart.js 2.x cozinha as cores dentro da config, então trocar de tema não é
-    // atualizar uma variável: os gráficos têm que ser destruídos e recriados.
     this.inscricaoUi = this.store.select('ui').subscribe((state: UiState) => {
       const escuroAgora = !!state.darkMode;
       if (escuroAgora === this.modoEscuro) {
@@ -169,15 +155,11 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.buscar();
   }
 
-  // ---- drill-down: todo número leva à lista que o gerou ----
-
   verCarteira(): void {
     this.irParaTitulos({ situacaoSap: 'ABERTO' });
   }
 
   verRecuperado(): void {
-    // A lista mostra parcela, não pagamento: o mais próximo de "recuperado" que ela sabe
-    // filtrar é a parcela já quitada e que teve acompanhamento.
     this.irParaTitulos({ situacaoSap: 'PAGO' });
   }
 
@@ -196,8 +178,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.irParaTitulos({ situacaoSap: 'ABERTO', filial: bplId });
   }
 
-  // "Sem cobrador" é rótulo montado no backend pra agrupar quem está nulo, não um nome real -
-  // mandar ele como filtro devolveria lista vazia.
   verCobrador(cobrador: string | null | undefined): void {
     if (!cobrador || cobrador === 'Sem cobrador') {
       return;
@@ -205,9 +185,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.irParaTitulos({ cobrador });
   }
 
-  // "Sem acompanhamento" agrupa status nulo E status vazio de título que já tem registro, e a
-  // tela não sabe filtrar exatamente esse conjunto - clicar levaria a uma lista que não confere
-  // com o número. Melhor não navegar do que abrir uma lista errada.
   statusEhClicavel(status: string): boolean {
     return !!status && status !== 'Sem acompanhamento';
   }
@@ -219,9 +196,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.irParaTitulos({ situacaoSap: 'ABERTO', status });
   }
 
-  // Faixa de atraso não precisa de parâmetro novo: atraso entre N e M é exatamente DueDate
-  // entre hoje-M e hoje-N, e o intervalo de vencimento já é filtro da tela. As bordas vêm do
-  // mesmo enum que gerou o número no backend (FaixaAtraso), por isso batem.
   verFaixa(indice: number): void {
     const faixa = this.dashboard.Faixas[indice];
     if (!faixa) {
@@ -236,8 +210,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.irParaTitulos(extra);
   }
 
-  // Filial e vendedor do filtro da tela vão junto em toda navegação, senão a lista mostraria
-  // um recorte diferente do número que foi clicado.
   private getFiltro(): CobrancaDashboardFiltro {
     return {
       filial: this.filialSelecionada?.Bplid != null ? Number(this.filialSelecionada.Bplid) : null,
@@ -286,8 +258,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     return nova;
   }
 
-  // ---- gráficos ----
-
   private desenharTudo(): void {
     if (!this.viewPronta) {
       return;
@@ -298,7 +268,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.desenharBarras(this.graficoAging, {
       rotulos: this.dashboard.Faixas.map((f) => f.Faixa),
       valores: this.dashboard.Faixas.map((f) => f.Saldo ?? 0),
-      // Única exceção à cor única: a faixa É uma escala ordenada.
       cores: tema.rampaAging,
       horizontal: false,
       tema,
@@ -314,8 +283,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
       aoClicar: (indice) => this.verFilial(this.dashboard.PorFilial[indice]?.BPLId),
     });
 
-    // Evolução mensal não é clicável: a lista de Títulos filtra por vencimento, não por data
-    // de pagamento, então não existe filtro que reproduza "recuperado em julho".
     this.desenharBarras(this.graficoEvolucao, {
       rotulos: this.evolucao.map((m) => m.Rotulo),
       valores: this.evolucao.map((m) => m.Recuperado ?? 0),
@@ -348,14 +315,8 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     if (!canvas?.nativeElement || opcoes.rotulos.length === 0) {
       return;
     }
-    // Cursor no canvas inteiro: é o único jeito de o clique na barra ser descobrível, já que o
-    // Chart.js 2.x não muda o cursor por conta própria.
     canvas.nativeElement.style.cursor = opcoes.aoClicar ? 'pointer' : 'default';
 
-    // suggestedMax explícito: com muitas categorias e uma bem maior que as outras (ex.: uma
-    // filial concentrando a maior parte da carteira), o auto-scale do Chart.js 2.x às vezes
-    // arredonda o teto pra baixo do maior valor real, cortando a barra fora da área visível
-    // sem rótulo nenhum na ponta.
     const maiorValor = Math.max(0, ...opcoes.valores);
     const eixoValor = {
       gridLines: { color: opcoes.tema.grade, zeroLineColor: opcoes.tema.eixo, drawBorder: false },
@@ -367,7 +328,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
       },
     };
     const eixoCategoria = {
-      // Barra fina: nunca preencher a faixa inteira, o resto do espaço é ar.
       maxBarThickness: 24,
       gridLines: { display: false, drawBorder: false },
       ticks: { fontColor: opcoes.tema.texto },
@@ -385,19 +345,11 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
       },
       options: {
         responsive: true,
-        // Falso porque o container tem altura fixa e precisa caber a faixa do eixo -
-        // altura que corta o eixo gera scroll interno no card.
         maintainAspectRatio: false,
-        // Uma série só: legenda com um único quadradinho só repetiria o título do card.
         legend: { display: false },
-        // O Chart.js só reserva espaço pros próprios ticks - o valor que o plugin abaixo
-        // desenha por fora (na ponta da maior barra) não tem folga reservada e corta na
-        // borda do canvas quando a barra chega perto do teto do eixo.
         layout: {
           padding: opcoes.horizontal ? { right: 40 } : { top: 20 },
         },
-        // No Chart.js 2.x o clique vem como lista de elementos atingidos; _index é a posição da
-        // barra, que indexa o mesmo array que alimentou o gráfico.
         onClick: (_evento: any, elementos: any[]) => {
           // eslint-disable-next-line no-underscore-dangle -- _index é a API pública do Chart.js 2.x
           const indice = elementos?.[0]?._index;
@@ -414,10 +366,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
           ? { xAxes: [eixoValor], yAxes: [eixoCategoria] }
           : { xAxes: [eixoCategoria], yAxes: [eixoValor] },
       },
-      // A 2.9.4 não traz plugin de rótulo direto; este afterDatasetsDraw escreve o valor
-      // na ponta da barra. O rótulo é seletivo por natureza (uma série, poucas barras) e
-      // o número exato também está na tabela ao pé da tela, então nada fica preso no
-      // tooltip. Texto em token de texto, nunca na cor da série.
       plugins: [{
         afterDatasetsDraw: (chart: any) => {
           const ctx = chart.ctx;
@@ -467,9 +415,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     return formatCurrency(valor, 'pt', 'R$') ?? '';
   }
 
-  // Monta yyyy-MM-dd na mão em vez de toISOString(): o toISOString converte pra UTC, e
-  // uma data local de meia-noite volta como o dia anterior em qualquer fuso à frente de
-  // Greenwich - filtro que erra um dia sem ninguém perceber.
   private paraInput(data: Date): string {
     const mes = `${data.getMonth() + 1}`.padStart(2, '0');
     const dia = `${data.getDate()}`.padStart(2, '0');

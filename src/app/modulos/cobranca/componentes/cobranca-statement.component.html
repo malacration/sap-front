@@ -5,9 +5,6 @@
     </div>
 
     <div class="card-body">
-      <!-- Filtro que chegou pela URL fica escrito aqui. Dois desses filtros não têm controle
-           na tela e o vendedor não pode ser pré-selecionado no componente compartilhado - sem
-           essa faixa, a lista apareceria misteriosamente curta e ninguém saberia por quê. -->
       <div class="alert alert-info d-flex align-items-center flex-wrap" *ngIf="veioDoDashboard && filtrosHerdados().length">
         <i class="fas fa-filter mr-2"></i>
         <span>
