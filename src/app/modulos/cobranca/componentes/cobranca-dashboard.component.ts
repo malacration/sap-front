@@ -58,6 +58,7 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
   carregandoResumo = false;
   carregandoEvolucao = false;
   erro = '';
+  segundosCarregando = 0;
 
   dashboard = new CobrancaDashboard();
   evolucao: CobrancaMes[] = [];
@@ -72,6 +73,7 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
   private inscricaoUi: Subscription | null = null;
   private graficos: any[] = [];
   private viewPronta = false;
+  private timerId: any = null;
 
   constructor(
     private service: CobrancaService,
@@ -106,21 +108,31 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
   ngOnDestroy(): void {
     this.inscricaoUi?.unsubscribe();
     this.destruirGraficos();
+    this.pararTimer();
+  }
+
+  formatTime(): string {
+    const minutos = Math.floor(this.segundosCarregando / 60);
+    const segundos = this.segundosCarregando % 60;
+    return `${this.pad(minutos)}:${this.pad(segundos)}`;
   }
 
   buscar(): void {
     const filtro = this.getFiltro();
 
     this.carregandoResumo = true;
+    this.iniciarTimer();
     this.erro = '';
     this.service.dashboard(filtro).subscribe({
       next: (dashboard) => {
         this.dashboard = dashboard;
         this.carregandoResumo = false;
+        this.pararTimer();
         this.desenharTudo();
       },
       error: () => {
         this.carregandoResumo = false;
+        this.pararTimer();
         this.erro = 'Não foi possível carregar os indicadores de cobrança.';
       },
     });
@@ -249,6 +261,25 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     this.router.navigate(['/cobranca/titulos'], { queryParams });
   }
 
+  private pad(num: number): string {
+    return num < 10 ? `0${num}` : num.toString();
+  }
+
+  private iniciarTimer(): void {
+    this.pararTimer();
+    this.segundosCarregando = 0;
+    this.timerId = setInterval(() => {
+      this.segundosCarregando++;
+    }, 1000);
+  }
+
+  private pararTimer(): void {
+    if (this.timerId) {
+      clearInterval(this.timerId);
+      this.timerId = null;
+    }
+  }
+
   private somarDias(data: Date, dias: number): Date {
     const nova = new Date(data.getTime());
     nova.setDate(nova.getDate() + dias);
@@ -321,10 +352,16 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     // Chart.js 2.x não muda o cursor por conta própria.
     canvas.nativeElement.style.cursor = opcoes.aoClicar ? 'pointer' : 'default';
 
+    // suggestedMax explícito: com muitas categorias e uma bem maior que as outras (ex.: uma
+    // filial concentrando a maior parte da carteira), o auto-scale do Chart.js 2.x às vezes
+    // arredonda o teto pra baixo do maior valor real, cortando a barra fora da área visível
+    // sem rótulo nenhum na ponta.
+    const maiorValor = Math.max(0, ...opcoes.valores);
     const eixoValor = {
       gridLines: { color: opcoes.tema.grade, zeroLineColor: opcoes.tema.eixo, drawBorder: false },
       ticks: {
         beginAtZero: true,
+        suggestedMax: maiorValor,
         fontColor: opcoes.tema.texto,
         callback: (valor: number) => this.abreviar(valor),
       },
@@ -353,6 +390,12 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
         maintainAspectRatio: false,
         // Uma série só: legenda com um único quadradinho só repetiria o título do card.
         legend: { display: false },
+        // O Chart.js só reserva espaço pros próprios ticks - o valor que o plugin abaixo
+        // desenha por fora (na ponta da maior barra) não tem folga reservada e corta na
+        // borda do canvas quando a barra chega perto do teto do eixo.
+        layout: {
+          padding: opcoes.horizontal ? { right: 40 } : { top: 20 },
+        },
         // No Chart.js 2.x o clique vem como lista de elementos atingidos; _index é a posição da
         // barra, que indexa o mesmo array que alimentou o gráfico.
         onClick: (_evento: any, elementos: any[]) => {

@@ -7,6 +7,26 @@
     position: relative;
   }
 
+  // Font Awesome 7 desliga o .fa-spin com !important quando o SO/navegador pede
+  // prefers-reduced-motion. Pra esse ícone (indicador de carregando, não decoração),
+  // precisa do !important pra vencer essa regra e realmente girar.
+  .overlay .fa-spin {
+    animation: fa-spin 2s infinite linear !important;
+  }
+
+  // .dashboard-conteudo cobre a altura de TODOS os gráficos empilhados, não só a tela
+  // visível. Centralizar o overlay dentro dela (position:absolute, o padrão do AdminLTE)
+  // joga o ícone no meio do scroll inteiro - "baixo demais" pra quem tá no topo da
+  // página. position:fixed centraliza no viewport, igual o overlay de transferencia
+  // de clientes.
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
   // Altura fixa que inclui a faixa do eixo X. Se o container couber só o plot, os
   // rótulos do eixo ficam de fora e o card ganha um scroll interno minúsculo.
   .grafico {
