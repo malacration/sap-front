@@ -45,22 +45,28 @@ export class ModalComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if(this.show && changes["show"] != undefined){
-      this.openModal()
+    // So reage quando "show" de fato mudou nesse ciclo. Sem esse guard, QUALQUER
+    // outro @Input mudando (ex.: [title] com um valor dinamico) tambem dispara
+    // ngOnChanges, e como "show" fica sempre false em quem abre via
+    // @ViewChild().openModal() direto (sem usar o binding [show]), o "else"
+    // fechava o modal um instante depois de aberto.
+    if (changes["show"] == undefined) {
+      return
     }
-    else if(!this.show){
+    if (this.show) {
+      this.openModal()
+    } else {
       this.closeModal()
     }
-      
   }
- 
+
   openModal() {
     this.subscriptions?.unsubscribe()
 
     this.modalRef = this.modalService.show(this.template, {
       class: `modal-dialog modal-${this.modalSize}`
     });
-    
+
     this.subscriptions = this.modalRef?.onHidden?.subscribe(() => {
       this.showChange.emit(false);
       this.cdr.detectChanges();

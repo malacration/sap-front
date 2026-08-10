@@ -24,6 +24,8 @@ import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { CobrancaStatementComponent } from './modulos/cobranca/componentes/cobranca-statement.component';
+import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobranca-dashboard.component';
 
  let routes: Routes = [
   {
@@ -156,6 +158,31 @@ import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.compone
     data: ["icon:fas fa-truck"],
     path: 'ordem-carregamento',
     component: OrdemCarregamentoStatementComponent
+  },
+  {
+    title: 'Cobrança',
+    data: ["icon:fas fa-hand-holding-usd"],
+    path: 'cobranca',
+    children: [
+      // Sem title de propósito: o menu lateral é gerado do router e filtra por
+      // route.title != undefined, então o redirect não aparece como item. Serve pra
+      // /cobranca continuar funcionando depois de a tela virar filha de um grupo.
+      { path: '', redirectTo: 'titulos', pathMatch: 'full' },
+      {
+        path: 'titulos',
+        title: 'Títulos',
+        canActivate: [authGuard],
+        data: ["icon:fas fa-list"],
+        component: CobrancaStatementComponent
+      },
+      {
+        path: 'resultado',
+        title: 'Resultado',
+        canActivate: [authGuard],
+        data: ["icon:fas fa-chart-line"],
+        component: CobrancaDashboardComponent
+      },
+    ]
   },
   {
     title: 'Administrador',

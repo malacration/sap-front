@@ -1,0 +1,27 @@
+.card-body {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+:host ::ng-deep {
+  td app-action {
+    display: inline-block;
+    margin-right: 4px;
+    margin-bottom: 2px;
+  }
+
+  td app-action button.btn {
+    white-space: nowrap;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .cel-filial {
+    display: inline-block;
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+}

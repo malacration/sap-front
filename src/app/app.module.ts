@@ -103,6 +103,7 @@ import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
 import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carregamento.module';
 import { QRCodeModule } from 'angularx-qrcode';
+import { CobrancaModule } from './modulos/cobranca/cobranca.module';
 
 
 registerLocaleData(localeBr);
@@ -181,6 +182,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     SapSharedModule,
     QRCodeModule,
     OrdemCarregamentoModule,
+    CobrancaModule,
     ReactiveFormsModule,
     LoadingBarModule,
     LoadingBarRouterModule,

@@ -24,6 +24,20 @@
   overflow-x: scroll;
 }
 
+// .scrolls tem altura máxima com scroll vertical (via overflow-y: auto implícito,
+// regra do CSS quando overflow-x != visible) - sem isso o cabeçalho rola junto com
+// as linhas e some. z-index acima do .sticky-column pra continuar por cima dele
+// no canto onde os dois se cruzam.
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+thead th.sticky-column {
+  z-index: 1040;
+}
+
 .table-input {
   text-align: right;
 }
