@@ -115,6 +115,7 @@ import { InvoiceGenerationService } from './sap/service/invoice-generation.servi
 import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carregamento.module';
 import { PainelVendasModule } from './modulos/painel-vendas/painel-vendas.module';
 import { QRCodeModule } from 'angularx-qrcode';
+import { CobrancaModule } from './modulos/cobranca/cobranca.module';
 
 
 registerLocaleData(localeBr);
@@ -205,6 +206,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     QRCodeModule,
     OrdemCarregamentoModule,
     PainelVendasModule,
+    CobrancaModule,
     ReactiveFormsModule,
     LoadingBarModule,
     LoadingBarRouterModule,

@@ -40,10 +40,17 @@
                             {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
                         </button>
                         <button *ngIf="podeGerarPix" class="dropdown-item" type="button" [disabled]="gerarPixLoading"
-                            (click)="menuAberto = null; gerarPixContrato()">
+                            (click)="menuAberto = null; gerarPixContrato(true)">
                             <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
                             <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
                             {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
+                        </button>
+                        <button *ngIf="podeGerarPix && autorizadoPixSemJuros" class="dropdown-item" type="button"
+                            [disabled]="gerarPixLoading"
+                            (click)="menuAberto = null; gerarPixContrato(false)">
+                            <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.semJuros"></i>
+                            <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
+                            {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX (Sem Juros)' }}
                         </button>
                     </div>
                 </div>
@@ -202,7 +209,13 @@
                                             </div>
                                             <div class="col text-right">
                                                 <div class="font-weight-bold">
-                                                    {{ boleto.DocTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                                                    {{ (boleto.JurosValor > 0 ? boleto.ValorTotal : boleto.DocTotal)
+                                                        | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                                                </div>
+                                                <div *ngIf="boleto.JurosValor > 0" class="small text-muted">
+                                                    Valor nominal: {{ boleto.ValorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                                                    &nbsp;|&nbsp;
+                                                    Juros: {{ boleto.JurosValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
                                                 </div>
                                                 <div class="small text-muted">
                                                     Venc.: {{ boleto.DocDueDate | date:'dd/MM/yyyy':'':'pt-BR' }}

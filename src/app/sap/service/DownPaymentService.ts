@@ -18,6 +18,10 @@ export interface BoletoVf {
   U_pix_proxima_consulta_em?: string;
   U_pix_consultar_ate?: string;
   Devolucao?: string;
+  TaxaJurosMoraPercent?: number;
+  JurosValor?: number;
+  ValorTitulo?: number;
+  ValorTotal?: number;
 }
 
 @Injectable({
@@ -35,9 +39,9 @@ export class DownPaymentService {
     return this.hppCliente.get<BoletoVf[]>(`${this.url}/contrato-venda-futura/${id}`);
   }
 
-  gerarPixContrato(contratoId: number): Observable<BoletoVf[]> {
+  gerarPixContrato(contratoId: number, comJuros: boolean = true): Observable<BoletoVf[]> {
     return this.hppCliente.post<BoletoVf[]>(
-      `${this.url}/contrato-venda-futura/${contratoId}/pix`,
+      `${this.url}/contrato-venda-futura/${contratoId}/pix?juros=${comJuros}`,
       {}
     );
   }

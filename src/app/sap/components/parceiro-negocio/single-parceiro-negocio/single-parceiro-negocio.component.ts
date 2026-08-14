@@ -24,6 +24,7 @@ import { SalesPerson } from '../../../model/sales-person/sales-person';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { VendaFutura } from '../../../model/venda/venda-futura';
 import { SalesPersonService } from '../../../service/sales-person.service';
+import { AuthService } from '../../../../shared/service/auth.service';
 
 @Component({
   selector: 'app-parceiro-negocio-single',
@@ -39,7 +40,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
     private vendaFuturaService: VendaFuturaService,
     private salesPersonService: SalesPersonService,
     private alert: AlertService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   readonly icons = Icons;
@@ -68,7 +70,8 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   @Output()
   close = new EventEmitter();
   
-  autorizadoPixSemJuros = true; // Hardcode padrão
+  /** Só quem tem a role pix_admin pode dispensar o juros de mora. */
+  autorizadoPixSemJuros = false;
   
   qrCodeData: any = null;
   pixCopiado = false;
@@ -89,6 +92,7 @@ export class ParceiroNegocioSingleComponent implements OnInit {
   @ViewChild('modalLocalidade') modalLocalidade: ModalComponent;
 
   ngOnInit(): void {
+    this.autorizadoPixSemJuros = this.authService.podePixSemJuros;
     this.carregarNomesLocalidades();
     this.carregarNomeVendedorParceiro();
   }
