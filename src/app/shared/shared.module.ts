@@ -31,6 +31,8 @@ import { CardComponent } from './components/card/card.component';
 import { WsService } from './WsService';
 import { QRCodeModule } from 'angularx-qrcode';
 import { QrcodeComponent } from './components/qrcode/qrcode.component';
+import { SapLinkButtonComponent } from './components/sap-link-button/sap-link-button.component';
+import { SapLinkButtonDemoComponent } from './components/sap-link-button/sap-link-button-demo.component';
 
 @NgModule({
   providers: [
@@ -58,7 +60,9 @@ import { QrcodeComponent } from './components/qrcode/qrcode.component';
     SearchComponent,
     CardComponent,
     ChangePassowrd,
-    QrcodeComponent
+    QrcodeComponent,
+    SapLinkButtonComponent,
+    SapLinkButtonDemoComponent
   ],
   imports: [
     CommonModule, 
@@ -92,6 +96,8 @@ import { QrcodeComponent } from './components/qrcode/qrcode.component';
     SearchComponent,
     CardComponent,
     QrcodeComponent,
+    SapLinkButtonComponent,
+    SapLinkButtonDemoComponent,
   ]
 })
 export class SharedModule {}

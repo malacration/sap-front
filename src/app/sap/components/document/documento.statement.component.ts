@@ -8,13 +8,14 @@ import { Router } from '@angular/router';
 import { Observable, forkJoin} from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
-import { formatCurrency } from "@angular/common"
 import * as moment from 'moment';
 import { OrderSalesService } from '../../../modulos/sap-shared/_services/documents/order-sales.service';
 import { DocumentAngularSave } from '../../service/document/document-angular-save';
 import { QuotationService } from '../../service/document/quotation.service';
 import { Branch } from '../../model/branch';
 import { BranchSelectComponent } from '../../../modulos/sap-shared/componentes/branch/branch-select.component';
+import { PedidoVenda } from '../../model/document/pedido-venda.model';
+import { RegiaoService } from '../../../modulos/sap-shared/_services/regiao.service';
 
 @Component({
   selector: 'app-document-statement',
@@ -35,6 +36,11 @@ export class DocumentStatementComponent implements OnInit {
   frete : number = 0
   selectedBranch: Branch = null;
 
+  //frete calculado automaticamente a partir da localidade de entrega do cliente
+  //(ver recalcularFrete) - freteErro bloqueia o envio do pedido (isFormValid)
+  calculandoFrete = false
+  freteErro : string = null
+
   @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
   tipoEnvioRadio : Array<RadioItem> = [new RadioItem("Retirada","ret"), new RadioItem("Entrega","ent")]
@@ -43,14 +49,15 @@ export class DocumentStatementComponent implements OnInit {
   constructor(private businesPartnerService : BusinessPartnerService,
     private quotationService : QuotationService,
     private orderService : OrderSalesService,
+    private regiaoService : RegiaoService,
     private config : ConfigService,
     private router : Router,
     private alertService : AlertService){
 
   }
-  
+
   ngOnInit(): void {
-    
+
   }
 
   changeOperacao(){
@@ -78,6 +85,7 @@ export class DocumentStatementComponent implements OnInit {
 
   changeItens($event){
     this.itens = $event
+    this.recalcularFrete()
   }
 
   changeTipoOperacao($event){
@@ -110,14 +118,63 @@ export class DocumentStatementComponent implements OnInit {
 
   selectBranch(branch: Branch){
     this.branchId = branch.Bplid;
-    this.selectedBranch = branch; 
+    this.selectedBranch = branch;
     this.changeOperacao();
+    this.recalcularFrete()
   }
 
   selectBp($event){
     this.businesPartner = $event
     this.businesPartnerService.get(this.businesPartner.CardCode).subscribe(it =>{
         this.businesPartner = it
+        this.recalcularFrete()
+    })
+  }
+
+  /**
+   * Frete automatico: usa a localidade do endereco de entrega (bo_ShipTo) do
+   * cliente pra achar a regiao ativa da filial selecionada e calcular o
+   * valor (Regiao.calcularFrete, mesma formula do simulador de Frete). Sem
+   * localidade cadastrada ou sem regiao cobrindo ela, freteErro fica setado
+   * e bloqueia o envio (ver isFormValid/sendOrder) - o back tambem valida
+   * isso de novo antes de gravar, entao nao da pra contornar so pelo front.
+   */
+  private recalcularFrete(){
+    this.freteErro = null
+    if(this.tipoEnvio != 'ent'){
+      this.frete = 0
+      return
+    }
+    if(!this.businesPartner || !this.itens || this.itens.length == 0)
+      return
+    const enderecoEntrega = (this.businesPartner.BPAddresses || []).find(it => it.AddressType == 'bo_ShipTo')
+    const codLocalidade = enderecoEntrega?.U_Localidade
+    if(!codLocalidade){
+      this.frete = 0
+      this.freteErro = 'O cliente selecionado não possui localidade cadastrada no endereço de entrega. Cadastre a localidade antes de finalizar a venda.'
+      return
+    }
+    if(!this.branchId)
+      return
+    const quantidade = this.itens.reduce((acc,it) => acc+it.quantidade,0)
+    this.calculandoFrete = true
+    this.regiaoService.getByLocalidade(String(codLocalidade)).subscribe({
+      next : (regioes) => {
+        this.calculandoFrete = false
+        const regiao = regioes.find(it => it.ativa && it.U_Filial == this.branchId)
+        const resultado = regiao?.calcularFrete(String(codLocalidade), quantidade)
+        if(!resultado){
+          this.frete = 0
+          this.freteErro = 'Não foi possível calcular o frete para a localidade do cliente (nenhuma região de frete ativa cobre essa localidade para a filial selecionada).'
+          return
+        }
+        this.frete = resultado.total
+      },
+      error : () => {
+        this.calculandoFrete = false
+        this.frete = 0
+        this.freteErro = 'Não foi possível calcular o frete para o cliente selecionado.'
+      }
     })
   }
 
@@ -136,6 +193,7 @@ export class DocumentStatementComponent implements OnInit {
       this.tipoEnvio = $event.content
 
     this.setVehicleState();
+    this.recalcularFrete()
   }
 
   temFormaPagamento(){
@@ -147,6 +205,10 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   sendOrder(){
+    if(this.freteErro){
+      this.alertService.error(this.freteErro)
+      return
+    }
     this.loading = true
     let subiscribers = Array<Observable<any>>();
 
@@ -176,8 +238,15 @@ export class DocumentStatementComponent implements OnInit {
       subiscribers.push(service.save(order))
     })
     forkJoin(subiscribers).subscribe({
-      next:result => {
-        this.concluirEnvio(redirectRoute);
+      next:results => {
+        //quando uma regra de autorizacao pega o documento (ex.: cliente com
+        //pagamento em atraso), o back devolve 202 + {pendente:true, motivo} em vez
+        //do documento criado - ver AutorizacaoPendenteDto/RegraAutorizacaoService
+        const pendentes = (results || []).filter((r : any) => r?.pendente)
+        if(pendentes.length > 0)
+          this.concluirEnvioPendente(pendentes, redirectRoute)
+        else
+          this.concluirEnvio(redirectRoute);
       },
       error : result => {
         this.loading = false
@@ -192,6 +261,16 @@ export class DocumentStatementComponent implements OnInit {
     })
   }
 
+  concluirEnvioPendente(pendentes: Array<any>, redirectRoute: string){
+    const motivos = [...new Set(pendentes.map(p => p.motivo))].join(', ')
+    this.alertService.info(
+      `Seu documento foi enviado para autorização (motivo: ${motivos}) e aguarda liberação antes de ser criado no SAP.`
+    ).then(() => {
+      this.loading = false
+      this.limparFormulario(redirectRoute)
+    })
+  }
+
   limparFormulario(redirectRoute: string = 'venda/cotacao'){
     this.router.navigateByUrl('/RefreshComponent', { skipLocationChange: true }).then(() => {
       this.router.navigate([redirectRoute]);
@@ -199,15 +278,17 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   isFormValid() : boolean{
-    return this.businesPartner 
-      && this.branchId 
+    return this.businesPartner
+      && this.branchId
       && this.dtEntrega
       && this.formaPagamento
-      && this.itens 
+      && this.itens
       && this.tipoEnvio
       && this.tipoOperacao
       && this.itens?.length > 0
       && this.itens.filter(it => !it.GroupNum).length == 0
+      && !this.freteErro
+      && !this.calculandoFrete
   }
 
   agruparPorGroupNum(): Map<string, Item[]> {
@@ -220,88 +301,4 @@ export class DocumentStatementComponent implements OnInit {
         return map;
     }, new Map<string, Item[]>());
   }
-}
-
-export class PedidoVenda{
-  DocEntry: number
-  CardName: string
-  CardCode: string
-  DocNum: number
-  DocDate: string
-  DocTotal: number
-  ItemCode
-  DocumentLines : Array<LinhasPedido>
-  TaxExtension : TaxExtension
-  BPL_IDAssignedToInvoice : string
-  DocDueDate : string = '2024-08-05'
-  shipToCode : string
-  //forma pagamento
-  PaymentMethod : string
-  //condicao pagamento
-  PaymentGroupCode : string
-  Comments : string
-  Frete : number
-  VehicleState: string
-  DistribSum: number
-  Telephone : string
-  Mobil : string
-
-  // Ordem de Carregamento
-  DflWhs : string
-
-  // Dual List
-  U_Localidade : number
-  Name : string
-  Dscription : string
-  Quantity : number
-  Weight1 : number
-  OnHand : number
-  IsCommited : number
-  OnOrder : number   
-  UnitPrice : number
-  PrecoNegociado : number
-  PrecoBase : number
-  Comentario : string
-  FretePorLinha : number
-  WarehouseCode : string
-  Usage : number
-  TaxCode : string
-  CostingCode : string
-  CostingCode2 : string
-  BaseType : number
-  BaseEntry : number
-  BaseLine : number
-  quantidadeEmCarregamento?: number;
-  UomCode : string
-  ClosingRemarks : string
-  AttachmentEntry : number
-  Address2 : string
-  SlpName : string
-
-  get totalCurrency() {
-    return formatCurrency(this.DocTotal, 'pt', 'R$');
-  } 
-
-  get dataCriacao(){
-    return moment(this.DocDate).format('DD/MM/YYYY'); 
-  }
-} 
-
-export class LinhasPedido{
-  ItemCode
-  Quantity
-  PriceList
-  Usage
-  U_preco_negociado
-  UnitPrice
-  ItemDescription
-  MeasureUnit
-  SalUnitMsr
-  DflWhs
-  DiscountPercent
-}
-
-export class TaxExtension{
-  Incoterms: number
-  VehicleState: string
 }

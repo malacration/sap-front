@@ -7,7 +7,7 @@ import { LinhaItem } from '../../../sap/model/venda/venda-futura';
 import { OrdemCarregamento } from '../models/ordem-carregamento';
 import { OrdemCarregamentoDto } from '../models/ordem-carregamento-dto';
 import { DocumentList } from '../../../sap/model/markting/document-list';
-import { PedidoVenda } from '../../../sap/components/document/documento.statement.component';
+import { PedidoVenda } from '../../../sap/model/document/pedido-venda.model';
 import { NextLink } from '../../../sap/model/next-link';
 
 export interface CarregamentoDetalhes {

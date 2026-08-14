@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { PedidoVenda } from '../../../../sap/components/document/documento.statement.component';
+import { PedidoVenda } from '../../../../sap/model/document/pedido-venda.model';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
 

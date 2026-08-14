@@ -1,0 +1,21 @@
+<button type="button"
+        class="btn"
+        [ngClass]="[buttonClass, buttonSize]"
+        [disabled]="!tipo || !docEntry"
+        title="Abrir mapa de relações"
+        (click)="abrir()">
+    <i class="fas fa-project-diagram"></i> {{label}}
+</button>
+
+<app-modal #mapaRelacoesModal [title]="'Mapa de Relações'" [showHeader]="false" modalSize="xl">
+    <button type="button" class="btn btn-sm btn-light btn-fechar-mapa-relacoes" title="Fechar" (click)="mapaRelacoesModal.closeModal()">
+        <i class="fas fa-times"></i>
+    </button>
+    <app-mapa-relacoes
+        *ngIf="aberto"
+        [tipoInicial]="tipo"
+        [docEntryInicial]="docEntry"
+        [mostrarFormulario]="false"
+        [mostrarControleZoom]="false">
+    </app-mapa-relacoes>
+</app-modal>

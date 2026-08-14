@@ -33,7 +33,8 @@ export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   routeSubscriptions: Array<Subscription> = new Array();
 
   definition = [
-    new Column('ID', 'DocEntry'),
+    new Column('ID', 'routerLinkContrato'),
+    new Column('Pedido Origem', 'routerLinkPedidoOrigem'),
     new Column('Nome', 'routerLinkPn'),
     new Column('Vendedor', 'SalesEmployeeName'),
     new Column('Filial', 'filialFormatada'),

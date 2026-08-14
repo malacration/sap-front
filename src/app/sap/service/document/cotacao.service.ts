@@ -20,7 +20,7 @@ export class CotacaoService implements DocumentService{
     
     getDefinition(): Column[] {
         return [
-            new Column('ID', 'DocNum'),
+            new Column('ID', 'quotationRouterLink'),
             new Column('Código do Cliente', 'routerLink'),
             new Column('Nome', 'CardName'),
             new Column('Produtos', 'produtosCurrency'),
@@ -47,6 +47,12 @@ export class CotacaoService implements DocumentService{
         // page.size = 20
         // page.content = [documento]
         // return of(page)
+    }
+
+    getById(docEntry: number): Observable<DocumentList> {
+        return this.hppCliente
+            .get<DocumentList>(`${this.url}/${docEntry}`)
+            .pipe(map((item) => Object.assign(new DocumentList(), item)))
     }
 
     

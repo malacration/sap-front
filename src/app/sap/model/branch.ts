@@ -4,6 +4,8 @@ import { Column } from "../../shared/components/table/column.model"
 export class Branch{
     Bplid : string
     Bplname : string
+    BPLID? : string
+    BPLName? : string
     prefState: string
 
     getDefinition() {

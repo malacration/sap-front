@@ -1,0 +1,36 @@
+<br>
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Demo SAP Link Button</b></h3>
+    </div>
+    <div class="card-body">
+      <h5>Solid</h5>
+      <div class="d-flex flex-wrap align-items-center mb-4" style="gap: 8px;">
+        <app-sap-link-button [label]="'Primary'" [buttonClass]="'btn-primary'" [sapRouterLink]="['/clientes/parceiro-negocio', 'CLI0001']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Secondary'" [buttonClass]="'btn-secondary'" [sapRouterLink]="['/venda/venda-futura']" [queryParams]="{ id: 123 }"></app-sap-link-button>
+        <app-sap-link-button [label]="'Success'" [buttonClass]="'btn-success'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Info'" [buttonClass]="'btn-info'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Warning'" [buttonClass]="'btn-warning'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Danger'" [buttonClass]="'btn-danger'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Dark'" [buttonClass]="'btn-dark'" [sapRouterLink]="['/home']"></app-sap-link-button>
+      </div>
+
+      <h5>Outline</h5>
+      <div class="d-flex flex-wrap align-items-center mb-4" style="gap: 8px;">
+        <app-sap-link-button [label]="'Outline Primary'" [buttonClass]="'btn-outline-primary'" [sapRouterLink]="['/clientes/parceiro-negocio', 'CLI0001']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Outline Secondary'" [buttonClass]="'btn-outline-secondary'" [sapRouterLink]="['/venda/venda-futura']" [queryParams]="{ id: 123 }"></app-sap-link-button>
+        <app-sap-link-button [label]="'Outline Success'" [buttonClass]="'btn-outline-success'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Outline Info'" [buttonClass]="'btn-outline-info'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Outline Warning'" [buttonClass]="'btn-outline-warning'" [sapRouterLink]="['/home']"></app-sap-link-button>
+        <app-sap-link-button [label]="'Outline Dark'" [buttonClass]="'btn-outline-dark'" [sapRouterLink]="['/home']"></app-sap-link-button>
+      </div>
+
+      <h5>Estados</h5>
+      <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+        <app-sap-link-button [label]="'Desabilitado'" [buttonClass]="'btn-primary'" [sapRouterLink]="['/home']" [disabled]="true"></app-sap-link-button>
+        <app-sap-link-button [buttonClass]="'btn-outline-primary'" [sapRouterLink]="['/home']">Conteúdo projetado</app-sap-link-button>
+      </div>
+    </div>
+  </div>
+</section>

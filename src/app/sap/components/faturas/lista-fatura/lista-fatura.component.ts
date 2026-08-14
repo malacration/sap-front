@@ -6,6 +6,7 @@ import { Page } from '../../../model/page.model';
 import { TaxService } from '../../../service/fatura/tax.service';
 import { error } from 'console';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
+import { SalesPerson } from '../../../model/sales-person/sales-person';
 
 
 
@@ -38,7 +39,9 @@ export class ListaFaturaComponent implements OnInit {
     numeroNf : null,
     dataInicial : null,
     dataFinal : null,
-    filial : null
+    filial : null,
+    status : 'bost_Open',
+    salesPersonCode : null
   }
 
   constructor(private faturaService : FaturasService,
@@ -81,6 +84,19 @@ export class ListaFaturaComponent implements OnInit {
     }
   }
 
+  changeStatus(status: string){
+    this.filter.status = status || null
+    this.loadFaturas(0)
+  }
+
+  selecionaVendedor(vendedor: SalesPerson){
+    this.filter.salesPersonCode = vendedor?.SalesEmployeeCode || null
+  }
+
+  filtrar(){
+    this.loadFaturas(0)
+  }
+
   action(event : ActionReturn){
     if(event.type == "ver-fatura"){
       this.faturaSelecionada = event.data
@@ -108,6 +124,10 @@ export class ListaFaturaComponent implements OnInit {
         error : () => event.carregando = false,
       })
     }
+  }
+
+  actionFatura(type: string, fatura: Fatura){
+    this.action(new ActionReturn(type, fatura))
   }
 
   close(){

@@ -55,7 +55,30 @@
                     <label for="complemento">Complemento</label>
                     <input type="text" class="form-control" id="complemento" [(ngModel)]="endereco.BuildingFloorRoom">
                 </div>
-            </div>           
+            </div>
+        </div>
+
+        <div class="row" *ngIf="mostraLocalidade()">
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label>Localidade Vinculada</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" disabled="true"
+                               value="{{ localidadeNome || (endereco.U_Localidade ? endereco.U_Localidade : 'Nenhuma') }}">
+                        <span class="input-group-append">
+                            <button type="button" class="btn btn-danger" [disabled]="!endereco.U_Localidade"
+                                    (click)="removeLocalidade()">
+                                <i class="far fa-times-circle"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <app-localidade-search #localidadeSearch (selected)="changeLocalidade($event)"></app-localidade-search>
+                </div>
+            </div>
         </div>
     </div>
 </div>

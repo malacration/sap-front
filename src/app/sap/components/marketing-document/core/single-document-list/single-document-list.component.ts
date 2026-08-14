@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { DocumentLines, DocumentList } from '../../../../model/markting/document-list';
+import { DocumentInstallment, DocumentLines, DocumentList } from '../../../../model/markting/document-list';
 import { Column } from '../../../../../shared/components/table/column.model';
 import { DocumentService } from '../documento.service';
 import { GerarPixComponent } from '../../../../../shared/components/gerar-pix/gerar-pix.component';
@@ -10,6 +10,10 @@ import { PixPagamentoStatus, PixService } from '../../../../service/pix.service'
 import { PixAdiantamento } from '../../../../model/markting/pix-adiantamento';
 import { Page } from '../../../../model/page.model';
 import { Icons } from '../../../../../shared/icons';
+import { SalesPersonService } from '../../../../service/sales-person.service';
+import { SalesPerson } from '../../../../model/sales-person/sales-person';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-document-list-single',
@@ -29,6 +33,9 @@ export class DocumentListSingleComponent implements OnInit {
   @Input()
   selectedDocumentList: DocumentList = null;
 
+  @Input()
+  mapaRelacoesTipo : string = null
+
   @Output()
   close = new EventEmitter();
 
@@ -42,10 +49,13 @@ export class DocumentListSingleComponent implements OnInit {
   readonly pixAdiantamentosDefaultPageSize = 20;
   pagamentoPixData: PixPagamentoStatus | null = null;
   pagamentoPixLoading = false;
+  vendedoresLinhas: SalesPerson[] = [];
+  vendedoresLinhasLoading = false;
 
   constructor(
     private pixService: PixService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private salesPersonService: SalesPersonService
   ) {}
 
   linhasLoading = false;
@@ -54,14 +64,21 @@ export class DocumentListSingleComponent implements OnInit {
     this.selectedDocumentList.DocumentLines = (this.selectedDocumentList.DocumentLines ?? []).map(it =>
       Object.assign(new DocumentLines(), it)
     );
+    this.selectedDocumentList.DocumentInstallments = this.normalizaParcelas(this.selectedDocumentList);
     if (this.selectedDocumentList.DocumentLines.length === 0 && this.service?.getLinhas) {
       this.linhasLoading = true;
       this.service.getLinhas(this.selectedDocumentList.DocEntry).subscribe({
-        next: (linhas) => { this.selectedDocumentList.DocumentLines = linhas; },
+        next: (linhas) => {
+          this.selectedDocumentList.DocumentLines = linhas.map(it => Object.assign(new DocumentLines(), it));
+          this.resolverVendedoresDasLinhas();
+        },
         complete: () => { this.linhasLoading = false; }
       });
+    } else {
+      this.resolverVendedoresDasLinhas();
     }
-    this.loadPixAdiantamentos();
+    if (this.isPedidoVenda)
+      this.loadPixAdiantamentos();
   }
 
   voltar(){
@@ -106,6 +123,64 @@ export class DocumentListSingleComponent implements OnInit {
       && !this.hasOpenPixAdiantamento
       && (this.selectedDocumentList?.DocumentStatus === 'bost_Open' || this.selectedDocumentList?.DocumentStatus === 'O')
       && this.selectedDocumentList?.DocObjectCode === 'oOrders';
+  }
+
+  get isPedidoVenda(): boolean {
+    return this.selectedDocumentList?.DocObjectCode === 'oOrders';
+  }
+
+  get possuiParcelas(): boolean {
+    return (this.selectedDocumentList?.DocumentInstallments ?? []).length > 0;
+  }
+
+  get vendedoresLinhasLabel(): string {
+    if(this.vendedoresLinhasLoading)
+      return 'Carregando...'
+    if(this.vendedoresLinhas.length === 0)
+      return '-'
+    return this.vendedoresLinhas
+      .map(vendedor => vendedor?.SalesEmployeeName || vendedor?.SalesEmployeeCode)
+      .join(', ')
+  }
+
+  private resolverVendedoresDasLinhas(){
+    const codigos = Array.from(new Set(
+      (this.selectedDocumentList?.DocumentLines ?? [])
+        .map(line => Number(line.SalesPersonCode))
+        .filter(code => Number.isFinite(code) && code >= 0)
+    ));
+
+    this.vendedoresLinhas = [];
+    if(codigos.length === 0)
+      return;
+
+    this.vendedoresLinhasLoading = true;
+    forkJoin(
+      codigos.map(code => this.salesPersonService.get(code).pipe(
+        catchError(() => of(Object.assign(new SalesPerson(), {
+          SalesEmployeeCode: code,
+          SalesEmployeeName: String(code),
+        })))
+      ))
+    ).subscribe({
+      next: (vendedores) => { this.vendedoresLinhas = vendedores; },
+      complete: () => { this.vendedoresLinhasLoading = false; },
+    });
+  }
+
+  private normalizaParcelas(documento: any): DocumentInstallment[] {
+    return (documento?.DocumentInstallments ?? documento?.documentInstallments ?? []).map((item) =>
+      Object.assign(new DocumentInstallment(), {
+        ...item,
+        InstallmentId: item.InstallmentId ?? item.installmentId,
+        DueDate: item.DueDate ?? item.dueDate,
+        total: item.total ?? item.Total,
+        Total: item.Total ?? item.total,
+        Percentage: item.Percentage ?? item.percentage,
+        Status: item.Status ?? item.status,
+        U_pix_reference: item.U_pix_reference ?? item.u_pix_reference,
+      })
+    );
   }
 
   private loadPixAdiantamentos(page = 0) {
@@ -203,6 +278,15 @@ export class DocumentListSingleComponent implements OnInit {
     new Column('Quantidade do Item', 'quantityCurrency'),
     new Column('Preço Negociado', 'precoUnitarioCurrency'),
     new Column('Total da Linha', 'lineTotalCurrency')
+  ];
+
+  parcelasDefinition = [
+    new Column('Parcela', 'parcela'),
+    new Column('Vencimento', 'vencimento'),
+    new Column('Valor', 'valorCurrency'),
+    new Column('Percentual', 'percentual'),
+    new Column('Status', 'statusFormatado'),
+    new Column('Pix Ref.', 'pixReferencia')
   ];
 
   pixAdiantamentoDefinition = [

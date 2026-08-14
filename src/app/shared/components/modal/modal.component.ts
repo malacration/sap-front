@@ -22,6 +22,9 @@ export class ModalComponent implements OnChanges, OnDestroy {
   @Input()
   title = "Titulo"
 
+  @Input()
+  showHeader = true
+
   @Input() modalSize: 'sm' | 'lg' | 'xl' = 'xl';
   
   @Output()
@@ -58,7 +61,7 @@ export class ModalComponent implements OnChanges, OnDestroy {
     this.subscriptions?.unsubscribe()
 
     this.modalRef = this.modalService.show(this.template, {
-      class: `modal-dialog modal-${this.modalSize}`
+      class: this.classeModal || `modal-dialog modal-${this.modalSize}`
     });
     
     this.subscriptions = this.modalRef?.onHidden?.subscribe(() => {

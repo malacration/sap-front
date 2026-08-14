@@ -17,17 +17,27 @@ export class LocalidadeService implements SearchService<Localidade> {
     this.url = config.getHost()+"/locais"
   }
 
+  private toLocalidade(it : any) : Localidade {
+    return Object.assign(new Localidade(), it)
+  }
+
   get(cardCode) : Observable<Localidade>{
     return this.hppCliente
       .get<Localidade>(this.url+"/"+cardCode)
-      .pipe(map((pn) => Object.assign(new Localidade(),pn)))
+      .pipe(map((pn) => this.toLocalidade(pn)))
+  }
+
+  criar(localidade : Partial<Localidade>) : Observable<Localidade>{
+    return this.hppCliente
+      .post<Localidade>(this.url, localidade)
+      .pipe(map((it) => this.toLocalidade(it)))
   }
 
   search(keyWord) : Observable<Page<Localidade>>{
     return this.hppCliente
       .post<Page<Localidade>>(this.url+"/search",keyWord)
       .pipe(map((page) => {
-        page.content = page.content.map((ff) => Object.assign(new Localidade(),ff) )
+        page.content = page.content.map((ff) => this.toLocalidade(ff) )
         return page
       }))
   }

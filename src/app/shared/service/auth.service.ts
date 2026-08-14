@@ -111,6 +111,27 @@ export class AuthService {
     }
   }
 
+  /**
+   * Verifica se o usuario logado tem determinado papel (role). O formato do
+   * token muda conforme o login: o JWT interno carrega `authorities` (lista
+   * de `{authority: "..."}`), ja o token do Keycloak carrega as roles em
+   * `realm_access.roles` e/ou `resource_access.<client>.roles` - por isso
+   * checamos os dois formatos aqui.
+   */
+  hasRole(role: string): boolean {
+    try {
+      const token = this.getDecodeToken()
+      if (token.authorities)
+        return (token.authorities as { authority: string }[]).some(a => a.authority === role)
+      const realmRoles: string[] = token.realm_access?.roles ?? []
+      const clientRoles: string[] = Object.values(token.resource_access ?? {})
+        .flatMap((c: any) => c.roles ?? [])
+      return realmRoles.includes(role) || clientRoles.includes(role)
+    } catch {
+      return false
+    }
+  }
+
   private setToken(token: Token): boolean {
     localStorage.setItem(this.tokenKey, token.token);
     this.loginChange.next();

@@ -2,6 +2,14 @@
     <div class="card card-primary">
         <div class="card-header">
             <h3 class="card-title"><b>{{ title }}</b></h3>
+            <div class="card-tools float-right" *ngIf="mapaRelacoesTipo">
+                <app-mapa-relacoes-modal-button
+                    [tipo]="mapaRelacoesTipo"
+                    [docEntry]="selectedDocumentList?.DocEntry"
+                    [buttonClass]="'btn-outline-light'"
+                    [label]="'Mapa de Relações'">
+                </app-mapa-relacoes-modal-button>
+            </div>
         </div>
         <div class="card-body">
             <dl class="row">
@@ -23,8 +31,17 @@
                 <dt class="col-sm-3">Data de Criação:</dt>
                 <dd class="col-sm-9">{{ selectedDocumentList.dataCriacao }}</dd>
 
+                <dt class="col-sm-3" *ngIf="selectedDocumentList?.DocDueDate">Data de Vencimento:</dt>
+                <dd class="col-sm-9" *ngIf="selectedDocumentList?.DocDueDate">{{ selectedDocumentList.vencimento }}</dd>
+
                 <dt class="col-sm-3">Vendedor:</dt>
                 <dd class="col-sm-9">{{ selectedDocumentList.SlpName }}</dd>
+
+                <dt class="col-sm-3" *ngIf="vendedoresLinhasLoading || vendedoresLinhas.length > 0">Vendedores das Linhas:</dt>
+                <dd class="col-sm-9" *ngIf="vendedoresLinhasLoading || vendedoresLinhas.length > 0">
+                    <i *ngIf="vendedoresLinhasLoading" class="fas fa-sync-alt fa-spin text-secondary mr-1"></i>
+                    {{ vendedoresLinhasLabel }}
+                </dd>
 
                 <dt class="col-sm-3">Filial:</dt>
                 <dd class="col-sm-9">{{ selectedDocumentList.filialFormatada }}</dd>
@@ -42,7 +59,13 @@
                                 (actionOutput)="action($event)">
                             </app-table>
                         </app-tab>
-                        <app-tab tabTitle="Adiantamento Pix" [active]="false">
+                        <app-tab *ngIf="possuiParcelas" tabTitle="Parcelas" [active]="false">
+                            <app-table
+                                [content]="selectedDocumentList?.DocumentInstallments"
+                                [definition]="parcelasDefinition">
+                            </app-table>
+                        </app-tab>
+                        <app-tab *ngIf="isPedidoVenda" tabTitle="Adiantamento Pix" [active]="false">
                             <div class="d-flex justify-content-end mb-3">
                                 <button
                                     *ngIf="podeGerarPixAdiantamento"

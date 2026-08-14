@@ -85,6 +85,17 @@ import { FutureDeliverySalesService } from './sap/service/FutureDeliverySales.se
 import { FormaPagamentoService } from './sap/service/forma-pagamento.service';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
+import { RegiaoComponent } from './sap/components/regiao/regiao.component';
+import { RegiaoFretePdfComponent } from './sap/components/regiao/regiao-frete-pdf/regiao-frete-pdf.component';
+import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
+import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
+import { MapaRelacoesGrafoComponent } from './sap/components/mapa-relacoes/grafo/mapa-relacoes-grafo.component';
+import { MapaRelacoesModalButtonComponent } from './sap/components/mapa-relacoes/modal-button/mapa-relacoes-modal-button.component';
+import { ComissaoComponent } from './sap/components/comissao/comissao.component';
+import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
+import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
+import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
+import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { QuotationService } from './sap/service/document/quotation.service';
@@ -102,6 +113,7 @@ import { LoadingBarHttpClientModule } from '@ngx-loading-bar/http-client';
 import { SapSharedModule } from './modulos/sap-shared/sap-shared.module';
 import { InvoiceGenerationService } from './sap/service/invoice-generation.service';
 import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carregamento.module';
+import { PainelVendasModule } from './modulos/painel-vendas/painel-vendas.module';
 import { QRCodeModule } from 'angularx-qrcode';
 
 
@@ -159,6 +171,17 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     VendaFuturaSingleComponent,
     ParceiroNegocioComponent,
     ParceiroNegocioSingleComponent,
+    RegiaoComponent,
+    RegiaoFretePdfComponent,
+    LocalidadeComponent,
+    MapaRelacoesComponent,
+    MapaRelacoesGrafoComponent,
+    MapaRelacoesModalButtonComponent,
+    ComissaoComponent,
+    AutorizacaoComponent,
+    AutorizadorComponent,
+    MeusDadosComponent,
+    DocumentosSapComponent,
     RetiradaComponent,
     GerarPdfComponent,
     DocumentListSingleComponent,
@@ -181,6 +204,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     SapSharedModule,
     QRCodeModule,
     OrdemCarregamentoModule,
+    PainelVendasModule,
     ReactiveFormsModule,
     LoadingBarModule,
     LoadingBarRouterModule,

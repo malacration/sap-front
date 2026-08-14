@@ -20,7 +20,7 @@ export class PedidosVendaService implements DocumentService{
 
     getDefinition(): Column[] {
         return [
-            new Column('ID', 'DocNum'),
+            new Column('ID', 'orderRouterLink'),
             new Column('Código Cliente', 'routerLink'),
             new Column('Nome', 'CardName'),
             new Column('Produtos', 'produtosCurrency'),
@@ -53,6 +53,12 @@ export class PedidosVendaService implements DocumentService{
             .pipe(map((response) => this.mapPage(response)));
     }
 
+    getById(docEntry: number): Observable<DocumentList> {
+        return this.hppCliente
+            .get<any>(`${this.url}/raw/${docEntry}`)
+            .pipe(map((item) => Object.assign(new DocumentList(), item)));
+    }
+
     getLinhas(docEntry: number): Observable<DocumentLines[]> {
         return this.hppCliente
             .get<any[]>(`${this.url}/${docEntry}/linhas`)
@@ -63,6 +69,7 @@ export class PedidosVendaService implements DocumentService{
                 linha.Quantity        = item.Quantity ?? item.quantity;
                 linha.UnitPrice       = item.PrecoNegociado ?? item.precoNegociado;
                 linha.LineTotal       = linha.Quantity * linha.UnitPrice;
+                linha.SalesPersonCode = item.SalesPersonCode ?? item.salesPersonCode ?? item.SlpCode ?? item.slpCode;
                 return linha;
             })));
     }

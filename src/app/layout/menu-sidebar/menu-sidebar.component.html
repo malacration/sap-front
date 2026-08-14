@@ -33,6 +33,9 @@
             <div *ngIf="!isKeycloak()" class="info">
                 <small><a [routerLink]="['change-passowrd']">Trocar Senha</a></small>
             </div>
+            <div class="info">
+                <small><a [routerLink]="['meus-dados']">Meus Dados</a></small>
+            </div>
         </div>
     
         <div *ngIf="!isLoggedIn()" class="info w-100">

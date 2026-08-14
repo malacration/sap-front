@@ -1,0 +1,39 @@
+<br>
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Meus Dados</b></h3>
+        </div>
+        <div class="card-body" *ngIf="usuario">
+            <dl class="row">
+                <dt class="col-sm-3">Nome de Usuário:</dt>
+                <dd class="col-sm-9">{{ usuario.userName }}</dd>
+
+                <dt class="col-sm-3">E-mail:</dt>
+                <dd class="col-sm-9">{{ usuario.emailAddress || '-' }}</dd>
+
+                <dt class="col-sm-3">Origem:</dt>
+                <dd class="col-sm-9">{{ usuario.origemLabel() }}</dd>
+
+                <dt class="col-sm-3">Filiais:</dt>
+                <dd class="col-sm-9">{{ (usuario.bussinesPlace?.length ? usuario.bussinesPlace.join(', ') : '-') }}</dd>
+
+                <dt class="col-sm-3">Papéis (roles):</dt>
+                <dd class="col-sm-9">{{ (usuario.roles?.length ? usuario.roles.join(', ') : '-') }}</dd>
+
+                <dt class="col-sm-3">Vendedor Vinculado:</dt>
+                <dd class="col-sm-9">
+                    <span *ngIf="usuario.temVendedor">
+                        {{ usuario.vendedor.salesEmployeeName }} (Código {{ usuario.vendedor.salesEmployeeCode }})
+                    </span>
+                    <span *ngIf="!usuario.temVendedor" class="text-muted">
+                        Nenhum vendedor vinculado a esse usuário.
+                    </span>
+                </dd>
+            </dl>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+</section>

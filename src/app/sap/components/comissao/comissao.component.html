@@ -1,0 +1,210 @@
+<br>
+<section class="content">
+
+    <div *ngIf="!selecionada" class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Comissão</b></h3>
+            <div class="card-tools">
+                <button class="btn btn-sm btn-success" (click)="abrirNova()">
+                    <i class="fas fa-plus"></i> Nova Comissão
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <div *ngIf="criandoNova" class="card card-outline card-success mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Nova Comissão</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="col-sm-2 form-group">
+                            <label>Código</label>
+                            <input class="form-control" type="number" [(ngModel)]="novaComissao.Code" name="novoCode">
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Nome / Descrição</label>
+                            <input class="form-control" type="text" [(ngModel)]="novaComissao.Name" name="novoNome">
+                        </div>
+                        <div class="col-sm-2 form-group">
+                            <label>Comissão (%)</label>
+                            <input class="form-control" type="number" step="0.01" [(ngModel)]="novaComissao.U_porcentagem" name="novaPorcentagem">
+                        </div>
+                        <div class="col-sm-2 form-group">
+                            <label>Desconto Máximo (%)</label>
+                            <input class="form-control" type="number" step="0.01" [(ngModel)]="novaComissao.U_desconto" name="novoDesconto">
+                        </div>
+                        <div class="col-sm-2 form-group">
+                            <label class="d-block">Regressiva?</label>
+                            <div class="form-check form-check-inline mt-2">
+                                <select class="form-control" [(ngModel)]="novaComissao.U_regressiva" name="novaRegressiva">
+                                    <option value="0">Não (tabela por desconto)</option>
+                                    <option value="1">Sim (% fixo)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success" [disabled]="loading" (click)="salvarNova()">
+                        <i class="fas fa-check"></i> Salvar
+                    </button>
+                    <button class="btn btn-outline-secondary" [disabled]="loading" (click)="cancelarNova()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
+            <div *ngIf="!loading && lista?.length == 0" class="text-center text-muted p-3">
+                Nenhuma comissão cadastrada.
+            </div>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+
+    <div *ngIf="selecionada" class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">
+                <b>{{selecionada.Name}} - {{selecionada.Code}}</b>
+            </h3>
+            <div class="card-tools">
+                <button class="btn btn-sm btn-outline-light" (click)="fechar()">
+                    <i class="fas fa-times"></i> Voltar
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <app-tabs>
+                <app-tab tabTitle="Dados Gerais" [active]="true">
+                    <div class="form-row">
+                        <div class="col-sm-4 form-group">
+                            <label>Nome / Descrição</label>
+                            <input class="form-control" type="text" [(ngModel)]="selecionada.Name">
+                        </div>
+                        <div class="col-sm-2 form-group">
+                            <label>Comissão (%)</label>
+                            <input class="form-control" type="number" step="0.01" [(ngModel)]="selecionada.U_porcentagem">
+                        </div>
+                        <div class="col-sm-2 form-group">
+                            <label>Desconto Máximo (%)</label>
+                            <input class="form-control" type="number" step="0.01" [(ngModel)]="selecionada.U_desconto">
+                        </div>
+                        <div class="col-sm-2 form-group">
+                            <label>Regressiva?</label>
+                            <select class="form-control" [(ngModel)]="selecionada.U_regressiva">
+                                <option value="0">Não (tabela por desconto)</option>
+                                <option value="1">Sim (% fixo)</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2 form-group d-flex align-items-end">
+                            <button class="btn btn-success" [disabled]="loading" (click)="salvarDadosGerais()">
+                                <i class="fas fa-check"></i> Salvar
+                            </button>
+                        </div>
+                    </div>
+                </app-tab>
+
+                <app-tab tabTitle="Condições de Pagamento">
+                    <div class="form-row align-items-end">
+                        <div class="col-sm-3 form-group">
+                            <label>Condição de Pagamento (GroupNum)</label>
+                            <input class="form-control" type="number" [(ngModel)]="formCondicao.U_prazo" placeholder="Ex.: 3">
+                        </div>
+                        <div class="col-sm-3 form-group">
+                            <label>Desconto (%)</label>
+                            <input class="form-control" type="number" step="0.01" [(ngModel)]="formCondicao.U_desconto">
+                        </div>
+                        <div class="col-sm-3 form-group">
+                            <label>Juros (%)</label>
+                            <input class="form-control" type="number" step="0.01" [(ngModel)]="formCondicao.U_juros">
+                        </div>
+                        <div class="col-sm-3 form-group">
+                            <button class="btn btn-success" [disabled]="loading" (click)="adicionarCondicao()">
+                                <i class="fas fa-check"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Condição (GroupNum)</th>
+                                <th class="text-center">Desconto (%)</th>
+                                <th class="text-center">Juros (%)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let condicao of selecionada.CONDICOESFVCollection">
+                                <td>{{condicao.U_prazo}}</td>
+                                <td class="text-center">{{condicao.U_desconto}}</td>
+                                <td class="text-center">{{condicao.U_juros}}</td>
+                                <td class="text-right">
+                                    <button class="btn btn-sm btn-danger" (click)="removeCondicao(condicao)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="selecionada.CONDICOESFVCollection.length == 0">
+                                <td colspan="4" class="text-center text-muted">Nenhuma condição de pagamento cadastrada.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </app-tab>
+
+                <app-tab tabTitle="Liberação">
+                    <div class="row align-items-end">
+                        <div class="col-sm-4 form-group">
+                            <label>Filial</label>
+                            <app-branch-select (selectedOut)="selecionaFilialLiberacao($event)"></app-branch-select>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Vendedor</label>
+                            <app-sales-person-search [name]="'Vendedor'" (selected)="escolheVendedorLiberacao($event)"></app-sales-person-search>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <button class="btn btn-success" [disabled]="loading" (click)="adicionarLiberacao()">
+                                <i class="fas fa-check"></i> Liberar
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Filial</th>
+                                <th>Vendedor</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let liberacao of selecionada.LIBERAPARACollection">
+                                <td>{{nomeFilial(liberacao.U_Filial)}}</td>
+                                <td>{{nomeVendedor(liberacao.U_vendedor)}}</td>
+                                <td class="text-right">
+                                    <button class="btn btn-sm btn-danger" (click)="removeLiberacao(liberacao)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="selecionada.LIBERAPARACollection.length == 0">
+                                <td colspan="3" class="text-center text-muted">Nenhuma liberação cadastrada.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </app-tab>
+            </app-tabs>
+        </div>
+        <div class="card-footer clearfix">
+            <button class="btn btn-outline-secondary" (click)="fechar()">
+                <i class="fas fa-times"></i> Voltar
+            </button>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+</section>

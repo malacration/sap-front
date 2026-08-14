@@ -28,6 +28,9 @@ export class SearchComponent<T> {
   @Input()
   name : string
 
+  @Input()
+  uppercaseKeyword = false
+
   @Output() 
   contentSelected = new EventEmitter();
 
@@ -41,9 +44,9 @@ export class SearchComponent<T> {
   }
 
   searchService($event){
-    this.keyword = $event
+    this.keyword = this.normalizaKeyword($event)
     this.resultadoBusca.content.splice(0, this.resultadoBusca.content.length)
-    this.changePageService($event)
+    this.changePageService(this.keyword)
   }
 
   contentSelectedFun($event){
@@ -52,5 +55,14 @@ export class SearchComponent<T> {
 
   clear(){
     this.modalSelect.clear()
+  }
+
+  normalizaKeyword(value : string) : string {
+    if(!this.uppercaseKeyword)
+      return value
+    return (value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
   }
 }

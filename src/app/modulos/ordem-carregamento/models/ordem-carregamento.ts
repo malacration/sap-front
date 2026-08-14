@@ -1,5 +1,6 @@
 import { formatDate } from '@angular/common';
 import { Action, ActionReturn } from '../../../shared/components/action/action.model';
+import { RouteLink } from '../../../sap/model/route-link';
 
 export class OrdemCarregamento {
   DocEntry: number;
@@ -29,6 +30,14 @@ export class OrdemCarregamento {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  }
+
+  routerLinkOrdem(): RouteLink {
+    return new RouteLink(
+      this.DocEntry?.toString(),
+      '/logistica/ordem-carregamento',
+      { id: this.DocEntry }
+    );
   }
 
   getActions(): Action[] {

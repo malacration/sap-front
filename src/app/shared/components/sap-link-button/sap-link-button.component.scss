@@ -1,0 +1,44 @@
+.sap-link-button-group {
+  display: inline-flex;
+  align-items: stretch;
+  vertical-align: middle;
+}
+
+.sap-link-button {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.sap-link-button__main {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+}
+
+.sap-link-button__label {
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sap-link-button__external {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.sap-link-button-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}

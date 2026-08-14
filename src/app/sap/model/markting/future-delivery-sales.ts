@@ -3,6 +3,7 @@ import { Action, ActionReturn } from "../../../shared/components/action/action.m
 import { formatCurrency } from "@angular/common";
 import { DocumentTypes } from "../labels/document-types";
 import { StatusTypes } from "../labels/status-types";
+import { RouteLink } from "../route-link";
 
 export class FutureDeliverySales {
 
@@ -29,6 +30,8 @@ export class FutureDeliverySales {
 }
 
 export class DocumentLines {
+  DocEntry: number;
+  DocNum: number;
   ItemCode: number;
   DocObjectCode: string
   ItemDescription: string;
@@ -42,6 +45,26 @@ export class DocumentLines {
 
   get labelDocumentType(){
     return DocumentTypes[this.DocObjectCode as keyof typeof DocumentTypes];
+  }
+
+  get documentRouterLink(): RouteLink | number {
+    if (this.DocObjectCode === 'oOrders') {
+      return new RouteLink(
+        this.DocNum?.toString(),
+        '/venda/pedidos-venda',
+        { id: this.DocEntry }
+      );
+    }
+
+    if (this.DocObjectCode === 'oQuotations') {
+      return new RouteLink(
+        this.DocNum?.toString(),
+        '/venda/cotacao',
+        { id: this.DocEntry }
+      );
+    }
+
+    return this.DocNum;
   }
 
   get documentStatus(){

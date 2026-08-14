@@ -17,5 +17,15 @@ export class BranchService {
 
   get() : Observable<Array<Branch>>{
     return this.hppCliente.get<Array<Branch>>(this.url)
+      .pipe(map(it => (it || []).map(branch => this.normaliza(branch))))
+  }
+
+  private normaliza(branch : any) : Branch {
+    const normalizado = Object.assign(new Branch(), branch)
+    normalizado.Bplid = branch?.Bplid ?? branch?.BPLID
+    normalizado.Bplname = branch?.Bplname ?? branch?.BPLName
+    normalizado.BPLID = branch?.BPLID ?? branch?.Bplid
+    normalizado.BPLName = branch?.BPLName ?? branch?.Bplname
+    return normalizado
   }
 }

@@ -1,14 +1,21 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Page } from '../../model/page.model';
-import { Column } from '../../../shared/components/table/column.model';
 import { AuthService } from '../../../shared/service/auth.service';
 import { BusinessPartnerService } from '../../../modulos/sap-shared/_services/business-partners.service';
-import { ActionReturn } from '../../../shared/components/action/action.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { SalesPerson } from '../../model/sales-person/sales-person';
+import { SalesPersonSearchComponent } from '../../../modulos/sap-shared/componentes/sales-person-search/sales-person-search.component';
 
-
+interface ParceiroNegocioListState {
+  pageContent: Page<BusinessPartner>;
+  paginaAtual: number;
+  cardCodeFilter: string;
+  cardNameFilter: string;
+  cpfCnpjFilter: string;
+  vendedorSelecionado: SalesPerson;
+}
 
 @Component({
   selector: 'app-parceiro-negocio-statement',
@@ -16,18 +23,18 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./parceiro-negocio.component.scss']
 })
 export class ParceiroNegocioComponent implements OnInit, OnDestroy {
+  private static listState: ParceiroNegocioListState = null;
 
   nomeUsuario : string
   loading = false
   pageContent : Page<BusinessPartner> = new Page()
   selected : BusinessPartner = null
+  vendedorSelecionado : SalesPerson = null
+  paginaAtual = 0
+  listaCarregada = false
   private routeSub!: Subscription
 
-  definition = [
-    new Column('Código do Parceiro', 'CardCode'),
-    new Column('Nome do Parceiro', 'CardName'),
-    new Column('Telefone do Parceiro', 'Phone1'),
-  ]
+  @ViewChild(SalesPersonSearchComponent) salesPersonSearch : SalesPersonSearchComponent
 
   constructor(
     private router: Router,
@@ -38,6 +45,7 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.restaurarEstadoLista();
     this.loading = true
     this.routeSub = this.route.paramMap.subscribe(params => {
       let cardCodeSeleted = params.get('cardCode');
@@ -48,7 +56,9 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
         })
       }
       else{
-        this.pageChange(0)
+        this.selected = null
+        if(!this.listaCarregada)
+          this.pageChange(this.paginaAtual)
         this.loading = false
       }
     });
@@ -56,28 +66,30 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
 
   pageChange($event) {
     this.loading = true;
+    this.paginaAtual = $event;
     const cardCode = (this.cardCodeFilter || '').trim();
     const cardName = (this.cardNameFilter || '').trim();
     const cpfCnpj = (this.cpfCnpjFilter || '').trim();
     const filter = {
       cardCode: cardCode.length ? cardCode : null,
       cardName: cardName.length ? cardName : null,
-      cpfCnpj: cpfCnpj.length ? cpfCnpj : null
+      cpfCnpj: cpfCnpj.length ? cpfCnpj : null,
+      salesPersonCode: this.vendedorSelecionado?.SalesEmployeeCode || null
     };
     this.service.getClientes($event, filter).subscribe({
       next: (it: Page<any>) => {
         this.pageContent = it;
+        this.listaCarregada = true;
+        this.salvarEstadoLista();
       },
       complete: () => { this.loading = false; }
     });
   }
 
 
-  action(event : ActionReturn){
-  if (event.type === "selected") {
-      const cardCode = event.data.CardCode;
-      this.router.navigate(['/clientes/parceiro-negocio', cardCode]);
-    }
+  selecionar(parceiro : BusinessPartner){
+    this.salvarEstadoLista();
+    this.router.navigate(['/clientes/parceiro-negocio', parceiro.CardCode]);
   }
 
   close(){
@@ -95,11 +107,52 @@ export class ParceiroNegocioComponent implements OnInit, OnDestroy {
     this.cardCodeFilter = '';
     this.cardNameFilter = '';
     this.cpfCnpjFilter = '';
+    this.vendedorSelecionado = null;
+    this.salesPersonSearch?.clear();
+    this.listaCarregada = false;
+    ParceiroNegocioComponent.listState = null;
     this.pageChange(0);
+  }
+
+  selecionaVendedor($event : SalesPerson){
+    this.vendedorSelecionado = $event || null;
+  }
+
+  cpfCnpj(parceiro : BusinessPartner) : String {
+    return parceiro.CpfCnpjStr() || '-';
+  }
+
+  vendedor(parceiro : BusinessPartner) : string {
+    return parceiro.SalesEmployeeName || (parceiro.SalesPersonCode != null ? String(parceiro.SalesPersonCode) : '-');
   }
 
   cardCodeFilter : string
   cardNameFilter : string
   cpfCnpjFilter : string
+
+  private salvarEstadoLista() {
+    if(!this.listaCarregada) return;
+    ParceiroNegocioComponent.listState = {
+      pageContent: this.pageContent,
+      paginaAtual: this.paginaAtual,
+      cardCodeFilter: this.cardCodeFilter,
+      cardNameFilter: this.cardNameFilter,
+      cpfCnpjFilter: this.cpfCnpjFilter,
+      vendedorSelecionado: this.vendedorSelecionado,
+    };
+  }
+
+  private restaurarEstadoLista() {
+    const state = ParceiroNegocioComponent.listState;
+    if(!state) return;
+
+    this.pageContent = state.pageContent;
+    this.paginaAtual = state.paginaAtual;
+    this.cardCodeFilter = state.cardCodeFilter;
+    this.cardNameFilter = state.cardNameFilter;
+    this.cpfCnpjFilter = state.cpfCnpjFilter;
+    this.vendedorSelecionado = state.vendedorSelecionado;
+    this.listaCarregada = true;
+  }
 
 }

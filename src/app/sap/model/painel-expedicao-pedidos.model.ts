@@ -1,4 +1,6 @@
 // model usado na tela
+import { RouteLink } from './route-link';
+
 export class PainelExpedicaoPedidos {
   DocEntry?: number;
   DocDate?: string;
@@ -14,6 +16,31 @@ export class PainelExpedicaoPedidos {
   Name?: string;
   EstoqueMinimo?: number;
   EmOrdemDeCarregamento?: string;
+
+  get orderRouterLink(): RouteLink | string {
+    if (!this.DocEntry) return '';
+    return new RouteLink(
+      this.DocEntry.toString(),
+      '/venda/pedidos-venda',
+      { id: this.DocEntry }
+    );
+  }
+
+  get cardCodeRouterLink(): RouteLink | string {
+    if (!this.CardCode) return '';
+    return new RouteLink(
+      this.CardCode,
+      '/clientes/parceiro-negocio/' + this.CardCode
+    );
+  }
+
+  get cardNameRouterLink(): RouteLink | string {
+    if (!this.CardCode) return this.CardName ?? '';
+    return new RouteLink(
+      this.CardName || this.CardCode,
+      '/clientes/parceiro-negocio/' + this.CardCode
+    );
+  }
 
 
   get balanco(): number {

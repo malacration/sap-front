@@ -2,7 +2,7 @@ import { Column } from "../../shared/components/table/column.model"
 import { Action, ActionReturn } from "../../shared/components/action/action.model"
 import { formatCurrency } from "@angular/common"
 import Big from 'big.js';
-import { LinhasPedido } from "../components/document/documento.statement.component";
+import { LinhasPedido } from "./document/pedido-venda.model";
 
 
 export class Item{

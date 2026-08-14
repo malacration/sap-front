@@ -1,0 +1,94 @@
+<br>
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Localidades</b></h3>
+        </div>
+        <div class="card-body">
+            <div class="card card-outline card-success">
+                <div class="card-header">
+                    <h3 class="card-title">Nova Localidade</h3>
+                </div>
+                <form (ngSubmit)="salvar()" autocomplete="off">
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="col-sm-3 form-group">
+                                <label for="codigoLocalidade">Código</label>
+                                <input id="codigoLocalidade"
+                                       name="codigoLocalidade"
+                                       class="form-control"
+                                       type="text"
+                                       maxlength="30"
+                                       required
+                                       [ngModel]="novaLocalidade.Code"
+                                       (ngModelChange)="atualizaCodigoLocalidade($event)">
+                            </div>
+                            <div class="col-sm-9 form-group">
+                                <label for="nomeLocalidade">Nome</label>
+                                <input id="nomeLocalidade"
+                                       name="nomeLocalidade"
+                                       class="form-control"
+                                       type="text"
+                                       maxlength="100"
+                                       required
+                                       [ngModel]="novaLocalidade.Name"
+                                       (ngModelChange)="atualizaNomeLocalidade($event)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-success" [disabled]="salvando">
+                            <i class="fas fa-check"></i> {{ salvando ? 'Salvando...' : 'Salvar' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <form class="container-fluid px-0 mt-3" (ngSubmit)="buscar()" autocomplete="off">
+                <div class="form-row align-items-end">
+                    <div class="col-sm-5 form-group">
+                        <label for="filtroLocalidade">Código ou Nome</label>
+                        <input id="filtroLocalidade"
+                               name="filtroLocalidade"
+                               class="form-control"
+                               type="text"
+                               [ngModel]="filtro"
+                               (ngModelChange)="filtro = normalizaNomeLocalidade($event)"
+                               placeholder="Ex.: Porto Velho">
+                    </div>
+                    <div class="col-auto form-group">
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-success" [disabled]="loading">
+                                {{ loading ? 'Buscando...' : 'Buscar' }}
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" [disabled]="loading" (click)="limparFiltro()">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width: 180px;">Código</th>
+                        <th>Nome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let localidade of pageContent?.content">
+                        <td>{{localidade.Code}}</td>
+                        <td>{{localidade.Name}}</td>
+                    </tr>
+                    <tr *ngIf="!loading && pageContent?.content?.length == 0">
+                        <td colspan="2" class="text-center text-muted">Nenhuma localidade encontrada.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+</section>

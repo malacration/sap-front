@@ -18,8 +18,11 @@
           <td *ngFor="let def of definition" scope="col" [ngClass]="getCellClass(item, def)">
             <div *ngIf="renderContent(item, def)" [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
             <div *ngIf="isRouterLink(item,def)">
-              <a [routerLink]="getValue(item, def)?.path" [queryParams]="getValue(item, def)?.params">
-                {{getValue(item, def)?.label}}</a>
+              <app-sap-link-button
+                [label]="getValue(item, def)?.label"
+                [sapRouterLink]="getValue(item, def)?.path"
+                [queryParams]="getValue(item, def)?.params">
+              </app-sap-link-button>
             </div>
             <div *ngIf="isEditable(def)">
               <input *ngIf="isPercent(def)"

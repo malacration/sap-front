@@ -5,6 +5,7 @@ import { Column } from '../../../../shared/components/table/column.model';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { BusinessPartner } from '../../../../sap/model/business-partner/business-partner';
 import { DocumentList } from '../../../../sap/model/markting/document-list';
+import { RouteLink } from '../../../../sap/model/route-link';
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
@@ -54,8 +55,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   pedidosXAuxiliares: PedidoX[] = [];
 
   definition: Column[] = [
-    new Column('Núm. do Pedido', 'DocNum'),
-    new Column('Cód. Cliente', 'CardCode'),
+    new Column('Núm. do Pedido', 'orderRouterLink'),
+    new Column('Cód. Cliente', 'routerLink'),
     new Column('Nome Cliente', 'CardName'),
     new Column('Localidade', 'Name'),
     new Column('Vendedor', 'SlpName'),
@@ -69,7 +70,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   notasEmitida = [
     new Column('Núm. da Nota', 'SequenceSerial'),
     new Column('Núm. do Documento', 'DocNum'),
-    new Column('Cód. Cliente', 'CardCode'),
+    new Column('Cód. Cliente', 'CardLink'),
     new Column('Nome Cliente', 'CardName'),
     new Column('Cód. Item', 'ItemCode'),
     new Column('Dsc. Item', 'ItemDescription'),
@@ -146,6 +147,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
             SequenceSerial: nota.SequenceSerial,
             DocNum: nota.DocNum,
             CardCode: nota.CardCode,
+            CardLink: new RouteLink(nota.CardCode, '/clientes/parceiro-negocio/' + nota.CardCode),
             CardName: nota.CardName,
             ItemCode: line.ItemCode,
             ItemDescription: line.ItemDescription,
@@ -479,14 +481,14 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     }
 
     if (Array.isArray(response?.content)) {
-      return response.content;
+      return response.content.map((pedido) => Object.assign(new DocumentList(), pedido));
     }
 
     if (Array.isArray(response)) {
-      return response;
+      return response.map((pedido) => Object.assign(new DocumentList(), pedido));
     }
 
-    return [response];
+    return [Object.assign(new DocumentList(), response)];
   }
 
   private atualizarStatusParaFechado(): void {

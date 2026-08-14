@@ -18,6 +18,9 @@ export class Fatura implements Actiable {
     parcelas : Array<Parcela>
     docEntry : string;
     isBoleto : Boolean = true
+    status : string
+    vendedor : string
+    vendedorCodigo : number
 
     private _actions : Array<Action>
     
@@ -28,6 +31,19 @@ export class Fatura implements Actiable {
 
     get valorCurrency(){
         return formatCurrency(this.valor,'pt','R$')
+    }
+
+    get vendedorFormatado(){
+        return this.vendedor || (this.vendedorCodigo != null ? this.vendedorCodigo : '-')
+    }
+
+    get statusLabel(){
+        const status = String(this.status || '')
+        if(status.includes('Open')) return 'Aberta'
+        if(status.includes('Close')) return 'Fechada'
+        if(status.includes('Paid')) return 'Paga'
+        if(status.includes('Delivered')) return 'Entregue'
+        return status || '-'
     }
 
     get vencimento(){

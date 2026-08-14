@@ -1,0 +1,97 @@
+<div class="container-fluid">
+  <div class="card-body">
+    <div class="row" *ngIf="podeEscolherVendedor">
+      <div class="col-sm-4">
+        <app-sales-person-search
+          (selected)="selectOriginSalesPerson($event)"
+          [name]="'Vendedor'"
+        ></app-sales-person-search>
+      </div>
+    </div>
+
+    <div *ngIf="podeEscolherVendedor && !vendedorSelecionado" class="alert alert-info mt-3">
+      Selecione um vendedor pra ver o total de vendas.
+    </div>
+
+    <ng-container *ngIf="!carregando">
+      <div *ngIf="grafico.length > 0" class="row mt-4">
+        <div class="col-12">
+          <h5>Vendas dos últimos 12 meses</h5>
+          <ngx-charts-bar-vertical
+            [results]="grafico"
+            [xAxis]="true"
+            [yAxis]="true"
+            [showXAxisLabel]="false"
+            [showYAxisLabel]="true"
+            [yAxisLabel]="'Total faturado'"
+            [gradient]="false"
+            (select)="onSelectMes($event)"
+          ></ngx-charts-bar-vertical>
+        </div>
+      </div>
+
+      <div
+        *ngIf="!podeEscolherVendedor && grafico.length === 0"
+        class="alert alert-warning mt-3"
+      >
+        Nenhuma venda encontrada nos últimos 12 meses.
+      </div>
+
+      <div class="row mt-4" *ngIf="mesSelecionado">
+        <div class="col-12 px-0">
+          <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <h5>Detalhe de {{ mesSelecionado.Mes }}/{{ mesSelecionado.Ano }}</h5>
+            <div class="btn-group mb-2">
+              <button
+                type="button"
+                class="btn btn-sm"
+                [class.btn-primary]="visualizacao === 'faturamento'"
+                [class.btn-outline-primary]="visualizacao !== 'faturamento'"
+                (click)="trocarVisualizacao('faturamento')"
+              >
+                Por faturamento
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm"
+                [class.btn-primary]="visualizacao === 'produto'"
+                [class.btn-outline-primary]="visualizacao !== 'produto'"
+                (click)="trocarVisualizacao('produto')"
+              >
+                Por produto
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="carregandoDetalhe" class="text-center my-3">
+            <i class="fas fa-spinner fa-spin"></i> Carregando...
+          </div>
+
+          <ng-container *ngIf="!carregandoDetalhe && visualizacao === 'faturamento'">
+            <div *ngIf="detalheMes.length === 0" class="alert alert-warning">
+              Nenhuma fatura encontrada nesse mês.
+            </div>
+            <app-table
+              *ngIf="detalheMes.length > 0"
+              [content]="detalheMes"
+              [definition]="detalheColumns"
+              (actionOutput)="action($event)"
+            ></app-table>
+          </ng-container>
+
+          <ng-container *ngIf="!carregandoDetalhe && visualizacao === 'produto'">
+            <div *ngIf="detalheProdutos.length === 0" class="alert alert-warning">
+              Nenhum produto encontrado nesse mês.
+            </div>
+            <app-table
+              *ngIf="detalheProdutos.length > 0"
+              [content]="detalheProdutos"
+              [definition]="produtoColumns"
+              (actionOutput)="action($event)"
+            ></app-table>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

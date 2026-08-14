@@ -1,5 +1,5 @@
 
-import { LinhasPedido } from "../../components/document/documento.statement.component"
+import { LinhasPedido } from "../document/pedido-venda.model"
 import { Item } from "../item"
 import { ItemRetirada } from "./item-retirada"
 

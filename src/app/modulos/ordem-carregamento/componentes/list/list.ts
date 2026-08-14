@@ -21,7 +21,7 @@ export class ListComponent implements OnInit, OnDestroy {
     actionOutput: EventEmitter<ActionReturn> = new EventEmitter<ActionReturn>();
 
     definition: Column[] = [
-        new Column('ID', 'DocEntry'),
+        new Column('ID', 'routerLinkOrdem'),
         new Column('Nome', 'U_nameOrdem'),
         new Column('Peso Total (Kg)', 'Weight1'),
         new Column('Qtd. Pedidos', 'DocEntryQuantity'),

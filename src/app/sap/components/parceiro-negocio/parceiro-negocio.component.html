@@ -6,9 +6,9 @@
             <h3 class="card-title"><b>Parceiro Negócio - {{nomeUsuario}}</b></h3>
         </div>
         <div class="card-body">
-          <form class="container-fluid" (ngSubmit)="ngOnInit()" autocomplete="off">
+          <form class="container-fluid" (ngSubmit)="pageChange(0)" autocomplete="off">
             <div class="form-row align-items-end">
-              <div class="col-auto">
+              <div class="col-sm-2">
                   <label for="cardCode" class="col-form-label">Código do Parceiro</label>
                   <input
                     id="cardCode"
@@ -19,7 +19,7 @@
                     placeholder="Ex.: CLI0000000"
                   />
               </div>
-              <div class="col-auto">
+              <div class="col-sm-3">
                   <label for="cardName" class="col-form-label">Nome do Parceiro</label>
                   <input
                     id="cardName"
@@ -30,7 +30,7 @@
                     placeholder="Ex.: ACME LTDA"
                   />
               </div>
-              <div class="col-auto">
+              <div class="col-sm-2">
                   <label for="cpfCnpj" class="col-form-label">CPF/CNPJ</label>
                   <input
                     id="cpfCnpj"
@@ -41,9 +41,14 @@
                     placeholder="Ex.: 000.000.000-00"
                   />
               </div>
+              <div class="col-sm-3">
+                <app-sales-person-search
+                  [name]="'Vendedor'"
+                  (selected)="selecionaVendedor($event)">
+                </app-sales-person-search>
+              </div>
             
-                <!-- AÇÕES -->
-              <div class="col-auto">
+              <div class="col-sm-2">
                 <div class="btn-group">
                   <button type="submit" [disabled]="loading" class="btn btn-success">
                     {{ loading ? 'Filtrando...' : 'Filtrar' }}
@@ -56,17 +61,46 @@
               </div>
             </form>
             <hr>
-            <app-table
-                [content]="pageContent?.content" 
-                [definition]="definition" 
-                (actionOutput)="action($event)">
-            </app-table>
+            <div class="table-responsive">
+              <table class="table table-hover table-striped">
+                <thead>
+                  <tr>
+                    <th style="width: 150px;">Código</th>
+                    <th>Parceiro</th>
+                    <th style="width: 190px;">CPF/CNPJ</th>
+                    <th style="width: 220px;">Vendedor</th>
+                    <th style="width: 150px;">Telefone</th>
+                    <th style="width: 150px;" class="text-right">Limite de Crédito</th>
+                    <th style="width: 110px;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let parceiro of pageContent?.content">
+                    <td class="font-weight-bold">{{parceiro.CardCode}}</td>
+                    <td>{{parceiro.CardName}}</td>
+                    <td>{{cpfCnpj(parceiro)}}</td>
+                    <td>{{vendedor(parceiro)}}</td>
+                    <td>{{parceiro.Phone1 || parceiro.Phone2 || '-'}}</td>
+                    <td class="text-right">{{parceiro.limiteAutorizadoCurrency()}}</td>
+                    <td class="text-right">
+                      <button type="button" class="btn btn-sm btn-primary" (click)="selecionar(parceiro)">
+                        <i class="far fa-edit"></i> Detalhes
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!loading && pageContent?.content?.length == 0">
+                    <td colspan="7" class="text-center text-muted">Nenhum parceiro encontrado.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
         </div>
         <div class="card-footer clearfix">
             <app-paginacao
                 (pageChange)="pageChange($event)" 
                 [totalItens]="pageContent?.totalElements" 
-                [pageSize]="pageContent?.size">
+                [pageSize]="pageContent?.size"
+                [paginaAtual]="paginaAtual">
             </app-paginacao>
         </div>
         <div *ngIf="loading" class="overlay">

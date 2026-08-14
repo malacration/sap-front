@@ -61,8 +61,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     switch (this.groupBy) {
       case 'cliente':
         return [
-          new Column('Código Cliente', 'CardCode'),
-          new Column('Nome Cliente', 'CardName'),
+          new Column('Código Cliente', 'cardCodeRouterLink'),
+          new Column('Nome Cliente', 'cardNameRouterLink'),
           new Column('Produto', 'ItemCode'),
           new Column('Descrição', 'Description'),
           new Column('Quantidade', 'Quantity'),
@@ -92,7 +92,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
       default:
         return [
           new Column('Data', 'DocDate'),
-          new Column('Cliente', 'CardName'),
+          new Column('Pedido', 'orderRouterLink'),
+          new Column('Cliente', 'cardNameRouterLink'),
           new Column('Vendedor', 'SlpName'),
           new Column('Produto', 'ItemCode'),
           new Column('Nome do produto', 'Description'),

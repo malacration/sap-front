@@ -33,11 +33,14 @@
                 <label class="form-check-label" for="desconto_absoluto">Absoluto (R$)</label>
             </div>
         </div>
-        <input [ngClass]="tipoDesconto" type="number" 
+        <input [ngClass]="tipoDesconto" type="number"
             class="form-control" [(ngModel)]="desconto" placeholder="{{placeHolderDesconto}}">
       </div>
+      <div *ngIf="excedeDescontoMaximo" class="alert alert-danger py-2">
+        Desconto acima do limite de {{descontoMaximo}}% permitido para essa tabela de preço.
+      </div>
       <div class="form-group right">
-        <button class="btn btn-primary mr-2" (click)="confirmarDesconto()">
+        <button class="btn btn-primary mr-2" [disabled]="excedeDescontoMaximo" (click)="confirmarDesconto()">
           Confirmar Desconto
         </button>
         <button class="btn btn-danger" (click)="cancelar()">

@@ -5,12 +5,14 @@ import { Column } from '../../../../shared/components/table/column.model';
 import { FutureDeliverySalesService } from '../../../service/FutureDeliverySales.service';
 import { VendaFutura } from '../../../model/venda/venda-futura';
 import { DocumentLines, FutureDeliverySales } from '../../../model/markting/future-delivery-sales';
+import { EntregaPendenteBaixa } from '../../../model/venda/entrega-pendente-baixa';
 import { GerarPdfComponent } from '../gerar-pdf/gerar-pdf.component';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { VendaFuturaService } from '../../../service/venda-futura.service';
 import { PixPagamentoStatus, PixService } from '../../../service/pix.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
 import { Icons } from '../../../../shared/icons';
+import { AuthService } from '../../../../shared/service/auth.service';
 
 
 
@@ -29,7 +31,14 @@ export class VendaFuturaSingleComponent implements OnInit {
     private vendaFuturaService: VendaFuturaService,
     private futureDeliverySalesService: FutureDeliverySalesService,
     private pixService: PixService,
+    private authService: AuthService,
   ) {}
+
+  // Só admin enxerga a aba - o backend também restringe (pendentes-baixa/baixar-com-spread),
+  // isso aqui é só pra não oferecer na UI algo que vai dar 403 pro resto dos papéis.
+  get podeVerPendentesBaixa(): boolean {
+    return this.authService.hasRole('admin');
+  }
 
   @Input()
   selected: VendaFutura = null;
@@ -38,6 +47,7 @@ export class VendaFuturaSingleComponent implements OnInit {
   entregas = Array<DocumentLines>();
   entregasDocs = Array<FutureDeliverySales>();
   pedidos = Array<DocumentLines>();
+  pendentesBaixa = Array<EntregaPendenteBaixa>();
 
   vincularDevolucaoDocNum: number = null;
   vincularNotaSaidaDocEntry: number = null;
@@ -60,6 +70,7 @@ export class VendaFuturaSingleComponent implements OnInit {
   loadingBoletos = true;
   loadingEntregas = true;
   loadingPedidos = true;
+  loadingPendentes = true;
   gerarPixLoading = false;
 
   pixConsultandoMap: { [key: string]: boolean } = {};
@@ -114,13 +125,26 @@ export class VendaFuturaSingleComponent implements OnInit {
     });
 
     this.futureDeliverySalesService.getPedidosByContrato(this.selected.DocEntry).subscribe(response => {
-      this.pedidos = response.flatMap(entrega => 
+      this.pedidos = response.flatMap(entrega =>
         entrega.DocumentLines.map(line => {
           return Object.assign(new DocumentLines(), line, entrega)
         }));
-        
-        this.loadingPedidos = false; 
+
+        this.loadingPedidos = false;
     })
+
+    if (this.podeVerPendentesBaixa)
+      this.carregarPendentesBaixa();
+    else
+      this.loadingPendentes = false;
+  }
+
+  carregarPendentesBaixa(): void {
+    this.loadingPendentes = true;
+    this.vendaFuturaService.listarPendentesBaixa(this.selected.DocEntry).subscribe({
+      next: (it) => { this.pendentesBaixa = it; },
+      complete: () => { this.loadingPendentes = false; }
+    });
   }
 
   carregarBoletos(): void {
@@ -276,6 +300,30 @@ export class VendaFuturaSingleComponent implements OnInit {
     if (event.type === 'devolver') {
       this.desfazerConcilicao(event.data.DocEntry);
     }
+    if (event.type === 'baixarSpread') {
+      this.baixarComSpread(event.data.DocEntry, event.data.DocNum);
+    }
+  }
+
+  baixarComSpread(docEntry: number, docNum: number): void {
+    this.alertService.confirmWithInput(
+      `Baixar a nota Nº ${docNum} com tolerância de centavos? Informe o spread em R$ (ex.: 0.10).`,
+      'number',
+      { inputValue: '0.10', inputAttributes: { step: '0.01', min: '0.01', max: '1.00' } }
+    ).then(res => {
+      if (!res.isConfirmed) return;
+      const spread = Number(String(res.value).replace(',', '.'));
+      if (!Number.isFinite(spread) || spread <= 0) {
+        this.alertService.info('Spread inválido.');
+        return;
+      }
+      this.alertService.loading(this.vendaFuturaService.baixarComSpread(docEntry, spread))
+        .then(() => {
+          this.alertService.info('Nota baixada com sucesso.');
+          this.ngOnInit();
+        })
+        .catch(err => this.alertService.error(err?.error?.mensagem ?? 'Não foi possível baixar a nota.'));
+    });
   }
 
   openModalRetirada(): void {
@@ -357,7 +405,7 @@ export class VendaFuturaSingleComponent implements OnInit {
   ];
 
   documentDefinition = [
-    new Column('ID', 'DocNum'),
+    new Column('ID', 'documentRouterLink'),
     new Column('Tipo de Nota', 'labelDocumentType'),
     new Column('Status', 'documentStatus'),
     new Column('Número da Nota', 'SequenceSerial'),
@@ -367,5 +415,12 @@ export class VendaFuturaSingleComponent implements OnInit {
     new Column('Preço', 'U_preco_negociado'),
     new Column('Entregue', 'formattedQuantityInvoice'),
     new Column('Total', 'totalLinhaCurrency'),
+  ];
+
+  pendentesDefinition = [
+    new Column('Nota', 'DocNum'),
+    new Column('Valor da Nota', 'valorNotaCurrency'),
+    new Column('Adiantamento Aplicável', 'valorAplicavelCurrency'),
+    new Column('Diferença', 'diferencaCurrency'),
   ];
 }

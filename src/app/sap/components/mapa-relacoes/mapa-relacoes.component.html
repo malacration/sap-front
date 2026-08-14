@@ -1,0 +1,48 @@
+<br *ngIf="mostrarFormulario">
+<section class="content" [ngClass]="{'h-100': !mostrarFormulario}">
+    <div class="card card-primary" [ngClass]="mostrarFormulario ? '' : 'h-100 mb-0'">
+        <div class="card-header" *ngIf="mostrarFormulario">
+            <h3 class="card-title"><b>Mapa de Relações</b></h3>
+        </div>
+        <div class="card-body" [ngClass]="mostrarFormulario ? '' : 'h-100'">
+            <form *ngIf="mostrarFormulario" class="container-fluid" (ngSubmit)="buscar()" autocomplete="off">
+                <div class="form-row align-items-end">
+                    <div class="col-auto" style="min-width: 220px;">
+                        <label for="tipo" class="col-form-label">Tipo de Documento</label>
+                        <select id="tipo" name="tipo" class="form-control" [(ngModel)]="tipo">
+                            <option *ngFor="let opcao of tiposBusca" [value]="opcao.value">{{opcao.label}}</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <label for="docEntry" class="col-form-label">Número (DocEntry)</label>
+                        <input id="docEntry" name="docEntry" class="form-control" type="number"
+                               [(ngModel)]="docEntry" placeholder="Ex.: 666">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" [disabled]="loading" class="btn btn-success">
+                            {{ loading ? 'Buscando...' : 'Buscar' }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <hr *ngIf="mostrarFormulario">
+
+            <div *ngIf="loading" class="text-center p-4">
+                <i class="fas fa-2x fa-sync fa-spin"></i>
+            </div>
+
+            <div *ngIf="!loading && resultado" [ngClass]="mostrarFormulario ? '' : 'h-100'">
+                <app-mapa-relacoes-grafo
+                    [response]="resultado"
+                    [buscadoId]="buscadoId"
+                    [mostrarControleZoom]="mostrarControleZoom">
+                </app-mapa-relacoes-grafo>
+            </div>
+
+            <div *ngIf="!loading && !resultado && mostrarFormulario" class="text-center text-muted p-4">
+                Escolha o tipo e o número do documento pra montar o mapa de relações.
+            </div>
+        </div>
+    </div>
+</section>

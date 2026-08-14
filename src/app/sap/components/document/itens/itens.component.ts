@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Item } from '../../../model/item';
+import { ComissaoService } from '../../../../modulos/sap-shared/_services/comissao.service';
+import { Comissao } from '../../../model/comissao';
 
 @Component({
   selector: 'card-itens',
@@ -7,10 +9,14 @@ import { Item } from '../../../model/item';
   styleUrls: ['./itens.component.scss'],
 })
 export class ItensComponent implements OnInit {
-  
+
   itens = new Array<Item>()
   showThumbnail = false
-  
+
+  //cache da Comissao vinculada a cada tabela de preco (Item.PriceList), pra saber o
+  //desconto maximo permitido por item na tela de Vender
+  private comissaoPorTabela : { [tabela : string] : Comissao } = {}
+
   @Input()
   branchId = undefined
 
@@ -23,8 +29,26 @@ export class ItensComponent implements OnInit {
   @Output()
   changeItens = new EventEmitter<Array<Item>>();
 
+  constructor(private comissaoService : ComissaoService){
+  }
+
   ngOnInit(): void {
 
+  }
+
+  private carregarComissao(tabela : string){
+    if(!tabela || this.comissaoPorTabela[tabela] !== undefined)
+      return
+    this.comissaoPorTabela[tabela] = null
+    this.comissaoService.getByIdTabela(Number(tabela)).subscribe({
+      next : (it) => this.comissaoPorTabela[tabela] = it,
+      error : () => this.comissaoPorTabela[tabela] = null
+    })
+  }
+
+  descontoMaximoDoItem(item : Item) : number {
+    const comissao = item?.PriceList ? this.comissaoPorTabela[item.PriceList] : null
+    return comissao?.U_desconto ?? null
   }
 
   total() : number{
@@ -35,6 +59,7 @@ export class ItensComponent implements OnInit {
     if(!item) return;
     item.quantidade = 1
     this.itens.push(item)
+    this.carregarComissao(item.PriceList)
     this.changeItens.emit(this.itens)
   }
 
