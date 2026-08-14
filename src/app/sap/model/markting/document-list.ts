@@ -16,6 +16,7 @@ export class DocumentList{
     DocumentStatus : string
     DocumentAdditionalExpenses : Array<DespesaAdiciona>
     DocumentLines: DocumentLines[];
+    DocumentInstallments: DocumentInstallment[] = [];
     DocStatus : string
     Devolucao : string
     SequenceSerial: string; 
@@ -32,6 +33,30 @@ export class DocumentList{
 
     routerLink() : RouteLink{
         return new RouteLink(this.CardCode,"/clientes/parceiro-negocio/"+this.CardCode)
+    }
+
+    orderRouterLink(): RouteLink {
+        return new RouteLink(this.DocNum, "/venda/pedidos-venda", { id: this.DocEntry });
+    }
+
+    quotationRouterLink(): RouteLink {
+        return new RouteLink(this.DocNum, "/venda/cotacao", { id: this.DocEntry });
+    }
+
+    invoiceRouterLink(): RouteLink {
+        return new RouteLink(this.DocNum, "/financeiro/notas-fiscais", { id: this.DocEntry });
+    }
+
+    downPaymentRouterLink(): RouteLink {
+        return new RouteLink(this.DocNum, "/financeiro/adiantamentos", { id: this.DocEntry });
+    }
+
+    creditNoteRouterLink(): RouteLink {
+        return new RouteLink(this.DocNum, "/financeiro/devolucoes", { id: this.DocEntry });
+    }
+
+    incomingPaymentRouterLink(): RouteLink {
+        return new RouteLink(this.DocNum, "/financeiro/recebimentos", { id: this.DocEntry });
     }
 
     get x(){
@@ -79,11 +104,19 @@ export class DocumentList{
     }
 
     get vencimento(){
+        if(!this.DocDueDate)
+            return '-';
         return moment(this.DocDueDate).format('DD/MM/YYYY');
     }
 
     get filialFormatada(): string {
-        return ReplaceFilial.limparFilial(this.BPLName);
+        const filial = this.BPLName
+            || (this as any).BPLNameAssignedToInvoice
+            || (this as any).BplName
+            || (this as any).Bplname
+            || (this as any).bplName
+            || (this as any).bplname;
+        return filial ? ReplaceFilial.limparFilial(filial) : '-';
     }
 }
 
@@ -98,6 +131,7 @@ export class DocumentLines {
     Quantity : number
     ItemDescription : string
     ItemCode : string
+    SalesPersonCode : number | null
 
     get precoUnitarioCurrency(){
         return formatCurrency(this.UnitPrice,'pt','R$')
@@ -115,4 +149,46 @@ export class DocumentLines {
         return formatCurrency(this.UnitPrice*this.Quantity,'pt','R$')
     }
     
+}
+
+export class DocumentInstallment {
+    InstallmentId : number
+    DueDate : string
+    dueDate : string
+    total : number
+    Total : number
+    Percentage : string
+    Status : string
+    U_pix_reference : string
+
+    get parcela(){
+        return this.InstallmentId ?? '-'
+    }
+
+    get vencimento(){
+        const data = this.DueDate || this.dueDate
+        return data ? moment(data).format('DD/MM/YYYY') : '-'
+    }
+
+    get valorCurrency(){
+        return formatCurrency(this.valor, 'pt', 'R$')
+    }
+
+    get valor(){
+        return Number(this.Total ?? this.total ?? 0)
+    }
+
+    get percentual(){
+        return this.Percentage ? `${this.Percentage}%` : '-'
+    }
+
+    get statusFormatado(){
+        if(this.Status === 'O' || this.Status === 'bost_Open') return 'Aberta'
+        if(this.Status === 'C' || this.Status === 'bost_Close' || this.Status === 'bost_Paid') return 'Fechada'
+        return this.Status || '-'
+    }
+
+    get pixReferencia(){
+        return this.U_pix_reference || '-'
+    }
 }

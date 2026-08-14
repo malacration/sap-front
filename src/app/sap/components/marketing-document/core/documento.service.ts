@@ -11,4 +11,6 @@ export interface DocumentService{
     getNextLink?(nextLink: string) : Observable<Page<DocumentList>>
 
     getLinhas?(docEntry: number) : Observable<DocumentLines[]>
+
+    getById?(docEntry: number) : Observable<DocumentList>
 }

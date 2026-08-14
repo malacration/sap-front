@@ -14,6 +14,9 @@ import { DocumentService } from './documento.service';
 
   @Input()
   title :  string
+
+  @Input()
+  mapaRelacoesTipo : string = null
   
   ngOnInit(): void {
 

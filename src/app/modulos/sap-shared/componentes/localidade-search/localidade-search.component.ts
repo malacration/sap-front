@@ -1,6 +1,8 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { LocalidadeDefinition } from '../../../../sap/model/localidade/localidade-definition';
 import { LocalidadeService } from '../../_services/localidade.service';
+import { SearchComponent } from '../../../../shared/components/search/search.component';
+import { Localidade } from '../../../../sap/model/localidade/localidade';
 
 
 
@@ -13,6 +15,8 @@ export class LocalidadeSearchComponent {
 
   localidadeDefinition = new LocalidadeDefinition().getDefinition()
 
+  @ViewChild('search', {static: true}) search: SearchComponent<Localidade>;
+
   @Output()
   selected = new EventEmitter();
 
@@ -22,6 +26,10 @@ export class LocalidadeSearchComponent {
 
   selectedFun($event){
     this.selected.emit($event)
+  }
+
+  clear(){
+    this.search?.clear()
   }
 
 }

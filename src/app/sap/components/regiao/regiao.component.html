@@ -1,0 +1,452 @@
+<br>
+<section class="content">
+
+    <div *ngIf="!selecionada" class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Regiões</b></h3>
+            <div class="card-tools">
+                <button class="btn btn-sm btn-success" (click)="abrirNovaRegiao()">
+                    <i class="fas fa-plus"></i> Nova Região
+                </button>
+                <button class="btn btn-sm btn-outline-light ml-2" [disabled]="gerandoTabelaTodas" (click)="gerarTabelaFreteTodas()">
+                    <i class="fas fa-file-invoice"></i> {{gerandoTabelaTodas ? 'Gerando...' : 'Gerar Tabela de Frete'}}
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <form class="container-fluid" (ngSubmit)="filtrar()" autocomplete="off">
+                <div class="form-row align-items-end">
+                    <div class="col-auto">
+                        <label for="filtro" class="col-form-label">Código ou Nome da Região</label>
+                        <input id="filtro" name="filtro" class="form-control" type="text"
+                               [(ngModel)]="filtro" placeholder="Ex.: NORTE">
+                    </div>
+                    <div class="col-auto" style="min-width: 220px;">
+                        <app-branch-select (selectedOut)="selecionaFilialFiltro($event)"></app-branch-select>
+                    </div>
+                    <div class="col-auto">
+                        <div class="btn-group">
+                            <button type="submit" [disabled]="loading" class="btn btn-success">
+                                {{ loading ? 'Filtrando...' : 'Filtrar' }}
+                            </button>
+                            <button type="button" (click)="limpar()" [disabled]="loading" class="btn btn-outline-secondary">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <ul class="nav nav-tabs mt-3">
+                <li class="nav-item">
+                    <a class="nav-link" [class.active]="aba == 'ativas'" href="javascript:void(0)" (click)="mudarAba('ativas')">
+                        <i class="fas fa-check-circle text-success"></i> Ativas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" [class.active]="aba == 'inativas'" href="javascript:void(0)" (click)="mudarAba('inativas')">
+                        <i class="fas fa-ban text-muted"></i> Inativas
+                    </a>
+                </li>
+            </ul>
+
+            <div *ngIf="criandoRegiao" class="card card-outline card-success mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Nova Região</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="col-sm-2 form-group">
+                            <label>Código</label>
+                            <input class="form-control" type="text" [(ngModel)]="novaRegiao.Code" name="novoCode">
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Nome da Região</label>
+                            <input class="form-control" type="text" [(ngModel)]="novaRegiao.U_NomeRegiao" name="novoNome">
+                        </div>
+                        <div class="col-sm-3 form-group">
+                            <label>Coordenador</label>
+                            <input class="form-control" type="text" [(ngModel)]="novaRegiao.U_CodCordenador" name="novoCoordenador">
+                        </div>
+                        <div class="col-sm-3 form-group">
+                            <app-branch-select (selectedOut)="selecionaFilialNova($event)"></app-branch-select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success" [disabled]="loading" (click)="salvarNovaRegiao()">
+                        <i class="fas fa-check"></i> Salvar
+                    </button>
+                    <button class="btn btn-outline-secondary" [disabled]="loading" (click)="cancelarNovaRegiao()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <hr>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Região</th>
+                        <th>Coordenador</th>
+                        <th>Filial</th>
+                        <th class="text-center">Localidades</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let regiao of pageContent?.content">
+                        <td>{{regiao.Code}}</td>
+                        <td>{{regiao.U_NomeRegiao || regiao.Name}}</td>
+                        <td>{{regiao.U_CodCordenador}}</td>
+                        <td>{{nomeFilial(regiao.U_Filial)}}</td>
+                        <td class="text-center">{{regiao.totalLocalidades}}</td>
+                        <td class="text-right">
+                            <button *ngIf="!regiao.ativa" class="btn btn-sm btn-success" (click)="ativar(regiao)" title="Ativar">
+                                <i class="fas fa-check-circle"></i> Ativar
+                            </button>
+                            <button *ngIf="regiao.ativa" class="btn btn-sm btn-outline-secondary" (click)="desativar(regiao)" title="Desativar">
+                                <i class="fas fa-ban"></i> Desativar
+                            </button>
+                            <button *ngIf="regiao.ativa" class="btn btn-sm btn-outline-primary" (click)="abrirSubstituir(regiao)" title="Substituir Região">
+                                <i class="fas fa-exchange-alt"></i> Substituir
+                            </button>
+                            <button class="btn btn-sm btn-primary" (click)="seleciona(regiao)">
+                                <i class="far fa-edit"></i> Detalhes
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="!loading && pageContent?.content?.length == 0">
+                        <td colspan="6" class="text-center text-muted">Nenhuma região encontrada.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer clearfix">
+            <app-paginacao
+                (pageChange)="pageChange($event)"
+                [totalItens]="pageContent?.totalElements"
+                [pageSize]="pageContent?.size">
+            </app-paginacao>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+
+    <div *ngIf="selecionada" class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">
+                <b>{{selecionada.U_NomeRegiao || selecionada.Name}} - {{selecionada.Code}}</b>
+                <span class="badge ml-2" [class.badge-success]="selecionada.ativa" [class.badge-secondary]="!selecionada.ativa">
+                    {{selecionada.ativa ? 'Ativa' : 'Inativa'}}
+                </span>
+            </h3>
+            <div class="card-tools">
+                <button *ngIf="!selecionada.ativa" class="btn btn-sm btn-success" (click)="ativarSelecionada()">
+                    <i class="fas fa-check-circle"></i> Ativar
+                </button>
+                <button *ngIf="selecionada.ativa" class="btn btn-sm btn-outline-light" (click)="desativarSelecionada()">
+                    <i class="fas fa-ban"></i> Desativar
+                </button>
+                <button *ngIf="selecionada.ativa" class="btn btn-sm btn-outline-light ml-2" (click)="abrirSubstituir(selecionada)">
+                    <i class="fas fa-exchange-alt"></i> Substituir Região
+                </button>
+                <button class="btn btn-sm btn-outline-light ml-2" (click)="gerarTabelaFrete()">
+                    <i class="fas fa-file-invoice"></i> Gerar Tabela de Frete
+                </button>
+                <button class="btn btn-sm btn-outline-light ml-2" (click)="fechar()">
+                    <i class="fas fa-times"></i> Voltar
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <app-tabs>
+                <app-tab tabTitle="Filial" [active]="true">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label>Filial Vinculada</label>
+                            <input type="text" class="form-control" disabled="true" [value]="nomeFilial(selecionada.U_Filial)">
+                        </div>
+                        <div class="col-sm-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-primary" (click)="abreModalAlterarFilial()">
+                                <i class="fas fa-edit"></i> Modificar Filial
+                            </button>
+                        </div>
+                    </div>
+                </app-tab>
+
+                <app-tab tabTitle="Localidades">
+                    <div class="row align-items-end">
+                        <div class="col-sm-6">
+                            <app-localidade-search #localidadeSearch (selected)="escolheLocalidadePendente($event)"></app-localidade-search>
+                        </div>
+                        <div class="col-sm-auto">
+                            <button type="button" class="btn btn-outline-primary" (click)="abreModalNovaLocalidade()">
+                                <i class="fas fa-plus"></i> Nova Localidade
+                            </button>
+                        </div>
+                        <div class="col-sm-6" *ngIf="localidadePendente">
+                            <label>Distância até {{localidadePendente.Name}} (km)</label>
+                            <div class="input-group">
+                                <input type="number" min="0" step="0.01" class="form-control" [(ngModel)]="distanciaPendente" placeholder="Ex.: 45.5" required>
+                                <span class="input-group-append">
+                                    <button class="btn btn-success" [disabled]="distanciaPendente == null || distanciaPendente < 0" (click)="confirmaLocalidadePendente()">
+                                        <i class="fas fa-check"></i> Vincular
+                                    </button>
+                                    <button class="btn btn-outline-secondary" (click)="cancelaLocalidadePendente()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div *ngIf="loadingLocalidades" class="text-center p-3">
+                        <i class="fas fa-2x fa-sync fa-spin"></i>
+                    </div>
+                    <table *ngIf="!loadingLocalidades" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Localidade</th>
+                                <th class="text-center">Distância (km)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let localidade of localidades">
+                                <td>{{localidade.Code}}</td>
+                                <td>{{localidade.Name}}</td>
+                                <td class="text-center">
+                                    <span *ngIf="!emEdicaoDistancia(localidade)">
+                                        {{selecionada.getDistancia(localidade.Code) ?? '-'}}
+                                        <button class="btn btn-xs btn-link" (click)="iniciaEdicaoDistancia(localidade)">
+                                            <i class="far fa-edit"></i>
+                                        </button>
+                                    </span>
+                                    <span *ngIf="emEdicaoDistancia(localidade)" class="input-group input-group-sm">
+                                        <input type="number" min="0" step="0.01" class="form-control"
+                                               [(ngModel)]="distanciaEmEdicao[localidade.Code]">
+                                        <span class="input-group-append">
+                                            <button class="btn btn-success" (click)="salvaDistancia(localidade)">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary" (click)="cancelaEdicaoDistancia(localidade)">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </span>
+                                    </span>
+                                </td>
+                                <td class="text-right">
+                                    <button class="btn btn-sm btn-danger" (click)="removeLocalidade(localidade)">
+                                        <i class="fas fa-trash"></i> Remover
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="localidades.length == 0">
+                                <td colspan="4" class="text-center text-muted">Nenhuma localidade vinculada a essa região.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </app-tab>
+
+                <app-tab tabTitle="Preço do Frete">
+                    <h5>Preço do Frete Progressivo (R$ por km por unidade)</h5>
+                    <div class="card card-outline card-secondary">
+                        <div class="card-body">
+                            <div class="form-row align-items-end">
+                                <div class="col-sm-4 form-group">
+                                    <label>Quantidade mínima (1 = faixa base)</label>
+                                    <input type="number" min="1" class="form-control" [(ngModel)]="formFaixa.qtdeAte" placeholder="Ex.: 1, 100, 500...">
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <label>Valor a cada 100Km por unidade (R$)</label>
+                                    <app-currency-input [(ngModel)]="formFaixa.valorKm" placeholder="R$ 0,00"></app-currency-input>
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <button class="btn btn-success" (click)="salvarFaixa()">
+                                        <i class="fas fa-check"></i> {{faixaEmEdicaoLineId ? 'Salvar' : 'Adicionar Faixa'}}
+                                    </button>
+                                    <button *ngIf="faixaEmEdicaoLineId" class="btn btn-outline-secondary" (click)="cancelarEdicaoFaixa()">
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Faixa de Quantidade</th>
+                                <th>Valor a cada 100Km por unidade</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let faixa of faixasOrdenadas">
+                                <td>{{faixa.U_QtdeAte == 1 ? 'A partir de 1 (faixa base)' : 'A partir de ' + faixa.U_QtdeAte + ' itens'}}</td>
+                                <td>{{faixa.U_ValorKm | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                                <td class="text-right">
+                                    <button class="btn btn-sm btn-primary" (click)="editaFaixa(faixa)">
+                                        <i class="far fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" (click)="removeFaixa(faixa)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="faixasOrdenadas.length == 0">
+                                <td colspan="3" class="text-center text-muted">Nenhuma faixa de preço cadastrada.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </app-tab>
+
+                <app-tab tabTitle="Simulador de Frete">
+                    <div class="form-row align-items-end">
+                        <div class="col-sm-4 form-group">
+                            <app-select [options]="opcoesLocalidadesCalculo" [label]="'Localidade'"
+                                        (selectedOut)="selecionaLocalidadeCalculo($event)">
+                            </app-select>
+                        </div>
+                        <div class="col-sm-4 form-group">
+                            <label>Quantidade de itens</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="calcQuantidade" placeholder="Ex.: 120">
+                        </div>
+                    </div>
+
+                    <div *ngIf="calcCodLocalidade && calcQuantidade && !resultadoCalculo" class="alert alert-warning mb-0">
+                        Não há distância ou faixa de preço cadastrada suficiente para simular esse frete.
+                    </div>
+
+                    <div *ngIf="resultadoCalculo" class="row mt-2">
+                        <div class="col-sm-3">
+                            <dt>Distância</dt>
+                            <dd>{{resultadoCalculo.distancia}} km</dd>
+                        </div>
+                        <div class="col-sm-3">
+                            <dt>Faixa aplicada</dt>
+                            <dd>{{resultadoCalculo.faixa.U_QtdeAte == 1 ? 'A partir de 1 (faixa base)' : 'A partir de ' + resultadoCalculo.faixa.U_QtdeAte + ' itens'}}</dd>
+                        </div>
+                        <div class="col-sm-3">
+                            <dt>Valor a cada 100Km por unidade</dt>
+                            <dd>{{resultadoCalculo.faixa.U_ValorKm | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</dd>
+                        </div>
+                        <div class="col-sm-3">
+                            <dt>Valor total do frete</dt>
+                            <dd><b>{{resultadoCalculo.total | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</b></dd>
+                        </div>
+                    </div>
+                </app-tab>
+            </app-tabs>
+        </div>
+        <div class="card-footer clearfix">
+            <button class="btn btn-outline-secondary" (click)="fechar()">
+                <i class="fas fa-times"></i> Voltar
+            </button>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+
+    <app-regiao-frete-pdf #fretePdf [regiao]="selecionada" [localidades]="localidades"></app-regiao-frete-pdf>
+
+    <app-modal #modalAlterarFilial [title]="'Modificar Filial'" [modalSize]="'lg'">
+        <div class="form-group">
+            <label>Filial Atual</label>
+            <input type="text" class="form-control" disabled="true" [value]="nomeFilial(selecionada?.U_Filial)">
+        </div>
+        <div class="form-group">
+            <app-branch-select (selectedOut)="selecionaFilialModal($event)"></app-branch-select>
+        </div>
+        <div *ngIf="filialSelecionadaModal" class="alert alert-warning">
+            Confirme para alterar a filial para <b>{{nomeFilial(bplid(filialSelecionadaModal))}}</b>.
+        </div>
+        <div class="text-right">
+            <button type="button" class="btn btn-outline-secondary mr-2" (click)="modalAlterarFilial.closeModal()">
+                Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" [disabled]="!filialSelecionadaModal" (click)="confirmaAlterarFilial()">
+                Confirmar Modificação
+            </button>
+        </div>
+    </app-modal>
+
+    <app-modal #modalNovaLocalidade [title]="'Nova Localidade'" [modalSize]="'lg'">
+        <form (ngSubmit)="salvaNovaLocalidade()" autocomplete="off">
+            <div class="form-row">
+                <div class="form-group col-sm-4">
+                    <label for="codigoNovaLocalidadeFrete">Código</label>
+                    <input id="codigoNovaLocalidadeFrete"
+                           name="codigoNovaLocalidadeFrete"
+                           type="text"
+                           class="form-control"
+                           maxlength="30"
+                           [ngModel]="novaLocalidade.Code"
+                           (ngModelChange)="atualizaCodigoNovaLocalidade($event)"
+                           required>
+                </div>
+                <div class="form-group col-sm-8">
+                    <label for="nomeNovaLocalidadeFrete">Nome</label>
+                    <input id="nomeNovaLocalidadeFrete"
+                           name="nomeNovaLocalidadeFrete"
+                           type="text"
+                           class="form-control"
+                           maxlength="100"
+                           [ngModel]="novaLocalidade.Name"
+                           (ngModelChange)="atualizaNomeNovaLocalidade($event)"
+                           required>
+                </div>
+            </div>
+            <div class="text-right">
+                <button type="button" class="btn btn-outline-secondary mr-2" (click)="modalNovaLocalidade.closeModal()">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-success" [disabled]="salvandoLocalidade">
+                    <i *ngIf="salvandoLocalidade" class="fas fa-sync-alt fa-spin"></i>
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </app-modal>
+
+    <app-modal #modalSubstituir [title]="'Substituir Região Ativa'" [modalSize]="'lg'">
+        <p *ngIf="substituindo">
+            Escolha a região inativa que vai assumir o lugar de
+            <b>{{substituindo.U_NomeRegiao || substituindo.Name}} ({{substituindo.Code}})</b>
+            para a filial {{nomeFilial(substituindo.U_Filial)}}.
+        </p>
+        <div *ngIf="loadingCandidatas" class="text-center p-3">
+            <i class="fas fa-2x fa-sync fa-spin"></i>
+        </div>
+        <table *ngIf="!loadingCandidatas" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Região</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let candidata of candidatasSubstituir">
+                    <td>{{candidata.Code}}</td>
+                    <td>{{candidata.U_NomeRegiao || candidata.Name}}</td>
+                    <td class="text-right">
+                        <button class="btn btn-sm btn-success" (click)="confirmarSubstituir(candidata)">
+                            <i class="fas fa-check"></i> Usar essa
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="candidatasSubstituir.length == 0">
+                    <td colspan="3" class="text-center text-muted">Nenhuma região inativa vinculada a essa filial.</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="text-right">
+            <button class="btn btn-outline-secondary" (click)="cancelarSubstituir()">Cancelar</button>
+        </div>
+    </app-modal>
+</section>

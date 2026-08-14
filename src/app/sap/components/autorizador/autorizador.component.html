@@ -1,0 +1,37 @@
+<br>
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Autorizadores</b></h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                Quem pode aprovar/rejeitar cada motivo de autorização na Central de Autorizações.
+                Sem nenhuma linha pra um motivo, ninguém consegue decidir sobre ele.
+            </p>
+            <div class="form-row align-items-end mb-3">
+                <div class="col-sm-4 form-group">
+                    <label>Motivo</label>
+                    <input class="form-control" type="text" [(ngModel)]="novoAutorizador.U_motivo" placeholder="Ex.: CLIENTE_EM_ATRASO">
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Usuário</label>
+                    <input class="form-control" type="text" [(ngModel)]="novoAutorizador.U_usuario" placeholder="username da aplicação">
+                </div>
+                <div class="col-sm-4 form-group">
+                    <button class="btn btn-success" [disabled]="loading" (click)="adicionar()">
+                        <i class="fas fa-check"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+            <hr>
+            <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
+            <div *ngIf="!loading && lista?.length == 0" class="text-center text-muted p-3">
+                Nenhum autorizador cadastrado.
+            </div>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+</section>

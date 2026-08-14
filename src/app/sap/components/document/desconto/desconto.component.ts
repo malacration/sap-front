@@ -15,6 +15,10 @@ export class DescontoComponent {
   valor
   desconto : number = 0
 
+  //desconto maximo (%) permitido pela Comissao vinculada a tabela de preco do item, se houver
+  @Input()
+  descontoMaximo : number = null
+
   @Output()
   descontoPercentual : EventEmitter<any> = new EventEmitter<any>();
 
@@ -71,7 +75,13 @@ export class DescontoComponent {
     return Big(1).minus(this.percentual).times(100).toFixed(4, Big.roundHalfUp)
   }
 
+  get excedeDescontoMaximo() : boolean{
+    return this.descontoMaximo != null && Number(this.porcentagemDesconto) > this.descontoMaximo
+  }
+
   confirmarDesconto(){
+    if(this.excedeDescontoMaximo)
+      return
     this.descontoPercentual.emit(this.porcentagemDesconto)
     this.descontoModal.closeModal()
   }

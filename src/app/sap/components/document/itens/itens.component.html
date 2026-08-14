@@ -37,7 +37,7 @@
             <div class="input-group m-0">
               <input class="form-control text-center p-1" type="number" [(ngModel)]="item.quantidade">
               <!-- <input class="form-control text-center p-1" type="number" [(ngModel)]="item.desconto" placeholder="desc"> -->
-              <desconto [valor]="item.antesDescontoFinanceiroNumber()" (descontoPercentual)="item.aplicaDesconto($event)"></desconto>
+              <desconto [valor]="item.antesDescontoFinanceiroNumber()" [descontoMaximo]="descontoMaximoDoItem(item)" (descontoPercentual)="item.aplicaDesconto($event)"></desconto>
             </div>
           </div>
           <div class="col-3 m-0 p-0 ml-2 text-center">

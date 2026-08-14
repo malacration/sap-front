@@ -7,6 +7,7 @@ import {LinhaItem, VendaFutura} from "../model/venda/venda-futura"
 import { PedidoRetirada } from "../model/venda/pedido-retirada";
 import { PedidoTroca } from "../model/venda/pedido-troca";
 import { FutureDeliverySales } from "../model/markting/future-delivery-sales";
+import { EntregaPendenteBaixa } from "../model/venda/entrega-pendente-baixa";
 
 @Injectable({
     providedIn: 'root'
@@ -80,6 +81,16 @@ export class VendaFuturaService{
     cancelarConciliacao(docEntry) : Observable<string>{
       let url = this.url+"/devolver/"+docEntry
       return this.http.get<string>(url)
+    }
+
+    baixarComSpread(docEntry: number, spread: number): Observable<any> {
+      return this.http.post<any>(this.url + "/baixar-com-spread/" + docEntry, { spread })
+    }
+
+    listarPendentesBaixa(docEntryContrato: number): Observable<EntregaPendenteBaixa[]> {
+      return this.http.get<EntregaPendenteBaixa[]>(this.url + "/pendentes-baixa/" + docEntryContrato).pipe(
+        map(list => list.map(it => Object.assign(new EntregaPendenteBaixa(), it)))
+      );
     }
 
 

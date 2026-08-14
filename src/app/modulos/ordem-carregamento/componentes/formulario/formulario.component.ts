@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Branch } from '../../../../sap/model/branch';
 import { Localidade } from '../../../../sap/model/localidade/localidade';
-import { PedidoVenda } from '../../../../sap/components/document/documento.statement.component';
+import { PedidoVenda } from '../../../../sap/model/document/pedido-venda.model';
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { OrderSalesService } from '../../../sap-shared/_services/documents/order-sales.service';

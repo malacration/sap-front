@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import { PedidoVenda } from "../../components/document/documento.statement.component";
+import { PedidoVenda } from '../../model/document/pedido-venda.model';
 
 export interface DocumentAngularSave{
 

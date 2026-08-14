@@ -15,6 +15,12 @@ import { VendaFuturaStatementComponent } from './sap/components/venda-futura/ven
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
 import { PedidosVendaStatementComponent } from './sap/components/marketing-document/pedido-venda-statement/pedidos-venda-statement.component';
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
+import { RegiaoComponent } from './sap/components/regiao/regiao.component';
+import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
+import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
+import { ComissaoComponent } from './sap/components/comissao/comissao.component';
+import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
+import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
@@ -22,8 +28,12 @@ import { ReprocessamentoComponent } from './modulos/producao/componentes/reproce
 import { ChangePassowrd } from './shared/components/change-password/change-password.component';
 import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
+import { PainelVendasComponent } from './modulos/painel-vendas/componentes/painel-vendas/painel-vendas.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { SapLinkButtonDemoComponent } from './shared/components/sap-link-button/sap-link-button-demo.component';
+import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
+import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
 import { CobrancaStatementComponent } from './modulos/cobranca/componentes/cobranca-statement.component';
 import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobranca-dashboard.component';
 
@@ -38,6 +48,12 @@ import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobra
     title: 'Trocar Senha',
     data: ["hidden"],
     component: ChangePassowrd
+  },
+  {
+    path: 'meus-dados',
+    title: 'Meus Dados',
+    data: ["hidden"],
+    component: MeusDadosComponent
   },
   {
     path: 'home',
@@ -56,6 +72,12 @@ import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobra
     title: 'Pagamento PIX',
     data: ["hidden", "public"],
     component: PixLinkComponent
+  },
+  {
+    path: 'demo/sap-link-button',
+    title: 'Demo SAP Link Button',
+    data: ["hidden"],
+    component: SapLinkButtonDemoComponent
   },
   {
     path: 'romaneio',
@@ -146,18 +168,151 @@ import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobra
       },
       {
         path: 'analise-pedidos ',
-        title: 'Análise Pedidos ',
+        data: ["hidden"],
+        redirectTo: '/relatorios/analise-pedidos',
+        pathMatch: 'full',
+      },
+      {
+        path: 'painel-vendas',
+        data: ["hidden"],
+        redirectTo: '/relatorios/painel-vendas',
+        pathMatch: 'full',
+      },
+      {
+        path: 'mapa-relacoes',
+        title: 'Mapa de Relações',
+        data: ["hidden", "icon:fas fa-project-diagram"],
         canActivate: [authGuard],
-        component: PainelExpedicaoPedidosComponent
+        component: MapaRelacoesComponent
+      },
+      {
+        path: 'comissao',
+        data: ["hidden"],
+        redirectTo: '/configuracoes/comissao',
+        pathMatch: 'full',
+      },
+      {
+        path: 'comissao/:code',
+        data: ["hidden"],
+        redirectTo: '/configuracoes/comissao/:code',
+        pathMatch: 'full',
       },
     ]
   },
   {
-    title: 'Carregamento',
+    title: 'Relatórios',
     canActivate: [authGuard],
-    data: ["icon:fas fa-truck"],
-    path: 'ordem-carregamento',
-    component: OrdemCarregamentoStatementComponent
+    data: ["icon:fas fa-chart-pie"],
+    path: 'relatorios',
+    children: [
+      {
+        path: 'painel-vendas',
+        title: 'Painel de Vendas',
+        data: ["icon:fas fa-chart-line"],
+        canActivate: [authGuard],
+        component: PainelVendasComponent
+      },
+      {
+        path: 'analise-pedidos',
+        title: 'Análise Pedidos',
+        data: ["icon:fas fa-clipboard-list"],
+        canActivate: [authGuard],
+        component: PainelExpedicaoPedidosComponent
+      },
+      {
+        path: 'calculadora',
+        title: 'Calculadora',
+        data: ["icon:fas fa-calculator"],
+        canActivate: [authGuard],
+        component: CalculadoraStatementComponent,
+      },
+    ]
+  },
+  {
+    title: 'Logística',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-route"],
+    path: 'logistica',
+    children: [
+      {
+        path: 'ordem-carregamento',
+        title: 'Carregamento',
+        data: ["icon:fas fa-truck-ramp-box"],
+        canActivate: [authGuard],
+        component: OrdemCarregamentoStatementComponent
+      },
+      {
+        path: 'frete',
+        data: ["hidden"],
+        redirectTo: '/configuracoes/frete',
+        pathMatch: 'full',
+      },
+      {
+        path: 'frete/:code',
+        data: ["hidden"],
+        redirectTo: '/configuracoes/frete/:code',
+        pathMatch: 'full',
+      },
+      {
+        path: 'localidades',
+        title: 'Localidades',
+        data: ["icon:fas fa-map-marker-alt"],
+        canActivate: [authGuard],
+        component: LocalidadeComponent
+      },
+    ]
+  },
+  {
+    title: 'Configurações',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-cogs"],
+    path: 'configuracoes',
+    children: [
+      {
+        //rota "frete" - o componente ainda se chama RegiaoComponent (regiao),
+        //que esta sendo renomeado pra Frete
+        path: 'frete',
+        title: 'Frete',
+        data: ["icon:fas fa-map-marked-alt"],
+        canActivate: [authGuard],
+        component: RegiaoComponent
+      },
+      {
+        path: 'frete/:code',
+        title: 'Frete',
+        data: ["hidden"],
+        canActivate: [authGuard],
+        component: RegiaoComponent
+      },
+      {
+        path: 'comissao',
+        title: 'Comissão',
+        data: ["icon:fas fa-percentage"],
+        canActivate: [authGuard],
+        component: ComissaoComponent
+      },
+      {
+        path: 'comissao/:code',
+        title: 'Comissão',
+        data: ["hidden"],
+        canActivate: [authGuard],
+        component: ComissaoComponent
+      },
+      {
+        path: 'autorizacoes',
+        title: 'Autorizações',
+        data: ["icon:fas fa-user-check"],
+        canActivate: [authGuard],
+        component: AutorizacaoComponent
+      },
+      {
+        path: 'autorizadores',
+        title: 'Autorizadores',
+        data: ["icon:fas fa-user-shield"],
+        canActivate: [authGuard],
+        component: AutorizadorComponent
+      },
+    ]
   },
   {
     title: 'Cobrança',
@@ -219,6 +374,34 @@ import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobra
         canActivate: [authGuard],
         component: PixPageComponent,
       },
+      {
+        path: 'notas-fiscais',
+        title: 'Notas Fiscais',
+        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal"],
+        canActivate: [authGuard],
+        component: DocumentosSapComponent,
+      },
+      {
+        path: 'adiantamentos',
+        title: 'Adiantamentos',
+        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento"],
+        canActivate: [authGuard],
+        component: DocumentosSapComponent,
+      },
+      {
+        path: 'devolucoes',
+        title: 'Devoluções',
+        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao"],
+        canActivate: [authGuard],
+        component: DocumentosSapComponent,
+      },
+      {
+        path: 'recebimentos',
+        title: 'Recebimentos',
+        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento"],
+        canActivate: [authGuard],
+        component: DocumentosSapComponent,
+      },
     ]
   },
   {
@@ -228,9 +411,10 @@ import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobra
     component: ReprocessamentoComponent,
   },
   {
-    title: 'Calculadora',
     path: 'statement-calc',
-    component: CalculadoraStatementComponent,
+    data: ["hidden"],
+    redirectTo: '/relatorios/calculadora',
+    pathMatch: 'full',
   },
   {
     path: '**',

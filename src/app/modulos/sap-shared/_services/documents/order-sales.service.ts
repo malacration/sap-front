@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { catchError, map, Observable, of } from 'rxjs';
 import { ConfigService } from '../../../../core/services/config.service';
 import { DocumentAngularSave } from '../../../../sap/service/document/document-angular-save';
-import { PedidoVenda } from '../../../../sap/components/document/documento.statement.component';
+import { PedidoVenda } from '../../../../sap/model/document/pedido-venda.model';
 import { NextLink } from '../../../../sap/model/next-link';
 
 @Injectable({

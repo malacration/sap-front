@@ -1,6 +1,7 @@
-<app-search 
+<app-search #search
     [definition]="localidadeDefinition"
     [service]="lcService"
+    [uppercaseKeyword]="true"
     (contentSelected)="selectedFun($event)"
     [name]="'Localidade'">
 </app-search>

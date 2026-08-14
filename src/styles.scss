@@ -136,3 +136,44 @@ blockquote.quote-info
   border-color: var(--bs-primary);
   color: var(--bs-primary-text);
 }
+
+.modal-dialog.modal-mapa-relacoes-contrato {
+  width: calc(100vw - 16px);
+  max-width: calc(100vw - 16px);
+  height: calc(100vh - 16px);
+  max-height: calc(100vh - 16px);
+  margin: 8px auto;
+}
+
+.modal-dialog.modal-mapa-relacoes-contrato .modal-content {
+  height: 100%;
+  max-height: 100%;
+}
+
+//cabecalho oculto (showHeader=false) nesse modal - o corpo ocupa quase 100% da
+//altura do modal, sobrando so o padding. O fechar fica no botao flutuante
+//(.btn-fechar-mapa-relacoes) desenhado por cima do grafo.
+.modal-dialog.modal-mapa-relacoes-contrato .modal-body {
+  height: 100%;
+  padding: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-dialog.modal-mapa-relacoes-contrato app-mapa-relacoes,
+.modal-dialog.modal-mapa-relacoes-contrato app-mapa-relacoes-grafo {
+  display: block;
+  height: 100%;
+}
+
+.btn-fechar-mapa-relacoes {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}

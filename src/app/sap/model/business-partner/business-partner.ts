@@ -18,14 +18,19 @@ export class BusinessPartner implements Actiable{
     ContactEmployees : Array<Person> = new Array()
     RemoveContacts : Array<number> = new Array()
     Referencias : ReferenciaComercial
+    //nomeados igual ao que o backend manda (BusinessPartner.kt) - "Balance" nao
+    //existe no SAP, o campo real e CurrentAccountBalance (por isso o limite
+    //disponivel sempre dava NaN antes dessa correcao)
     CreditLine : number = 0
-    Balance : number = 0
+    CurrentAccountBalance : number = 0
+    SalesPersonCode : number
+    SalesEmployeeName : string
 
     private _addressOptions
     private _referenceOptions
     
-    CpfCnpjStr() {
-        get : { return this.TaxId0 ? this.TaxId0 : this.TaxId4}
+    CpfCnpjStr() : String {
+        return this.TaxId0 ? this.TaxId0 : this.TaxId4
     }
     
     TaxId0 : String
@@ -36,7 +41,7 @@ export class BusinessPartner implements Actiable{
     }
     
     get limiteDisponivel() : number{
-        return this.CreditLine-this.Balance
+        return this.CreditLine-this.CurrentAccountBalance
     }
 
     limiteAutorizadoCurrency() {
@@ -147,12 +152,29 @@ export class BPAddress{
     BuildingFloorRoom : string
     BPCode : string
     RowNum : number;
+    U_Localidade : number
 
     constructor(addressName : string){
         this.AddressName = addressName
     }
 
+    isEntrega() : boolean{
+        return this.AddressType == 'bo_ShipTo'
+    }
+
+    tipoEndereco() : string{
+        if(this.AddressType == 'bo_ShipTo')
+            return 'Entrega'
+        if(this.AddressType == 'bo_BillTo')
+            return 'Cobrança'
+        return this.AddressType || '-'
+    }
+
     toString() : string{
-        return this.Street+" | "+this.StreetNo+" | "+this.ZipCode
+        const nome = this.AddressName || '-'
+        const rua = this.Street || '-'
+        const numero = this.StreetNo || '-'
+        const cep = this.ZipCode || '-'
+        return this.tipoEndereco()+" | "+nome+" | "+rua+" | "+numero+" | "+cep
     }
 }

@@ -19,30 +19,404 @@
         <dt class="col-sm-3">Email:</dt>
         <dd class="col-sm-9">{{ selected.EmailAddress }}</dd>
 
+        <dt class="col-sm-3">Vendedor:</dt>
+        <dd class="col-sm-9">{{ vendedorParceiro() }}</dd>
+
+        <dt class="col-sm-3">Limite de Crédito:</dt>
+        <dd class="col-sm-9">{{ selected.limiteAutorizadoCurrency() }}</dd>
+
+        <dt class="col-sm-3">Limite Disponível:</dt>
+        <dd class="col-sm-9">{{ selected.limiteDisponivelCurrency() }}</dd>
+
         <dd class="col-sm">
-          <app-tabs>
+          <app-tabs (selected)="ativarAba($event)">
             <app-tab tabTitle="Endereço" [active]="true">
-              <app-table
-                [content]="selected?.BPAddresses"
-                [definition]="definition"
-                (actionOutput)="action($event)"
-              >
-              </app-table>
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Tipo Endereço</th>
+                    <th>Nome Endereço</th>
+                    <th>Rua</th>
+                    <th>Bairro</th>
+                    <th>Número</th>
+                    <th>CEP</th>
+                    <th>Cidade</th>
+                    <th>Estado</th>
+                    <th>Localidade</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let endereco of selected?.BPAddresses">
+                    <td>{{ tipoEndereco(endereco) }}</td>
+                    <td>{{ endereco.AddressName }}</td>
+                    <td>{{ endereco.Street }}</td>
+                    <td>{{ endereco.Block }}</td>
+                    <td>{{ endereco.StreetNo }}</td>
+                    <td>{{ endereco.ZipCode }}</td>
+                    <td>{{ endereco.County }}</td>
+                    <td>{{ endereco.State }}</td>
+                    <td>{{ nomeLocalidade(endereco) }}</td>
+                    <td class="text-right">
+                      <button *ngIf="isEntrega(endereco)" class="btn btn-sm btn-primary"
+                              (click)="editarLocalidade(endereco)">
+                        <i class="fas fa-map-marker-alt"></i> Localidade
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </app-tab>
 
+
+            <app-tab tabTitle="Cotações" [active]="false">
+              <ng-container *ngIf="abasCarregadas.cotacoes">
+              <form class="container-fluid px-0 mb-3" (ngSubmit)="loadCotacoes(0)" autocomplete="off">
+                <div class="form-row align-items-end">
+                  <div class="col-sm-2 form-group">
+                    <label>Nº Cotação</label>
+                    <input class="form-control" type="number" name="cotacaoDocNum" [(ngModel)]="cotacaoFiltro.docNum">
+                  </div>
+                  <div class="col-sm-2 form-group">
+                    <label>Status</label>
+                    <select class="form-control" name="cotacaoStatus" [(ngModel)]="cotacaoFiltro.status">
+                      <option value="bost_Open">Abertas</option>
+                      <option value="bost_Close">Fechadas</option>
+                      <option value="">Todas</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-2 form-group">
+                    <label>De</label>
+                    <input class="form-control" type="date" name="cotacaoDataInicial" [(ngModel)]="cotacaoFiltro.dataInicial">
+                  </div>
+                  <div class="col-sm-2 form-group">
+                    <label>Até</label>
+                    <input class="form-control" type="date" name="cotacaoDataFinal" [(ngModel)]="cotacaoFiltro.dataFinal">
+                  </div>
+                  <div class="col-sm-3 form-group">
+                    <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorCotacao($event)"></app-sales-person-search>
+                  </div>
+                  <div class="col-sm-1 form-group">
+                    <button class="btn btn-success btn-block" [disabled]="cotacoesLoading" type="submit">
+                      Filtrar
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th>Nº</th>
+                      <th>Data</th>
+                      <th>Validade/Entrega</th>
+                      <th>Status</th>
+                      <th>Vendedor</th>
+                      <th class="text-right">Total</th>
+                      <th>Observação</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let cotacao of cotacoes">
+                      <td>
+                        <app-sap-link-button
+                          [label]="cotacao.DocNum"
+                          [sapRouterLink]="['/venda/cotacao']"
+                          [queryParams]="{ id: cotacao.DocEntry }">
+                        </app-sap-link-button>
+                      </td>
+                      <td>{{cotacao.dataCriacao}}</td>
+                      <td>{{cotacao.dataEntrega}}</td>
+                      <td>{{cotacao.statusLabel}}</td>
+                      <td>{{cotacao.vendedor}}</td>
+                      <td class="text-right">{{cotacao.totalCurrency}}</td>
+                      <td>{{cotacao.Comments || cotacao.ClosingRemarks || '-'}}</td>
+                      <td class="text-right">
+                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarCotacaoDetalhe(cotacao)">
+                          <i class="fas fa-list"></i> Detalhes
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!cotacoesLoading && cotacoes.length == 0">
+                      <td colspan="8" class="text-center text-muted">Nenhuma cotação encontrada.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="cotacaoDetalhe" class="card card-outline card-info mt-3">
+                <div class="card-header">
+                  <h3 class="card-title">Detalhes da Cotação {{cotacaoDetalhe.DocNum}}</h3>
+                </div>
+                <div class="card-body">
+                  <dl class="row mb-2">
+                    <dt class="col-sm-2">DocEntry</dt>
+                    <dd class="col-sm-4">{{cotacaoDetalhe.DocEntry}}</dd>
+                    <dt class="col-sm-2">Vendedor</dt>
+                    <dd class="col-sm-4">{{cotacaoDetalhe.vendedor}}</dd>
+                    <dt class="col-sm-2">Data</dt>
+                    <dd class="col-sm-4">{{cotacaoDetalhe.dataCriacao}}</dd>
+                    <dt class="col-sm-2">Entrega</dt>
+                    <dd class="col-sm-4">{{cotacaoDetalhe.dataEntrega}}</dd>
+                    <dt class="col-sm-2">Status</dt>
+                    <dd class="col-sm-4">{{cotacaoDetalhe.statusLabel}}</dd>
+                    <dt class="col-sm-2">Total</dt>
+                    <dd class="col-sm-4">{{cotacaoDetalhe.totalCurrency}}</dd>
+                    <dt class="col-sm-2">Observação</dt>
+                    <dd class="col-sm-10">{{cotacaoDetalhe.Comments || cotacaoDetalhe.ClosingRemarks || '-'}}</dd>
+                  </dl>
+                  <app-table
+                    *ngIf="cotacaoDetalhe.DocumentLines?.length"
+                    [content]="cotacaoDetalhe.DocumentLines"
+                    [definition]="linhasPedidoDefinition">
+                  </app-table>
+                  <div *ngIf="!cotacaoDetalhe.DocumentLines?.length" class="text-center text-muted p-2">
+                    Nenhum item carregado para esta cotação.
+                  </div>
+                </div>
+              </div>
+              <app-paginacao
+                (pageChange)="loadCotacoes($event)"
+                [totalItens]="cotacoesPage?.totalElements"
+                [pageSize]="cotacoesPage?.size">
+              </app-paginacao>
+              <div *ngIf="cotacoesLoading" class="text-center p-2">
+                <i class="fas fa-spinner fa-spin"></i> Carregando cotações...
+              </div>
+              </ng-container>
+            </app-tab>
             <app-tab tabTitle="Pedido de Venda" [active]="false">
-              <app-table
-                [content]="pedidoVenda"
-                [definition]="pedidoVendaDefinition"
-                (actionOutput)="action($event)"
-              >
-              </app-table>
+              <ng-container *ngIf="abasCarregadas.pedidos">
+              <form class="container-fluid px-0 mb-3" (ngSubmit)="loadPedidos(0)" autocomplete="off">
+                <div class="form-row align-items-end">
+                  <div class="col-sm-2 form-group">
+                    <label>Nº Pedido</label>
+                    <input class="form-control" type="number" name="pedidoDocNum" [(ngModel)]="pedidoFiltro.docNum">
+                  </div>
+                  <div class="col-sm-2 form-group">
+                    <label>Status</label>
+                    <select class="form-control" name="pedidoStatus" [(ngModel)]="pedidoFiltro.status">
+                      <option value="bost_Open">Abertos</option>
+                      <option value="bost_Close">Fechados</option>
+                      <option value="">Todos</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-2 form-group">
+                    <label>De</label>
+                    <input class="form-control" type="date" name="pedidoDataInicial" [(ngModel)]="pedidoFiltro.dataInicial">
+                  </div>
+                  <div class="col-sm-2 form-group">
+                    <label>Até</label>
+                    <input class="form-control" type="date" name="pedidoDataFinal" [(ngModel)]="pedidoFiltro.dataFinal">
+                  </div>
+                  <div class="col-sm-3 form-group">
+                    <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorPedido($event)"></app-sales-person-search>
+                  </div>
+                  <div class="col-sm-1 form-group">
+                    <button class="btn btn-success btn-block" [disabled]="pedidoVendaLoading" type="submit">
+                      Filtrar
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                  <thead>
+                    <tr>
+                      <th>Nº</th>
+                      <th>Data</th>
+                      <th>Entrega</th>
+                      <th>Status</th>
+                      <th>Vendedor</th>
+                      <th class="text-right">Total</th>
+                      <th>Observação</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let pedido of pedidoVenda">
+                      <td>
+                        <app-sap-link-button
+                          [label]="pedido.DocNum"
+                          [sapRouterLink]="['/venda/pedidos-venda']"
+                          [queryParams]="{ id: pedido.DocEntry }">
+                        </app-sap-link-button>
+                      </td>
+                      <td>{{pedido.dataCriacao}}</td>
+                      <td>{{pedido.dataEntrega}}</td>
+                      <td>{{pedido.statusLabel}}</td>
+                      <td>{{pedido.vendedor}}</td>
+                      <td class="text-right">{{pedido.totalCurrency}}</td>
+                      <td>{{pedido.Comments || pedido.ClosingRemarks || '-'}}</td>
+                      <td class="text-right">
+                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarPedidoDetalhe(pedido)">
+                          <i class="fas fa-list"></i> Detalhes
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!pedidoVendaLoading && pedidoVenda.length == 0">
+                      <td colspan="8" class="text-center text-muted">Nenhum pedido encontrado.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div *ngIf="pedidoDetalhe" class="card card-outline card-info mt-3">
+                <div class="card-header">
+                  <h3 class="card-title">Detalhes do Pedido {{pedidoDetalhe.DocNum}}</h3>
+                </div>
+                <div class="card-body">
+                  <dl class="row mb-2">
+                    <dt class="col-sm-2">DocEntry</dt>
+                    <dd class="col-sm-4">{{pedidoDetalhe.DocEntry}}</dd>
+                    <dt class="col-sm-2">Vendedor</dt>
+                    <dd class="col-sm-4">{{pedidoDetalhe.vendedor}}</dd>
+                    <dt class="col-sm-2">Data</dt>
+                    <dd class="col-sm-4">{{pedidoDetalhe.dataCriacao}}</dd>
+                    <dt class="col-sm-2">Entrega</dt>
+                    <dd class="col-sm-4">{{pedidoDetalhe.dataEntrega}}</dd>
+                    <dt class="col-sm-2">Status</dt>
+                    <dd class="col-sm-4">{{pedidoDetalhe.statusLabel}}</dd>
+                    <dt class="col-sm-2">Total</dt>
+                    <dd class="col-sm-4">{{pedidoDetalhe.totalCurrency}}</dd>
+                    <dt class="col-sm-2">Observação</dt>
+                    <dd class="col-sm-10">{{pedidoDetalhe.Comments || pedidoDetalhe.ClosingRemarks || '-'}}</dd>
+                  </dl>
+                  <app-table
+                    *ngIf="pedidoDetalhe.DocumentLines?.length"
+                    [content]="pedidoDetalhe.DocumentLines"
+                    [definition]="linhasPedidoDefinition">
+                  </app-table>
+                  <div *ngIf="!pedidoDetalhe.DocumentLines?.length" class="text-center text-muted p-2">
+                    Nenhum item carregado para este pedido.
+                  </div>
+                </div>
+              </div>
+              <app-paginacao
+                (pageChange)="loadPedidos($event)"
+                [totalItens]="pedidoVendaPage?.totalElements"
+                [pageSize]="pedidoVendaPage?.size">
+              </app-paginacao>
+              <div *ngIf="pedidoVendaLoading" class="text-center p-2">
+                <i class="fas fa-spinner fa-spin"></i> Carregando pedidos...
+              </div>
+              </ng-container>
             </app-tab>
             <app-tab tabTitle="Notas" [active]="false">
-              <app-lista-fatura [clienteSelecionado]="selected" [showHeader]="false"></app-lista-fatura>
+              <app-lista-fatura *ngIf="abasCarregadas.notas" [clienteSelecionado]="selected" [showHeader]="false"></app-lista-fatura>
+            </app-tab>
+
+            <app-tab tabTitle="Contrato Venda Futura" [active]="false">
+              <ng-container *ngIf="abasCarregadas.contratosVendaFutura">
+                <form class="container-fluid px-0 mb-3" (ngSubmit)="loadContratosVendaFutura()" autocomplete="off">
+                  <div class="form-row align-items-end">
+                    <div class="col-sm-3 form-group">
+                      <label>Status</label>
+                      <select class="form-control" name="contratoVendaFuturaStatus" [(ngModel)]="contratoVendaFuturaStatus">
+                        <option value="aberto">Aberto</option>
+                        <option value="entregue">Entregue</option>
+                        <option value="concluido">Concluído</option>
+                        <option value="cancelado">Cancelado</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <button class="btn btn-success" [disabled]="contratosVendaFuturaLoading" type="submit">
+                        Filtrar
+                      </button>
+                    </div>
+                  </div>
+                </form>
+                <div class="table-responsive">
+                  <table class="table table-hover table-striped">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Pedido Origem</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Vendedor</th>
+                        <th>Filial</th>
+                        <th class="text-right">Produtos</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let contrato of contratosVendaFutura">
+                        <td>
+                          <app-sap-link-button
+                            [label]="contrato.DocEntry"
+                            [sapRouterLink]="['/venda/venda-futura']"
+                            [queryParams]="{ id: contrato.DocEntry }">
+                          </app-sap-link-button>
+                        </td>
+                        <td>
+                          <app-sap-link-button
+                            *ngIf="contrato.U_orderDocEntry; else pedidoOrigemVazio"
+                            [label]="contrato.OrderDocNum || contrato.U_orderDocEntry"
+                            [sapRouterLink]="['/venda/pedidos-venda']"
+                            [queryParams]="{ id: contrato.U_orderDocEntry }">
+                          </app-sap-link-button>
+                          <ng-template #pedidoOrigemVazio>-</ng-template>
+                        </td>
+                        <td>{{contrato.dataCriacao}}</td>
+                        <td>{{contrato.statusLabel}}</td>
+                        <td>{{contrato.SalesEmployeeName || contrato.U_vendedor || '-'}}</td>
+                        <td>{{contrato.filialFormatada || contrato.U_filial || '-'}}</td>
+                        <td class="text-right">{{contrato.U_valorProdutos | currency : "BRL" : "symbol" : "1.2-2"}}</td>
+                        <td class="text-right">
+                          <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarContratoDetalhe(contrato)">
+                            <i class="fas fa-list"></i> Detalhes
+                          </button>
+                        </td>
+                      </tr>
+                      <tr *ngIf="!contratosVendaFuturaLoading && contratosVendaFutura.length == 0">
+                        <td colspan="8" class="text-center text-muted">Nenhum contrato encontrado.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div *ngIf="contratoDetalhe" class="card card-outline card-info mt-3">
+                  <div class="card-header">
+                    <h3 class="card-title">Detalhes do Contrato {{contratoDetalhe.DocEntry}}</h3>
+                  </div>
+                  <div class="card-body">
+                    <dl class="row mb-2">
+                      <dt class="col-sm-2">Pedido Origem</dt>
+                      <dd class="col-sm-4">{{contratoDetalhe.OrderDocNum || contratoDetalhe.U_orderDocEntry || '-'}}</dd>
+                      <dt class="col-sm-2">Vendedor</dt>
+                      <dd class="col-sm-4">{{contratoDetalhe.SalesEmployeeName || contratoDetalhe.U_vendedor || '-'}}</dd>
+                      <dt class="col-sm-2">Data</dt>
+                      <dd class="col-sm-4">{{contratoDetalhe.dataCriacao}}</dd>
+                      <dt class="col-sm-2">Status</dt>
+                      <dd class="col-sm-4">{{contratoDetalhe.statusLabel}}</dd>
+                      <dt class="col-sm-2">Filial</dt>
+                      <dd class="col-sm-4">{{contratoDetalhe.filialFormatada || contratoDetalhe.U_filial || '-'}}</dd>
+                      <dt class="col-sm-2">Total</dt>
+                      <dd class="col-sm-4">{{contratoDetalhe.totalCurrency}}</dd>
+                    </dl>
+                    <app-table
+                      *ngIf="contratoDetalhe.AR_CF_LINHACollection?.length"
+                      [content]="contratoDetalhe.AR_CF_LINHACollection"
+                      [definition]="contratoItensDefinition">
+                    </app-table>
+                    <div *ngIf="!contratoDetalhe.AR_CF_LINHACollection?.length" class="text-center text-muted p-2">
+                      Nenhum item carregado para este contrato.
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="!contratosVendaFuturaLoading && contratosVendaFuturaPage?.nextLink" class="text-center mt-2">
+                  <button class="btn btn-primary" (click)="carregarMaisContratosVendaFutura()">
+                    Carregar Mais
+                    <i class="far fa-plus-square"></i>
+                  </button>
+                </div>
+                <div *ngIf="contratosVendaFuturaLoading" class="text-center p-2">
+                  <i class="fas fa-spinner fa-spin"></i> Carregando contratos...
+                </div>
+              </ng-container>
             </app-tab>
 
             <app-tab tabTitle="Contas a Receber" [active]="false">
+              <ng-container *ngIf="abasCarregadas.contasReceber">
               <div *ngIf="contasReceberLoading" class="text-center p-3">
                 <i class="fas fa-spinner fa-spin"></i> Carregando contas a
                 receber...
@@ -85,6 +459,7 @@
                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
               </div>
             </div>
+              </ng-container>
             </app-tab>
            
           </app-tabs>
@@ -182,5 +557,24 @@
       <ng-template #dataPagamentoVazia>-</ng-template>
     </div>
     <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType }}</div>
+  </div>
+</app-modal>
+
+<app-modal #modalLocalidade [title]="'Localidade do Endereço de Entrega'" modalSize="lg">
+  <div *ngIf="enderecoEditando" class="p-2">
+    <p>
+      <strong>Endereço:</strong> {{ enderecoEditando.AddressName }} -
+      {{ enderecoEditando.Street }}, {{ enderecoEditando.StreetNo }}
+    </p>
+    <p>
+      <strong>Localidade atual:</strong> {{ nomeLocalidade(enderecoEditando) }}
+    </p>
+    <app-localidade-search (selected)="selecionaLocalidade($event)"></app-localidade-search>
+    <hr />
+    <button type="button" class="btn btn-danger"
+            [disabled]="!enderecoEditando.U_Localidade || loading"
+            (click)="limpaLocalidade()">
+      <i class="far fa-times-circle"></i> Remover vínculo
+    </button>
   </div>
 </app-modal>

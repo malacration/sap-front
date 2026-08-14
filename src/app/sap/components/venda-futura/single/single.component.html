@@ -2,94 +2,142 @@
 <section class="content">
     <div class="card card-primary">
         <div class="card-header">
-            <h3 class="card-title"><b>Detalhes da Venda Futura</b></h3>
-            <div class="card-tools float-right">
-                <ng-container *ngIf="loadingEntregas || loadingBoletos || loadingPedidos">
-                    <i class="fas fa-sync-alt fa-spin text-white mr-1"></i>
-                    <small class="text-white">Carregando contrato...</small>
-                </ng-container>
-                <ng-container *ngIf="!loadingEntregas && !loadingBoletos && !loadingPedidos">
-                    <!-- Financeiro -->
-                    <div class="btn-group btn-group-sm acoes-dropdown mr-2">
-                        <button type="button" class="btn btn-success dropdown-toggle" (click)="toggleMenu('financeiro')">
-                            <i class="fa-solid fa-coins"></i> Financeiro
-                        </button>
-                        <div class="dropdown-menu" [class.show]="menuAberto === 'financeiro'">
-                            <button class="dropdown-item" type="button" [disabled]="loadingCriaBoletos"
-                                (click)="menuAberto = null; confirmEmitirBoletos()">
-                                <i *ngIf="!loadingCriaBoletos" class="fa-solid fa-barcode"></i>
-                                <i *ngIf="loadingCriaBoletos" class="fas fa-sync-alt fa-spin"></i>
-                                {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
-                            </button>
-                            <button *ngIf="podeGerarPix" class="dropdown-item" type="button" [disabled]="gerarPixLoading"
-                                (click)="menuAberto = null; gerarPixContrato(true)">
-                                <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
-                                <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
-                                {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
-                            </button>
-                            <button *ngIf="podeGerarPix && autorizadoPixSemJuros" class="dropdown-item" type="button"
-                                [disabled]="gerarPixLoading"
-                                (click)="menuAberto = null; gerarPixContrato(false)">
-                                <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.semJuros"></i>
-                                <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
-                                {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX (Sem Juros)' }}
-                            </button>
-                        </div>
-                    </div>
+            <h3 class="card-title">
+                <b>Detalhe do contrato da venda futura</b>
+                <span class="badge badge-pill ml-2" style="font-size: 0.8rem;"
+                    [ngClass]="{
+                        'badge-info': selected.U_status === 'aberto',
+                        'badge-warning': selected.U_status === 'entregue',
+                        'badge-success': selected.U_status === 'concluido',
+                        'badge-danger': selected.U_status === 'cancelado'
+                    }">
+                    {{ selected.statusLabel }}
+                </span>
+            </h3>
+            <div class="card-tools float-right d-flex align-items-center">
+                <app-mapa-relacoes-modal-button
+                    [tipo]="'contrato'"
+                    [docEntry]="selected?.DocEntry"
+                    [buttonClass]="'btn-outline-light'"
+                    [label]="'Mapa de Relações'">
+                </app-mapa-relacoes-modal-button>
+                <!-- spinner sempre ocupa o espaco (visibility, nao *ngIf) pra nao empurrar os
+                     botoes ao lado quando aparece/some -->
+                <i class="fas fa-sync-alt fa-spin text-white mr-2"
+                   [style.visibility]="(loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes) ? 'visible' : 'hidden'"></i>
 
-                    <!-- Produtos -->
-                    <div class="btn-group btn-group-sm acoes-dropdown mr-2">
-                        <button type="button" class="btn btn-info dropdown-toggle" (click)="toggleMenu('produtos')">
-                            <i class="fa-solid fa-boxes-stacked"></i> Produtos
-                        </button>
-                        <div class="dropdown-menu" [class.show]="menuAberto === 'produtos'">
-                            <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalRetirada()">
-                                <i class="fa-solid fa-box-open"></i> Retirar
-                            </button>
-                            <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalTroca()">
-                                <i class="fa-solid fa-right-left"></i> Troca
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Minutar Contrato -->
-                    <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm mr-2">
-                        <i class="fa-solid fa-file-lines"></i> Minutar Contrato
+                <!-- Financeiro -->
+                <div class="btn-group btn-group-sm acoes-dropdown mr-2">
+                    <button type="button" class="btn btn-success dropdown-toggle"
+                        [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('financeiro')">
+                        <i class="fa-solid fa-coins"></i> Financeiro
                     </button>
-
-                    <!-- Reversões -->
-                    <div class="btn-group btn-group-sm acoes-dropdown">
-                        <button type="button" class="btn btn-danger dropdown-toggle" (click)="toggleMenu('reversoes')">
-                            <i class="fa-solid fa-rotate-left"></i> Reversões
+                    <div class="dropdown-menu" [class.show]="menuAberto === 'financeiro'">
+                        <button class="dropdown-item" type="button" [disabled]="loadingCriaBoletos"
+                            (click)="menuAberto = null; confirmEmitirBoletos()">
+                            <i *ngIf="!loadingCriaBoletos" class="fa-solid fa-barcode"></i>
+                            <i *ngIf="loadingCriaBoletos" class="fas fa-sync-alt fa-spin"></i>
+                            {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
                         </button>
-                        <div class="dropdown-menu dropdown-menu-right" [class.show]="menuAberto === 'reversoes'">
-                            <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalVincularDevolucao()">
-                                <i class="fa-solid fa-link"></i> Vincular Devolução
-                            </button>
-                            <button class="dropdown-item text-danger" type="button" (click)="menuAberto = null; encerrarContrato()">
-                                <i class="fa-solid fa-ban"></i> Cancelar Contrato
-                            </button>
-                        </div>
+                        <button *ngIf="podeGerarPix" class="dropdown-item" type="button" [disabled]="gerarPixLoading"
+                            (click)="menuAberto = null; gerarPixContrato(true)">
+                            <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
+                            <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
+                            {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
+                        </button>
+                        <button *ngIf="podeGerarPix && autorizadoPixSemJuros" class="dropdown-item" type="button"
+                            [disabled]="gerarPixLoading"
+                            (click)="menuAberto = null; gerarPixContrato(false)">
+                            <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.semJuros"></i>
+                            <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
+                            {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX (Sem Juros)' }}
+                        </button>
                     </div>
-                </ng-container>
+                </div>
+
+                <!-- Produtos -->
+                <div class="btn-group btn-group-sm acoes-dropdown mr-2">
+                    <button type="button" class="btn btn-info dropdown-toggle"
+                        [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('produtos')">
+                        <i class="fa-solid fa-boxes-stacked"></i> Produtos
+                    </button>
+                    <div class="dropdown-menu" [class.show]="menuAberto === 'produtos'">
+                        <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalRetirada()">
+                            <i class="fa-solid fa-box-open"></i> Retirar
+                        </button>
+                        <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalTroca()">
+                            <i class="fa-solid fa-right-left"></i> Troca
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Minutar Contrato -->
+                <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm mr-2"
+                    [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes">
+                    <i class="fa-solid fa-file-lines"></i> Minutar Contrato
+                </button>
+
+                <!-- Reversões -->
+                <div class="btn-group btn-group-sm acoes-dropdown">
+                    <button type="button" class="btn btn-danger dropdown-toggle"
+                        [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('reversoes')">
+                        <i class="fa-solid fa-rotate-left"></i> Reversões
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" [class.show]="menuAberto === 'reversoes'">
+                        <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalVincularDevolucao()">
+                            <i class="fa-solid fa-link"></i> Vincular Devolução
+                        </button>
+                        <button class="dropdown-item text-danger" type="button" (click)="menuAberto = null; encerrarContrato()">
+                            <i class="fa-solid fa-ban"></i> Cancelar Contrato
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card-body">
             <dl class="row">
                 <dt class="col-sm-3">Número do Contrato:</dt>
-                <dd class="col-sm-3">{{ selected.DocEntry }}</dd>
+                <dd class="col-sm-3">
+                    <app-sap-link-button
+                        [label]="selected.DocEntry"
+                        [sapRouterLink]="'/venda/venda-futura'"
+                        [queryParams]="{ id: selected.DocEntry }">
+                    </app-sap-link-button>
+                </dd>
                 <dt class="col-sm-3">Filial:</dt>
                 <dd class="col-sm-3">{{ selected.Bplname }}</dd>
 
                 <dt class="col-sm-3">Número do Pedido:</dt>
-                <dd class="col-sm-3">{{ selected.OrderDocNum }}</dd>
+                <dd class="col-sm-3">
+                    <app-sap-link-button
+                        [label]="selected.OrderDocNum"
+                        [sapRouterLink]="'/venda/pedidos-venda'"
+                        [queryParams]="{ id: selected.U_orderDocEntry }">
+                    </app-sap-link-button>
+                </dd>
                 <dt class="col-sm-3">Entry Pedido:</dt>
-                <dd class="col-sm-3">{{ selected.U_orderDocEntry }}</dd>
+                <dd class="col-sm-3">
+                    <app-sap-link-button
+                        [label]="selected.U_orderDocEntry"
+                        [sapRouterLink]="'/venda/pedidos-venda'"
+                        [queryParams]="{ id: selected.U_orderDocEntry }">
+                    </app-sap-link-button>
+                </dd>
 
                 <dt class="col-sm-3">Código do Cliente:</dt>
-                <dd class="col-sm-3">{{ selected.U_cardCode }}</dd>
+                <dd class="col-sm-3">
+                    <app-sap-link-button
+                        [label]="selected.U_cardCode"
+                        [sapRouterLink]="'/clientes/parceiro-negocio/' + selected.U_cardCode">
+                    </app-sap-link-button>
+                </dd>
                 <dt class="col-sm-3">Nome do Cliente:</dt>
-                <dd class="col-sm-3">{{ selected.U_cardName }}</dd>
+                <dd class="col-sm-3">
+                    <app-sap-link-button
+                        [label]="selected.U_cardName"
+                        [sapRouterLink]="'/clientes/parceiro-negocio/' + selected.U_cardCode">
+                    </app-sap-link-button>
+                </dd>
 
                 <dt class="col-sm-3">Vendedor:</dt>
                 <dd class="col-sm-9">{{ selected.SalesEmployeeName }}</dd>
@@ -244,6 +292,25 @@
                                 [definition]="documentDefinition"
                                 (actionOutput)="action($event)">
                             </app-table>
+                        </app-tab>
+
+                        <app-tab *ngIf="podeVerPendentesBaixa" tabTitle="Pendentes de Baixa">
+                            <div *ngIf="loadingPendentes" class="tab-loading">
+                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                                <p class="mt-2 text-muted small">Carregando pendências...</p>
+                            </div>
+                            <ng-container *ngIf="!loadingPendentes">
+                                <div *ngIf="pendentesBaixa.length === 0" class="text-center text-muted py-4">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <p>Nenhuma reclassificação pendente de baixa.</p>
+                                </div>
+                                <app-table
+                                    *ngIf="pendentesBaixa.length > 0"
+                                    [content]="pendentesBaixa"
+                                    [definition]="pendentesDefinition"
+                                    (actionOutput)="action($event)">
+                                </app-table>
+                            </ng-container>
                         </app-tab>
 
                     </app-tabs>

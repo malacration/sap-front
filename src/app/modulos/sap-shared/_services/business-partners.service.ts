@@ -5,7 +5,7 @@ import { ConfigService } from '../../../core/services/config.service';
 import { BusinessPartner } from '../../../sap/model/business-partner/business-partner';
 import { Page } from '../../../sap/model/page.model';
 import { SearchService } from '../../../sap/service/search.service';
-import { PedidoVenda } from '../../../sap/components/document/documento.statement.component';
+import { LinhasPedido, PedidoVenda } from '../../../sap/model/document/pedido-venda.model';
 import { ContaReceber } from '../../../sap/model/contas-receber.model';
 
 @Injectable({
@@ -42,6 +42,13 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     return this.hppCliente.post<BusinessPartner>(this.url+"/key/"+hashCode,pn)
   }
 
+  setLocalidadeEndereco(cardCode : string, addressName : string, localidade : number) : Observable<BusinessPartner>{
+    const params = localidade ? { localidade : localidade } : {}
+    return this.hppCliente
+      .put<BusinessPartner>(`${this.url}/${cardCode}/enderecos/${encodeURIComponent(addressName)}/localidade`, {}, { params })
+      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
+  }
+
   getByCurrentUser() : Observable<BusinessPartner>{
     return this.hppCliente
       .get<BusinessPartner>(this.url+"/cpf-cnpj")
@@ -71,7 +78,7 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
 
   getClientes(page: number, filter: any = undefined): Observable<Page<BusinessPartner>> {
     filter = Object.fromEntries(Object.entries(filter || {}).filter(([_, v]) => v != null && v !== ''));
-    return this.hppCliente.get<Page<BusinessPartner>>(this.url + "/cientes?page=" + page, { params: filter }).pipe(
+    return this.hppCliente.get<Page<BusinessPartner>>(this.url + "/cientes", { params: { ...filter, page } }).pipe(
       map((page) => {
         page.content = page.content.map((ff) => {
           const parceiroNegocio = Object.assign(new BusinessPartner(), ff);
@@ -82,8 +89,24 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     );
   }
 
-  getPedidodeVendaBP(CardCode: string): Observable<Array<PedidoVenda>> {
-    return this.hppCliente.get<Array<PedidoVenda>>(this.url + "/pedido-venda-parceiro", { params: { CardCode } });
+  getPedidodeVendaBP(CardCode: string, page = 0, filter: any = undefined): Observable<Page<PedidoVenda>> {
+    filter = Object.fromEntries(Object.entries(filter || {}).filter(([_, v]) => v != null && v !== ''));
+    return this.hppCliente
+      .get<Page<PedidoVenda>>(this.url + "/pedido-venda-parceiro", { params: { CardCode, page, size: 10, ...filter } })
+      .pipe(map((page) => {
+        page.content = page.content.map((it) => this.toPedidoVenda(it));
+        return page;
+      }));
+  }
+
+  getCotacoesBP(CardCode: string, page = 0, filter: any = undefined): Observable<Page<PedidoVenda>> {
+    filter = Object.fromEntries(Object.entries(filter || {}).filter(([_, v]) => v != null && v !== ''));
+    return this.hppCliente
+      .get<Page<PedidoVenda>>(this.url + "/cotacoes-parceiro", { params: { CardCode, page, size: 10, ...filter } })
+      .pipe(map((page) => {
+        page.content = page.content.map((it) => this.toPedidoVenda(it));
+        return page;
+      }));
   }
 
   getContasReceberBP(CardCode: string): Observable<Page<ContaReceber>> {
@@ -94,5 +117,14 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     return this.hppCliente.post<Page<ContaReceber>>(url, nextLink);
 }
 
+  private toPedidoVenda(it: any): PedidoVenda {
+    const pedido = Object.assign(new PedidoVenda(), it);
+    pedido.DocumentLines = (pedido.DocumentLines || []).map((linha) => {
+      const item = Object.assign(new LinhasPedido(), linha);
+      item.ItemDescription = item.ItemDescription || linha.Dscription || linha.dscription;
+      return item;
+    });
+    return pedido;
+  }
   
 }

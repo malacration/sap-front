@@ -23,6 +23,8 @@ export class ModalSelectComponent implements OnInit {
   loading = false
   @Input()
   resultadoBusca : Page<any> = new Page()
+  @Input()
+  uppercaseKeyword = false
   
   @Output()
   changePage = new EventEmitter<number>();
@@ -51,6 +53,10 @@ export class ModalSelectComponent implements OnInit {
     this.search.emit(this.keyWord)
   }
 
+  atualizaKeyWord(value : string){
+    this.keyWord = this.normalizaKeyWord(value)
+  }
+
   changePageFunction($event){
     this.changePage.emit($event)
   }
@@ -75,6 +81,15 @@ export class ModalSelectComponent implements OnInit {
 
   disableSearch(){
     return !this.keyWord || this.keyWord.length < 1
+  }
+
+  private normalizaKeyWord(value : string) : string {
+    if(!this.uppercaseKeyword)
+      return value || ''
+    return (value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
   }
   
   isSelected() : boolean{

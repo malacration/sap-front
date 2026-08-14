@@ -33,7 +33,7 @@ export class BranchSelectComponent implements OnInit {
     this.loading = true;
     this.service.get().subscribe(data => {
       this.branches = data;
-      this.opcoes = data.map(it => new Option(it, it.Bplname));
+      this.opcoes = data.map(it => new Option(it, it.Bplname || it.BPLName || String(it.Bplid || it.BPLID)));
       this.loading = false;
     })
   }  

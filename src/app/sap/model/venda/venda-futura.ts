@@ -48,6 +48,22 @@ export class VendaFutura {
     );
   }
 
+  routerLinkContrato(): RouteLink {
+    return new RouteLink(
+      this.DocEntry?.toString(),
+      '/venda/venda-futura',
+      { id: this.DocEntry }
+    );
+  }
+
+  routerLinkPedidoOrigem(): RouteLink {
+    return new RouteLink(
+      this.OrderDocNum || this.U_orderDocEntry?.toString() || '',
+      '/venda/pedidos-venda',
+      { id: this.U_orderDocEntry }
+    );
+  }
+
   isVerEntregas(): boolean {
     return !this.entregaLoading;
   }

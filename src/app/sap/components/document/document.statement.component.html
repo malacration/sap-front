@@ -68,8 +68,15 @@
                                 [options]="businesPartner.getAddressOptions('bo_ShipTo')">
                             </app-select>
                             <div *ngIf="tipoEnvio == 'ent'" class="mt-3">
-                                <label for="frete">Valor do Frete</label>
-                                <app-currency-input [(ngModel)]="frete" placeholder="Valor do Frete"></app-currency-input>
+                                <label for="frete">Valor do Frete (calculado automaticamente)</label>
+                                <input type="text" class="form-control text-center" disabled
+                                       [value]="frete | currency:'BRL':'symbol':'1.2-2':'pt-BR'">
+                                <small *ngIf="calculandoFrete" class="text-muted d-block mt-1">
+                                    <i class="fas fa-sync fa-spin"></i> Calculando frete...
+                                </small>
+                                <div *ngIf="freteErro" class="alert alert-danger mt-2 mb-0 py-2">
+                                    {{freteErro}}
+                                </div>
                             </div>
                         </div>
                     </div>
