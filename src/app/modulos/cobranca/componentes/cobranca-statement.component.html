@@ -27,7 +27,7 @@
             </select>
           </div>
           <div class="col-md-2 col-sm-6">
-            <app-branch-select [selected]="filialSelecionada?.Bplid" (selectedOut)="onFilialChange($event)"></app-branch-select>
+            <app-branch-select [multiple]="true" [selectedMany]="filiaisHerdadas" (selectedManyOut)="onFilialChange($event)"></app-branch-select>
           </div>
           <div class="col-md-3 col-sm-6">
             <app-sales-person-search [name]="'Vendedor'" (selected)="onVendedorChange($event)"></app-sales-person-search>
@@ -125,6 +125,7 @@
         [content]="titulos"
         [definition]="definition"
         [actionsLabel]="'Ações'"
+        [actionsFirst]="true"
         (actionOutput)="action($event)">
       </app-table>
 

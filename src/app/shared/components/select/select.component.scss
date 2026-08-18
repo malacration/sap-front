@@ -1,0 +1,34 @@
+// Modo multiple: o dropdown precisa de referencia posicional propria e ocupar a mesma
+// largura do controle, senao o menu vaza da coluna do formulario de filtro.
+.app-select-multi {
+    position: relative;
+
+    .app-select-multi-toggle {
+        // O caret do Bootstrap fica colado no texto sem isso, porque form-control nao
+        // reserva espaco a direita como o btn faz.
+        padding-right: 1.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .app-select-multi-menu {
+        // Acompanha a largura do controle, mas pode passar dela: numa coluna estreita de
+        // filtro, travar em 100% corta o texto da opcao exatamente onde os nomes se
+        // diferenciam (razao social longa e repetida em todas as filiais).
+        min-width: 100%;
+        width: max-content;
+        max-width: 22rem;
+        // Lista longa (filial, cobrador) nao pode empurrar o resto da tela.
+        max-height: 15rem;
+        overflow-y: auto;
+
+        label.dropdown-item {
+            cursor: pointer;
+            font-weight: normal;
+            // .dropdown-item do Bootstrap e nowrap - nome comprido tem que quebrar linha
+            // em vez de sumir na borda do menu.
+            white-space: normal;
+        }
+    }
+}

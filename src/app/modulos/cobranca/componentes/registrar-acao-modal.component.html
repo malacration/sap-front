@@ -4,14 +4,14 @@
       <div class="form-row">
         <div class="col-md-6">
           <label>Status</label>
-          <select class="form-control" name="status" [(ngModel)]="form.status">
+          <select class="form-control" name="status" [(ngModel)]="form.status" [disabled]="salvando">
             <option value="">Não alterar</option>
             <option *ngFor="let d of dominios.status" [value]="d.rotulo">{{ d.rotulo }}</option>
           </select>
         </div>
         <div class="col-md-6">
           <label>Ação de Cobrança</label>
-          <select class="form-control" name="acao" [(ngModel)]="form.acao">
+          <select class="form-control" name="acao" [(ngModel)]="form.acao" [disabled]="salvando">
             <option value="">Não alterar</option>
             <option *ngFor="let d of dominios.acao" [value]="d.rotulo">{{ d.rotulo }}</option>
           </select>
@@ -21,14 +21,14 @@
       <div class="form-row mt-2">
         <div class="col-md-6">
           <label>Situação</label>
-          <select class="form-control" name="situacao" [(ngModel)]="form.situacao">
+          <select class="form-control" name="situacao" [(ngModel)]="form.situacao" [disabled]="salvando">
             <option value="">Não alterar</option>
             <option *ngFor="let d of dominios.situacao" [value]="d.rotulo">{{ d.rotulo }}</option>
           </select>
         </div>
         <div class="col-md-6">
           <label>Ocorrência</label>
-          <select class="form-control" name="ocorrencia" [(ngModel)]="form.ocorrencia">
+          <select class="form-control" name="ocorrencia" [(ngModel)]="form.ocorrencia" [disabled]="salvando">
             <option value="">Nenhuma</option>
             <option *ngFor="let d of dominios.ocorrencia" [value]="d.rotulo">{{ d.rotulo }}</option>
           </select>
@@ -43,6 +43,7 @@
             name="observacao"
             rows="3"
             [(ngModel)]="form.observacao"
+            [disabled]="salvando"
             placeholder="Ex.: cliente confirmou pagamento via PIX ate sexta-feira"
           ></textarea>
         </div>
@@ -51,7 +52,7 @@
       <div class="form-row mt-2">
         <div class="col-md-4">
           <label>Data prometida (opcional)</label>
-          <input type="date" class="form-control" name="dataPromessa" [(ngModel)]="form.dataPromessa">
+          <input type="date" class="form-control" name="dataPromessa" [(ngModel)]="form.dataPromessa" [disabled]="salvando">
         </div>
         <div class="col-md-4">
           <label>Cobrador</label>
@@ -62,6 +63,7 @@
       <div class="text-right mt-3">
         <button type="button" class="btn btn-secondary mr-2" [disabled]="salvando" (click)="cancelar()">Cancelar</button>
         <button type="button" class="btn btn-primary" [disabled]="salvando" (click)="salvar()">
+          <i *ngIf="salvando" class="fas fa-sync-alt fa-spin"></i>
           {{ salvando ? 'Salvando...' : 'Salvar' }}
         </button>
       </div>

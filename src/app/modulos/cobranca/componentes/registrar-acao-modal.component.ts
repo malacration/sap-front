@@ -72,12 +72,20 @@ export class RegistrarAcaoModalComponent {
 
   get tituloModal(): string {
     if (this.somenteHistorico) {
-      return `Histórico - ${this.titulos[0]?.CardName ?? ''}`;
+      return `Histórico - ${this.tituloIdentificado}`;
     }
     if (this.isUnico()) {
-      return `Registrar cobrança - ${this.titulos[0]?.CardName ?? ''}`;
+      return `Registrar cobrança - ${this.tituloIdentificado}`;
     }
     return `Aplicar em lote (${this.titulos.length} parcelas)`;
+  }
+
+  private get tituloIdentificado(): string {
+    const titulo = this.titulos[0];
+    if (!titulo) {
+      return '';
+    }
+    return [titulo.identificacao, titulo.CardName].filter((parte) => !!parte).join(' - ');
   }
 
   podeSalvar(): boolean {

@@ -3,18 +3,22 @@
     <table class="table table-striped table-bordered">
       <thead class="thead-light">
         <tr>
+          <th *ngIf="hasAction() && actionsFirst">{{ actionsLabel }}</th>
           <th *ngFor="let def of definition" scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
-            
-            {{def.label}} 
+
+            {{def.label}}
             <button *ngIf="isEditable(def)" class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="atualizaColuna(def)">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
           </th>
-          <th *ngIf="hasAction()">{{ actionsLabel }}</th>
+          <th *ngIf="hasAction() && !actionsFirst">{{ actionsLabel }}</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of content">
+          <ng-container *ngIf="actionsFirst"
+            [ngTemplateOutlet]="celulaDeAcoes" [ngTemplateOutletContext]="{ $implicit: item }">
+          </ng-container>
           <td *ngFor="let def of definition" scope="col" [ngClass]="getCellClass(item, def)">
             <div *ngIf="renderContent(item, def)" [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
             <div *ngIf="isRouterLink(item,def)">
@@ -26,7 +30,7 @@
             </div>
             <div *ngIf="isEditable(def)">
               <input *ngIf="isPercent(def)"
-                [attr.size]="getInputSize(item, def)" 
+                [attr.size]="getInputSize(item, def)"
                 class="table-input"
                 app-percentage
                 type="text"
@@ -38,7 +42,7 @@
                 app-currency
                 type="text"
                 [formControl]="formControlFactory(item,def)"/>
-              
+
               <input *ngIf="isNormalEditable(def)"
                 [attr.size]="getInputSize(item, def)"
                 class="table-input"
@@ -47,17 +51,26 @@
                 [formControl]="formControlFactory(item,def)" />
             </div>
           </td>
-          <td *ngIf="item.getActions">
-            <div>
-              <app-action class="app-action"
-                *ngFor="let action of item.getActions(); trackBy: trackByFn"
-                [action]="action"
-                (actionOutput)="evento($event)">
-              </app-action>
-            </div>
-          </td>
+          <ng-container *ngIf="!actionsFirst"
+            [ngTemplateOutlet]="celulaDeAcoes" [ngTemplateOutletContext]="{ $implicit: item }">
+          </ng-container>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- A celula existe sempre que o cabecalho existe (hasAction() olha a lista inteira): linha sem
+     getActions rende <td> vazio em vez de nenhum. Sem isso, com actionsFirst, a linha inteira
+     escorregava uma coluna pra esquerda e todo valor aparecia sob o cabecalho errado. -->
+<ng-template #celulaDeAcoes let-item>
+  <td *ngIf="hasAction()">
+    <div *ngIf="item.getActions">
+      <app-action class="app-action"
+        *ngFor="let action of item.getActions(); trackBy: trackByFn"
+        [action]="action"
+        (actionOutput)="evento($event)">
+      </app-action>
+    </div>
+  </td>
+</ng-template>

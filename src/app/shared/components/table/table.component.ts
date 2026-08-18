@@ -27,6 +27,12 @@ export class TableComponent implements OnInit {
   @Input()
   actionsLabel : string = ''
 
+  // Tabela larga (cobranca tem 18 colunas) empurra a coluna de acoes pra fora da area
+  // visivel: o usuario tem que rolar ate o fim pra achar o botao de cada linha. Com isso
+  // ligado a coluna vai pro inicio, junto do scroll onde a linha comeca.
+  @Input()
+  actionsFirst : boolean = false
+
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 

@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Subject, forkJoin, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../../shared/service/auth.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { Column } from '../../../shared/components/table/column.model';
@@ -33,9 +34,14 @@ export class CobrancaStatementComponent implements OnInit {
 
   dominios: CobrancaDominios = { status: [], acao: [], situacao: [], ocorrencia: [] };
 
-  filialSelecionada: Branch | null = null;
+  filiaisSelecionadas: Branch[] = [];
   clienteSelecionado: any | null = null;
   vendedorSelecionado: SalesPerson | null = null;
+
+  // Referencia estavel de proposito: o app-select zera a selecao a cada nova referencia
+  // recebida, entao isso so pode trocar quando a intencao e mesmo redefinir o filtro
+  // (drill-down do dashboard ou "Limpar"), nunca a cada change detection.
+  filiaisHerdadas: Array<string | number> = [];
 
   filtroTipo = '';
   filtroStatus = '';
@@ -50,6 +56,8 @@ export class CobrancaStatementComponent implements OnInit {
   filtroPromessaVencidaAte = '';
   vendedorHerdado: number | null = null;
   veioDoDashboard = false;
+
+  private readonly filtroSolicitado = new Subject<void>();
 
   constructor(
     private auth: AuthService,
@@ -66,6 +74,25 @@ export class CobrancaStatementComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // switchMap: cada filial marcada dispara um filtrar(), e o menu fica aberto de propósito,
+    // então 4 filiais = 4 requisições em voo. Sem cancelar, quem manda no resultado é a última
+    // RESPOSTA e não a última requisição - dava pra ficar com as linhas de uma filial só na
+    // tela com todos os checkboxes marcados. Precisa vir antes do queryParams, que já filtra.
+    this.filtroSolicitado.pipe(
+      switchMap(() => {
+        this.loading = true;
+        this.paginaAtual = 0;
+        return this.service.listar({ ...this.getFiltro(), pagina: 0, tamanho: this.pageSize })
+          // catchError dentro do switchMap: se propagar, mata o Subject e a tela nunca mais
+          // filtra. O erro em si o interceptor global já notifica.
+          .pipe(catchError(() => of([] as CobrancaTitulo[])));
+      })
+    ).subscribe((titulos) => {
+      this.titulos = titulos;
+      this.temMais = titulos.length === this.pageSize;
+      this.loading = false;
+    });
+
     forkJoin({
       status: this.service.dominios('STATUS'),
       acao: this.service.dominios('ACAO'),
@@ -73,6 +100,10 @@ export class CobrancaStatementComponent implements OnInit {
       ocorrencia: this.service.dominios('OCORRENCIA'),
     }).subscribe((dominios) => {
       this.dominios = dominios;
+    });
+
+    this.service.cobradores().subscribe((cobradores) => {
+      this.cobradoresDisponiveis = cobradores;
     });
 
     this.route.queryParams.subscribe((params) => {
@@ -83,8 +114,11 @@ export class CobrancaStatementComponent implements OnInit {
 
   filtrosHerdados(): string[] {
     const partes: string[] = [];
-    if (this.filialSelecionada?.Bplid != null) {
-      partes.push(`Filial ${this.filialSelecionada.Bplid}`);
+    const filiais = this.idsDasFiliais();
+    if (filiais.length === 1) {
+      partes.push(`Filial ${filiais[0]}`);
+    } else if (filiais.length > 1) {
+      partes.push(`Filiais ${filiais.join(', ')}`);
     }
     if (this.vendedorHerdado != null) {
       partes.push(`Vendedor ${this.vendedorHerdado}`);
@@ -108,18 +142,7 @@ export class CobrancaStatementComponent implements OnInit {
   }
 
   filtrar(): void {
-    this.loading = true;
-    this.paginaAtual = 0;
-    this.service.listar({ ...this.getFiltro(), pagina: 0, tamanho: this.pageSize }).subscribe({
-      next: (titulos) => {
-        this.titulos = titulos;
-        this.temMais = titulos.length === this.pageSize;
-        this.loading = false;
-      },
-      complete: () => {
-        this.loading = false;
-      }
-    });
+    this.filtroSolicitado.next();
   }
 
   carregarMais(): void {
@@ -132,6 +155,11 @@ export class CobrancaStatementComponent implements OnInit {
         this.temMais = titulos.length === this.pageSize;
         this.carregandoMais = false;
       },
+      // Observable com erro nao emite complete: sem isso o botao ficava "Carregando..."
+      // desabilitado pra sempre depois de uma falha.
+      error: () => {
+        this.carregandoMais = false;
+      },
       complete: () => {
         this.carregandoMais = false;
       }
@@ -139,7 +167,8 @@ export class CobrancaStatementComponent implements OnInit {
   }
 
   limparFiltros(): void {
-    this.filialSelecionada = null;
+    this.filiaisSelecionadas = [];
+    this.filiaisHerdadas = [];
     this.clienteSelecionado = null;
     this.vendedorSelecionado = null;
     this.filtroTipo = '';
@@ -157,8 +186,8 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtrar();
   }
 
-  onFilialChange(branch: Branch): void {
-    this.filialSelecionada = branch ?? null;
+  onFilialChange(branches: Branch[]): void {
+    this.filiaisSelecionadas = branches ?? [];
     this.filtrar();
   }
 
@@ -177,10 +206,9 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtrar();
   }
 
-  get cobradoresDisponiveis(): string[] {
-    const cobradores = this.titulos.map((t) => t.U_Cobrador).filter((c) => !!c);
-    return Array.from(new Set(cobradores)).sort();
-  }
+  // Carregado do backend no ngOnInit. Antes era derivado de `titulos`, o que era circular:
+  // só dava pra filtrar por um cobrador cujos títulos já estivessem na página carregada.
+  cobradoresDisponiveis: string[] = [];
 
   get selecionados(): CobrancaTitulo[] {
     return this.titulos.filter((t) => t.selecionado);
@@ -227,7 +255,8 @@ export class CobrancaStatementComponent implements OnInit {
     if (params.filial) {
       const filial = new Branch();
       filial.Bplid = params.filial;
-      this.filialSelecionada = filial;
+      this.filiaisSelecionadas = [filial];
+      this.filiaisHerdadas = [params.filial];
     }
     if (params.vendedor) {
       this.vendedorHerdado = Number(params.vendedor);
@@ -254,15 +283,28 @@ export class CobrancaStatementComponent implements OnInit {
     }
   }
 
+  private idsDasFiliais(): number[] {
+    return this.filiaisSelecionadas
+      .map((filial) => filial?.Bplid ?? filial?.BPLID)
+      // Bplid é string e o SAP devolve string vazia pra campo não preenchido: `Number('')` é 0,
+      // que passa por !isNaN e vira filial=0 - filial que não existe, resultado vazio em silêncio.
+      .filter((id) => id != null && `${id}`.trim() !== '')
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id));
+  }
+
   private getFiltro(): CobrancaFiltro {
     return {
-      filial: this.filialSelecionada?.Bplid != null ? Number(this.filialSelecionada.Bplid) : null,
+      filial: this.idsDasFiliais(),
       cliente: this.clienteSelecionado?.CardCode ?? null,
       vendedor: this.vendedorSelecionado?.SalesEmployeeCode != null
         ? Number(this.vendedorSelecionado.SalesEmployeeCode)
         : this.vendedorHerdado,
       tipo: this.filtroTipo || null,
       status: this.filtroStatus || null,
+      // "1 - NÃO INICIADO" é o rótulo que a tela mostra pra U_Status vazio: sem avisar o
+      // backend, esse filtro procura o texto literal na UDT e não acha nada.
+      incluirSemStatus: this.filtroStatus === CobrancaTitulo.STATUS_NAO_INICIADO ? true : null,
       situacao: this.filtroSituacao || null,
       situacaoSap: this.filtroSituacaoSap || null,
       cobrador: this.filtroCobrador || null,
