@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { EMPTY, Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { AlertService } from '../shared/service/alert.service';
+import { clearTokens, isKeycloakSession } from '../core/keycloak';
 
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private alertService : AlertService) {}
+  constructor(private alertService : AlertService, private router : Router) {}
 
   blobToString(b) {
     var u, x;
@@ -25,6 +27,14 @@ export class ErrorInterceptor implements HttpInterceptor {
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
+        // Sessao do SSO acabou (refresh token expirado/revogado): sem token
+        // valido nao ha o que renovar, entao devolve o usuario ao login — que
+        // em modo Keycloak redireciona sozinho para a tela do KC.
+        if (error.status === 401 && isKeycloakSession()) {
+          clearTokens();
+          this.router.navigate(['/login']);
+          return throwError(error);
+        }
         if (error.status === 403) {
           const msg = (typeof error.error === 'string' && error.error.trim())
             ? error.error

@@ -63,6 +63,13 @@ export class ItensComponent implements OnInit {
     this.changeItens.emit(this.itens)
   }
 
+  //o [(ngModel)] da quantidade altera o item no lugar, entao o pai nao tem
+  //como perceber sozinho - sem esse emit o frete (que depende da quantidade
+  //total) ficava parado no valor calculado quando o item foi adicionado
+  quantidadeChange(){
+    this.changeItens.emit(this.itens)
+  }
+
   remover(item){
     var index = this.itens.indexOf(item);
     if (index !== -1) {
