@@ -28,6 +28,11 @@ export class RegistrarAcaoModalComponent {
   @Output()
   salvo = new EventEmitter<void>();
 
+  // Saída própria: onSalvo() na tela limpa a seleção de lote (certo depois de registrar ação,
+  // errado depois de apagar uma anotação - o cobrador perderia as 12 parcelas que marcou).
+  @Output()
+  removido = new EventEmitter<void>();
+
   @ViewChild('modalRef', { static: true })
   modal: ModalComponent;
 
@@ -36,6 +41,8 @@ export class RegistrarAcaoModalComponent {
   carregandoHistorico = false;
   salvando = false;
   somenteHistorico = false;
+  // LineId em remoção: segura o botão da linha clicada sem travar as outras.
+  removendo: number | null = null;
 
   form = this.formVazio();
 
@@ -47,6 +54,7 @@ export class RegistrarAcaoModalComponent {
     this.titulos = titulos;
     this.form = this.formVazio();
     this.historico = [];
+    this.marcaNovaAbertura();
     if (this.isUnico()) {
       this.carregarHistorico();
     }
@@ -58,6 +66,7 @@ export class RegistrarAcaoModalComponent {
     this.titulos = [titulo];
     this.form = this.formVazio();
     this.historico = [];
+    this.marcaNovaAbertura();
     this.carregarHistorico();
     this.modal.openModal();
   }
@@ -72,12 +81,68 @@ export class RegistrarAcaoModalComponent {
 
   get tituloModal(): string {
     if (this.somenteHistorico) {
-      return `Histórico - ${this.titulos[0]?.CardName ?? ''}`;
+      return `Histórico - ${this.tituloIdentificado}`;
     }
     if (this.isUnico()) {
-      return `Registrar cobrança - ${this.titulos[0]?.CardName ?? ''}`;
+      return `Registrar cobrança - ${this.tituloIdentificado}`;
     }
     return `Aplicar em lote (${this.titulos.length} parcelas)`;
+  }
+
+  private get tituloIdentificado(): string {
+    const titulo = this.titulos[0];
+    if (!titulo) {
+      return '';
+    }
+    return [titulo.identificacao, titulo.CardName].filter((parte) => !!parte).join(' - ');
+  }
+
+  // A regra de autoria mora no backend (U_UsuarioId); aqui é só não oferecer um botão que vai
+  // falhar com 403. LineId != null e não !!LineId: o campo é numérico e nullable no backend, e
+  // um id 0 desabilitaria o botão em silêncio.
+  podeRemover(historico: CobrancaHistorico): boolean {
+    return historico.LineId != null && historico.PodeRemover;
+  }
+
+  // Uma remoção por vez: os botões compartilham o estado de envio, e duas respostas concorrentes
+  // repintariam a lista na ordem em que voltassem.
+  get removendoAlguma(): boolean {
+    return this.removendo != null;
+  }
+
+  remover(historico: CobrancaHistorico): void {
+    const titulo = this.titulos[0];
+    // removendoAlguma checado aqui e de novo depois da confirmação: entre o clique e a resposta do
+    // usuário nada está marcado ainda, então o [disabled] do botão não protege esse intervalo.
+    if (!titulo || !this.podeRemover(historico) || this.removendoAlguma) {
+      return;
+    }
+
+    this.alertService
+      .confirm(`Remover esta ação de ${historico.dataFormatada} do histórico? Não tem como desfazer.`)
+      .then((resultado) => {
+        if (!resultado.isConfirmed || this.removendoAlguma) {
+          return;
+        }
+        this.removendo = historico.LineId;
+        const aberturaNaSaida = this.abertura;
+        this.service.removerHistorico(titulo.Tipo, titulo.DocEntry, titulo.InstlmntID, historico.LineId).subscribe({
+          next: (restante) => {
+            if (this.abertura === aberturaNaSaida) {
+              this.removendo = null;
+              this.historico = restante;
+            }
+            // A linha saiu do SAP mesmo se o modal já foi fechado, e o cabeçalho do registro
+            // acompanha ela: a grade atrás precisa recarregar de qualquer jeito.
+            this.removido.emit();
+          },
+          error: () => {
+            if (this.abertura === aberturaNaSaida) {
+              this.removendo = null;
+            }
+          }
+        });
+      });
   }
 
   podeSalvar(): boolean {
@@ -85,12 +150,18 @@ export class RegistrarAcaoModalComponent {
   }
 
   salvar(): void {
+    // Já tem envio em voo: nada de segunda ação igual. O [disabled] do botão não cobre o caso de o
+    // modal ter sido fechado e reaberto no meio do caminho.
+    if (this.salvando) {
+      return;
+    }
     if (!this.podeSalvar()) {
       this.alertService.error('Informe uma observação ou selecione uma ocorrência do que foi feito.');
       return;
     }
 
     this.salvando = true;
+    const aberturaNaSaida = this.abertura;
     const payload: CobrancaAcaoPayload = {
       status: this.form.status || null,
       acao: this.form.acao || null,
@@ -107,7 +178,12 @@ export class RegistrarAcaoModalComponent {
     acao$.subscribe({
       next: () => {
         this.salvando = false;
-        this.modal.closeModal();
+        // Fecha só o modal que mandou a ação: se o usuário já fechou e abriu outro título, fechar
+        // agora derrubaria a tela em que ele está trabalhando.
+        if (this.abertura === aberturaNaSaida) {
+          this.modal.closeModal();
+        }
+        // A ação foi gravada de qualquer jeito - a grade atrás precisa recarregar.
         this.salvo.emit();
       },
       error: () => {
@@ -137,10 +213,36 @@ export class RegistrarAcaoModalComponent {
         this.historico = historico;
         this.carregandoHistorico = false;
       },
+      // Observable com erro não emite complete: sem isso o modal fica em "Carregando..." pra
+      // sempre quando o histórico falha. O erro em si o interceptor global já notifica.
+      error: () => {
+        this.carregandoHistorico = false;
+      },
       complete: () => {
         this.carregandoHistorico = false;
       }
     });
+  }
+
+  /**
+   * Cada abertura ganha um número. Resposta que chega depois de fechar (ESC, backdrop ou o × do
+   * modal, que não passam por aqui) é descartada pelo número - comparar só o código do título não
+   * distinguia duas aberturas da MESMA parcela, e o histórico recém-carregado era repintado com a
+   * foto antiga.
+   */
+  private abertura = 0;
+
+  /**
+   * `salvando` e `removendo` NÃO são zerados aqui de propósito: enquanto a requisição está em voo,
+   * reabrir o modal não pode reabilitar o botão, senão o cobrador registra a mesma ação duas vezes
+   * (fecha no × com o POST em voo, reabre, salva de novo). Quem limpa esses dois é a resposta, que
+   * o HttpClient sempre entrega - no sucesso ou no erro.
+   *
+   * `carregandoHistorico` é diferente: cada abertura dispara um GET novo, então ele é reiniciado.
+   */
+  private marcaNovaAbertura(): void {
+    this.abertura++;
+    this.carregandoHistorico = false;
   }
 
   private formVazio() {

@@ -9,17 +9,22 @@ import { CobrancaHistorico } from '../../model/cobranca/cobranca-historico';
 import { CobrancaDashboard, CobrancaMes } from '../../model/cobranca/cobranca-dashboard';
 
 export interface CobrancaFiltro {
-  filial?: number | null;
+  // Multi-selecao: vai como filial=6&filial=7 e o backend recebe List<Int>.
+  filial?: number[] | null;
   vendedor?: number | null;
   cliente?: string | null;
   data?: string | null;
-  diasAtrasoMin?: number | null;
   status?: string | null;
+  // Diz ao backend que o status escolhido também casa com U_Status vazio.
+  incluirSemStatus?: boolean | null;
   cobrador?: string | null;
   situacao?: string | null;
   situacaoSap?: string | null;
   vencimentoDe?: string | null;
   vencimentoAte?: string | null;
+  // Meses de lançamento (YYYY-MM). Multi-seleção: vai repetido como lancamentoMes=2026-07&
+  // lancamentoMes=2026-08 e o backend recebe List<String>.
+  lancamentoMes?: string[] | null;
   semAcompanhamento?: boolean | null;
   promessaVencidaAte?: string | null;
   tipo?: string | null;
@@ -79,6 +84,13 @@ export class CobrancaService {
       .pipe(map((lista) => (lista ?? []).map((item) => Object.assign(new CobrancaHistorico(), item))));
   }
 
+  // Devolve o histórico que sobrou: quem removeu já vê a linha sumir sem uma segunda requisição.
+  removerHistorico(tipo: string, docEntry: number, instlmntId: number, lineId: number): Observable<CobrancaHistorico[]> {
+    return this.http
+      .delete<any[]>(`${this.url}/titulos/${tipo}/${docEntry}/${instlmntId}/historico/${lineId}`)
+      .pipe(map((lista) => (lista ?? []).map((item) => Object.assign(new CobrancaHistorico(), item))));
+  }
+
   registrarAcao(tipo: string, docEntry: number, instlmntId: number, payload: CobrancaAcaoPayload): Observable<any> {
     return this.http.post(`${this.url}/titulos/${tipo}/${docEntry}/${instlmntId}/acao`, payload);
   }
@@ -98,6 +110,14 @@ export class CobrancaService {
     return this.http
       .get<any[]>(`${this.url}/dashboard/evolucao`, { params })
       .pipe(map((lista) => (lista ?? []).map((item) => Object.assign(new CobrancaMes(), item))));
+  }
+
+  // Vem do banco, não das linhas carregadas: a lista precisa incluir cobrador cujos títulos
+  // não estão na página atual, senão não dá pra filtrar por ele.
+  cobradores(): Observable<string[]> {
+    return this.http
+      .get<string[]>(`${this.url}/cobradores`)
+      .pipe(map((lista) => lista ?? []));
   }
 
   dominios(tipo?: string): Observable<CobrancaDominio[]> {
@@ -120,6 +140,7 @@ export class CobrancaService {
       new Column('Parcela', 'InstlmntID'),
       new Column('Código', 'CardCode'),
       new Column('Cliente', 'CardName'),
+      new Column('Telefone', 'telefoneFormatado'),
       new Column('Data Lançamento', 'docDateFormatado'),
       new Column('Vencimento', 'vencimentoFormatado'),
       new Column('Saldo', 'saldoCurrency'),
@@ -136,6 +157,16 @@ export class CobrancaService {
     let params = new HttpParams();
     Object.keys(filtro).forEach((chave) => {
       const valor = (filtro as any)[chave];
+      if (Array.isArray(valor)) {
+        // Repetido (chave=a&chave=b) em vez de "a,b": e o formato que o Spring lê como
+        // List<T> sem depender do split por vírgula do ConversionService.
+        valor
+          .filter((item) => item !== null && item !== undefined && item !== '')
+          .forEach((item) => {
+            params = params.append(chave, item.toString());
+          });
+        return;
+      }
       if (valor !== null && valor !== undefined && valor !== '') {
         params = params.set(chave, valor.toString());
       }

@@ -1,7 +1,9 @@
-<app-select 
+<app-select
     [options]="opcoes"
     [label]="'Filial'"
+    [multiple]="multiple"
     [initialSelect]="selected"
+    [initialSelectMany]="filiaisIniciais"
     (selectedOut)="onChange($event)"
     [loading]="loading">
 </app-select>

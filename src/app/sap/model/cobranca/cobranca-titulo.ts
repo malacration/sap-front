@@ -4,6 +4,11 @@ import { Action, ActionReturn } from '../../../shared/components/action/action.m
 import { ReplaceFilial } from '../../../utils/replaceFilial';
 
 export class CobrancaTitulo {
+  // Título nunca trabalhado não tem registro na UDT, então U_Status vem vazio - este é o
+  // rótulo que a tela exibe no lugar. É um valor de domínio real também (o seeder cria
+  // "1 - NÃO INICIADO"), por isso filtrar por ele tem que casar os dois casos.
+  static readonly STATUS_NAO_INICIADO = '1 - NÃO INICIADO';
+
   Tipo: string;
   DocEntry: number;
   DocNum: number;
@@ -13,6 +18,7 @@ export class CobrancaTitulo {
   BPLName: string;
   CardCode: string;
   CardName: string;
+  Telefone: string;
   DocDate: string;
   DocTotal: number;
   SlpCode: number;
@@ -60,6 +66,14 @@ export class CobrancaTitulo {
     return this.Tipo === 'AD' ? 'Adiantamento' : 'Nota Fiscal';
   }
 
+  // Identifica a parcela sem depender do cliente: o mesmo cliente costuma ter mais de um
+  // título em aberto (NF e adiantamento, ou parcelas diferentes), e só o nome dele não diz
+  // em qual linha a ação está sendo registrada.
+  get identificacao(): string {
+    const documento = this.Tipo === 'AD' ? 'Adiantamento' : 'NF';
+    return `${documento} ${this.serieFormatada} parcela ${this.InstlmntID}`;
+  }
+
   get filialFormatada(): string {
     const nome = ReplaceFilial.limparFilial(this.BPLName);
     if (nome) {
@@ -84,6 +98,24 @@ export class CobrancaTitulo {
     return this.formatarData(this.U_DataPromessa);
   }
 
+  get telefoneFormatado(): string {
+    // `from` é Object.assign de JSON cru do SAP, então o tipo `string` é ficção de
+    // compilação - telefone numérico chegaria como number e o .replace estouraria aqui
+    // dentro, derrubando a renderização de toda a tabela, não só desta célula.
+    const texto = this.Telefone == null ? '' : `${this.Telefone}`;
+    if (!texto.trim()) {
+      return '—';
+    }
+    const digitos = texto.replace(/\D/g, '');
+    if (digitos.length === 11) {
+      return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+    }
+    if (digitos.length === 10) {
+      return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+    }
+    return texto;
+  }
+
   get insTotalCurrency(): string {
     return formatCurrency(this.InsTotal ?? 0, 'pt', 'R$');
   }
@@ -101,7 +133,7 @@ export class CobrancaTitulo {
   }
 
   get statusFormatado(): string {
-    return this.U_Status || '1 - NÃO INICIADO';
+    return this.U_Status || CobrancaTitulo.STATUS_NAO_INICIADO;
   }
 
   get cobradorFormatado(): string {
