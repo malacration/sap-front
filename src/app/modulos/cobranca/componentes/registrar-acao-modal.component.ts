@@ -54,7 +54,7 @@ export class RegistrarAcaoModalComponent {
     this.titulos = titulos;
     this.form = this.formVazio();
     this.historico = [];
-    this.zeraEstadoDeEnvio();
+    this.marcaNovaAbertura();
     if (this.isUnico()) {
       this.carregarHistorico();
     }
@@ -66,7 +66,7 @@ export class RegistrarAcaoModalComponent {
     this.titulos = [titulo];
     this.form = this.formVazio();
     this.historico = [];
-    this.zeraEstadoDeEnvio();
+    this.marcaNovaAbertura();
     this.carregarHistorico();
     this.modal.openModal();
   }
@@ -150,12 +150,18 @@ export class RegistrarAcaoModalComponent {
   }
 
   salvar(): void {
+    // Já tem envio em voo: nada de segunda ação igual. O [disabled] do botão não cobre o caso de o
+    // modal ter sido fechado e reaberto no meio do caminho.
+    if (this.salvando) {
+      return;
+    }
     if (!this.podeSalvar()) {
       this.alertService.error('Informe uma observação ou selecione uma ocorrência do que foi feito.');
       return;
     }
 
     this.salvando = true;
+    const aberturaNaSaida = this.abertura;
     const payload: CobrancaAcaoPayload = {
       status: this.form.status || null,
       acao: this.form.acao || null,
@@ -172,7 +178,12 @@ export class RegistrarAcaoModalComponent {
     acao$.subscribe({
       next: () => {
         this.salvando = false;
-        this.modal.closeModal();
+        // Fecha só o modal que mandou a ação: se o usuário já fechou e abriu outro título, fechar
+        // agora derrubaria a tela em que ele está trabalhando.
+        if (this.abertura === aberturaNaSaida) {
+          this.modal.closeModal();
+        }
+        // A ação foi gravada de qualquer jeito - a grade atrás precisa recarregar.
         this.salvo.emit();
       },
       error: () => {
@@ -214,17 +225,23 @@ export class RegistrarAcaoModalComponent {
   }
 
   /**
-   * Cada abertura ganha um número. Resposta de remoção que chega depois de fechar (ESC, backdrop
-   * ou o × do modal, que não passam por aqui) é descartada pelo número - comparar só o código do
-   * título não distinguia duas aberturas da MESMA parcela, e o histórico recém-carregado era
-   * repintado com a foto antiga.
+   * Cada abertura ganha um número. Resposta que chega depois de fechar (ESC, backdrop ou o × do
+   * modal, que não passam por aqui) é descartada pelo número - comparar só o código do título não
+   * distinguia duas aberturas da MESMA parcela, e o histórico recém-carregado era repintado com a
+   * foto antiga.
    */
   private abertura = 0;
 
-  private zeraEstadoDeEnvio(): void {
+  /**
+   * `salvando` e `removendo` NÃO são zerados aqui de propósito: enquanto a requisição está em voo,
+   * reabrir o modal não pode reabilitar o botão, senão o cobrador registra a mesma ação duas vezes
+   * (fecha no × com o POST em voo, reabre, salva de novo). Quem limpa esses dois é a resposta, que
+   * o HttpClient sempre entrega - no sucesso ou no erro.
+   *
+   * `carregandoHistorico` é diferente: cada abertura dispara um GET novo, então ele é reiniciado.
+   */
+  private marcaNovaAbertura(): void {
     this.abertura++;
-    this.removendo = null;
-    this.salvando = false;
     this.carregandoHistorico = false;
   }
 

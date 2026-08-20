@@ -189,6 +189,15 @@ export class CobrancaStatementComponent implements OnInit {
   }
 
   limparFiltros(): void {
+    this.zerarFiltros();
+    this.filtrar();
+  }
+
+  /**
+   * Volta a tela ao estado inicial. Separado do limparFiltros porque "Minhas cobranças" também
+   * usa: lá o reset acontece antes de marcar o cobrador.
+   */
+  private zerarFiltros(): void {
     this.filiaisSelecionadas = [];
     this.filiaisHerdadas = [];
     this.clienteSelecionado = null;
@@ -206,7 +215,6 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtroPromessaVencidaAte = '';
     this.vendedorHerdado = null;
     this.veioDoDashboard = false;
-    this.filtrar();
   }
 
   onMesesChange(meses: string[]): void {
@@ -237,8 +245,21 @@ export class CobrancaStatementComponent implements OnInit {
     this.filtrar();
   }
 
+  /**
+   * Atalho pra "só o que é meu": ligar limpa todo o resto, senão o filtro anterior (filial, mês,
+   * status da tela de onde o cobrador veio) continua escondendo parte das cobranças dele.
+   *
+   * Desligar só solta o cobrador e deixa os outros filtros como estão - quem marcou algo depois
+   * de ligar não perde o que escolheu.
+   */
   minhasCobrancas(): void {
-    this.filtroCobrador = this.filtroCobrador === this.nomeUsuario ? '' : this.nomeUsuario;
+    if (this.filtroCobrador === this.nomeUsuario) {
+      this.filtroCobrador = '';
+      this.filtrar();
+      return;
+    }
+    this.zerarFiltros();
+    this.filtroCobrador = this.nomeUsuario;
     this.filtrar();
   }
 
