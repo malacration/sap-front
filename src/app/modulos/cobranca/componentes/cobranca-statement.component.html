@@ -60,16 +60,23 @@
             </select>
           </div>
           <div class="col-md-2 col-sm-6">
-            <label>Dias em atraso (mín.)</label>
-            <input type="number" min="0" class="form-control" name="filtroDiasAtrasoMin" [(ngModel)]="filtroDiasAtrasoMin">
+            <app-select
+              [label]="'Lançamento (mês)'"
+              [multiple]="true"
+              [grupos]="mesesPorAno"
+              [initialSelectMany]="filtroLancamentoMeses"
+              [rotuloSemSelecao]="'Todos'"
+              [nomeNoPlural]="'meses'"
+              (selectedOut)="onMesesChange($event)">
+            </app-select>
           </div>
           <div class="col-md-2 col-sm-6">
             <label>Vencimento de</label>
-            <input type="date" class="form-control" name="filtroVencimentoDe" [(ngModel)]="filtroVencimentoDe">
+            <input type="date" class="form-control" name="filtroVencimentoDe" [(ngModel)]="filtroVencimentoDe" (ngModelChange)="onVencimentoChange()">
           </div>
           <div class="col-md-2 col-sm-6">
             <label>Vencimento até</label>
-            <input type="date" class="form-control" name="filtroVencimentoAte" [(ngModel)]="filtroVencimentoAte">
+            <input type="date" class="form-control" name="filtroVencimentoAte" [(ngModel)]="filtroVencimentoAte" (ngModelChange)="onVencimentoChange()">
           </div>
           <div class="col-md-2 col-sm-6">
             <label>
@@ -117,7 +124,7 @@
       </div>
 
       <div *ngIf="!loading && titulos.length === 0" class="text-muted">
-        Nenhuma parcela em atraso encontrada para os filtros selecionados.
+        Nenhum título encontrado para os filtros selecionados.
       </div>
 
       <app-table
@@ -144,6 +151,7 @@
   <app-registrar-acao-modal
     [dominios]="dominios"
     [nomeUsuario]="nomeUsuario"
-    (salvo)="onSalvo()">
+    (salvo)="onSalvo()"
+    (removido)="onHistoricoRemovido()">
   </app-registrar-acao-modal>
 </section>

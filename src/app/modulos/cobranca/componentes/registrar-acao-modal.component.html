@@ -81,13 +81,25 @@
         <div *ngFor="let h of historicoExibido">
           <i class="fas fa-comment-dots bg-info"></i>
           <div class="timeline-item">
-            <span class="time"><i class="far fa-clock"></i> {{ h.dataFormatada }}</span>
+            <span class="time">
+              <button
+                *ngIf="podeRemover(h)"
+                type="button"
+                class="btn btn-link btn-sm text-danger p-0 mr-2"
+                title="Remover esta ação do histórico"
+                [disabled]="removendoAlguma"
+                (click)="remover(h)">
+                <i class="fas" [ngClass]="removendo === h.LineId ? 'fa-sync-alt fa-spin' : 'fa-trash'"></i>
+              </button>
+              <i class="far fa-clock"></i> {{ h.dataFormatada }}
+            </span>
             <h3 class="timeline-header">{{ h.U_Cobrador }}</h3>
             <div class="timeline-body">
               <span class="badge badge-primary mr-1 mb-1" *ngIf="h.U_Status"><b>Status:</b> {{ h.U_Status }}</span>
               <span class="badge badge-info mr-1 mb-1" *ngIf="h.U_Acao"><b>Ação:</b> {{ h.U_Acao }}</span>
               <span class="badge badge-warning mr-1 mb-1" *ngIf="h.U_Situacao"><b>Situação:</b> {{ h.U_Situacao }}</span>
               <span class="badge badge-secondary mr-1 mb-1" *ngIf="h.U_Ocorrencia"><b>Ocorrência:</b> {{ h.U_Ocorrencia }}</span>
+              <span class="badge badge-success mr-1 mb-1" *ngIf="h.promessaFormatada"><b>Prometeu:</b> {{ h.promessaFormatada }}</span>
               <div *ngIf="h.U_Observacao" class="mt-1"><b>Observação:</b> {{ h.U_Observacao }}</div>
             </div>
           </div>
@@ -102,8 +114,20 @@
       </div>
 
       <div class="text-right mt-2" *ngIf="somenteHistorico">
-        <button type="button" class="btn btn-secondary" (click)="cancelar()">Fechar</button>
+        <!-- Fechar travado durante a remocao pra nao convidar ao problema; ESC, backdrop e o x do
+             app-modal continuam fechando (sao do componente compartilhado), e quem garante que a
+             resposta atrasada nao repinta nada e o contador `abertura` no componente. -->
+        <button type="button" class="btn btn-secondary" [disabled]="removendoAlguma" (click)="cancelar()">
+          Fechar
+        </button>
       </div>
+    </div>
+
+    <!-- Remover faz tres idas ao SAP (auditoria, gravacao e releitura) e ainda recarrega a grade:
+         o spin no icone da lixeira sozinho e discreto demais pra esse tempo. -->
+    <div *ngIf="removendoAlguma" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+      <span class="ml-2">Removendo do histórico...</span>
     </div>
   </div>
 </app-modal>

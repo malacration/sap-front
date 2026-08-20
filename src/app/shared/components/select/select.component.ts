@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
-import { Option } from '../../../sap/model/form/option';
+import { Option, OptionGroup } from '../../../sap/model/form/option';
 
 
 @Component({
@@ -41,8 +41,37 @@ export class SelectComponent implements OnInit {
     this.selecionados = valores ? [...valores] : []
   }
 
+  /**
+   * Modo multiple AGRUPADO: em vez da lista plana de checkbox, um nó pai por grupo - marcável,
+   * com estado intermediário quando parte do grupo está marcada - e as opções recolhíveis
+   * embaixo. Quem passa `options` continua no modo plano, sem mudança nenhuma.
+   */
+  @Input()
+  set grupos(grupos : Array<OptionGroup>){
+    this.gruposInternos = grupos ?? []
+    // Todos recolhidos menos o primeiro: grupo grande (24 meses, no filtro de cobranca) abriria
+    // o painel com uma lista que o usuario tem que rolar pra achar o que quer.
+    this.recolhidos = new Set(this.gruposInternos.slice(1).map(grupo => grupo.label))
+  }
+
+  get grupos() : Array<OptionGroup>{
+    return this.gruposInternos
+  }
+
+  // Texto do botao quando nada esta marcado. No modo agrupado, selecao vazia costuma significar
+  // "sem restricao" (a tela de cobranca passa "Todos"), nao "nada escolhido".
+  @Input()
+  rotuloSemSelecao = 'Selecione'
+
+  // Substantivo da contagem no botao: "3 selecionadas", "3 meses".
+  @Input()
+  nomeNoPlural = 'selecionadas'
+
   selecionados : Array<any> = []
   aberto = false
+
+  private gruposInternos : Array<OptionGroup> = []
+  private recolhidos = new Set<string>()
 
   @Output()
   selectedOut = new EventEmitter<any>();
@@ -95,15 +124,77 @@ export class SelectComponent implements OnInit {
     this.selectedOut.emit([])
   }
 
-  get resumoSelecao(){
-    if(this.selecionados.length == 0)
-      return 'Selecione'
-    if(this.selecionados.length == 1)
-      return this.descricaoDe(this.selecionados[0])
-    return `${this.selecionados.length} selecionadas`
+  get agrupado(){
+    return this.gruposInternos.length > 0
   }
 
+  get semSelecao(){
+    return this.selecionados.length == 0
+  }
+
+  estaRecolhido(label : string){
+    return this.recolhidos.has(label)
+  }
+
+  alternarRecolhido(label : string){
+    if(this.recolhidos.has(label))
+      this.recolhidos.delete(label)
+    else
+      this.recolhidos.add(label)
+  }
+
+  // Cobre as opcoes que o grupo OFERECE: grupo da ponta pode ter menos itens que o esperado
+  // (com janela de 24 meses, 2024 comeca em setembro) e e isso que o painel mostra.
+  grupoMarcado(grupo : OptionGroup){
+    return grupo.options.length > 0 && grupo.options.every(it => this.estaSelecionado(it))
+  }
+
+  grupoParcial(grupo : OptionGroup){
+    const marcados = grupo.options.filter(it => this.estaSelecionado(it)).length
+    return marcados > 0 && marcados < grupo.options.length
+  }
+
+  // Marcar o grupo marca as opcoes dele, nao o grupo como valor: quem escuta recebe sempre
+  // valores de opcao.
+  alternarGrupo(grupo : OptionGroup){
+    const valoresDoGrupo = grupo.options.map(it => it.value)
+    const semOGrupo = this.selecionados.filter(valor => !valoresDoGrupo.includes(valor))
+    this.selecionados = this.grupoMarcado(grupo) ? semOGrupo : [...semOGrupo, ...valoresDoGrupo]
+    this.selectedOut.emit([...this.selecionados])
+  }
+
+  /**
+   * "(Todos)" do modo agrupado: selecao vazia, isto e, sem restricao.
+   *
+   * A caixa precisa ser reposta na mao. No clique o browser desmarca sozinho e, quando ja estava
+   * tudo limpo, o [checked] continua valendo true - sem mudanca de binding o Angular nao reescreve
+   * a propriedade e a caixa ficava desmarcada pra sempre.
+   */
+  limparSelecaoDeTodos(evento? : Event){
+    const caixa = evento?.target as HTMLInputElement | undefined
+    if(caixa)
+      caixa.checked = true
+    if(this.semSelecao)
+      return
+    this.limparSelecao()
+  }
+
+  get resumoSelecao(){
+    if(this.selecionados.length == 0)
+      return this.rotuloSemSelecao
+    if(this.selecionados.length == 1)
+      return this.descricaoDe(this.selecionados[0])
+    return `${this.selecionados.length} ${this.nomeNoPlural}`
+  }
+
+  // No modo agrupado a descricao sozinha e ambigua ("Julho" de qual ano?), entao o rotulo do
+  // grupo entra junto.
   private descricaoDe(valor : any){
+    const grupo = this.gruposInternos.find(it => it.options.some(opcao => opcao.value === valor))
+    if(grupo){
+      const opcao = grupo.options.find(it => it.value === valor)
+      return opcao ? `${opcao.description}/${grupo.label}` : ''
+    }
     return this.options.find(it => it.value === valor)?.description ?? ''
   }
 

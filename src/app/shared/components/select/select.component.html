@@ -19,14 +19,56 @@
         {{ resumoSelecao }}
     </button>
     <div class="dropdown-menu app-select-multi-menu" [class.show]="aberto">
-        <button type="button" class="dropdown-item text-muted" (click)="limparSelecao()"
-                [disabled]="selecionados.length == 0">
-            Limpar seleção
-        </button>
-        <div class="dropdown-divider"></div>
-        <label *ngFor="let it of options; trackBy: trackByOption" class="dropdown-item mb-0">
-            <input type="checkbox" class="mr-2" [checked]="estaSelecionado(it)" (change)="alternar(it)">
-            {{ it.description }}
-        </label>
+        <!-- Modo plano: lista de checkbox, um por opcao. -->
+        <ng-container *ngIf="!agrupado">
+            <button type="button" class="dropdown-item text-muted" (click)="limparSelecao()"
+                    [disabled]="selecionados.length == 0">
+                Limpar seleção
+            </button>
+            <div class="dropdown-divider"></div>
+            <label *ngFor="let it of options; trackBy: trackByOption" class="dropdown-item mb-0">
+                <input type="checkbox" class="mr-2" [checked]="estaSelecionado(it)" (change)="alternar(it)">
+                {{ it.description }}
+            </label>
+        </ng-container>
+
+        <!-- Modo agrupado: "(Todos)" no lugar do "Limpar seleção" (mesma função, no idioma da
+             árvore), grupo marcável com +/- e as opções recuadas embaixo. -->
+        <ng-container *ngIf="agrupado">
+            <label class="dropdown-item mb-0 app-select-todos">
+                <input type="checkbox" class="mr-2" [checked]="semSelecao"
+                       (change)="limparSelecaoDeTodos($event)">
+                (Todos)
+            </label>
+            <div class="dropdown-divider"></div>
+
+            <div *ngFor="let grupo of grupos">
+                <div class="app-select-grupo">
+                    <button type="button" class="btn btn-link btn-sm p-0 mr-1 app-select-expandir"
+                            [attr.aria-label]="(estaRecolhido(grupo.label) ? 'Expandir ' : 'Recolher ') + grupo.label"
+                            (click)="alternarRecolhido(grupo.label)">
+                        <i class="far" [ngClass]="estaRecolhido(grupo.label) ? 'fa-plus-square' : 'fa-minus-square'"></i>
+                    </button>
+                    <label class="mb-0">
+                        <input type="checkbox" class="mr-2"
+                               [checked]="grupoMarcado(grupo)"
+                               [indeterminate]="grupoParcial(grupo)"
+                               (change)="alternarGrupo(grupo)">
+                        {{ grupo.label }}
+                    </label>
+                </div>
+
+                <!-- ng-container com ngIf, nao [hidden] no label: .app-select-item-do-grupo declara
+                     display block, que venceria o hidden e o grupo recolhido continuaria aberto. -->
+                <ng-container *ngIf="!estaRecolhido(grupo.label)">
+                    <label *ngFor="let it of grupo.options; trackBy: trackByOption"
+                           class="mb-0 app-select-item-do-grupo">
+                        <input type="checkbox" class="mr-2" [checked]="estaSelecionado(it)"
+                               (change)="alternar(it)">
+                        {{ it.description }}
+                    </label>
+                </ng-container>
+            </div>
+        </ng-container>
     </div>
 </div>

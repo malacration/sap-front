@@ -14,7 +14,6 @@ export interface CobrancaFiltro {
   vendedor?: number | null;
   cliente?: string | null;
   data?: string | null;
-  diasAtrasoMin?: number | null;
   status?: string | null;
   // Diz ao backend que o status escolhido também casa com U_Status vazio.
   incluirSemStatus?: boolean | null;
@@ -23,6 +22,9 @@ export interface CobrancaFiltro {
   situacaoSap?: string | null;
   vencimentoDe?: string | null;
   vencimentoAte?: string | null;
+  // Meses de lançamento (YYYY-MM). Multi-seleção: vai repetido como lancamentoMes=2026-07&
+  // lancamentoMes=2026-08 e o backend recebe List<String>.
+  lancamentoMes?: string[] | null;
   semAcompanhamento?: boolean | null;
   promessaVencidaAte?: string | null;
   tipo?: string | null;
@@ -79,6 +81,13 @@ export class CobrancaService {
   historico(tipo: string, docEntry: number, instlmntId: number): Observable<CobrancaHistorico[]> {
     return this.http
       .get<any[]>(`${this.url}/titulos/${tipo}/${docEntry}/${instlmntId}/historico`)
+      .pipe(map((lista) => (lista ?? []).map((item) => Object.assign(new CobrancaHistorico(), item))));
+  }
+
+  // Devolve o histórico que sobrou: quem removeu já vê a linha sumir sem uma segunda requisição.
+  removerHistorico(tipo: string, docEntry: number, instlmntId: number, lineId: number): Observable<CobrancaHistorico[]> {
+    return this.http
+      .delete<any[]>(`${this.url}/titulos/${tipo}/${docEntry}/${instlmntId}/historico/${lineId}`)
       .pipe(map((lista) => (lista ?? []).map((item) => Object.assign(new CobrancaHistorico(), item))));
   }
 

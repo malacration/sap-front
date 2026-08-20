@@ -13,6 +13,11 @@
     }
 
     .app-select-multi-menu {
+        // O .dropdown-menu do Bootstrap e z-index 1000, mas o cabecalho e a primeira coluna da
+        // app-table sao sticky com 1020/1030/1040 (table.component.scss): sem subir daqui, a
+        // tabela pinta por cima do menu aberto e as ultimas opcoes ficam ilegiveis. Vale so pro
+        // modo multiple - no modo simples o controle e um <select> nativo.
+        z-index: 1041;
         // Acompanha a largura do controle, mas pode passar dela: numa coluna estreita de
         // filtro, travar em 100% corta o texto da opcao exatamente onde os nomes se
         // diferenciam (razao social longa e repetida em todas as filiais).
@@ -22,6 +27,32 @@
         // Lista longa (filial, cobrador) nao pode empurrar o resto da tela.
         max-height: 15rem;
         overflow-y: auto;
+
+        // Modo agrupado: o grupo e uma linha propria (recolher + checkbox + rotulo) e as opcoes
+        // ficam recuadas na largura do +/- mais a margem.
+        .app-select-grupo {
+            display: flex;
+            align-items: center;
+            padding: 0.15rem 1rem;
+        }
+
+        .app-select-expandir {
+            line-height: 1;
+            color: #6c757d;
+        }
+
+        .app-select-item-do-grupo {
+            display: block;
+            padding: 0.15rem 1rem 0.15rem 2.1rem;
+        }
+
+        .app-select-todos,
+        .app-select-grupo label,
+        .app-select-item-do-grupo {
+            cursor: pointer;
+            font-weight: normal;
+            white-space: nowrap;
+        }
 
         label.dropdown-item {
             cursor: pointer;
