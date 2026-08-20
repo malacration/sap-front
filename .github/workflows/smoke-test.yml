@@ -21,17 +21,36 @@ jobs:
     - name: Build web app
       run: npm run web:build
 
+    - name: Install http-server
+      run: npm i -g http-server
+
     - name: Smoke test - page loads
       run: |
-        npx http-server dist -p 8080 -c-1 > /tmp/http-server.log 2>&1 &
+        http-server dist -p 8080 -c-1 > /tmp/http-server.log 2>&1 &
         SERVER_PID=$!
-        sleep 2
+        trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
+        # Espera o servidor aceitar conexao. O "sleep 2" que tinha aqui antes
+        # nao bastava: o http-server nao esta nas dependencias, entao o npx
+        # ainda estava baixando o pacote quando o curl rodava e o job morria
+        # com "Failed to connect to localhost port 8080" (curl exit 7).
+        for _ in $(seq 1 30); do
+          curl -fsS http://localhost:8080/ > /dev/null 2>&1 && break
+          sleep 1
+        done
+
         INDEX_HTML="$(curl -fsSL http://localhost:8080/)"
         echo "$INDEX_HTML" | grep -q "<app-root"
-        MAIN_JS="$(echo "$INDEX_HTML" | grep -oE 'main\\.[^\" ]+\\.js' | head -n1)"
-        RUNTIME_JS="$(echo "$INDEX_HTML" | grep -oE 'runtime\\.[^\" ]+\\.js' | head -n1)"
+        # web-production usa outputHashing: all, entao os bundles vem como
+        # main.<hash>.js. As barras aqui sao simples de proposito - com "\\."
+        # o grep procurava uma barra invertida literal e nunca casava nada.
+        MAIN_JS="$(echo "$INDEX_HTML" | grep -oE 'main\.[^" ]+\.js' | head -n1)"
+        RUNTIME_JS="$(echo "$INDEX_HTML" | grep -oE 'runtime\.[^" ]+\.js' | head -n1)"
         test -n "$MAIN_JS"
         test -n "$RUNTIME_JS"
         curl -fsSL "http://localhost:8080/$MAIN_JS" > /dev/null
         curl -fsSL "http://localhost:8080/$RUNTIME_JS" > /dev/null
-        kill "$SERVER_PID"
+
+    - name: Log do servidor
+      if: failure()
+      run: cat /tmp/http-server.log

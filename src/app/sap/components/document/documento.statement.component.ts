@@ -5,9 +5,10 @@ import { RadioItem } from '../form/radio/radio.model';
 import { Item } from '../../model/item';
 import { AlertService } from '../../../shared/service/alert.service';
 import { Router } from '@angular/router';
-import { Observable, forkJoin} from 'rxjs';
+import { Observable, Subject, forkJoin, of} from 'rxjs';
+import { catchError, debounceTime, map, switchMap } from 'rxjs/operators';
 import { ConfigService } from '../../../core/services/config.service';
-import { BusinessPartner } from '../../model/business-partner/business-partner';
+import { BPAddress, BusinessPartner } from '../../model/business-partner/business-partner';
 import * as moment from 'moment';
 import { OrderSalesService } from '../../../modulos/sap-shared/_services/documents/order-sales.service';
 import { DocumentAngularSave } from '../../service/document/document-angular-save';
@@ -36,10 +37,16 @@ export class DocumentStatementComponent implements OnInit {
   frete : number = 0
   selectedBranch: Branch = null;
 
-  //frete calculado automaticamente a partir da localidade de entrega do cliente
-  //(ver recalcularFrete) - freteErro bloqueia o envio do pedido (isFormValid)
+  //frete calculado automaticamente a partir da localidade do endereco de
+  //entrega escolhido (ver recalcularFrete) - freteErro bloqueia o envio do
+  //pedido (isFormValid)
   calculandoFrete = false
   freteErro : string = null
+  enderecoEntrega : BPAddress = null
+  //cada recalculo ganha um numero de sequencia: resposta que chega depois de
+  //um novo recalculo (ou depois de o usuario voltar pra retirada) e descartada
+  private freteSeq = 0
+  private recalculoFrete = new Subject<{seq : number, codLocalidade : string, filial : number, quantidade : number}>()
 
   @ViewChild('branch', {static: true}) vcBranch: BranchSelectComponent;
 
@@ -57,7 +64,32 @@ export class DocumentStatementComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
+    //debounce porque digitar a quantidade dispara um recalculo por tecla, e
+    //switchMap pra cancelar a requisicao anterior que ainda estiver em voo
+    this.recalculoFrete.pipe(
+      debounceTime(400),
+      switchMap(params => this.regiaoService.getByLocalidade(params.codLocalidade).pipe(
+        map(regioes => ({params, regioes})),
+        catchError(() => of({params, regioes : null}))
+      ))
+    ).subscribe(({params, regioes}) => {
+      if(params.seq != this.freteSeq)
+        return
+      this.calculandoFrete = false
+      if(regioes == null){
+        this.frete = 0
+        this.freteErro = 'Não foi possível calcular o frete para o cliente selecionado.'
+        return
+      }
+      const regiao = regioes.find(it => it.ativa && it.U_Filial == params.filial)
+      const resultado = regiao?.calcularFrete(params.codLocalidade, params.quantidade)
+      if(!resultado){
+        this.frete = 0
+        this.freteErro = 'Não foi possível calcular o frete para a localidade do cliente (nenhuma região de frete ativa cobre essa localidade para a filial selecionada).'
+        return
+      }
+      this.frete = resultado.total
+    })
   }
 
   changeOperacao(){
@@ -125,56 +157,73 @@ export class DocumentStatementComponent implements OnInit {
 
   selectBp($event){
     this.businesPartner = $event
+    this.enderecoEntrega = null
     this.businesPartnerService.get(this.businesPartner.CardCode).subscribe(it =>{
         this.businesPartner = it
+        //mesmo default do back (DocumentForAngular.enderecoEntregaSelecionado):
+        //sem escolha explicita vale o primeiro endereco de entrega do cliente.
+        //O valor vem da mesma lista de options usada no template (ela e
+        //cacheada no BusinessPartner), entao o select ja aparece com ele
+        //marcado via initialSelect
+        //Option.value e tipado como string, mas getAddressOptions guarda o
+        //proprio BPAddress ali (o select emite esse mesmo objeto de volta)
+        this.enderecoEntrega = (this.businesPartner.getAddressOptions('bo_ShipTo')[0]?.value as unknown as BPAddress) ?? null
         this.recalcularFrete()
     })
   }
 
+  selectEnderecoEntrega(endereco : BPAddress){
+    this.enderecoEntrega = endereco
+    this.recalcularFrete()
+  }
+
   /**
-   * Frete automatico: usa a localidade do endereco de entrega (bo_ShipTo) do
-   * cliente pra achar a regiao ativa da filial selecionada e calcular o
-   * valor (Regiao.calcularFrete, mesma formula do simulador de Frete). Sem
-   * localidade cadastrada ou sem regiao cobrindo ela, freteErro fica setado
-   * e bloqueia o envio (ver isFormValid/sendOrder) - o back tambem valida
-   * isso de novo antes de gravar, entao nao da pra contornar so pelo front.
+   * Frete automatico: usa a localidade do endereco de entrega escolhido no
+   * select (bo_ShipTo) pra achar a regiao ativa da filial selecionada e
+   * calcular o valor (Regiao.calcularFrete, mesma formula do simulador de
+   * Frete). Precisa ser chamado sempre que mudar filial, cliente, endereco,
+   * tipo de envio ou a quantidade dos itens. Sem localidade cadastrada ou sem
+   * regiao cobrindo ela, freteErro fica setado e bloqueia o envio (ver
+   * isFormValid/sendOrder) - o back tambem valida isso de novo antes de
+   * gravar, entao nao da pra contornar so pelo front.
    */
   private recalcularFrete(){
+    //invalida qualquer resposta de recalculo anterior que ainda esteja em voo
+    this.freteSeq++
     this.freteErro = null
     if(this.tipoEnvio != 'ent'){
       this.frete = 0
+      this.calculandoFrete = false
       return
     }
-    if(!this.businesPartner || !this.itens || this.itens.length == 0)
+    if(!this.businesPartner || !this.itens || this.itens.length == 0){
+      this.calculandoFrete = false
       return
-    const enderecoEntrega = (this.businesPartner.BPAddresses || []).find(it => it.AddressType == 'bo_ShipTo')
-    const codLocalidade = enderecoEntrega?.U_Localidade
+    }
+    if(!this.enderecoEntrega){
+      this.frete = 0
+      this.calculandoFrete = false
+      this.freteErro = 'O cliente selecionado não possui endereço de entrega cadastrado.'
+      return
+    }
+    const codLocalidade = this.enderecoEntrega.U_Localidade
     if(!codLocalidade){
       this.frete = 0
-      this.freteErro = 'O cliente selecionado não possui localidade cadastrada no endereço de entrega. Cadastre a localidade antes de finalizar a venda.'
+      this.calculandoFrete = false
+      this.freteErro = 'O endereço de entrega selecionado não possui localidade cadastrada. Cadastre a localidade antes de finalizar a venda.'
       return
     }
-    if(!this.branchId)
+    if(!this.branchId){
+      this.calculandoFrete = false
       return
-    const quantidade = this.itens.reduce((acc,it) => acc+it.quantidade,0)
+    }
+    const quantidade = this.itens.reduce((acc,it) => acc+(Number(it.quantidade) || 0),0)
     this.calculandoFrete = true
-    this.regiaoService.getByLocalidade(String(codLocalidade)).subscribe({
-      next : (regioes) => {
-        this.calculandoFrete = false
-        const regiao = regioes.find(it => it.ativa && it.U_Filial == this.branchId)
-        const resultado = regiao?.calcularFrete(String(codLocalidade), quantidade)
-        if(!resultado){
-          this.frete = 0
-          this.freteErro = 'Não foi possível calcular o frete para a localidade do cliente (nenhuma região de frete ativa cobre essa localidade para a filial selecionada).'
-          return
-        }
-        this.frete = resultado.total
-      },
-      error : () => {
-        this.calculandoFrete = false
-        this.frete = 0
-        this.freteErro = 'Não foi possível calcular o frete para o cliente selecionado.'
-      }
+    this.recalculoFrete.next({
+      seq : this.freteSeq,
+      codLocalidade : String(codLocalidade),
+      filial : this.branchId,
+      quantidade
     })
   }
 
@@ -230,6 +279,10 @@ export class DocumentStatementComponent implements OnInit {
       order.PaymentGroupCode = groupNum
       order.Comments = this.observacao
       order.DocDueDate = this.dtEntrega
+      //o back revalida o frete contra a localidade desse mesmo endereco
+      //(DocumentForAngular.enderecoEntregaSelecionado) - sem mandar o
+      //shipToCode ele cairia sempre no primeiro endereco de entrega
+      order.shipToCode = this.tipoEnvio == 'ent' ? this.enderecoEntrega?.AddressName : null
       order.Frete = this.frete
       order.TaxExtension = {
         VehicleState: this.setVehicleState(),

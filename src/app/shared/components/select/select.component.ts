@@ -1,5 +1,6 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, OnChanges, SimpleChanges, Input, OnInit, Output } from '@angular/core';
 import { Option, OptionGroup } from '../../../sap/model/form/option';
+
 
 
 @Component({
@@ -7,8 +8,7 @@ import { Option, OptionGroup } from '../../../sap/model/form/option';
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss']
 })
-export class SelectComponent implements OnInit {
-
+export class SelectComponent implements OnInit, OnChanges {
   constructor(private elementRef : ElementRef){
   }
 
@@ -84,6 +84,16 @@ export class SelectComponent implements OnInit {
   ngOnInit(): void {
     if(this.initialSelect)
       this.selected = this.initialSelect
+  }
+
+  // initialSelect pode mudar depois que o componente ja existe - ex.: trocar o
+  // cliente na tela de venda troca a lista de enderecos de entrega e o
+  // endereco default. Sem sincronizar aqui, o <select> continuaria mostrando a
+  // selecao antiga (ou nada, quando o valor nao existe mais nas options novas)
+  // enquanto o pai ja trabalha com outro valor.
+  ngOnChanges(changes: SimpleChanges): void {
+    if(changes['initialSelect'] && !changes['initialSelect'].firstChange)
+      this.selected = this.initialSelect ?? 'inicial'
   }
 
   unselect(){

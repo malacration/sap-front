@@ -65,6 +65,8 @@
                             <app-radio [opcoes]="tipoEnvioRadio" (change)="tipoEnvioChange($event)"></app-radio>
                             <app-select *ngIf="tipoEnvio == 'ent'" 
                                 [label]="'Seleciona Endereço'" 
+                                [initialSelect]="enderecoEntrega"
+                                (selectedOut)="selectEnderecoEntrega($event)"
                                 [options]="businesPartner.getAddressOptions('bo_ShipTo')">
                             </app-select>
                             <div *ngIf="tipoEnvio == 'ent'" class="mt-3">
