@@ -8,10 +8,17 @@
       <form class="container-fluid px-0" (ngSubmit)="buscar()" autocomplete="off">
         <div class="form-row align-items-end">
           <div class="col-md-2 col-sm-6">
-            <app-branch-select [selected]="filialSelecionada?.Bplid" (selectedOut)="onFilialChange($event)"></app-branch-select>
+            <app-branch-select [multiple]="true" [selectedMany]="filiaisIniciais" (selectedManyOut)="onFilialChange($event)"></app-branch-select>
           </div>
           <div class="col-md-3 col-sm-6">
             <app-sales-person-search [name]="'Vendedor'" (selected)="onVendedorChange($event)"></app-sales-person-search>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Cobrador</label>
+            <select class="form-control" name="filtroCobrador" [(ngModel)]="filtroCobrador" (change)="buscar()">
+              <option value="">Todos</option>
+              <option *ngFor="let c of cobradoresDisponiveis" [value]="c">{{ c }}</option>
+            </select>
           </div>
           <div class="col-md-2 col-sm-6">
             <label>Recuperação de</label>
@@ -21,7 +28,7 @@
             <label>até</label>
             <input type="date" class="form-control" name="filtroAte" [(ngModel)]="filtroAte" />
           </div>
-          <div class="col-md-3 col-sm-12 mt-2 mt-md-0">
+          <div class="col-md-12 col-sm-12 mt-2">
             <button type="submit" class="btn btn-primary" [disabled]="carregandoResumo">
               <i class="fas fa-filter"></i> Filtrar
             </button>
@@ -190,7 +197,10 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let cobrador of dashboard.PorCobrador">
+                <tr *ngFor="let cobrador of dashboard.PorCobrador"
+                    [class.clicavel]="cobradorEhClicavel(cobrador.Cobrador)"
+                    [title]="cobradorEhClicavel(cobrador.Cobrador) ? tituloDoCobrador(cobrador.Cobrador) : ''"
+                    (click)="verCobrador(cobrador.Cobrador)">
                   <td>{{ cobrador.Cobrador }}</td>
                   <td class="text-right">{{ cobrador.TitulosTrabalhados }}</td>
                   <td class="text-right">{{ cobrador.recuperadoCurrency }}</td>

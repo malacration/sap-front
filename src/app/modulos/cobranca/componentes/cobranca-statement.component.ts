@@ -327,10 +327,17 @@ export class CobrancaStatementComponent implements OnInit {
     }
 
     if (params.filial) {
-      const filial = new Branch();
-      filial.Bplid = params.filial;
-      this.filiaisSelecionadas = [filial];
-      this.filiaisHerdadas = [params.filial];
+      // O Angular entrega string quando o parâmetro vem uma vez e string[] quando vem repetido.
+      // Guardar o array inteiro num Bplid fazia idsDasFiliais() avaliar Number(['2','3']) como
+      // NaN e descartar tudo: a lista abria SEM filtro de filial, em silêncio. Um Branch por id.
+      const ids = (Array.isArray(params.filial) ? params.filial : [params.filial])
+        .filter((id) => id != null && `${id}`.trim() !== '');
+      this.filiaisSelecionadas = ids.map((id) => {
+        const filial = new Branch();
+        filial.Bplid = id;
+        return filial;
+      });
+      this.filiaisHerdadas = ids;
     }
     if (params.vendedor) {
       this.vendedorHerdado = Number(params.vendedor);
