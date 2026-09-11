@@ -88,7 +88,7 @@ export class MenuSidebarComponent implements OnInit {
                 ||
                 (this.modoOperacao != "internal" && !this.isRouteInternal(it))
             )
-            && ((this.isLoggedIn() && !this.authService.isCliente()) || ['home', 'faturas'].includes(it.path))
+            && this.isVisivelPeloLogin(it)
         )
         .forEach(route => {
             const item = new MenuItem(route, parentSegments);
@@ -106,13 +106,33 @@ export class MenuSidebarComponent implements OnInit {
         return true
     }
 
+    /**
+     * Visibilidade por estado de login:
+     *  - "home": sempre aparece.
+     *  - "faturas": so quando NAO logado (ou cliente externo, que usa essa tela);
+     *    some do menu do usuario interno logado.
+     *  - demais: usuario interno logado (nao-cliente).
+     */
+    isVisivelPeloLogin(it : Route) : boolean {
+        const logado = this.isLoggedIn()
+        const cliente = this.authService.isCliente()
+        if(it.path === 'home')
+            return true
+        if(it.path === 'faturas')
+            return !logado || cliente
+        return logado && !cliente
+    }
+
     private isOfflineRoutePermitida(route: Route, parentSegments: string[]): boolean {
         const path = [...parentSegments, route.path || ''].filter(Boolean).join('/')
         if(!this.offline.offlineEnabled && path === 'venda/offline')
             return false
         if(this.offline.onlineSalesAvailable)
             return true
+        // home e faturas sao pontos de entrada publicos (deslogado/cliente) e nao dependem
+        // do gate de vendas online; sem isto o menu fica vazio quando nao ha sessao.
         return path === 'venda' || path === 'venda/document' || path === 'venda/offline'
+            || path === 'home' || path === 'faturas'
     }
 
     /**
@@ -120,12 +140,15 @@ export class MenuSidebarComponent implements OnInit {
      * rota continua visivel pra todo mundo - o filtro e opt-in pra nao mexer no menu existente.
      */
     isRolePermitida(route : Route) : boolean {
-        const exigida = (route?.data as Array<any> ?? [])
+        const exigidas = (route?.data as Array<any> ?? [])
             .map(it => it.toString())
-            .find(it => it.startsWith("role:"))
-        if(!exigida)
+            .filter(it => it.startsWith("role:"))
+            .map(it => it.replace("role:", ""))
+        if(exigidas.length === 0)
             return true
-        return this.authService.hasRole(exigida.replace("role:", ""))
+        if(this.authService.hasRole("admin"))
+            return true
+        return exigidas.some(role => this.authService.hasRole(role))
     }
 
     isHidden(it){

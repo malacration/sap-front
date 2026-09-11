@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
+import { BranchService } from '../branch.service';
 import { Column } from '../../../shared/components/table/column.model';
 import { DocumentService } from '../../components/marketing-document/core/documento.service';
 import { DocumentInstallment, DocumentLines, DocumentList } from '../../model/markting/document-list';
@@ -58,20 +59,21 @@ export const SAP_DOCUMENT_CONFIGS: { [kind: string]: SapDocumentConfig } = {
 })
 export class SapDocumentServiceFactory {
 
-  constructor(private config: ConfigService, private http: HttpClient) {}
+  constructor(private config: ConfigService, private http: HttpClient, private branchService: BranchService) {}
 
   create(kind: SapDocumentKind): DocumentService {
     return new SapDocumentService(
       `${this.config.getHost()}/${SAP_DOCUMENT_CONFIGS[kind].endpoint}`,
       SAP_DOCUMENT_CONFIGS[kind],
-      this.http
+      this.http,
+      this.branchService
     );
   }
 }
 
 class SapDocumentService implements DocumentService {
 
-  constructor(private url: string, private config: SapDocumentConfig, private http: HttpClient) {}
+  constructor(private url: string, private config: SapDocumentConfig, private http: HttpClient, private branchService: BranchService) {}
 
   getDefinition(): Column[] {
     const definition = [
@@ -102,9 +104,23 @@ class SapDocumentService implements DocumentService {
   }
 
   getById(docEntry: number): Observable<DocumentList> {
-    return this.http
-      .get<any>(`${this.url}/${docEntry}`)
-      .pipe(map((item) => this.mapDocument(this.unwrapOData(item))));
+    // getById traz a entidade SAP crua (só o id da filial); a lista resolve o BPLName no
+    // backend. Aqui, quando o nome vier vazio, resolvemos pelo id via BranchService — senão
+    // a Filial some ao abrir a nota pelo link (com ?id=). Se o BranchService falhar, seguimos
+    // sem o nome da filial: a filial é enriquecimento, não pode bloquear abrir a nota.
+    return forkJoin({
+      item: this.http.get<any>(`${this.url}/${docEntry}`),
+      branches: this.branchService.get().pipe(catchError(() => of([])))
+    }).pipe(map(({ item, branches }) => {
+      const doc = this.mapDocument(this.unwrapOData(item));
+      if (!doc.BPLName && doc.BPL_IDAssignedToInvoice != null) {
+        const branch = (branches || []).find(b => Number(b.Bplid) === Number(doc.BPL_IDAssignedToInvoice));
+        if (branch) {
+          doc.BPLName = branch.Bplname;
+        }
+      }
+      return doc;
+    }));
   }
 
   private unwrapOData(item: any): any {

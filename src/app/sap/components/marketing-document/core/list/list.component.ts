@@ -105,20 +105,23 @@ import { Subscription } from 'rxjs';
   private selecionaDocumentoDaRota() {
     if (!this.routeDocEntry || !this.service) return;
 
-    const documento = this.pageContent?.content?.find((item) => Number(item.DocEntry) === this.routeDocEntry);
-    if (documento) {
-      this.selectedDocumentList = documento;
+    // Sempre via getById (que resolve a Filial/BPLName). Usar o doc da lista aqui fazia a
+    // filial "piscar" e sumir: selecionaDocumentoDaRota roda mais de uma vez e a listagem
+    // nem sempre traz o nome da filial, sobrescrevendo o doc enriquecido.
+    if (this.service.getById) {
+      this.loading = true;
+      this.service.getById(this.routeDocEntry).subscribe({
+        next: (item) => { this.selectedDocumentList = item; },
+        complete: () => { this.loading = false; },
+        error: () => { this.loading = false; }
+      });
       return;
     }
 
-    if (!this.service.getById) return;
-
-    this.loading = true;
-    this.service.getById(this.routeDocEntry).subscribe({
-      next: (item) => { this.selectedDocumentList = item; },
-      complete: () => { this.loading = false; },
-      error: () => { this.loading = false; }
-    });
+    const documento = this.pageContent?.content?.find((item) => Number(item.DocEntry) === this.routeDocEntry);
+    if (documento) {
+      this.selectedDocumentList = documento;
+    }
   }
 
   ngOnDestroy(): void {

@@ -95,6 +95,8 @@ import { MapaRelacoesModalButtonComponent } from './sap/components/mapa-relacoes
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
+import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
+import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
 import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
@@ -189,6 +191,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ComissaoComponent,
     AutorizacaoComponent,
     AutorizadorComponent,
+    LiberacaoTravaComponent,
+    RegrasTravaComponent,
     MeusDadosComponent,
     DocumentosSapComponent,
     RetiradaComponent,
