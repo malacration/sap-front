@@ -16,9 +16,9 @@
         </button>
         <div class="w-100 mt-2 small" *ngIf="valorCardRecuperado != null && recorteIntacto">
           Card <b>Recuperado no período</b>: <b>{{ valorCardRecuperado | currency:'BRL' }}</b>.
-          A soma da lista pode não bater com ele: o card soma <b>cada recebimento</b> do período e só
-          conta título que já tinha ação de cobrança registrada <b>antes</b> do pagamento; a lista mostra
-          <b>uma linha por parcela</b>, com o último recebimento dela.
+          O total do filtro (abaixo da tabela) já soma <b>cada recebimento</b> do período que teve
+          ação de cobrança registrada <b>antes</b> do pagamento, igual o card. Pode sobrar uma
+          diferença pequena mesmo assim: o card não descarta nota fiscal cancelada, e esta lista sim.
         </div>
       </div>
 
@@ -171,13 +171,19 @@
         </span>
         <span class="mr-3">Saldo <b>{{ saldoCarregado | currency:'BRL' }}</b></span>
         <span class="mr-3" *ngIf="parcelasComPagamentoCarregadas > 0">
-          Valor pago <b>{{ pagoCarregado | currency:'BRL' }}</b>
+          {{ usaJanelaDePagamento ? 'Recebido no período' : 'Valor pago' }} <b>{{ pagoCarregado | currency:'BRL' }}</b>
           <small class="text-muted">({{ parcelasComPagamentoCarregadas }} com pagamento)</small>
         </span>
         <button type="button" class="btn btn-sm btn-outline-secondary ml-auto"
                 [disabled]="calculandoTotal" (click)="calcularTotalDoFiltro()">
           {{ calculandoTotal ? 'Somando...' : 'Somar o filtro inteiro' }}
         </button>
+        <div class="w-100 small text-warning mt-1" *ngIf="recebimentoTruncado && usaJanelaDePagamento">
+          <i class="fas fa-exclamation-triangle mr-1"></i>
+          A busca de recebimento no período parou no limite de páginas do SAP — o valor
+          "Recebido no período" de alguma linha pode estar incompleto. Estreite o filtro
+          (período, filial ou cliente) para garantir o total exato.
+        </div>
       </div>
 
       <div class="alert mt-2 mb-0" [ngClass]="totalDoFiltro.Truncado ? 'alert-warning' : 'alert-secondary'"

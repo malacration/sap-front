@@ -41,6 +41,10 @@ export class CobrancaTitulo {
   DataPagamento: string;
   ValorPago: number;
   ObservacaoPagamento: string;
+  // Soma de TODOS os recebimentos da parcela dentro do filtro de data de pagamento, não só o
+  // mais recente (ValorPago). Só vem preenchido quando esse filtro está ligado - é o número que
+  // bate com o card "Recuperado" do dashboard, que soma por recebimento, não por parcela.
+  ValorRecebidoNoPeriodo: number;
 
   selecionado = false;
 
