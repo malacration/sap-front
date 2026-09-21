@@ -1,5 +1,6 @@
 <span class="sap-link-button-group">
   <button
+    *ngIf="!somenteCopiar"
     type="button"
     class="btn btn-sm sap-link-button"
     [ngClass]="buttonClass"
@@ -11,19 +12,27 @@
     </span>
     <span class="sap-link-button__main">
       <span class="sap-link-button__label">
-        <ng-container *ngIf="label; else projectedLabel">{{ label }}</ng-container>
-        <ng-template #projectedLabel>
-          <ng-content></ng-content>
-        </ng-template>
+        <ng-container *ngTemplateOutlet="conteudo"></ng-container>
       </span>
     </span>
   </button>
+  <span *ngIf="somenteCopiar" class="sap-link-button__texto">
+    <ng-container *ngTemplateOutlet="conteudo"></ng-container>
+  </span>
   <button
     type="button"
     class="btn btn-sm btn-outline-secondary sap-link-button-copy"
+    [class.sap-link-button-copy--unico]="somenteCopiar"
     [disabled]="disabled || !valorParaCopiar"
     [title]="copiado ? 'Copiado' : 'Copiar FK'"
     (click)="copiar($event)">
     <i [ngClass]="copiado ? 'fas fa-check' : 'far fa-copy'"></i>
   </button>
 </span>
+
+<ng-template #conteudo>
+  <ng-container *ngIf="label; else projectedLabel">{{ label }}</ng-container>
+  <ng-template #projectedLabel>
+    <ng-content></ng-content>
+  </ng-template>
+</ng-template>

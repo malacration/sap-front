@@ -14,6 +14,12 @@ export class SapLinkButtonComponent {
   @Input() sapRouterLink: RouterLinkLike = [];
   @Input() queryParams: any = null;
   @Input() disabled = false;
+  /**
+   * Esconde o botao de abrir e deixa so o numero + copiar. Para o registro que a propria
+   * tela ja esta mostrando: abrir ele em nova aba recarrega a mesma tela, mas copiar a
+   * chave continua sendo util.
+   */
+  @Input() somenteCopiar = false;
   @Input() buttonClass = 'btn-outline-info';
   @Input() title = 'Abrir em nova aba';
   copiado = false;
@@ -21,7 +27,7 @@ export class SapLinkButtonComponent {
   constructor(private router: Router) {}
 
   abrir() {
-    if (this.disabled) return;
+    if (this.disabled || this.somenteCopiar) return;
 
     const commands = Array.isArray(this.sapRouterLink) ? this.sapRouterLink : [this.sapRouterLink];
     const tree = this.router.createUrlTree(commands, { queryParams: this.queryParams || undefined });

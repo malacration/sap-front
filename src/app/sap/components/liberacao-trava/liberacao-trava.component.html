@@ -1,0 +1,104 @@
+<div class="content-wrapper">
+  <section class="content-header">
+    <div class="container-fluid">
+      <h1><i class="fas fa-unlock-alt"></i> Liberação de Trava</h1>
+      <p class="text-muted">
+        Gera um código temporário para liberar uma trava da operação. Passe o código para
+        quem está com o documento barrado; ele digita no campo de liberação e salva de novo.
+      </p>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+
+      <div class="mb-2">
+        <button class="btn btn-link p-0" (click)="mostrarAjuda = !mostrarAjuda">
+          <i class="fas" [ngClass]="mostrarAjuda ? 'fa-chevron-down' : 'fa-question-circle'"></i>
+          {{ mostrarAjuda ? 'Ocultar ajuda' : 'Como usar?' }}
+        </button>
+      </div>
+
+      <div class="row">
+
+        <!-- Gerador -->
+        <div class="col-12 col-lg-6 col-xl-5">
+          <div class="card card-primary">
+            <div class="card-body">
+
+              <div class="form-group">
+                <label for="regra">Regra</label>
+                <select id="regra" class="form-control" [(ngModel)]="regra">
+                  <option *ngFor="let r of regras" [ngValue]="r.codigo">{{ r.descricao }}</option>
+                </select>
+              </div>
+
+              <button class="btn btn-primary" (click)="gerar()" [disabled]="carregando">
+                <i class="fas fa-key"></i>
+                {{ carregando ? 'Gerando...' : 'Gerar código' }}
+              </button>
+
+              <div *ngIf="erro" class="alert alert-danger mt-3 mb-0">
+                {{ erro }}
+              </div>
+
+              <div *ngIf="codigo && !erro" class="text-center mt-4">
+                <div class="text-muted">Código para <strong>{{ regraGerada }}</strong></div>
+                <div style="font-size: 48px; font-weight: bold; letter-spacing: 6px;">
+                  {{ codigo }}
+                </div>
+                <div class="mt-2 mb-2">
+                  <button class="btn btn-outline-secondary btn-sm" (click)="copiar()">
+                    <i class="fas" [ngClass]="copiado ? 'fa-check' : 'fa-copy'"></i>
+                    {{ copiado ? 'Copiado!' : 'Copiar código' }}
+                  </button>
+                </div>
+                <div class="text-muted">
+                  Troca em aproximadamente {{ segundosRestantes }}s
+                </div>
+                <small class="text-muted d-block mt-1">
+                  O código anterior também continua valendo por mais uma janela.
+                </small>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Ajuda: ao lado no desktop, embaixo no celular -->
+        <div class="col-12 col-lg-6 col-xl-5" *ngIf="mostrarAjuda">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-info-circle"></i> Como usar</h3>
+            </div>
+            <div class="card-body">
+              <p>
+                Quando uma operação fica <strong>barrada por uma regra</strong> (desconto acima do limite,
+                custo, depósito, etc.), esta tela gera um <strong>código temporário</strong> que libera
+                aquela operação uma vez.
+              </p>
+              <p class="mb-1"><strong>Passo a passo:</strong></p>
+              <ol class="pl-3">
+                <li>Escolha a <strong>regra</strong> que está barrando a operação.</li>
+                <li>Clique em <strong>Gerar código</strong>. Vai aparecer um código de 6 caracteres.</li>
+                <li>Use <strong>Copiar código</strong> e passe para quem está com o documento barrado.</li>
+                <li>
+                  No documento barrado (pedido, nota, entrega…), essa pessoa digita o código no campo
+                  <strong>“Código de liberação”</strong> e <strong>salva de novo</strong>. A operação passa.
+                </li>
+              </ol>
+              <p class="mb-1"><strong>Importante:</strong></p>
+              <ul class="pl-3 mb-0">
+                <li>O código <strong>muda a cada ~2 minutos</strong>. Se demorar, gere um novo (o anterior ainda vale por um tempinho).</li>
+                <li>Cada regra tem <strong>seu próprio código</strong>: um código de “Desconto” não libera “Custo”.</li>
+                <li>Gere o código <strong>só na hora de usar</strong> e passe apenas para quem precisa — é uma autorização.</li>
+                <li>Se aparecer <strong>“sem permissão”</strong>, seu usuário não pode gerar código; fale com um gestor.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>

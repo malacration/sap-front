@@ -11,6 +11,7 @@ import { LoginComponent } from './shared/components/login/login.component';
 import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
 import { authGuard } from './core/auth.guard';
 import { adminGuard } from './core/admin.guard';
+import { roleGuard } from './core/role.guard';
 import { CotacoesStatementComponent } from './sap/components/marketing-document/cotacao-statement/cotacoes-statement.component';
 import { VendaFuturaStatementComponent } from './sap/components/venda-futura/venda-futura-statement.component';
 import { TransferenciaClientesComponent } from './sap/components/transferencia-clientes/transferencia.clientes.component';
@@ -23,6 +24,8 @@ import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relac
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
+import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
+import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
 import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
@@ -112,28 +115,28 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     path: 'clientes',
     title: 'Clientes',
-    data: ["icon:fas fa-users"],
+    data: ["icon:fas fa-users", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
     canActivate: [authGuard],
-    children: [ 
+    children: [
       {
         path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
+        canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
       },
       {
         path: 'parceiro-negocio/:cardCode',
         title: 'Parceiro Negocio',
-        data: ["hidden"],
-        canActivate: [authGuard],
+        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
+        canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
       },
       {
         path: 'transferencia',
         title: 'Transferências',
-        data: ["icon:fas fa-exchange-alt"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-exchange-alt", "role:vendedor_admin"],
+        canActivate: [authGuard, roleGuard],
         component: TransferenciaClientesComponent
       },
     ]
@@ -141,42 +144,42 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Venda',
     canActivate: [authGuard],
-    data: ["icon:fas fa-shopping-bag"],
+    data: ["icon:fas fa-shopping-bag", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
     path: 'venda',
-    children: [ 
+    children: [
       {
         path: 'document',
         title: 'Vender',
-        canActivate: [authGuard],
-        data: ["icon:fas fa-shopping-cart"],
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-shopping-cart", "role:vendedor", "role:vendedor_admin"],
         component: DocumentStatementComponent
       },
       {
         path: 'offline',
         title: 'Cotações offline',
-        canActivate: [authGuard],
-        data: ["icon:fas fa-cloud-upload-alt"],
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-cloud-upload-alt", "role:vendedor", "role:vendedor_admin"],
         component: OfflineHistoryComponent
       },
       {
         path: 'cotacao',
         title: 'Cotação',
-        canActivate: [authGuard],
-        data: ["icon:fas fa-file-alt"],
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-file-alt", "role:vendedor", "role:vendedor_admin"],
         component: CotacoesStatementComponent
       },
       {
         path: 'pedidos-venda',
         title: 'Pedidos',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleGuard],
         component: PedidosVendaStatementComponent,
-        data: ["icon:fas fa-file-signature"],
+        data: ["icon:fas fa-file-signature", "role:vendedor", "role:vendedor_admin"],
       },
       {
         path: 'venda-futura',
         title: 'Contratos',
-        data: ["icon:fas fa-file-contract"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
+        canActivate: [authGuard, roleGuard],
         component: VendaFuturaStatementComponent
       },
       {
@@ -194,8 +197,8 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'mapa-relacoes',
         title: 'Mapa de Relações',
-        data: ["hidden", "icon:fas fa-project-diagram"],
-        canActivate: [authGuard],
+        data: ["hidden", "icon:fas fa-project-diagram", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: MapaRelacoesComponent
       },
       {
@@ -215,14 +218,16 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Relatórios',
     canActivate: [authGuard],
-    data: ["icon:fas fa-chart-pie"],
+    data: ["icon:fas fa-chart-pie", "role:vendedor", "role:vendedor_admin", "role:logistica", "role:qualidade"],
     path: 'relatorios',
     children: [
       {
         path: 'painel-vendas',
         title: 'Painel de Vendas',
-        data: ["hidden", "icon:fas fa-chart-line"],
-        canActivate: [authGuard],
+        // Escondido do menu (o v2 ocupou o lugar), mas com a mesma restricao de
+        // papel do RBAC: some da navegacao e segue protegido por URL.
+        data: ["hidden", "icon:fas fa-chart-line", "role:vendedor", "role:vendedor_admin"],
+        canActivate: [authGuard, roleGuard],
         component: PainelVendasComponent
       },
       {
@@ -235,22 +240,22 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'analise-pedidos',
         title: 'Análise Pedidos',
-        data: ["icon:fas fa-clipboard-list"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-clipboard-list", "role:vendedor_admin", "role:logistica", "role:qualidade"],
+        canActivate: [authGuard, roleGuard],
         component: PainelExpedicaoPedidosComponent
       },
       {
         path: 'calculadora',
         title: 'Calculadora',
-        data: ["icon:fas fa-calculator"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-calculator", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: CalculadoraStatementComponent,
       },
       {
         path: 'ticket-frete',
         title: 'Ticket Médio de Frete',
-        data: ["icon:fas fa-truck-moving"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-truck-moving", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: TicketFreteComponent
       },
       {
@@ -265,14 +270,14 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Logística',
     canActivate: [authGuard],
-    data: ["icon:fas fa-route"],
+    data: ["icon:fas fa-route", "role:logistica", "role:logistica_faturar"],
     path: 'logistica',
     children: [
       {
         path: 'ordem-carregamento',
         title: 'Carregamento',
-        data: ["icon:fas fa-truck-ramp-box"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar"],
+        canActivate: [authGuard, roleGuard],
         component: OrdemCarregamentoStatementComponent
       },
       {
@@ -290,8 +295,8 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'localidades',
         title: 'Localidades',
-        data: ["icon:fas fa-map-marker-alt"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar"],
+        canActivate: [authGuard, roleGuard],
         component: LocalidadeComponent
       },
     ]
@@ -299,7 +304,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Configurações',
     canActivate: [authGuard],
-    data: ["icon:fas fa-cogs"],
+    data: ["icon:fas fa-cogs", "role:admin", "role:liberacao_trava"],
     path: 'configuracoes',
     children: [
       {
@@ -307,43 +312,43 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         //que esta sendo renomeado pra Frete
         path: 'frete',
         title: 'Frete',
-        data: ["icon:fas fa-map-marked-alt"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-map-marked-alt", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: RegiaoComponent
       },
       {
         path: 'frete/:code',
         title: 'Frete',
-        data: ["hidden"],
-        canActivate: [authGuard],
+        data: ["hidden", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: RegiaoComponent
       },
       {
         path: 'comissao',
         title: 'Comissão',
-        data: ["icon:fas fa-percentage"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-percentage", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: ComissaoComponent
       },
       {
         path: 'comissao/:code',
         title: 'Comissão',
-        data: ["hidden"],
-        canActivate: [authGuard],
+        data: ["hidden", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: ComissaoComponent
       },
       {
         path: 'autorizacoes',
         title: 'Autorizações',
-        data: ["icon:fas fa-user-check"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-user-check", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: AutorizacaoComponent
       },
       {
         path: 'autorizadores',
         title: 'Autorizadores',
-        data: ["icon:fas fa-user-shield"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-user-shield", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: AutorizadorComponent
       },
       {
@@ -355,11 +360,26 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         canActivate: [adminGuard],
         component: NormalizacaoCadastroComponent
       },
+      {
+        path: 'liberacao-trava',
+        title: 'Liberação de Trava',
+        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava"],
+        canActivate: [authGuard, roleGuard],
+        component: LiberacaoTravaComponent
+      },
+      {
+        path: 'regras-trava',
+        title: 'Regras de Trava',
+        data: ["icon:fas fa-list-ul", "role:admin"],
+        canActivate: [authGuard, roleGuard],
+        component: RegrasTravaComponent
+      },
     ]
   },
   {
     title: 'Cobrança',
-    data: ["icon:fas fa-hand-holding-usd"],
+    data: ["icon:fas fa-hand-holding-usd", "role:cobranca"],
+    canActivate: [authGuard],
     path: 'cobranca',
     children: [
       // Sem title de propósito: o menu lateral é gerado do router e filtra por
@@ -369,15 +389,15 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'titulos',
         title: 'Títulos',
-        canActivate: [authGuard],
-        data: ["icon:fas fa-list"],
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-list", "role:cobranca"],
         component: CobrancaStatementComponent
       },
       {
         path: 'resultado',
         title: 'Resultado',
-        canActivate: [authGuard],
-        data: ["icon:fas fa-chart-line"],
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-chart-line", "role:cobranca"],
         component: CobrancaDashboardComponent
       },
     ]
@@ -407,42 +427,42 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Financeiro',
     path: 'financeiro',
-    data: ["icon:fas fa-dollar-sign"],
+    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
     canActivate: [authGuard],
     children: [
       {
         path: 'pix',
         title: 'PIX',
-        data: ["icon:fas fa-qrcode"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin"],
+        canActivate: [authGuard, roleGuard],
         component: PixPageComponent,
       },
       {
         path: 'notas-fiscais',
         title: 'Notas Fiscais',
-        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
+        canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'adiantamentos',
         title: 'Adiantamentos',
-        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'devolucoes',
         title: 'Devoluções',
-        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'recebimentos',
         title: 'Recebimentos',
-        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento"],
-        canActivate: [authGuard],
+        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin"],
+        canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
     ]
@@ -450,7 +470,8 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Produção',
     path: 'producao',
-    data: ["icon:fa-brands fa-product-hunt"],
+    data: ["icon:fa-brands fa-product-hunt", "role:qualidade"],
+    canActivate: [authGuard, roleGuard],
     component: ReprocessamentoComponent,
   },
   {

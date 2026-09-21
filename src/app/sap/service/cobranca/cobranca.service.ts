@@ -33,8 +33,9 @@ export interface CobrancaFiltro {
 }
 
 export interface CobrancaDashboardFiltro {
-  filial?: number | null;
+  filial?: number[] | null;
   vendedor?: number | null;
+  cobrador?: string | null;
   de?: string | null;
   ate?: string | null;
 }

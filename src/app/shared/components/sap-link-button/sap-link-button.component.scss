@@ -33,6 +33,14 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
+.sap-link-button__texto {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .sap-link-button-copy {
   display: inline-flex;
   align-items: center;
@@ -41,4 +49,10 @@
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   margin-left: -1px;
+}
+
+.sap-link-button-copy--unico {
+  border-top-left-radius: 0.2rem;
+  border-bottom-left-radius: 0.2rem;
+  margin-left: 0;
 }

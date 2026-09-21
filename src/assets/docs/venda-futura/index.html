@@ -269,14 +269,41 @@
               Ao abrir o contrato, você vê a tela <strong>Detalhes da Venda Futura</strong>,
               com os dados principais (número do contrato, filial, número do pedido,
               cliente, vendedor, valor do frete, valor total e data de criação) e
-              <strong>quatro abas</strong>:
+              <strong>as abas</strong> com os documentos ligados a ele:
             </p>
             <div class="tabs-demo">
               <div class="tabs-demo__item"><strong>Produtos</strong><span>Itens do contrato: preço negociado, quantidade, já retirada, disponível e total.</span></div>
-              <div class="tabs-demo__item"><strong>Pedidos</strong><span>Pedidos de venda vinculados ao contrato.</span></div>
+              <div class="tabs-demo__item"><strong>Pedidos</strong><span>Cotações e pedidos de venda gerados pelas retiradas do contrato.</span></div>
               <div class="tabs-demo__item"><strong>Boletos</strong><span>Parcelas, com vencimento, valor e situação (Aberto, Fechado, Cancelado).</span></div>
               <div class="tabs-demo__item"><strong>Entregas</strong><span>Notas de entrega (saídas) e devoluções já realizadas.</span></div>
+              <div class="tabs-demo__item"><strong>Pendentes de Baixa</strong><span>Só para administradores: entregas cujo adiantamento não fechou por centavos. Veja a seção <a href="#especiais">5</a>.</span></div>
             </div>
+            <div class="callout callout--note">
+              <div class="callout__title">Os números com botãozinho são atalhos</div>
+              <p>Nos dados do contrato e nas colunas de <strong>ID</strong> das abas
+                <strong>Pedidos</strong> e <strong>Entregas</strong>, cada número vem com
+                dois botões:</p>
+              <ul>
+                <li><strong>Abrir em nova aba</strong> (ícone de seta) — leva direto ao
+                  documento: cotação, pedido de venda, nota fiscal de saída, devolução,
+                  cliente ou o próprio pedido de origem, conforme o campo;</li>
+                <li><strong>Copiar</strong> (ícone de folhas) — copia o número para colar
+                  no SAP ou numa consulta.</li>
+              </ul>
+              <p>O <strong>Número do Contrato</strong> tem apenas o <em>copiar</em>: ele é o
+                contrato que você já está vendo, não há para onde abrir.</p>
+            </div>
+            <p>Nas abas <strong>Pedidos</strong> e <strong>Entregas</strong>, as colunas são
+              as mesmas e valem estas leituras:</p>
+            <table class="tbl">
+              <thead><tr><th>Coluna</th><th>O que mostra</th></tr></thead>
+              <tbody>
+                <tr><td><strong>ID</strong></td><td>Número do documento, com o atalho para abri-lo.</td></tr>
+                <tr><td><strong>Tipo de Nota</strong></td><td>Cotação, Pedido de Venda, Nota Fiscal de Saída ou Devolução Nota de Saída.</td></tr>
+                <tr><td><strong>Entregue</strong></td><td>Quantidade da linha. Aparece <strong>negativa</strong> em tudo que não é nota fiscal de saída (cotação, pedido e devolução), para deixar claro que aquilo não somou entrega.</td></tr>
+                <tr><td><strong>Total</strong></td><td>Valor <strong>líquido</strong> da linha, já descontado o ICMS desonerado — normalmente o preço negociado multiplicado pela quantidade.</td></tr>
+              </tbody>
+            </table>
             <figure class="shot">
               <img class="shot__img" src="img/detalhe.png" alt="Tela Detalhes da Venda Futura com dados do contrato e abas">
               <figcaption class="shot__cap">Detalhes do contrato: dados principais, botões de ação e as abas (Produtos, Pedidos, Boletos, Entregas).</figcaption>
@@ -286,13 +313,20 @@
               <p>No topo do detalhe, as ações estão organizadas em <strong>grupos</strong>.
                 Clique no grupo para abrir as opções:</p>
               <ul>
-                <li><span class="btnex btnex--success">Financeiro</span> — Emitir Boletos e Gerar PIX;</li>
+                <li><span class="btnex btnex--success">Financeiro</span> — Emitir Boletos e
+                  Gerar PIX. O <strong>Gerar PIX (Sem Juros)</strong> só aparece para quem
+                  tem autorização para dispensar o juros de mora;</li>
                 <li><span class="btnex btnex--info">Produtos</span> — Retirar e Troca;</li>
                 <li><span class="btnex btnex--warning">Minutar Contrato</span> — gera a minuta em PDF (botão direto);</li>
-                <li><span class="btnex btnex--danger">Reversões</span> — Vincular Devolução e Cancelar Contrato.</li>
+                <li><span class="btnex btnex--danger">Reversões</span> — Vincular Devolução e Cancelar Contrato;</li>
+                <li><span class="btnex btnex--ghost">Mapa de Relações</span> — abre o desenho
+                  de tudo que está amarrado ao contrato (pedido, cotações, notas,
+                  adiantamentos, devoluções e recebimentos) e de como um gerou o outro. É o
+                  caminho mais rápido para entender um contrato bagunçado.</li>
               </ul>
-              <p>Os grupos só aparecem <strong>depois</strong> que as entregas terminam de
-                carregar. Se a tela estiver lenta, aguarde alguns segundos.</p>
+              <p>Os botões ficam <strong>desabilitados</strong> enquanto as entregas, os
+                boletos e os pedidos estão carregando — o ícone girando ao lado deles indica
+                isso. Se a tela estiver lenta, aguarde alguns segundos.</p>
             </div>
           </div>
         </article>
@@ -584,6 +618,70 @@
               <p>A nota de saída deixa de aparecer na seleção e o botão
                 <span class="btnex btnex--danger">Cancelar Conciliação</span> dela some — ela
                 já foi tratada, não pode ser estornada de novo.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Pendentes de baixa -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">🪙</span>
+            <h3>Entregas pendentes de baixa (baixa com spread)</h3>
+          </header>
+          <div class="step__body">
+            <div class="callout callout--note">
+              <div class="callout__title">Só para administradores</div>
+              <p>A aba <strong>Pendentes de Baixa</strong> e esta operação aparecem apenas
+                para quem tem perfil de <strong>administrador</strong>.</p>
+            </div>
+            <p>
+              A apropriação do adiantamento na entrega é <strong>tudo ou nada</strong>: o
+              sistema só fecha a baixa quando o valor dos adiantamentos disponíveis dá
+              <strong>exatamente</strong> o total da nota. Quando o faturamento arredonda o
+              imposto e a nota fica <strong>alguns centavos</strong> acima, a apropriação
+              nunca fecha e a entrega fica presa — aparentemente sem motivo.
+            </p>
+            <p>A aba <strong>Pendentes de Baixa</strong> mostra justamente essas entregas:</p>
+            <table class="tbl">
+              <thead><tr><th>Coluna</th><th>O que mostra</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Nota</strong></td><td>Número da nota fiscal de saída travada.</td></tr>
+                <tr><td><strong>Valor da Nota</strong></td><td>Total da nota.</td></tr>
+                <tr><td><strong>Adiantamento Aplicável</strong></td><td>Quanto dos adiantamentos em aberto o sistema consegue apropriar hoje.</td></tr>
+                <tr><td><strong>Diferença</strong></td><td>O que falta para fechar. É esse valor que precisa caber no spread.</td></tr>
+              </tbody>
+            </table>
+            <p>Se não houver nada travado, a aba mostra
+              <em>”Nenhuma reclassificação pendente de baixa.”</em></p>
+            <ol class="steps-inline">
+              <li>Abra a aba <strong>Pendentes de Baixa</strong> e confira a
+                <strong>Diferença</strong> da nota.</li>
+              <li>Clique em <span class="btnex btnex--warning">Baixar c/ Spread</span> na
+                linha. O botão só aparece quando ainda existe adiantamento em aberto para
+                apropriar.</li>
+              <li>Informe o <strong>spread em R$</strong> — a tolerância que você autoriza.
+                O padrão sugerido é <strong>0,10</strong> e o máximo aceito é
+                <strong>1,00</strong>.</li>
+              <li>Confirme. Em caso de sucesso: <em>”Nota baixada com sucesso.”</em> e a
+                tela recarrega.</li>
+            </ol>
+            <div class="callout callout--info">
+              <div class="callout__title">O que o sistema faz com a diferença</div>
+              <p>A nota é baixada e a diferença de centavos, quando existe, é lançada em
+                <strong>conta de perda</strong>, num lançamento contábil próprio que registra
+                a nota, o contrato, o spread usado e <strong>quem autorizou</strong>.</p>
+            </div>
+            <div class="callout callout--warn">
+              <div class="callout__title">Quando o sistema recusa</div>
+              <ul>
+                <li>Spread <strong>zero, negativo ou acima do máximo</strong>;</li>
+                <li>Diferença <strong>maior que o spread informado</strong> — a mensagem diz
+                  a diferença real; aí não é arredondamento, é divergência de valor e
+                  precisa ser investigada, não ”baixada”;</li>
+                <li>Nota <strong>sem centro de custo</strong> nas linhas, que impede o
+                  lançamento do ajuste.</li>
+              </ul>
+              <p>Em qualquer um desses casos <strong>nada é lançado</strong>.</p>
             </div>
           </div>
         </article>

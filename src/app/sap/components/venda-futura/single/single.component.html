@@ -98,14 +98,15 @@
             <dl class="row">
                 <dt class="col-sm-3">Número do Contrato:</dt>
                 <dd class="col-sm-3">
+                    <!-- somenteCopiar: o link abria a propria tela de novo. Fica so o copiar,
+                         que e o que serve pra levar a chave pro SAP. -->
                     <app-sap-link-button
                         [label]="selected.DocEntry"
-                        [sapRouterLink]="'/venda/venda-futura'"
-                        [queryParams]="{ id: selected.DocEntry }">
+                        [somenteCopiar]="true">
                     </app-sap-link-button>
                 </dd>
                 <dt class="col-sm-3">Filial:</dt>
-                <dd class="col-sm-3">{{ selected.Bplname }}</dd>
+                <dd class="col-sm-3">{{ selected.filialFormatada }}</dd>
 
                 <dt class="col-sm-3">Número do Pedido:</dt>
                 <dd class="col-sm-3">

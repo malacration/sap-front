@@ -29,6 +29,15 @@ export class FutureDeliverySales {
   }
 }
 
+//tela interna que abre cada tipo de documento das abas de Pedidos e Entregas (mesmas rotas
+//do TIPO_ROTA do mapa de relacoes). Tipo fora do mapa fica sem link, so o DocNum cru.
+const ROTA_POR_TIPO_DOCUMENTO: { [docObjectCode: string]: string } = {
+  oQuotations: '/venda/cotacao',
+  oOrders: '/venda/pedidos-venda',
+  oInvoices: '/financeiro/notas-fiscais',
+  oCreditNotes: '/financeiro/devolucoes',
+};
+
 export class DocumentLines {
   DocEntry: number;
   DocNum: number;
@@ -48,23 +57,15 @@ export class DocumentLines {
   }
 
   get documentRouterLink(): RouteLink | number {
-    if (this.DocObjectCode === 'oOrders') {
-      return new RouteLink(
-        this.DocNum?.toString(),
-        '/venda/pedidos-venda',
-        { id: this.DocEntry }
-      );
-    }
+    const rota = ROTA_POR_TIPO_DOCUMENTO[this.DocObjectCode];
+    if (!rota)
+      return this.DocNum;
 
-    if (this.DocObjectCode === 'oQuotations') {
-      return new RouteLink(
-        this.DocNum?.toString(),
-        '/venda/cotacao',
-        { id: this.DocEntry }
-      );
-    }
-
-    return this.DocNum;
+    return new RouteLink(
+      this.DocNum?.toString(),
+      rota,
+      { id: this.DocEntry }
+    );
   }
 
   get documentStatus(){
@@ -79,8 +80,12 @@ export class DocumentLines {
     return formatCurrency(this.U_preco_negociado, 'pt', 'R$');
   }
 
+  // O desonerado so vem calculado do backend nos endpoints de venda futura; sem ele o liquido
+  // da linha e o proprio LineTotal. O fallback e obrigatorio porque formatCurrency de
+  // undefined/null renderiza "R$ ∞" (o simbolo de infinito do locale).
   get totalLinhaCurrency() {
-    return formatCurrency(this.LineTotalDesonerado, 'pt', 'R$');
+    const total = this.LineTotalDesonerado ?? this.LineTotal;
+    return total == null ? '-' : formatCurrency(total, 'pt', 'R$');
   }
 
   get formattedDocDate() {
