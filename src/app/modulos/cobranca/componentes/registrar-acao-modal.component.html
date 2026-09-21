@@ -52,7 +52,7 @@
       <div class="form-row mt-2">
         <div class="col-md-4">
           <label>Data prometida (opcional)</label>
-          <input type="date" class="form-control" name="dataPromessa" [(ngModel)]="form.dataPromessa" [disabled]="salvando">
+          <app-campo-data name="dataPromessa" [(ngModel)]="form.dataPromessa" [disabled]="salvando"></app-campo-data>
         </div>
         <div class="col-md-4">
           <label>Cobrador</label>

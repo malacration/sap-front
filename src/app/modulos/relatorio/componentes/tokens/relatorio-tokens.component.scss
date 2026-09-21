@@ -1,0 +1,57 @@
+.token-valor {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+// O bloco do token recem-criado precisa saltar aos olhos: e a unica
+// oportunidade de copiar o valor.
+//
+// Cores explicitas, e nao `alert-success`: o tema do AdminLTE repinta os alerts,
+// e o texto secundario ficava sem contraste sobre o fundo.
+.token-novo {
+  background: #f1f8f3;
+  border: 1px solid #bfe3cb;
+  border-left: 4px solid #25a246;
+  border-radius: 0.25rem;
+  color: #14301f;
+  margin-bottom: 1rem;
+  padding: 1rem;
+
+  &__titulo {
+    color: #14301f;
+    margin-bottom: 0.5rem;
+  }
+
+  &__aviso {
+    color: #14301f;
+    margin-bottom: 0.75rem;
+  }
+
+  &__rotulo {
+    color: #14301f;
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.25rem;
+  }
+
+  &__expira {
+    color: #3c4a41;   // contraste >= 7:1 sobre o fundo claro
+    font-size: 0.85rem;
+    margin: 0.5rem 0 0;
+  }
+}
+
+.botao-copiar {
+  font-weight: 600;
+}
+
+// Mantem o botao "Gerar" na mesma linha de base dos campos que tem rotulo.
+.rotulo-vazio {
+  display: block;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 767.98px) {
+    display: none;
+  }
+}

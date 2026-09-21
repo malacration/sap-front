@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BranchService } from '../../../../sap/service/branch.service';
 import { Branch } from '../../../../sap/model/branch';
 import { Option } from '../../../../sap/model/form/option';
@@ -9,7 +11,7 @@ import { ReplaceFilial } from '../../../../utils/replaceFilial';
   selector: 'app-branch-select',
   templateUrl: './branch-select.component.html'
 })
-export class BranchSelectComponent implements OnInit {
+export class BranchSelectComponent implements OnInit, OnDestroy {
 
   constructor(private service : BranchService){
 
@@ -55,6 +57,8 @@ export class BranchSelectComponent implements OnInit {
   filiaisIniciais: Array<Branch> = [];
 
   loading = false
+  erro = ''
+  private readonly destruir = new Subject<void>()
 
   @Output()
   selectedOut = new EventEmitter<Branch>();
@@ -70,14 +74,27 @@ export class BranchSelectComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.carregar()
+  }
+
+  carregar(): void {
     this.loading = true;
-    this.service.get().subscribe(data => {
+    this.erro = '';
+    this.service.get().pipe(takeUntil(this.destruir)).subscribe({next: data => {
       this.branches = data;
       this.opcoes = data.map(it => new Option(it, this.descricaoDe(it)));
       this.recalculaSelecaoUnica();
       this.recalculaPreSelecao();
       this.loading = false;
-    })
+    }, error: () => {
+      this.loading = false;
+      this.erro = 'Não foi possível carregar as filiais.';
+    }})
+  }
+
+  ngOnDestroy(): void {
+    this.destruir.next();
+    this.destruir.complete();
   }
 
   // Referencia nova so aqui: e ela que o app-select observa pra reaplicar a selecao, entao

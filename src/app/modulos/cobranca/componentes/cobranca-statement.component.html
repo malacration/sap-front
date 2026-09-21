@@ -72,11 +72,11 @@
           </div>
           <div class="col-md-2 col-sm-6">
             <label>Vencimento de</label>
-            <input type="date" class="form-control" name="filtroVencimentoDe" [(ngModel)]="filtroVencimentoDe" (ngModelChange)="onVencimentoChange()">
+            <app-campo-data name="filtroVencimentoDe" [(ngModel)]="filtroVencimentoDe" (ngModelChange)="onVencimentoChange()"></app-campo-data>
           </div>
           <div class="col-md-2 col-sm-6">
             <label>Vencimento até</label>
-            <input type="date" class="form-control" name="filtroVencimentoAte" [(ngModel)]="filtroVencimentoAte" (ngModelChange)="onVencimentoChange()">
+            <app-campo-data name="filtroVencimentoAte" [(ngModel)]="filtroVencimentoAte" (ngModelChange)="onVencimentoChange()"></app-campo-data>
           </div>
           <div class="col-md-2 col-sm-6">
             <label>

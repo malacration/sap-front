@@ -37,23 +37,11 @@
           </div>
           <div class="col-md-3 col-sm-6">
             <label for="filtroCreateDateFrom" class="col-form-label">Criado de</label>
-            <input
-              id="filtroCreateDateFrom"
-              name="filtroCreateDateFrom"
-              class="form-control"
-              type="date"
-              [(ngModel)]="filtroCreateDateFrom"
-            />
+            <app-campo-data inputId="filtroCreateDateFrom" name="filtroCreateDateFrom" [(ngModel)]="filtroCreateDateFrom"></app-campo-data>
           </div>
           <div class="col-md-3 col-sm-6">
             <label for="filtroCreateDateTo" class="col-form-label">Criado até</label>
-            <input
-              id="filtroCreateDateTo"
-              name="filtroCreateDateTo"
-              class="form-control"
-              type="date"
-              [(ngModel)]="filtroCreateDateTo"
-            />
+            <app-campo-data inputId="filtroCreateDateTo" name="filtroCreateDateTo" [(ngModel)]="filtroCreateDateTo"></app-campo-data>
           </div>
           <div class="col-auto">
             <div class="btn-group d-flex">

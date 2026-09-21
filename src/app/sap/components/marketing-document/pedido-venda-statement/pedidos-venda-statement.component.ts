@@ -44,8 +44,8 @@ export class PedidosVendaStatementComponent {
     this.lista.reload();
   }
 
-  onDataChange(event: Event) {
-    const data = (event.target as HTMLInputElement).value;
+  onDataChange(data: string | null) {
+    this.dataFiltro = data || '';
     this.pedidosVendaService.filtro.data = data || undefined;
     this.lista.reload();
   }

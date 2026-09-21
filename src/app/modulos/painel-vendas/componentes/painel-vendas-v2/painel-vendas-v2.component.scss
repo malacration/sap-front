@@ -1,0 +1,96 @@
+.painel-vendas-v2 {
+  .filtros > div {
+    margin-bottom: 0.75rem;
+  }
+
+  .estado-carregamento {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    justify-content: center;
+    min-height: 220px;
+  }
+
+  .escopo-aplicado {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .escopo-titulo {
+    flex-basis: 100%;
+  }
+
+  .filial {
+    font-size: 0.8rem;
+    margin-left: 0.35rem;
+  }
+
+  .kpis > div {
+    margin-bottom: 1rem;
+  }
+
+  .kpi-card {
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #6c757d;
+    border-radius: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 118px;
+    padding: 1rem;
+  }
+
+  .kpi-destaque {
+    border-left-color: #007bff;
+  }
+
+  .kpi-label {
+    color: #5f6870;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.025rem;
+    text-transform: uppercase;
+  }
+
+  .kpi-card strong {
+    font-size: 1.45rem;
+    line-height: 1.8;
+  }
+
+  .kpi-card small {
+    color: #6c757d;
+  }
+
+  .grafico-card {
+    border: 1px solid #e1e5e9;
+    border-radius: 0.25rem;
+    height: 100%;
+    padding: 1rem;
+  }
+
+  .grafico {
+    height: 340px;
+  }
+
+  .graficos > div {
+    margin-bottom: 1rem;
+  }
+
+  .tooltip-conteudo {
+    padding: 0.4rem 0.6rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .painel-vendas-v2 {
+    .grafico {
+      height: 300px;
+    }
+
+    .kpi-card strong {
+      font-size: 1.25rem;
+    }
+  }
+}

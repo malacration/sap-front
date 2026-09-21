@@ -5,6 +5,14 @@ import { TipoOperacao } from '../../sap/model/tipo-operacao';
 export class ConfigService {
 
   private host: string;
+  /**
+   * Host do sap-reports, quando ele NAO esta atras do mesmo gateway.
+   *
+   * Vazio (o normal) = mesmo host, com o prefixo /api/sap-reports roteado pelo
+   * gateway. Preenchido = acesso cruzado, e o sap-reports precisa liberar a
+   * origem do front em `cors.origins`, senao o navegador barra no preflight.
+   */
+  private hostRelatorios: string;
   private webSocket: string;
   public title: string = 'SAP - A R Soluções';
   public commercial_phone : string = '69 9 9999 6666'
@@ -23,6 +31,19 @@ export class ConfigService {
     if(storageHost)
       return storageHost
     return "http://localhost:8080"
+  }
+
+  /**
+   * Base da API de relatorios, ja com o sufixo /api/v1.
+   *
+   * Com `hostRelatorios` configurado o prefixo /api/sap-reports NAO entra: ele
+   * existe so para o roteamento do gateway quando tudo compartilha o host.
+   */
+  getHostRelatorios(){
+    const dedicado = this.hostRelatorios || localStorage.getItem("hostRelatorios")
+    if(dedicado)
+      return dedicado.replace(/\/+$/, '') + "/api/v1"
+    return this.getHost().replace(/\/+$/, '') + "/api/sap-reports/api/v1"
   }
 
   getWebSocket(){

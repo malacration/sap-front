@@ -14,11 +14,11 @@
                 <div class="form-row align-items-end">
                     <div class="col-auto">
                         <label for="de" class="col-form-label">De</label>
-                        <input id="de" name="de" type="date" class="form-control" [(ngModel)]="de">
+                        <app-campo-data inputId="de" name="de" [(ngModel)]="de"></app-campo-data>
                     </div>
                     <div class="col-auto">
                         <label for="ate" class="col-form-label">Até</label>
-                        <input id="ate" name="ate" type="date" class="form-control" [(ngModel)]="ate">
+                        <app-campo-data inputId="ate" name="ate" [(ngModel)]="ate"></app-campo-data>
                     </div>
                     <div class="col-auto" style="min-width: 220px;">
                         <app-branch-select (selectedOut)="selecionaFilial($event)"></app-branch-select>

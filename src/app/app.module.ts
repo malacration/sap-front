@@ -125,6 +125,8 @@ import { PainelVendasModule } from './modulos/painel-vendas/painel-vendas.module
 import { RelatorioFreteModule } from './modulos/relatorio-frete/relatorio-frete.module';
 import { QRCodeModule } from 'angularx-qrcode';
 import { CobrancaModule } from './modulos/cobranca/cobranca.module';
+import { RelatorioModule } from './modulos/relatorio/relatorio.module';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 
 registerLocaleData(localeBr);
@@ -208,6 +210,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     OfflineHistoryComponent,
   ],
   imports: [
+    // Providers do datepicker uma vez so; o campo (app-campo-data) vem do SharedModule.
+    BsDatepickerModule.forRoot(),
     NgxPaginationModule,
     CalculadoraModule,
     BrowserModule,
@@ -221,6 +225,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     OrdemCarregamentoModule,
     PainelVendasModule,
     RelatorioFreteModule,
+    RelatorioModule,
     CobrancaModule,
     ReactiveFormsModule,
     LoadingBarModule,

@@ -1,0 +1,8 @@
+// O checkbox nao tem um <input class="form-control">, entao precisa ocupar a
+// mesma altura de um, senao a coluna vizinha sobe e a linha fica desalinhada.
+// Fica aqui, e nao na tela de consumo: a previa da autoria usa o mesmo formulario.
+.controle-booleano {
+  align-items: center;
+  display: flex;
+  min-height: calc(1.5em + 0.75rem + 2px);   // altura padrao do .form-control
+}

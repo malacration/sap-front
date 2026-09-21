@@ -1,0 +1,225 @@
+.empty-state {
+  color: #6c757d;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.list-group-item.active .text-muted {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.code-editor {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.82rem;
+}
+
+.workspace-editor {
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  display: grid;
+  grid-template-columns: 215px minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.file-tree {
+  background: #f7f8fa;
+  border-right: 1px solid #ced4da;
+  padding: 0.65rem 0;
+}
+
+.tree-root {
+  font-weight: 700;
+  overflow: hidden;
+  padding: 0.45rem 0.8rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tree-file {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #343a40;
+  display: flex;
+  padding: 0.55rem 0.75rem 0.55rem 1.8rem;
+  text-align: left;
+  width: 100%;
+}
+
+.tree-file:hover {
+  background: #e9ecef;
+}
+
+.tree-file.active {
+  background: #dbeafe;
+  color: #0b4f9c;
+  font-weight: 600;
+}
+
+.tree-file span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-error {
+  color: #dc3545;
+  font-size: 0.75rem;
+  margin-left: auto;
+  padding-left: 0.35rem;
+  white-space: nowrap;
+}
+
+.editor-pane {
+  min-width: 0;
+  position: relative;
+}
+
+.editor-pane app-editor-codigo {
+  border: 0;
+}
+
+.editor-pane > small {
+  border-top: 1px solid #e9ecef;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+}
+
+.sql-conversion {
+  border-radius: 0;
+  margin: 0;
+}
+
+.upload-secondary {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+}
+
+.upload-secondary summary {
+  color: #495057;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+  .workspace-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .file-tree {
+    border-bottom: 1px solid #ced4da;
+    border-right: 0;
+  }
+}
+
+.validation-errors {
+  background: #fff5f5;
+  border: 1px solid #dc3545;
+  border-radius: 0.25rem;
+  color: #721c24;
+  padding: 1rem;
+}
+
+.problem-group {
+  background: #fff;
+  border-left: 4px solid #dc3545;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+}
+
+.problem-path {
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.problem-link {
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.problem-link:not(:disabled) {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.problem-link:disabled {
+  opacity: 1;
+}
+
+.min-tab-height {
+  min-height: 240px;
+}
+
+.preview-modal-body {
+  height: calc(100vh - 150px);
+  padding: 0;
+}
+
+.preview-modal-body iframe {
+  border: 0;
+  height: 100%;
+  width: 100%;
+}
+
+:host ::ng-deep .ngx-pagination {
+  margin: 1rem;
+  padding: 0;
+}
+
+// ===== Cabecalho: nome editavel como titulo e selo do identificador =====
+.cabecalho-autoria {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  // O card-header do AdminLTE aplica float/clearfix; em flex eles atrapalham.
+  &::after { display: none; }
+}
+
+// Parece titulo; so revela que e campo ao passar o mouse ou focar.
+.titulo-editavel {
+  flex: 1 1 18rem;
+  min-width: 12rem;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  color: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  padding: 0.15rem 0.25rem;
+  outline: none;
+
+  &::placeholder { color: rgba(255, 255, 255, 0.65); font-weight: 400; }
+  &:hover { border-bottom-color: rgba(255, 255, 255, 0.5); }
+  &:focus { border-bottom: 1px solid #fff; background: rgba(255, 255, 255, 0.08); }
+}
+
+.id-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  opacity: 0.9;
+}
+
+.acoes-cabecalho {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+  align-items: center;
+}
+
+.seletor-exemplo {
+  width: auto;
+  max-width: 18rem;
+}

@@ -1,0 +1,125 @@
+<br>
+<section class="content">
+  <div class="row">
+    <div class="col-lg-4">
+      <div class="card card-primary card-outline position-relative">
+        <div class="card-header">
+          <h3 class="card-title"><b>Relatórios disponíveis</b></h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" title="Atualizar" [disabled]="carregandoLista" (click)="carregarLista()">
+              <i class="fas fa-sync-alt" [class.fa-spin]="carregandoLista"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="erroLista" class="alert alert-danger m-3" role="alert">
+            {{ erroLista }}
+            <button type="button" class="btn btn-sm btn-outline-danger ml-2" (click)="carregarLista()">Tentar novamente</button>
+          </div>
+
+          <div *ngIf="!carregandoLista && !erroLista && relatorios.length === 0" class="empty-state">
+            <i class="far fa-folder-open fa-2x mb-2"></i>
+            <p>Nenhum relatório disponível para seus papéis.</p>
+          </div>
+
+          <div class="list-group list-group-flush" *ngIf="relatorios.length > 0">
+            <div
+              class="list-group-item relatorio-list-item"
+              *ngFor="let item of relatorios | paginate: { id: 'relatorios-consumo', itemsPerPage: 8, currentPage: pagina }; trackBy: identificarRelatorio"
+              [class.active]="selecionadoId === item.id"
+              [attr.aria-busy]="carregandoDetalhe && selecionadoId === item.id">
+              <button type="button" class="relatorio-select text-left" (click)="selecionar(item)">
+                <span class="d-block font-weight-bold">
+                  {{ item.nome }}
+                  <i *ngIf="carregandoDetalhe && selecionadoId === item.id" class="fas fa-circle-notch fa-spin ml-1" aria-hidden="true"></i>
+                </span>
+                <span *ngIf="isAdmin && item.versaoPublicada == null" class="badge badge-secondary">Rascunho — abrir para editar</span>
+                <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">{{ item.descricao || 'Sem descrição' }}</small>
+                <small [class.text-white-50]="selecionadoId === item.id" class="text-muted">
+                  Formatos: {{ item.formatos.join(', ') | uppercase }}
+                </small>
+              </button>
+              <button
+                *ngIf="isAdmin"
+                type="button"
+                class="btn btn-sm align-self-center botao-editar"
+                [ngClass]="selecionadoId === item.id ? 'btn-outline-light' : 'btn-outline-primary'"
+                [attr.aria-label]="'Editar ' + item.nome"
+                (click)="editar(item.id)">
+                <i class="fas fa-edit mr-1"></i> Editar
+              </button>
+            </div>
+          </div>
+          <pagination-controls
+            *ngIf="relatorios.length > 8"
+            id="relatorios-consumo"
+            previousLabel="Anterior"
+            nextLabel="Próxima"
+            [autoHide]="true"
+            (pageChange)="pagina = $event">
+          </pagination-controls>
+        </div>
+        <div *ngIf="carregandoLista" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
+      </div>
+    </div>
+
+    <div class="col-lg-8">
+      <div class="card card-primary position-relative">
+        <div class="card-header">
+          <h3 class="card-title"><b>{{ relatorio?.nome || 'Gerar relatório' }}</b></h3>
+          <!-- Rascunho so aparece para admin (a listagem publica nao os traz).
+               Precisa ficar visivel: sem marcacao, um relatorio nao publicado
+               parece disponivel e o admin nao entende por que ninguem o ve. -->
+          <span *ngIf="relatorio && !relatorio.versaoPublicada"
+                class="badge badge-warning float-right ml-1">Rascunho</span>
+          <span *ngIf="relatorio?.versaoPublicada" class="badge badge-light float-right">Versão {{ relatorio.versaoPublicada }}</span>
+        </div>
+        <div class="card-body">
+          <div *ngIf="!relatorio && !carregandoDetalhe && !erroDetalhe" class="empty-state">
+            <i class="fas fa-chart-bar fa-2x mb-2"></i>
+            <p>Escolha um relatório para informar os filtros e gerar o arquivo.</p>
+          </div>
+
+          <div *ngIf="erroDetalhe" class="alert alert-danger" role="alert">{{ erroDetalhe }}</div>
+
+          <ng-container *ngIf="relatorio">
+            <p class="text-muted">{{ relatorio.descricao || 'Sem descrição.' }}</p>
+            <div>
+              <app-formulario-parametros #formParams [parametros]="relatorio.parametros">
+              </app-formulario-parametros>
+
+              <div class="d-flex flex-wrap format-actions">
+                <button
+                  *ngFor="let formato of relatorio.formatos"
+                  type="button"
+                  class="btn btn-success mr-2 mb-2"
+                  [disabled]="!!gerando"
+                  (click)="gerar(formato)">
+                  <i class="fas" [ngClass]="formato === 'html' ? 'fa-external-link-alt' : 'fa-download'"></i>
+                  {{ gerando === formato ? 'Gerando...' : (formato === 'html' ? 'Abrir em nova aba' : 'Baixar ' + formato.toUpperCase()) }}
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="erroGeracao" class="alert alert-warning mt-3" role="alert">
+              <i class="fas fa-exclamation-triangle mr-1"></i> {{ erroGeracao }}
+            </div>
+
+            <div *ngIf="htmlSeguro" class="html-preview mt-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="m-0">Resultado HTML</h4>
+                <small class="text-muted"><i class="fas fa-shield-alt"></i> Exibição isolada</small>
+              </div>
+              <iframe
+                title="Resultado do relatório em HTML"
+                sandbox=""
+                [src]="htmlSeguro">
+              </iframe>
+            </div>
+          </ng-container>
+        </div>
+        <div *ngIf="carregandoDetalhe" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
+      </div>
+    </div>
+  </div>
+</section>

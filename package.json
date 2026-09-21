@@ -58,6 +58,7 @@
     "@swimlane/ngx-charts": "20.5.0",
     "angularx-qrcode": "15.0.0",
     "big.js": "6.2.2",
+    "codemirror": "5.65.16",
     "core-js": "3.25.0",
     "cytoscape": "3.34.0",
     "cytoscape-dagre": "4.0.0",
