@@ -24,4 +24,11 @@
     text-overflow: ellipsis;
     vertical-align: bottom;
   }
+
+  // O switch do Bootstrap anima o "slide" em 0.15s por padrão - dava a sensação de atraso
+  // comparado com o checkbox simples de antes. Aqui fica instantâneo, só nesse controle.
+  #filtroOcultarAvista ~ .custom-control-label::before,
+  #filtroOcultarAvista ~ .custom-control-label::after {
+    transition: none;
+  }
 }

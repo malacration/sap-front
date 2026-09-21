@@ -191,7 +191,43 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
   }
 
   verRecuperado(): void {
-    this.irParaTitulos({ situacaoSap: 'PAGO' });
+    // "Recuperado" soma QUALQUER pagamento aplicado no período, mesmo que a parcela continue
+    // aberta no SAP (a maioria dos recebimentos é parcial e não fecha o Status). Forçar
+    // situacaoSap='PAGO' aqui cruzava com dataPagamentoDe/Ate e quase sempre voltava vazio -
+    // manda '' (Todos rastreado) e deixa o recorte de data fazer o trabalho sozinho.
+    this.irParaTitulos({
+      situacaoSap: '',
+      comAcompanhamento: true,
+      dataPagamentoDe: this.filtroDe,
+      dataPagamentoAte: this.filtroAte,
+      cardRecuperado: this.dashboard.Recuperado ?? 0,
+    });
+  }
+
+  /**
+   * Mesmo destino do card "Recuperado", recortado no mês da barra clicada. O backend agrega a
+   * série só até hoje (CobrancaDashboardService.evolucao), então o mês corrente tem que ser
+   * limitado em hoje - senão a lista pediria um intervalo maior do que a barra representa.
+   */
+  verMesRecuperado(mes: CobrancaMes | undefined): void {
+    if (!mes?.Mes) {
+      return;
+    }
+    const [ano, numeroDoMes] = mes.Mes.split('-').map(Number);
+    if (!Number.isFinite(ano) || !Number.isFinite(numeroDoMes)) {
+      return;
+    }
+    const hoje = new Date();
+    // Dia 0 do mês seguinte = último dia do mês pedido.
+    const ultimoDia = new Date(ano, numeroDoMes, 0);
+    const fim = ultimoDia > hoje ? hoje : ultimoDia;
+    this.irParaTitulos({
+      situacaoSap: '',
+      comAcompanhamento: true,
+      dataPagamentoDe: `${mes.Mes}-01`,
+      dataPagamentoAte: this.paraInput(fim),
+      cardRecuperado: mes.Recuperado ?? 0,
+    });
   }
 
   verSemAcao(): void {
@@ -356,6 +392,7 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
       cores: tema.serie,
       horizontal: false,
       tema,
+      aoClicar: (indice) => this.verMesRecuperado(this.evolucao[indice]),
     });
 
     this.desenharBarras(this.graficoCobrador, {

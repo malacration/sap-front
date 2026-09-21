@@ -38,6 +38,9 @@ export class CobrancaTitulo {
   U_Observacao: string;
   U_DataAcao: string;
   U_DataPromessa: string;
+  DataPagamento: string;
+  ValorPago: number;
+  ObservacaoPagamento: string;
 
   selecionado = false;
 
@@ -98,6 +101,10 @@ export class CobrancaTitulo {
     return this.formatarData(this.U_DataPromessa);
   }
 
+  get dataPagamentoFormatada(): string {
+    return this.formatarData(this.DataPagamento);
+  }
+
   get telefoneFormatado(): string {
     // `from` é Object.assign de JSON cru do SAP, então o tipo `string` é ficção de
     // compilação - telefone numérico chegaria como number e o .replace estouraria aqui
@@ -122,6 +129,11 @@ export class CobrancaTitulo {
 
   get saldoCurrency(): string {
     return formatCurrency(this.Saldo ?? 0, 'pt', 'R$');
+  }
+
+  // Sem recebimento a view traz null - '—' evita confundir com um pagamento de R$ 0,00 real.
+  get valorPagoCurrency(): string {
+    return this.ValorPago != null ? formatCurrency(this.ValorPago, 'pt', 'R$') : '—';
   }
 
   get serieFormatada(): string {
@@ -152,8 +164,18 @@ export class CobrancaTitulo {
     return this.U_Ocorrencia || '—';
   }
 
+  get observacaoPagamentoFormatada(): string {
+    return this.ObservacaoPagamento || '—';
+  }
+
   get situacaoSapLabel(): string {
-    return this.SituacaoSap === 'PAGO' ? 'Pago' : 'Aberto';
+    if (this.SituacaoSap === 'PAGO') {
+      return 'Pago';
+    }
+    if (this.SituacaoSap === 'PAGO_PARCIAL') {
+      return 'Pago Parcial';
+    }
+    return 'Aberto';
   }
 
   private formatarData(valor: string): string {

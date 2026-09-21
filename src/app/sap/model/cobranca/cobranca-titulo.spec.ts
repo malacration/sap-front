@@ -64,4 +64,53 @@ describe('CobrancaTitulo', () => {
       expect(comNumero.telefoneFormatado).toBe('(66) 9999-8888');
     });
   });
+
+  describe('valorPagoCurrency', () => {
+    it('formata o valor do ultimo recebimento aplicado a parcela', () => {
+      // formatCurrency usa espaço fixo ( ) entre o simbolo e o valor, nao espaço normal.
+      expect(titulo({ ValorPago: 1234.5 }).valorPagoCurrency).toBe('R$ 1.234,50');
+    });
+
+    it('mostra travessao quando o titulo nunca recebeu pagamento (nao confunde com R$ 0,00)', () => {
+      expect(titulo({ ValorPago: null }).valorPagoCurrency).toBe('—');
+    });
+
+    it('nao confunde recebimento de R$ 0,00 real com titulo nunca recebido', () => {
+      expect(titulo({ ValorPago: 0 }).valorPagoCurrency).toBe('R$ 0,00');
+    });
+  });
+
+  describe('dataPagamentoFormatada', () => {
+    it('formata a data do ultimo recebimento', () => {
+      expect(titulo({ DataPagamento: '20260810' }).dataPagamentoFormatada).toBe('10/08/2026');
+    });
+
+    it('fica em branco quando o titulo nunca recebeu pagamento', () => {
+      expect(titulo({ DataPagamento: null }).dataPagamentoFormatada).toBe('');
+    });
+  });
+
+  describe('situacaoSapLabel', () => {
+    it('mostra Pago quando o SAP fechou a parcela', () => {
+      expect(titulo({ SituacaoSap: 'PAGO' }).situacaoSapLabel).toBe('Pago');
+    });
+
+    it('mostra Pago Parcial quando a parcela recebeu algo mas continua aberta no SAP', () => {
+      expect(titulo({ SituacaoSap: 'PAGO_PARCIAL' }).situacaoSapLabel).toBe('Pago Parcial');
+    });
+
+    it('mostra Aberto quando a parcela nunca recebeu nada', () => {
+      expect(titulo({ SituacaoSap: 'ABERTO' }).situacaoSapLabel).toBe('Aberto');
+    });
+  });
+
+  describe('observacaoPagamentoFormatada', () => {
+    it('mostra a observacao do recebimento quando existe', () => {
+      expect(titulo({ ObservacaoPagamento: 'cheque pre-datado' }).observacaoPagamentoFormatada).toBe('cheque pre-datado');
+    });
+
+    it('mostra travessao quando o recebimento nao tem observacao', () => {
+      expect(titulo({ ObservacaoPagamento: null }).observacaoPagamentoFormatada).toBe('—');
+    });
+  });
 });

@@ -14,6 +14,12 @@
         <button type="button" class="btn btn-sm btn-outline-secondary ml-auto" (click)="limparFiltros()">
           Limpar filtros
         </button>
+        <div class="w-100 mt-2 small" *ngIf="valorCardRecuperado != null && recorteIntacto">
+          Card <b>Recuperado no período</b>: <b>{{ valorCardRecuperado | currency:'BRL' }}</b>.
+          A soma da lista pode não bater com ele: o card soma <b>cada recebimento</b> do período e só
+          conta título que já tinha ação de cobrança registrada <b>antes</b> do pagamento; a lista mostra
+          <b>uma linha por parcela</b>, com o último recebimento dela.
+        </div>
       </div>
 
       <form class="container-fluid px-0" (ngSubmit)="filtrar()" autocomplete="off">
@@ -80,6 +86,18 @@
           </div>
           <div class="col-md-2 col-sm-6">
             <label>
+              Pagamento de
+              <i class="fas fa-info-circle text-muted"
+                 title="Data em que o recebimento entrou no SAP, não o vencimento da parcela."></i>
+            </label>
+            <input type="date" class="form-control" name="filtroDataPagamentoDe" [(ngModel)]="filtroDataPagamentoDe">
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>Pagamento até</label>
+            <input type="date" class="form-control" name="filtroDataPagamentoAte" [(ngModel)]="filtroDataPagamentoAte">
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label>
               Situação SAP
               <i class="fas fa-info-circle text-muted"
                  title="Só entram aqui título em aberto ou título que já teve alguma ação de cobrança registrada. Título quitado que nunca precisou de cobrança não aparece nem em &quot;Pago&quot; nem em &quot;Todos&quot;.">
@@ -87,6 +105,7 @@
             </label>
             <select class="form-control" name="filtroSituacaoSap" [(ngModel)]="filtroSituacaoSap">
               <option value="ABERTO">Aberto</option>
+              <option value="PAGO_PARCIAL">Pago Parcial (rastreado)</option>
               <option value="PAGO">Pago (rastreado)</option>
               <option value="">Todos (rastreado)</option>
             </select>
@@ -98,6 +117,15 @@
             <button type="button" class="btn" [ngClass]="filtroCobrador === nomeUsuario ? 'btn-info' : 'btn-outline-info'" (click)="minhasCobrancas()">
               Minhas cobranças
             </button>
+          </div>
+          <div class="col-auto">
+            <div class="custom-control custom-switch" title="{{ filtroOcultarAvista ? 'Ocultando à vista - clique para trazer tudo' : 'Mostrando tudo - clique para ocultar à vista' }}">
+              <input type="checkbox" class="custom-control-input" id="filtroOcultarAvista"
+                     [(ngModel)]="filtroOcultarAvista" name="filtroOcultarAvista" (ngModelChange)="filtrar()">
+              <label class="custom-control-label" for="filtroOcultarAvista">
+                Ocultar à vista
+              </label>
+            </div>
           </div>
           <div class="col-auto ml-auto">
             <div class="btn-group d-flex">
@@ -135,6 +163,35 @@
         [actionsFirst]="true"
         (actionOutput)="action($event)">
       </app-table>
+
+      <div class="d-flex flex-wrap align-items-center mt-2 px-1" *ngIf="titulos.length > 0">
+        <span class="text-muted mr-3">
+          <i class="fas fa-calculator mr-1"></i>
+          Somando as <b>{{ titulos.length }}</b> parcelas carregadas nesta tela{{ temMais ? ' (há mais)' : '' }}:
+        </span>
+        <span class="mr-3">Saldo <b>{{ saldoCarregado | currency:'BRL' }}</b></span>
+        <span class="mr-3" *ngIf="parcelasComPagamentoCarregadas > 0">
+          Valor pago <b>{{ pagoCarregado | currency:'BRL' }}</b>
+          <small class="text-muted">({{ parcelasComPagamentoCarregadas }} com pagamento)</small>
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-secondary ml-auto"
+                [disabled]="calculandoTotal" (click)="calcularTotalDoFiltro()">
+          {{ calculandoTotal ? 'Somando...' : 'Somar o filtro inteiro' }}
+        </button>
+      </div>
+
+      <div class="alert mt-2 mb-0" [ngClass]="totalDoFiltro.Truncado ? 'alert-warning' : 'alert-secondary'"
+           *ngIf="totalDoFiltro">
+        <b>Filtro inteiro:</b>
+        {{ totalDoFiltro.Parcelas }} parcelas ·
+        Saldo <b>{{ totalDoFiltro.saldoCurrency }}</b> ·
+        Valor pago <b>{{ totalDoFiltro.valorPagoCurrency }}</b>
+        <small class="text-muted">({{ totalDoFiltro.ParcelasComPagamento }} com pagamento)</small>
+        <div class="small mt-1" *ngIf="totalDoFiltro.Truncado">
+          A varredura parou no limite de páginas do SAP — este total é <b>parcial</b>. Estreite o filtro
+          (período, filial ou cliente) para fechar a conta.
+        </div>
+      </div>
 
       <div class="text-center mt-3" *ngIf="temMais">
         <button type="button" class="btn btn-outline-primary" [disabled]="carregandoMais" (click)="carregarMais()">
