@@ -22,13 +22,38 @@ describe('CobrancaStatementComponent', () => {
     const auth = { getUser: () => 'Fulano' } as any;
     const service = {
       getDefinition: () => [],
-      listar: () => of([]),
+      listar: () => of({ titulos: [], truncadoRecebimento: false }),
       dominios: () => of([]),
       cobradores: () => of([]),
       totais: () => resposta,
     } as any;
     const route = { queryParams: of({}) } as any;
     const tela = new CobrancaStatementComponent(auth, service, route);
+    tela.ngOnInit();
+    return tela;
+  }
+
+  /**
+   * Componente com a lista JÁ CARREGADA de verdade (ngOnInit -> filtrar -> listar), não com
+   * `titulos` atribuído direto - é o único jeito de popular o snapshot que usaJanelaDePagamento
+   * lê. `filtroDataPagamentoDe` é setado ANTES do ngOnInit pra ir junto na primeira carga.
+   */
+  function componenteComTitulosCarregados(
+    titulosFake: CobrancaTitulo[],
+    filtroDataPagamentoDe = '',
+    truncadoRecebimento = false,
+  ): CobrancaStatementComponent {
+    const auth = { getUser: () => 'Fulano' } as any;
+    const service = {
+      getDefinition: () => [],
+      listar: () => of({ titulos: titulosFake, truncadoRecebimento }),
+      dominios: () => of([]),
+      cobradores: () => of([]),
+      totais: () => of(new CobrancaTitulosTotal()),
+    } as any;
+    const route = { queryParams: of({}) } as any;
+    const tela = new CobrancaStatementComponent(auth, service, route);
+    tela.filtroDataPagamentoDe = filtroDataPagamentoDe;
     tela.ngOnInit();
     return tela;
   }
@@ -49,6 +74,53 @@ describe('CobrancaStatementComponent', () => {
       expect(tela.saldoCarregado).toBe(350.75);
       expect(tela.pagoCarregado).toBe(100.5);
       expect(tela.parcelasComPagamentoCarregadas).toBe(2);
+    });
+
+    it('com filtro de data de pagamento ligado, soma ValorRecebidoNoPeriodo em vez de ValorPago', () => {
+      // ValorPago e so o ultimo recebimento; com uma parcela paga duas vezes no periodo, o
+      // numero certo (o que bate com o card "Recuperado") e ValorRecebidoNoPeriodo.
+      const tela = componenteComTitulosCarregados([
+        titulo({ Saldo: 0, ValorPago: 50, ValorRecebidoNoPeriodo: 90 }),
+        titulo({ Saldo: 0, ValorPago: 30, ValorRecebidoNoPeriodo: 30 }),
+        titulo({ Saldo: 0, ValorPago: null, ValorRecebidoNoPeriodo: null }),
+      ], '2026-09-01');
+
+      expect(tela.pagoCarregado).toBe(120);
+      expect(tela.parcelasComPagamentoCarregadas).toBe(2);
+    });
+
+    it('sem filtro de data de pagamento, continua somando ValorPago (o ultimo recebimento)', () => {
+      const tela = componenteComTitulosCarregados([
+        titulo({ Saldo: 0, ValorPago: 50, ValorRecebidoNoPeriodo: 999 }),
+      ]);
+
+      expect(tela.pagoCarregado).toBe(50);
+    });
+
+    it('editar a data sem clicar em Filtrar nao muda a soma das linhas ja carregadas (bug reportado)', () => {
+      // Reproduzido: campo de data ao vivo, sem snapshot, fazia o rodape trocar de coluna (e de
+      // valor) so por causa da edicao do formulario - antes de qualquer nova busca acontecer.
+      const tela = componenteComTitulosCarregados([
+        titulo({ Saldo: 0, ValorPago: 50, ValorRecebidoNoPeriodo: 90 }),
+      ], '2026-09-01');
+      expect(tela.pagoCarregado).toBe(90);
+
+      tela.filtroDataPagamentoDe = '';
+
+      expect(tela.usaJanelaDePagamento).toBeTrue();
+      expect(tela.pagoCarregado).toBe(90);
+    });
+
+    it('preencher a data numa lista carregada sem periodo tambem nao muda a soma antes de filtrar', () => {
+      const tela = componenteComTitulosCarregados([
+        titulo({ Saldo: 0, ValorPago: 50, ValorRecebidoNoPeriodo: 90 }),
+      ]);
+      expect(tela.pagoCarregado).toBe(50);
+
+      tela.filtroDataPagamentoDe = '2026-09-01';
+
+      expect(tela.usaJanelaDePagamento).toBeFalse();
+      expect(tela.pagoCarregado).toBe(50);
     });
 
     it('soma em centavos inteiros, sem deriva de float', () => {
@@ -119,6 +191,67 @@ describe('CobrancaStatementComponent', () => {
       tela.limparFiltros();
 
       expect(tela.totalDoFiltro).toBeNull();
+    });
+  });
+
+  describe('carregar mais / truncamento do recebimento no periodo', () => {
+    it('carregar mais usa o filtro que carregou a pagina 1, nao o formulario ao vivo (bug reportado)', () => {
+      // Reproduzido: carregar 20 parcelas com periodo, apagar a data e clicar em "Carregar
+      // mais" mudava a soma das linhas JA carregadas - mesmo a pagina 2 vindo vazia - porque o
+      // criterio (usaJanelaDePagamento) era recalculado com o filtro atual do formulario.
+      const chamadas: any[] = [];
+      const auth = { getUser: () => 'Fulano' } as any;
+      const paginaCheia = {
+        titulos: Array.from({ length: 20 }, () => titulo({ Saldo: 0, ValorPago: 10, ValorRecebidoNoPeriodo: 10 })),
+        truncadoRecebimento: false,
+      };
+      const service = {
+        getDefinition: () => [],
+        listar: (filtro: any) => {
+          chamadas.push(filtro);
+          return chamadas.length === 1 ? of(paginaCheia) : of({ titulos: [], truncadoRecebimento: false });
+        },
+        dominios: () => of([]),
+        cobradores: () => of([]),
+        totais: () => of(new CobrancaTitulosTotal()),
+      } as any;
+      const route = { queryParams: of({}) } as any;
+      const tela = new CobrancaStatementComponent(auth, service, route);
+      tela.filtroDataPagamentoDe = '2026-09-01';
+      tela.ngOnInit();
+
+      expect(tela.usaJanelaDePagamento).toBeTrue();
+      expect(tela.pagoCarregado).toBe(200);
+
+      // Mexeu no campo mas NAO clicou em "Filtrar".
+      tela.filtroDataPagamentoDe = '';
+      tela.carregarMais();
+
+      expect(chamadas[1].dataPagamentoDe).toBe('2026-09-01');
+      expect(tela.usaJanelaDePagamento).toBeTrue();
+      expect(tela.pagoCarregado).toBe(200);
+    });
+
+    it('recebimentoTruncado fica true quando a pagina volta com TruncadoRecebimento (bug reportado)', () => {
+      // Bug reportado: listar() descartava o aviso de truncamento que totalizar() ja
+      // propagava - uma parcela com recebimento real virava ValorRecebidoNoPeriodo=null em
+      // silencio, sem a tela saber que a busca ficou incompleta.
+      const tela = componenteComTitulosCarregados(
+        [titulo({ Saldo: 0, ValorPago: 50, ValorRecebidoNoPeriodo: null })],
+        '2026-09-01',
+        true,
+      );
+
+      expect(tela.recebimentoTruncado).toBeTrue();
+    });
+
+    it('sem truncamento, recebimentoTruncado fica false', () => {
+      const tela = componenteComTitulosCarregados(
+        [titulo({ Saldo: 0, ValorPago: 50, ValorRecebidoNoPeriodo: 50 })],
+        '2026-09-01',
+      );
+
+      expect(tela.recebimentoTruncado).toBeFalse();
     });
   });
 

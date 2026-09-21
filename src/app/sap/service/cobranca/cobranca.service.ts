@@ -42,6 +42,14 @@ export interface CobrancaFiltro {
   tamanho?: number | null;
 }
 
+export interface CobrancaTitulosPagina {
+  titulos: CobrancaTitulo[];
+  // A busca de ValorRecebidoNoPeriodo (view auxiliar, teto próprio de páginas no SAP) parou
+  // incompleta - alguma linha desta página pode estar com esse campo nulo só por causa do
+  // teto, não por falta de recebimento de verdade.
+  truncadoRecebimento: boolean;
+}
+
 export interface CobrancaDashboardFiltro {
   filial?: number[] | null;
   vendedor?: number | null;
@@ -83,10 +91,13 @@ export class CobrancaService {
     this.url = `${this.config.getHost()}/cobranca`;
   }
 
-  listar(filtro: CobrancaFiltro = {}): Observable<CobrancaTitulo[]> {
+  listar(filtro: CobrancaFiltro = {}): Observable<CobrancaTitulosPagina> {
     return this.http
-      .get<any[]>(`${this.url}/titulos`, { params: this.montarParams(filtro) })
-      .pipe(map((lista) => (lista ?? []).map((item) => CobrancaTitulo.from(item))));
+      .get<any>(`${this.url}/titulos`, { params: this.montarParams(filtro) })
+      .pipe(map((json) => ({
+        titulos: (json?.Titulos ?? []).map((item: any) => CobrancaTitulo.from(item)),
+        truncadoRecebimento: !!json?.TruncadoRecebimento,
+      })));
   }
 
   // Total do filtro inteiro, não só da página carregada. O backend roda o mesmo pipeline do

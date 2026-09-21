@@ -78,6 +78,16 @@ export class CobrancaStatementComponent implements OnInit {
   // sobre outro recorte é pior que número nenhum.
   valorCardRecuperado: number | null = null;
   private assinaturaHerdada: string | null = null;
+  // Snapshot do filtro que efetivamente carregou `titulos` - não é relido do formulário ao vivo.
+  // Dois bugs vinham de ler o formulário direto: (1) editar a data sem clicar em "Filtrar"
+  // trocava a soma do rodapé na hora, antes de qualquer nova busca acontecer; (2) "Carregar
+  // mais" pedia a página 2 com o filtro ATUAL do formulário, que pode ter mudado desde que a
+  // página 1 carregou - misturando dois recortes na mesma lista e recalculando o rodapé com o
+  // critério errado mesmo quando a página nova vinha vazia.
+  private filtroCarregado: CobrancaFiltro | null = null;
+  // A busca de ValorRecebidoNoPeriodo parou no teto de páginas do SAP - alguma linha carregada
+  // pode estar com esse campo nulo só por causa do teto, não por falta de recebimento real.
+  recebimentoTruncado = false;
 
   // Carrega a lista e, opcionalmente, os códigos que devem voltar marcados nessa carga. Os
   // códigos viajam com a requisição de propósito: em campo, guardá-los num atributo fazia a
@@ -115,18 +125,21 @@ export class CobrancaStatementComponent implements OnInit {
       switchMap((codigosParaRemarcar) => {
         this.loading = true;
         this.paginaAtual = 0;
-        return this.service.listar({ ...this.getFiltro(), pagina: 0, tamanho: this.pageSize })
+        const filtro = this.getFiltro();
+        return this.service.listar({ ...filtro, pagina: 0, tamanho: this.pageSize })
           // catchError dentro do switchMap: se propagar, mata o Subject e a tela nunca mais
           // filtra. O erro em si o interceptor global já notifica.
           .pipe(
-            catchError(() => of([] as CobrancaTitulo[])),
-            map((titulos) => ({ titulos, codigosParaRemarcar })),
+            catchError(() => of({ titulos: [] as CobrancaTitulo[], truncadoRecebimento: false })),
+            map((pagina) => ({ pagina, codigosParaRemarcar, filtro })),
           );
       })
-    ).subscribe(({ titulos, codigosParaRemarcar }) => {
-      this.titulos = titulos;
+    ).subscribe(({ pagina, codigosParaRemarcar, filtro }) => {
+      this.titulos = pagina.titulos;
+      this.filtroCarregado = filtro;
+      this.recebimentoTruncado = pagina.truncadoRecebimento;
       this.remarca(codigosParaRemarcar);
-      this.temMais = titulos.length === this.pageSize;
+      this.temMais = pagina.titulos.length === this.pageSize;
       this.loading = false;
       // Total calculado pro filtro ANTERIOR não pode sobreviver à troca de filtro: seria um
       // número errado com cara de oficial, justamente numa tela de conferência.
@@ -224,12 +237,30 @@ export class CobrancaStatementComponent implements OnInit {
     return this.somar((titulo) => titulo.Saldo);
   }
 
+  /**
+   * Com o filtro de data de pagamento ligado, soma TODOS os recebimentos da janela
+   * (ValorRecebidoNoPeriodo), não só o pagamento mais recente de cada parcela (ValorPago) -
+   * senão uma parcela paga duas vezes no mesmo período ficava subcontada contra o card
+   * "Recuperado", que soma por recebimento. Sem filtro de data, não há com o que comparar, e
+   * ValorPago (o último pagamento) continua sendo o único número que faz sentido mostrar.
+   */
   get pagoCarregado(): number {
-    return this.somar((titulo) => titulo.ValorPago);
+    return this.somar((titulo) => this.valorPagoParaTotal(titulo));
   }
 
   get parcelasComPagamentoCarregadas(): number {
-    return this.titulos.filter((titulo) => titulo.ValorPago != null).length;
+    return this.titulos.filter((titulo) => this.valorPagoParaTotal(titulo) != null).length;
+  }
+
+  // Público: o template usa pra trocar o rótulo "Valor pago" por "Recebido no período". Lê o
+  // snapshot (não os campos do formulário) porque `titulos` pode ter sido carregado com um
+  // filtro diferente do que está no formulário agora, se o usuário mexeu no campo sem filtrar.
+  get usaJanelaDePagamento(): boolean {
+    return !!(this.filtroCarregado?.dataPagamentoDe || this.filtroCarregado?.dataPagamentoAte);
+  }
+
+  private valorPagoParaTotal(titulo: CobrancaTitulo): number | null | undefined {
+    return this.usaJanelaDePagamento ? titulo.ValorRecebidoNoPeriodo : titulo.ValorPago;
   }
 
   /**
@@ -256,14 +287,22 @@ export class CobrancaStatementComponent implements OnInit {
     this.totalSolicitado.next(this.getFiltro());
   }
 
+  // Usa `filtroCarregado` (o filtro que trouxe a página 1), não o formulário ao vivo: senão
+  // mexer num campo sem clicar em "Filtrar" e depois clicar em "Carregar mais" busca a página 2
+  // com um recorte diferente do que já está na tela - misturando duas buscas numa lista só, e
+  // trocando o critério do rodapé mesmo quando a página nova vem vazia.
   carregarMais(): void {
+    if (!this.filtroCarregado) {
+      return;
+    }
     this.carregandoMais = true;
     const proximaPagina = this.paginaAtual + 1;
-    this.service.listar({ ...this.getFiltro(), pagina: proximaPagina, tamanho: this.pageSize }).subscribe({
-      next: (titulos) => {
-        this.titulos = [...this.titulos, ...titulos];
+    this.service.listar({ ...this.filtroCarregado, pagina: proximaPagina, tamanho: this.pageSize }).subscribe({
+      next: (pagina) => {
+        this.titulos = [...this.titulos, ...pagina.titulos];
+        this.recebimentoTruncado = this.recebimentoTruncado || pagina.truncadoRecebimento;
         this.paginaAtual = proximaPagina;
-        this.temMais = titulos.length === this.pageSize;
+        this.temMais = pagina.titulos.length === this.pageSize;
         this.carregandoMais = false;
       },
       // Observable com erro nao emite complete: sem isso o botao ficava "Carregando..."
