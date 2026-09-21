@@ -1,0 +1,131 @@
+<ng-template #modalTokens>
+  <div class="modal-header">
+    <h5 class="modal-title"><i class="fas fa-key mr-2"></i>Tokens para IA</h5>
+    <button type="button" class="close" (click)="fechar()"><span>&times;</span></button>
+  </div>
+
+  <div class="modal-body">
+
+    <!-- Valor recem-criado: unica vez que ele existe na tela -->
+    <div *ngIf="recemCriado" class="token-novo">
+      <h6 class="token-novo__titulo"><i class="fas fa-check-circle mr-1"></i>Token gerado</h6>
+      <p class="token-novo__aviso">
+        <b>Copie agora.</b> Este valor não será exibido de novo — o servidor guarda
+        apenas um resumo criptográfico dele. Se perder, revogue e gere outro.
+      </p>
+      <input #campoToken type="text" class="form-control token-valor" readonly
+             aria-label="Token gerado"
+             [value]="recemCriado.token" (focus)="$any($event.target).select()">
+      <button class="btn btn-block botao-copiar mt-2"
+              [ngClass]="copiado ? 'btn-success' : 'btn-outline-dark'"
+              type="button" (click)="copiar(campoToken)">
+        <i class="fas mr-1" [ngClass]="copiado ? 'fa-check' : 'fa-copy'"></i>
+        {{ copiado ? 'Token copiado' : 'Copiar token' }}
+      </button>
+      <p class="token-novo__expira">
+        Expira em {{ recemCriado.expiraEm | date:'dd/MM/yyyy HH:mm' }}
+      </p>
+
+      <!-- Token sozinho nao basta: o agente precisa saber PARA ONDE chamar. -->
+      <label class="token-novo__rotulo" for="credenciais-json">
+        Token e endereço da API, para entregar ao agente
+      </label>
+      <textarea #campoJson id="credenciais-json" class="form-control token-valor" rows="6" readonly
+                (focus)="$any($event.target).select()">{{ credenciaisJson }}</textarea>
+      <button class="btn btn-block botao-copiar mt-2"
+              [ngClass]="copiadoJson ? 'btn-success' : 'btn-outline-dark'"
+              type="button" (click)="copiarJson(campoJson)">
+        <i class="fas mr-1" [ngClass]="copiadoJson ? 'fa-check' : 'fa-copy'"></i>
+        {{ copiadoJson ? 'JSON copiado' : 'Copiar token + endereço (JSON)' }}
+      </button>
+    </div>
+
+    <!-- Geracao -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h6 class="mb-3">Gerar novo token</h6>
+        <!-- align-items-start + rotulo em toda coluna: a dica sob o primeiro campo
+             empurrava os outros para baixo quando a linha alinhava pelo fim. -->
+        <div class="form-row align-items-start">
+          <div class="col-md-6 form-group mb-2">
+            <label for="nomeToken">Para que serve</label>
+            <input id="nomeToken" type="text" class="form-control" maxlength="100"
+                   [(ngModel)]="nome" placeholder="Ex.: GPT de relatórios do RH">
+          </div>
+          <div class="col-md-3 form-group mb-2">
+            <label for="validade">Validade</label>
+            <select id="validade" class="form-control" [(ngModel)]="diasValidade">
+              <option [ngValue]="7">7 dias</option>
+              <option [ngValue]="30">30 dias</option>
+              <option [ngValue]="60">60 dias</option>
+              <option [ngValue]="90">90 dias (máximo)</option>
+            </select>
+          </div>
+          <div class="col-md-3 form-group mb-2">
+            <label class="rotulo-vazio" aria-hidden="true">&nbsp;</label>
+            <button class="btn btn-primary btn-block" (click)="criar()" [disabled]="criando">
+              <i class="fas mr-1" [ngClass]="criando ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
+              Gerar
+            </button>
+          </div>
+        </div>
+        <small class="form-text text-muted">
+          É pelo nome que você vai saber o que revogar depois.
+        </small>
+      </div>
+    </div>
+
+    <div class="alert alert-info py-2">
+      <small>
+        <b>O token não publica relatório.</b> Ele valida, cria rascunho e
+        pré-visualiza. Publicar define quem passa a enxergar os dados — essa decisão
+        continua sendo sua.
+      </small>
+    </div>
+
+    <!-- Lista -->
+    <h6 class="mb-2">Tokens existentes</h6>
+    <div *ngIf="carregando" class="text-muted py-3">
+      <i class="fas fa-spinner fa-spin mr-1"></i> Carregando…
+    </div>
+
+    <p *ngIf="!carregando && tokens.length === 0" class="text-muted">
+      Nenhum token gerado ainda.
+    </p>
+
+    <div class="table-responsive" *ngIf="!carregando && tokens.length > 0">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>Nome</th><th>Início</th><th>Situação</th>
+            <th>Último uso</th><th class="text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tokens" [class.text-muted]="!t.ativo">
+            <td>
+              {{ t.nome }}
+              <small class="d-block text-muted">criado por {{ t.criadoPor }}</small>
+            </td>
+            <td><code>{{ t.prefixo }}…</code></td>
+            <td><span class="badge" [ngClass]="situacao(t).classe">{{ situacao(t).texto }}</span></td>
+            <td>
+              <span *ngIf="t.ultimoUso">{{ t.ultimoUso | date:'dd/MM/yyyy HH:mm' }}</span>
+              <!-- Token nunca usado e candidato a revogacao -->
+              <small *ngIf="!t.ultimoUso" class="text-muted">nunca usado</small>
+            </td>
+            <td class="text-right">
+              <button *ngIf="t.ativo" class="btn btn-sm btn-outline-danger" (click)="revogar(t)">
+                <i class="fas fa-ban"></i> Revogar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="fechar()">Fechar</button>
+  </div>
+</ng-template>

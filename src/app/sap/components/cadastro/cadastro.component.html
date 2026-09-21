@@ -24,7 +24,7 @@
                         <div class="form-group">
                             <label *ngIf="isPessoaFisica" for="dataNascimento">Data Nascimento</label>
                             <label *ngIf="!isPessoaFisica" for="dataNascimento">Data Abertura</label>
-                            <input type="date" class="form-control" id="dataNascimento" [(ngModel)]="pn.U_Rov_Data_Nascimento">
+                            <app-campo-data inputId="dataNascimento" [(ngModel)]="pn.U_Rov_Data_Nascimento"></app-campo-data>
                         </div>
                     </div>
                     <div *ngIf="isPessoaFisica" class="col-sm-4">
@@ -141,8 +141,7 @@
                     <div *ngIf="isCasado()" class="col-sm-4">
                         <div class="form-group">
                             <label *ngIf="isPessoaFisica" for="dataNascimentoConjuge">Data Nascimento</label>
-                            <input type="date" class="form-control" id="dataNascimentoConjuge"
-                                [(ngModel)]="pn.getConjugue().DateOfBirth">
+                            <app-campo-data inputId="dataNascimentoConjuge" [(ngModel)]="pn.getConjugue().DateOfBirth"></app-campo-data>
                         </div>
                     </div>
                 </div>

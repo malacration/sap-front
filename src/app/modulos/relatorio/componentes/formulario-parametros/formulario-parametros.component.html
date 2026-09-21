@@ -1,0 +1,92 @@
+<!-- Campos gerados a partir de parametros[] do relatorio. Usado na aba
+     Executar e na pre-visualizacao da autoria: uma implementacao so, para
+     as duas telas nunca montarem o formulario de jeitos diferentes. -->
+<form [formGroup]="formulario" (ngSubmit)="$event.preventDefault()" autocomplete="off">
+  <div class="form-row">
+    <div class="form-group col-md-6" *ngFor="let parametro of parametros; trackBy: identificarParametro">
+      <ng-container [ngSwitch]="parametro.tipo">
+        <!-- Mesma estrutura dos demais (rotulo em cima, controle embaixo, com a
+             altura de um input): sem isso o checkbox subia e desalinhava a coluna. -->
+        <ng-container *ngSwitchCase="'booleano'">
+          <label [for]="'param-' + parametro.nome">
+            {{ rotulo(parametro) }} <span *ngIf="parametro.obrigatorio" class="text-danger">*</span>
+          </label>
+          <div class="controle-booleano">
+            <div class="custom-control custom-checkbox">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                [id]="'param-' + parametro.nome"
+                [formControlName]="parametro.nome">
+              <label class="custom-control-label" [for]="'param-' + parametro.nome">
+                {{ formulario.get(parametro.nome)?.value ? 'Sim' : 'Não' }}
+              </label>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchDefault>
+          <label [for]="'param-' + parametro.nome">
+            {{ rotulo(parametro) }} <span *ngIf="parametro.obrigatorio" class="text-danger">*</span>
+          </label>
+
+          <input
+            *ngIf="parametro.tipo === 'texto'"
+            type="text"
+            class="form-control"
+            [class.is-invalid]="campoInvalido(parametro)"
+            [id]="'param-' + parametro.nome"
+            [formControlName]="parametro.nome">
+
+          <input
+            *ngIf="parametro.tipo === 'numero'"
+            type="number"
+            step="any"
+            class="form-control"
+            [class.is-invalid]="campoInvalido(parametro)"
+            [id]="'param-' + parametro.nome"
+            [formControlName]="parametro.nome">
+
+          <app-campo-data *ngIf="parametro.tipo === 'date' || parametro.tipo === 'datetime'"
+            [inputId]="'param-' + parametro.nome"
+            [hora]="parametro.tipo === 'datetime'"
+            [invalido]="campoInvalido(parametro)"
+            [formControlName]="parametro.nome"></app-campo-data>
+
+          <select
+            *ngIf="parametro.tipo === 'lista' && !parametro.multiplo"
+            class="form-control"
+            [class.is-invalid]="campoInvalido(parametro)"
+            [id]="'param-' + parametro.nome"
+            [formControlName]="parametro.nome">
+            <option [ngValue]="null">Selecione</option>
+            <option *ngFor="let opcao of parametro.opcoes || []" [value]="opcao.valor">
+              {{ opcao.rotulo || opcao.valor }}
+            </option>
+          </select>
+
+          <select *ngIf="parametro.tipo === 'lista' && parametro.multiplo" multiple
+            class="form-control" [class.is-invalid]="campoInvalido(parametro)"
+            [id]="'param-' + parametro.nome" [formControlName]="parametro.nome">
+            <option *ngFor="let opcao of parametro.opcoes || []" [value]="opcao.valor">
+              {{ opcao.rotulo || opcao.valor }}
+            </option>
+          </select>
+
+          <app-parametro-cadastro *ngIf="cadastro(parametro)"
+            [parametro]="parametro" [valor]="formulario.get(parametro.nome)?.value"
+            (valorChange)="atualizarCadastro(parametro, $event)">
+          </app-parametro-cadastro>
+
+          <div *ngIf="campoInvalido(parametro)" class="invalid-feedback d-block">
+            {{ rotulo(parametro) }} é obrigatório.
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+
+  <div *ngIf="parametros.length === 0" class="alert alert-light border">
+    Este relatório não exige parâmetros.
+  </div>
+</form>

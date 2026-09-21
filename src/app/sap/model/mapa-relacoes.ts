@@ -116,6 +116,10 @@ const STATUS_LABEL: { [status: string]: string } = {
  *
  * Adiantamento - calculado no back (MapaRelacoesService.situacaoAdiantamento):
  * - PENDENTE_UTILIZACAO: ainda sobra saldo a apropriar (INV9.DrawnSum < total).
+ *
+ * CANCELADO (calculado no back, MapaRelacoesService.cancelado) nao entra aqui de
+ * proposito: documento cancelado nem chega a virar card no grafo - ele sai pra pilha do
+ * canto, que tem visual proprio (ver SITUACAO_CANCELADO e mapa-relacoes-grafo.component).
  */
 export const SITUACAO_BADGE: { [code: string]: { label: string, fundo: string, texto: string } } = {
   VFET: { label: 'Pendente de Baixa',   fundo: '#ffc107', texto: '#212529' },
@@ -128,6 +132,16 @@ export const SITUACAO_BADGE: { [code: string]: { label: string, fundo: string, t
 
 export function etiquetaSituacao(n: { situacao?: string | null }) {
   return n.situacao ? SITUACAO_BADGE[n.situacao] : null
+}
+
+//documento cancelado no SAP: o original estornado E o documento de cancelamento que o
+//SAP cria pra anula-lo (o par que aparecia conciliado um com o outro, parecendo um
+//documento ligado a ele mesmo). Os dois se anulam, entao ficam fora do desenho do grafo
+//e fora dos totais - viram uma pilha a parte (ver mapa-relacoes-grafo.component)
+export const SITUACAO_CANCELADO = 'CANCELADO'
+
+export function estaCancelado(n: { situacao?: string | null }) : boolean {
+  return n.situacao === SITUACAO_CANCELADO
 }
 
 function formatarData(iso: string) : string {
@@ -168,19 +182,23 @@ export function montarCartao(n: MapaNode) : string {
 
 //o Cliente nao entra no grafo do cytoscape (fica fixo num painel a parte, ver
 //mapa-relacoes-grafo.component - assim ele nunca some quando o usuario navega/da
-//zoom no grafo). Aqui so montamos os documentos de verdade + as arestas entre eles.
+//zoom no grafo). Os cancelados tambem ficam de fora, pelo mesmo motivo: eles se anulam
+//aos pares e so poluiriam o desenho (ver getCancelados). Aqui so montamos os documentos
+//que valem de verdade + as arestas entre eles.
 export function toCytoscapeElements(r: MapaRelacoesResponse): Array<any> {
-  const nodesDocumento = r.nodes.filter(n => n.tipo !== 'CLIENTE')
+  const nodesDocumento = r.nodes.filter(n => n.tipo !== 'CLIENTE' && !estaCancelado(n))
   const nodes = nodesDocumento.map(n => ({ data: { ...n, cartao: montarCartao(n) } }))
   const idsValidos = new Set(nodesDocumento.map(n => n.id))
+  //ids que tiramos do grafo de proposito (cliente e cancelados) - as arestas deles caem
+  //junto, em silencio; o console.warn abaixo e so pra aresta orfa de verdade
+  const idsForaDeProposito = new Set(r.nodes.filter(n => !idsValidos.has(n.id)).map(n => n.id))
   //cytoscape exige especificamente data.source/data.target pra ligar a aresta aos nos,
   //e quebra a renderizacao inteira se uma aresta apontar pra um id inexistente -
-  //descarta defensivamente em vez de deixar o grafo inteiro nao aparecer (isso tambem
-  //descarta de brinde a aresta ORIGEM que ligava o cliente ao documento raiz)
+  //descarta defensivamente em vez de deixar o grafo inteiro nao aparecer
   const edges = r.edges
     .filter(e => {
       const valido = idsValidos.has(e.from) && idsValidos.has(e.to)
-      if(!valido && e.tipo !== 'ORIGEM')
+      if(!valido && !idsForaDeProposito.has(e.from) && !idsForaDeProposito.has(e.to))
         console.warn('Mapa de Relações: aresta descartada (nó inexistente)', e)
       return valido
     })
@@ -190,6 +208,37 @@ export function toCytoscapeElements(r: MapaRelacoesResponse): Array<any> {
 
 export function getCliente(r: MapaRelacoesResponse) : MapaNode | null {
   return r.nodes.find(n => n.tipo === 'CLIENTE') || null
+}
+
+//documentos cancelados, na ordem em que o SAP os criou - eles saem do desenho normal (ver
+//toCytoscapeElements) e viram a pilha empilhada num canto do proprio grafo
+export function getCancelados(r: MapaRelacoesResponse) : Array<MapaNode> {
+  return r.nodes
+    .filter(estaCancelado)
+    .sort((a, b) => (a.data || '').localeCompare(b.data || '') || (a.docEntry ?? 0) - (b.docEntry ?? 0))
+}
+
+//texto do card empilhado - versao curta do montarCartao: na pilha fechada so aparece a tarja
+//do titulo, entao data e valor ficam numa linha so, embaixo
+export interface CartaoCanceladoTexto {
+  titulo : string
+  data : string
+  valor : string
+}
+
+export function montarCartaoCancelado(n: MapaNode) : CartaoCanceladoTexto {
+  return {
+    titulo: n.label,
+    data: n.data ? formatarData(n.data) : '',
+    valor: n.valor != null ? formatarValor(n.valor) : '',
+  }
+}
+
+//nos do cytoscape da pilha de cancelados: eles entram no grafo (assim andam e dao zoom junto
+//com o desenho, em vez de ficar grudados na tela) mas SEM nenhuma aresta - o vinculo deles e
+//com o documento que anularam, que tambem esta na pilha, e desenhar isso so poluiria o mapa
+export function elementosCancelados(r: MapaRelacoesResponse) : Array<any> {
+  return getCancelados(r).map(n => ({ data: { ...n, cancelado: true, compacto: montarCartaoCancelado(n) } }))
 }
 
 //grafo fake pra testar a tela sem depender do SAP - qualquer busca com docEntry = -1
@@ -220,6 +269,14 @@ export function mockMapaRelacoesResponse() : MapaRelacoesResponse {
       label: 'Nota Fiscal 7002', valor: 800, data: '2026-01-22T00:00:00Z', status: 'bost_Close' },
     { id: 'DEVOLUCAO:1', tipo: 'DEVOLUCAO', docEntry: 1, docNum: '5001', cardCode: 'CLI0000MOCK',
       label: 'Devolução 5001', valor: 800, data: '2026-01-25T00:00:00Z', status: 'bost_Close' },
+    //par cancelado (o original estornado + o documento de cancelamento que o SAP cria,
+    //conciliados um com o outro) - fica fora do grafo e dos totais, so na pilha do canto
+    { id: 'NOTA_FISCAL:3', tipo: 'NOTA_FISCAL', docEntry: 3, docNum: '7003', cardCode: 'CLI0000MOCK',
+      label: 'Nota Fiscal 7003', valor: -3000, data: '2026-01-28T00:00:00Z', status: 'bost_Close',
+      situacao: SITUACAO_CANCELADO },
+    { id: 'NOTA_FISCAL:4', tipo: 'NOTA_FISCAL', docEntry: 4, docNum: '7004', cardCode: 'CLI0000MOCK',
+      label: 'Nota Fiscal 7004', valor: -3000, data: '2026-01-28T00:00:00Z', status: 'bost_Close',
+      situacao: SITUACAO_CANCELADO },
     //um de cada situacao, pra conferir as etiquetas (ver SITUACAO_BADGE)
     { id: 'LANCAMENTO_CONTABIL:1', tipo: 'LANCAMENTO_CONTABIL', docEntry: 1, docNum: '1', cardCode: null,
       label: 'Lançamento Contábil 1', valor: 12000, data: '2026-01-20T00:00:00Z', status: null, situacao: 'VFET' },
@@ -243,6 +300,13 @@ export function mockMapaRelacoesResponse() : MapaRelacoesResponse {
     { id: 'e11', from: 'NOTA_FISCAL:1', to: 'LANCAMENTO_CONTABIL:1', tipo: 'CONCILIACAO' },
     { id: 'e12', from: 'NOTA_FISCAL:1', to: 'LANCAMENTO_CONTABIL:2', tipo: 'RECLASSIFICACAO' },
     { id: 'e13', from: 'NOTA_FISCAL:2', to: 'LANCAMENTO_CONTABIL:3', tipo: 'RECLASSIFICACAO' },
+    //o par cancelado chega pelo contrato e vem conciliado um com o outro (e o SAP que
+    //concilia sozinho o documento estornado com o cancelamento dele) - o mapa nao desenha
+    //nada disso, os dois vao pra pilha do canto
+    { id: 'e14', from: 'CONTRATO:1', to: 'NOTA_FISCAL:3', tipo: 'GERADO_PARA_CONTRATO' },
+    { id: 'e15', from: 'CONTRATO:1', to: 'NOTA_FISCAL:4', tipo: 'GERADO_PARA_CONTRATO' },
+    { id: 'e16', from: 'NOTA_FISCAL:3', to: 'NOTA_FISCAL:4', tipo: 'CONCILIACAO' },
+    { id: 'e17', from: 'NOTA_FISCAL:4', to: 'NOTA_FISCAL:3', tipo: 'CONCILIACAO' },
   ]
 
   return { root: 'CONTRATO:1', nodes, edges }

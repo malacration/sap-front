@@ -7,7 +7,7 @@
       <div class="row align-items-end mb-3">
         <div class="col-md-3">
           <label class="font-weight-bold">Data (a partir de)</label>
-          <input type="date" class="form-control" [value]="dataFiltro" (change)="onDataChange($event)">
+          <app-campo-data [ngModel]="dataFiltro" [ngModelOptions]="{standalone: true}" (ngModelChange)="onDataChange($event)"></app-campo-data>
         </div>
         <div class="col-md-2">
           <label class="font-weight-bold">Status</label>

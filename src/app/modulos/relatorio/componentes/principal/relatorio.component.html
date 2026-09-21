@@ -1,0 +1,37 @@
+<section class="content relatorio-page">
+  <div class="card card-primary card-outline">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
+      <h3 class="card-title mb-0"><b>Relatórios</b></h3>
+      <div class="btn-group">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="abrirManual()">
+          <i class="fas fa-book mr-1"></i> Manual
+        </button>
+        <!-- Token e pacote da IA sao ferramentas de autoria: so admin ve. -->
+        <button *ngIf="isAdmin" type="button" class="btn btn-sm btn-outline-secondary"
+                (click)="abrirTokens()">
+          <i class="fas fa-key mr-1"></i> Tokens para IA
+        </button>
+        <button *ngIf="isAdmin" type="button" class="btn btn-sm btn-outline-secondary"
+                (click)="baixarSkill()" [disabled]="baixandoSkill">
+          <i class="fas" [ngClass]="baixandoSkill ? 'fa-spinner fa-spin' : 'fa-download'"></i>
+          <span class="ml-1">Instruções para IA</span>
+        </button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <tabset class="relatorio-tabs">
+        <tab heading="Executar" (selectTab)="abrirExecucao()">
+          <app-relatorio-consumo
+            [isAdmin]="isAdmin"
+            (editarRelatorio)="editarRelatorio($event)">
+          </app-relatorio-consumo>
+        </tab>
+        <tab #abaAutoria="tab" *ngIf="isAdmin" heading="Criar / Editar" (selectTab)="abrirAutoria()">
+          <app-relatorio-autoria [relatorioEdicaoId]="relatorioEdicaoId" (novoIniciado)="onNovoIniciado()"></app-relatorio-autoria>
+        </tab>
+      </tabset>
+    </div>
+  </div>
+
+  <app-relatorio-tokens *ngIf="isAdmin" #painelTokens></app-relatorio-tokens>
+</section>

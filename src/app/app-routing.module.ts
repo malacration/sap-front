@@ -31,6 +31,7 @@ import { ChangePassowrd } from './shared/components/change-password/change-passw
 import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
 import { PainelVendasComponent } from './modulos/painel-vendas/componentes/painel-vendas/painel-vendas.component';
+import { PainelVendasV2Component } from './modulos/painel-vendas/componentes/painel-vendas-v2/painel-vendas-v2.component';
 import { TicketFreteComponent } from './modulos/relatorio-frete/componentes/ticket-frete/ticket-frete.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
@@ -40,6 +41,7 @@ import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.compo
 import { CobrancaStatementComponent } from './modulos/cobranca/componentes/cobranca-statement.component';
 import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobranca-dashboard.component';
 import { OfflineHistoryComponent } from './core/offline/offline-history/offline-history.component';
+import { RelatorioComponent } from './modulos/relatorio/componentes/principal/relatorio.component';
 
  let routes: Routes = [
   {
@@ -219,9 +221,16 @@ import { OfflineHistoryComponent } from './core/offline/offline-history/offline-
       {
         path: 'painel-vendas',
         title: 'Painel de Vendas',
-        data: ["icon:fas fa-chart-line"],
+        data: ["hidden", "icon:fas fa-chart-line"],
         canActivate: [authGuard],
         component: PainelVendasComponent
+      },
+      {
+        path: 'painel-vendas-v2',
+        title: 'Painel de Vendas',
+        data: ["icon:fas fa-chart-area"],
+        canActivate: [authGuard],
+        component: PainelVendasV2Component
       },
       {
         path: 'analise-pedidos',
@@ -243,6 +252,13 @@ import { OfflineHistoryComponent } from './core/offline/offline-history/offline-
         data: ["icon:fas fa-truck-moving"],
         canActivate: [authGuard],
         component: TicketFreteComponent
+      },
+      {
+        path: 'relatorio',
+        title: 'Relatórios',
+        data: ["icon:fas fa-file-alt"],
+        canActivate: [authGuard],
+        component: RelatorioComponent
       },
     ]
   },

@@ -33,6 +33,8 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { QrcodeComponent } from './components/qrcode/qrcode.component';
 import { SapLinkButtonComponent } from './components/sap-link-button/sap-link-button.component';
 import { SapLinkButtonDemoComponent } from './components/sap-link-button/sap-link-button-demo.component';
+import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { CampoDataComponent } from './components/campo-data/campo-data.component';
 
 @NgModule({
   providers: [
@@ -62,7 +64,8 @@ import { SapLinkButtonDemoComponent } from './components/sap-link-button/sap-lin
     ChangePassowrd,
     QrcodeComponent,
     SapLinkButtonComponent,
-    SapLinkButtonDemoComponent
+    SapLinkButtonDemoComponent,
+    CampoDataComponent
   ],
   imports: [
     CommonModule, 
@@ -73,7 +76,8 @@ import { SapLinkButtonDemoComponent } from './components/sap-link-button/sap-lin
     FormsModule,
     BrowserModule,
     ReactiveFormsModule,
-    QRCodeModule
+    QRCodeModule,
+    BsDatepickerModule
   ],
   exports: [
     TranslateModule, 
@@ -98,6 +102,7 @@ import { SapLinkButtonDemoComponent } from './components/sap-link-button/sap-lin
     QrcodeComponent,
     SapLinkButtonComponent,
     SapLinkButtonDemoComponent,
+    CampoDataComponent,
   ]
 })
 export class SharedModule {}

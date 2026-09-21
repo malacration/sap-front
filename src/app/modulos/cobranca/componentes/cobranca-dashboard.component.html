@@ -15,11 +15,11 @@
           </div>
           <div class="col-md-2 col-sm-6">
             <label>Recuperação de</label>
-            <input type="date" class="form-control" name="filtroDe" [(ngModel)]="filtroDe" />
+            <app-campo-data name="filtroDe" [(ngModel)]="filtroDe"></app-campo-data>
           </div>
           <div class="col-md-2 col-sm-6">
             <label>até</label>
-            <input type="date" class="form-control" name="filtroAte" [(ngModel)]="filtroAte" />
+            <app-campo-data name="filtroAte" [(ngModel)]="filtroAte"></app-campo-data>
           </div>
           <div class="col-md-3 col-sm-12 mt-2 mt-md-0">
             <button type="submit" class="btn btn-primary" [disabled]="carregandoResumo">

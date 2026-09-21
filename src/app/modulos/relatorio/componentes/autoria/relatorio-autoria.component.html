@@ -1,0 +1,327 @@
+<section class="content">
+  <div class="row">
+    <div class="col-12">
+      <div class="card card-primary position-relative">
+        <div class="card-header cabecalho-autoria">
+          <!-- Modo explicito: sem isso nao da para saber se salvar cria um
+               relatorio ou uma nova versao de outro. -->
+          <span class="badge" [ngClass]="modoNovo ? 'badge-success' : 'badge-warning'">
+            {{ modoNovo ? 'Criando' : 'Editando' }}
+          </span>
+
+          <!-- O nome E o titulo: edita no lugar. Escreve direto no YAML, que
+               continua sendo a fonte unica da verdade. -->
+          <input class="titulo-editavel" type="text" maxlength="200"
+                 [(ngModel)]="nomeRelatorio"
+                 placeholder="Dê um nome ao relatório"
+                 aria-label="Nome do relatório">
+
+          <!-- Id: numero gerado pelo banco ao salvar; so existe depois disso. -->
+          <span *ngIf="selecionado && !modoNovo" class="id-selo" title="Número do relatório, gerado pelo sistema">
+            <i class="fas fa-hashtag"></i>{{ selecionado.id }}
+          </span>
+
+          <div class="acoes-cabecalho">
+            <select #seletorExemplo class="form-control form-control-sm seletor-exemplo" aria-label="Carregar exemplo"
+                    (change)="carregarExemplo(seletorExemplo.value); seletorExemplo.value = ''">
+              <option value="" selected disabled>Carregar exemplo…</option>
+              <option [value]="MODELO_BASICO">Modelo básico (em branco)</option>
+              <option *ngFor="let exemplo of exemplos" [value]="exemplo.id" [title]="exemplo.descricao || ''">
+                {{ exemplo.nome }}
+              </option>
+            </select>
+            <button *ngIf="!modoNovo" type="button" class="btn btn-sm btn-success" (click)="iniciarNovo()">
+              <i class="fas fa-plus"></i> Novo relatório
+            </button>
+            <button *ngIf="selecionado" type="button" class="btn btn-sm btn-outline-light"
+                    [disabled]="executandoAcao" (click)="solicitarRemocao()">
+              <i class="fas fa-trash"></i> Remover
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <tabset [justified]="true">
+            <tab heading="Arquivos e validação">
+              <div class="pt-3">
+                <p class="text-muted">
+                  {{ modoNovo ? 'Carregue os arquivos ou escreva a definição para criar um rascunho na versão 1.' : 'Edite a fonte atual para criar uma nova versão em rascunho.' }}
+                </p>
+                <div *ngIf="erroSalvar" class="alert alert-danger py-2">
+                  <i class="fas fa-exclamation-circle mr-1"></i>{{ erroSalvar }}
+                </div>
+                <div class="workspace-editor">
+                  <nav class="file-tree" aria-label="Arquivos do relatório">
+
+                    <div class="tree-root"><i class="fas fa-folder-open mr-2"></i>{{ nomeRaiz }}</div>
+                    <button type="button" class="tree-file" [class.active]="arquivoSelecionado === 'yaml'" (click)="selecionarArquivo('yaml')">
+                      <i class="far fa-file-code mr-2"></i><span>relatorio.yaml</span>
+                      <span *ngIf="quantidadeErros('yaml') as total" class="file-error" [attr.aria-label]="total + ' erros'">● {{ total }}</span>
+                    </button>
+                    <button type="button" class="tree-file" [class.active]="arquivoSelecionado === 'sql'" (click)="selecionarArquivo('sql')">
+                      <i class="far fa-file-code mr-2"></i><span>consulta.sql</span>
+                      <span *ngIf="quantidadeErros('sql') as total" class="file-error" [attr.aria-label]="total + ' erros'">● {{ total }}</span>
+                    </button>
+                    <button type="button" class="tree-file" [class.active]="arquivoSelecionado === 'template'" (click)="selecionarArquivo('template')">
+                      <i class="far fa-file-code mr-2"></i><span>template.hbs</span>
+                      <span *ngIf="quantidadeErros('template') as total" class="file-error" [attr.aria-label]="total + ' erros'">● {{ total }}</span>
+                    </button>
+                  </nav>
+                  <div class="editor-pane">
+                    <div *ngIf="arquivoSelecionado === 'sql' && sqlConversaoNecessaria" class="alert alert-warning sql-conversion" role="alert">
+                      <div>{{ avisoSql }}</div>
+                      <button type="button" class="btn btn-sm btn-warning mt-2" (click)="converterSqlParaBloco()">
+                        Converter para bloco (remove os comentários do YAML)
+                      </button>
+                    </div>
+                    <app-editor-codigo
+                      #editorCodigo
+                      [modo]="modoEditor"
+                      [valor]="valorEditor"
+                      [somenteLeitura]="arquivoSelecionado === 'sql' && sqlConversaoNecessaria"
+                      [marcadores]="marcadoresEditor"
+                      (valorChange)="onEditorAlterado($event)">
+                    </app-editor-codigo>
+                    <small class="form-text text-muted" *ngIf="arquivoSelecionado === 'yaml'">O YAML é a fonte da verdade. Tab insere dois espaços.</small>
+                    <small class="form-text text-muted" *ngIf="arquivoSelecionado === 'sql' && !sqlConversaoNecessaria">{{ avisoSql }}</small>
+                    <small class="form-text text-muted" *ngIf="arquivoSelecionado === 'template'">Template Handlebars editável com realce HTML.</small>
+                  </div>
+                </div>
+
+                <details class="upload-secondary mt-3">
+                  <summary>Importar arquivos (alternativa ao editor)</summary>
+                  <div class="row mt-3">
+                    <div class="col-md-6">
+                      <label>Definição (.yaml)</label>
+                      <app-ngx-dropzone-compat #definicaoDropzone extensao=".yaml" mensagem="Arraste ou clique para selecionar o .yaml"
+                        (arquivoAdicionado)="onDefinicaoAdicionada($event)" (arquivoRemovido)="onDefinicaoRemovida($event)"
+                        (falha)="onDropzoneErro($event)"></app-ngx-dropzone-compat>
+                    </div>
+                    <div class="col-md-6">
+                      <label>Template (.hbs)</label>
+                      <app-ngx-dropzone-compat #templateDropzone extensao=".hbs" mensagem="Arraste ou clique para selecionar o .hbs"
+                        (arquivoAdicionado)="onTemplateAdicionado($event)" (arquivoRemovido)="onTemplateRemovido($event)"
+                        (falha)="onDropzoneErro($event)"></app-ngx-dropzone-compat>
+                    </div>
+                  </div>
+                </details>
+
+                <div class="mt-3">
+                  <button type="button" class="btn btn-outline-primary mr-2" [disabled]="validando || salvando" (click)="validar()">
+                    <i class="fas fa-check-circle"></i> {{ validando ? 'Validando...' : 'Validar sem gravar' }}
+                  </button>
+                  <button type="button" class="btn btn-success" [disabled]="validando || salvando || !validacaoOk" (click)="salvar()" title="Valide antes de salvar">
+                    <i class="fas fa-upload"></i>
+                    {{ salvando ? 'Enviando...' : (modoNovo ? 'Criar rascunho' : 'Enviar nova versão') }}
+                  </button>
+                </div>
+
+                <div *ngIf="validacaoOk" class="alert alert-success mt-3" role="status">
+                  <b>Validação concluída: os arquivos são válidos.</b>
+                  <div *ngIf="validacaoOk.tabelas?.length"><b>Tabelas:</b> {{ validacaoOk.tabelas?.join(', ') }}</div>
+                  <div *ngIf="validacaoOk.parametros?.length"><b>Parâmetros:</b> {{ validacaoOk.parametros?.join(', ') }}</div>
+                </div>
+
+                <div *ngIf="problemas.length > 0" class="validation-errors mt-3" role="alert">
+                  <h4><i class="fas fa-exclamation-circle"></i> Corrija todos os {{ problemas.length }} problema(s)</h4>
+                  <p>Todos os erros retornados foram agrupados por caminho para correção em uma única passada.</p>
+                  <div class="problem-group" *ngFor="let grupo of problemasAgrupados; trackBy: identificarGrupo">
+                    <div class="problem-path"><code>{{ grupo.caminho }}</code></div>
+                    <ul class="mb-0">
+                      <li *ngFor="let problema of grupo.problemas">
+                        <span class="badge badge-danger">{{ problema.regra }}</span>
+                        <button
+                          type="button"
+                          class="problem-link"
+                          [disabled]="problema.linha == null"
+                          (click)="irParaProblema(problema)">
+                          {{ problema.mensagem }}
+                          <b *ngIf="problema.linha != null">(linha {{ problema.linha }})</b>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </tab>
+
+            <tab heading="Prévia e publicação" [disabled]="!selecionado">
+              <div class="pt-3" *ngIf="selecionado">
+                <div class="alert alert-info">
+                  A publicação só é habilitada depois de uma prévia bem-sucedida da mesma versão.
+                </div>
+                <div class="form-row align-items-end">
+                  <div class="form-group col-md-3">
+                    <label for="preview-versao">Versão da prévia</label>
+                    <select id="preview-versao" class="form-control" [(ngModel)]="previewVersao" (ngModelChange)="invalidarPreview()">
+                      <option *ngFor="let item of versoes" [ngValue]="item.versao">v{{ item.versao }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-md-3">
+                    <label for="preview-formato">Formato</label>
+                    <select id="preview-formato" class="form-control" [(ngModel)]="previewFormato" (ngModelChange)="invalidarPreview()">
+                      <option *ngFor="let formato of formatosDisponiveis" [ngValue]="formato">{{ formato | uppercase }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <button type="button" class="btn btn-primary" [disabled]="previsualizando || !previewVersao" (click)="previsualizar()">
+                      <i class="fas fa-eye"></i> {{ previsualizando ? 'Gerando prévia...' : 'Gerar prévia' }}
+                    </button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Parâmetros da prévia</label>
+                  <app-formulario-parametros
+                    #formPreview
+                    [parametros]="parametrosPreview"
+                    (paramsChange)="onFormPreviewChange($event)"></app-formulario-parametros>
+                </div>
+                <div class="form-group">
+                  <label for="preview-params">JSON resultante (editável)</label>
+                  <textarea
+                    id="preview-params"
+                    class="form-control code-editor"
+                    [class.is-invalid]="erroJsonPreview"
+                    rows="7"
+                    [ngModel]="previewParams"
+                    (ngModelChange)="onJsonPreviewChange($event)"
+                    spellcheck="false"></textarea>
+                  <div *ngIf="erroJsonPreview" class="invalid-feedback">{{ erroJsonPreview }}</div>
+                  <small class="form-text text-muted">O formulário e o JSON ficam sincronizados; as chaves devem corresponder aos parâmetros da definição.</small>
+                </div>
+                <div *ngIf="erroPreview" class="alert alert-warning" role="alert">{{ erroPreview }}</div>
+
+                <hr>
+                <div class="form-row align-items-end">
+                  <div class="form-group col-md-4">
+                    <label for="publicar-versao">Versão a publicar</label>
+                    <select id="publicar-versao" class="form-control" [(ngModel)]="versaoPublicacao" (ngModelChange)="invalidarPreview()">
+                      <option *ngFor="let item of versoes" [ngValue]="item.versao">v{{ item.versao }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-md-8">
+                    <button type="button" class="btn btn-success" [disabled]="publicando || !podePublicar" (click)="publicar()">
+                      <i class="fas fa-bullhorn"></i> {{ publicando ? 'Publicando...' : 'Publicar versão' }}
+                    </button>
+                    <small *ngIf="!podePublicar" class="text-muted ml-2">Faça a prévia da versão escolhida primeiro.</small>
+                  </div>
+                </div>
+              </div>
+            </tab>
+
+            <tab heading="Versões" [disabled]="!selecionado">
+              <div class="pt-3 position-relative min-tab-height">
+                <div *ngIf="erroVersoes" class="alert alert-danger">{{ erroVersoes }}</div>
+                <div *ngIf="!carregandoVersoes && !erroVersoes && versoes.length === 0" class="empty-state">Nenhuma versão encontrada.</div>
+                <div class="table-responsive" *ngIf="versoes.length > 0">
+                  <table class="table table-hover">
+                    <thead>
+                      <tr><th>Versão</th><th>Criada por</th><th>Criada em</th><th>Publicação</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of versoes | paginate: { id: 'versoes-relatorio', itemsPerPage: 8, currentPage: paginaVersoes }; trackBy: identificarVersao">
+                        <td><b>v{{ item.versao }}</b></td>
+                        <td>{{ item.criadoPor }}</td>
+                        <td>{{ item.criadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>
+                          <span *ngIf="item.publicada" class="badge badge-success">Publicada</span>
+                          <span *ngIf="!item.publicada" class="text-muted">{{ item.publicadoEm ? (item.publicadoEm | date:'dd/MM/yyyy HH:mm') : 'Nunca publicada' }}</span>
+                        </td>
+                        <td class="text-right text-nowrap">
+                          <button type="button" class="btn btn-sm btn-outline-secondary mr-1" (click)="carregarDetalhe(item.versao)">Ver fonte</button>
+                          <button type="button" class="btn btn-sm btn-outline-warning" [disabled]="item.publicada || executandoAcao" (click)="solicitarRollback(item)">Rollback</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <pagination-controls
+                  *ngIf="versoes.length > 8"
+                  id="versoes-relatorio"
+                  previousLabel="Anterior"
+                  nextLabel="Próxima"
+                  [autoHide]="true"
+                  (pageChange)="paginaVersoes = $event">
+                </pagination-controls>
+                <div *ngIf="carregandoVersoes" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
+              </div>
+            </tab>
+
+            <tab heading="Fonte" [disabled]="!selecionado">
+              <div class="pt-3 position-relative min-tab-height">
+                <div *ngIf="erroDetalhe" class="alert alert-danger">{{ erroDetalhe }}</div>
+                <ng-container *ngIf="detalhe">
+                  <h5>Versão {{ detalhe.versao }}</h5>
+                  <div class="form-group">
+                    <label>Definição YAML</label>
+                    <textarea class="form-control code-editor" rows="12" readonly [value]="detalhe.definicao"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>Template Handlebars</label>
+                    <textarea class="form-control code-editor" rows="12" readonly [value]="detalhe.template"></textarea>
+                  </div>
+                </ng-container>
+                <div *ngIf="carregandoDetalhe" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
+              </div>
+            </tab>
+
+            <tab heading="Auditoria" [disabled]="!selecionado">
+              <div class="pt-3 position-relative min-tab-height">
+                <div *ngIf="erroAuditoria" class="alert alert-danger">{{ erroAuditoria }}</div>
+                <div *ngIf="!carregandoAuditoria && !erroAuditoria && auditoria.length === 0" class="empty-state">Nenhum evento de auditoria encontrado.</div>
+                <div class="table-responsive" *ngIf="auditoria.length > 0">
+                  <table class="table table-hover">
+                    <thead><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Versão</th></tr></thead>
+                    <tbody>
+                      <tr *ngFor="let evento of auditoria | paginate: { id: 'auditoria-relatorio', itemsPerPage: 10, currentPage: paginaAuditoria }">
+                        <td>{{ evento.quando | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                        <td>{{ evento.quem }}</td>
+                        <td>{{ acaoEmPortugues(evento) }}</td>
+                        <td>{{ evento.versao != null ? 'v' + evento.versao : '-' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <pagination-controls
+                  *ngIf="auditoria.length > 10"
+                  id="auditoria-relatorio"
+                  previousLabel="Anterior"
+                  nextLabel="Próxima"
+                  [autoHide]="true"
+                  (pageChange)="paginaAuditoria = $event">
+                </pagination-controls>
+                <div *ngIf="carregandoAuditoria" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
+              </div>
+            </tab>
+          </tabset>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ng-template #previewHtmlModal>
+  <div class="modal-header">
+    <h4 class="modal-title">Prévia HTML — {{ selecionado?.nome }}</h4>
+    <button type="button" class="close" aria-label="Fechar" (click)="modalRef?.hide()"><span aria-hidden="true">&times;</span></button>
+  </div>
+  <div class="modal-body preview-modal-body">
+    <iframe
+      *ngIf="previewHtmlSeguro"
+      title="Prévia do relatório em HTML"
+      sandbox=""
+      [src]="previewHtmlSeguro">
+    </iframe>
+  </div>
+</ng-template>
+
+<ng-template #confirmacaoModal>
+  <div class="modal-header">
+    <h4 class="modal-title">{{ tituloConfirmacao }}</h4>
+    <button type="button" class="close" aria-label="Fechar" (click)="cancelarConfirmacao()"><span aria-hidden="true">&times;</span></button>
+  </div>
+  <div class="modal-body"><p class="mb-0">{{ textoConfirmacao }}</p></div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancelarConfirmacao()">Cancelar</button>
+    <button type="button" class="btn btn-danger" (click)="confirmarAcao()">Confirmar</button>
+  </div>
+</ng-template>

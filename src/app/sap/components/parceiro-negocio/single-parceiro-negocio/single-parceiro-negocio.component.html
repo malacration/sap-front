@@ -87,11 +87,11 @@
                   </div>
                   <div class="col-sm-2 form-group">
                     <label>De</label>
-                    <input class="form-control" type="date" name="cotacaoDataInicial" [(ngModel)]="cotacaoFiltro.dataInicial">
+                    <app-campo-data name="cotacaoDataInicial" [(ngModel)]="cotacaoFiltro.dataInicial"></app-campo-data>
                   </div>
                   <div class="col-sm-2 form-group">
                     <label>Até</label>
-                    <input class="form-control" type="date" name="cotacaoDataFinal" [(ngModel)]="cotacaoFiltro.dataFinal">
+                    <app-campo-data name="cotacaoDataFinal" [(ngModel)]="cotacaoFiltro.dataFinal"></app-campo-data>
                   </div>
                   <div class="col-sm-3 form-group">
                     <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorCotacao($event)"></app-sales-person-search>
@@ -203,11 +203,11 @@
                   </div>
                   <div class="col-sm-2 form-group">
                     <label>De</label>
-                    <input class="form-control" type="date" name="pedidoDataInicial" [(ngModel)]="pedidoFiltro.dataInicial">
+                    <app-campo-data name="pedidoDataInicial" [(ngModel)]="pedidoFiltro.dataInicial"></app-campo-data>
                   </div>
                   <div class="col-sm-2 form-group">
                     <label>Até</label>
-                    <input class="form-control" type="date" name="pedidoDataFinal" [(ngModel)]="pedidoFiltro.dataFinal">
+                    <app-campo-data name="pedidoDataFinal" [(ngModel)]="pedidoFiltro.dataFinal"></app-campo-data>
                   </div>
                   <div class="col-sm-3 form-group">
                     <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorPedido($event)"></app-sales-person-search>

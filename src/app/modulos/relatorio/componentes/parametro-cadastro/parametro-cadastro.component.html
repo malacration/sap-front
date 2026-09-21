@@ -1,0 +1,25 @@
+<app-branch-select *ngIf="parametro.tipo === 'filial'"
+  [multiple]="!!parametro.multiplo"
+  [selected]="parametro.multiplo ? null : valor"
+  [selectedMany]="parametro.multiplo ? valor : null"
+  (selectedOut)="selecionarFiliais($event)"
+  (selectedManyOut)="selecionarFiliais($event)">
+</app-branch-select>
+<button *ngIf="parametro.tipo === 'filial' && !parametro.multiplo && valor != null"
+  type="button" class="btn btn-sm btn-outline-secondary mt-1" (click)="selecionarFiliais(null)">
+  Limpar seleção
+</button>
+<ng-container *ngIf="service">
+  <app-search #busca [service]="service" [definition]="colunas"
+    [name]="parametro.rotulo || parametro.nome" [autoSelectSingleResult]="false"
+    (contentSelected)="selecionar($event); $event && busca.clear()">
+  </app-search>
+  <div class="mt-2" aria-live="polite">
+    <button *ngFor="let codigo of selecionados" type="button" class="btn btn-sm btn-outline-secondary mr-1 mb-1"
+      [attr.aria-label]="'Remover ' + descricao(codigo)" (click)="remover(codigo)">
+      {{ descricao(codigo) }} <span aria-hidden="true">×</span>
+    </button>
+  </div>
+  <small *ngIf="parametro.multiplo" class="text-muted">Busque e adicione os registros desejados.</small>
+  <div *ngIf="erro" class="text-danger" role="alert">{{ erro }}</div>
+</ng-container>

@@ -1,0 +1,239 @@
+<section class="content painel-vendas-v2">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Painel de Vendas</b></h3>
+    </div>
+
+    <div class="card-body">
+      <div class="form-row align-items-end filtros">
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <label for="painel-vendas-data-inicio">Período — início</label>
+          <app-campo-data inputId="painel-vendas-data-inicio" [(ngModel)]="dataInicio" (ngModelChange)="aoAlterarFiltro()"></app-campo-data>
+        </div>
+
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <label for="painel-vendas-data-fim">Período — fim</label>
+          <app-campo-data inputId="painel-vendas-data-fim" [(ngModel)]="dataFim" (ngModelChange)="aoAlterarFiltro()"></app-campo-data>
+        </div>
+
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <app-branch-select
+            [multiple]="true"
+            [selectedMany]="ids"
+            (selectedManyOut)="aoSelecionarFiliais($event)"
+          ></app-branch-select>
+        </div>
+
+        <div class="col-xl-3 col-md-6 col-sm-6">
+          <app-sales-person-search
+            [name]="'Vendedor (opcional)'"
+            (selected)="aoSelecionarVendedor($event)"
+          ></app-sales-person-search>
+        </div>
+
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <label for="painel-vendas-granularidade">Granularidade</label>
+          <select
+            id="painel-vendas-granularidade"
+            class="form-control"
+            [(ngModel)]="granularidade"
+            (ngModelChange)="aoAlterarFiltro()"
+          >
+            <option value="DIA">Dia</option>
+            <option value="SEMANA">Semana</option>
+            <option value="MES">Mês</option>
+          </select>
+        </div>
+
+        <div class="col-xl-1 col-md-3 col-sm-6">
+          <button type="button" class="btn btn-outline-primary btn-block" (click)="aoAlterarFiltro()">
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      <small class="form-text text-muted mb-3">
+        Limites: Dia até 92 dias, Semana até 366 dias e Mês até 1.096 dias.
+        Nenhuma filial selecionada consulta todas as filiais autorizadas.
+      </small>
+
+      <div *ngIf="erroValidacao" class="alert alert-warning" role="alert">
+        <i class="fas fa-exclamation-triangle mr-2"></i>{{ erroValidacao }}
+      </div>
+
+      <div *ngIf="erro" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle mr-2"></i>{{ erro }}
+      </div>
+
+      <div *ngIf="carregando" class="estado-carregamento" aria-live="polite">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        <span>Carregando indicadores de vendas...</span>
+      </div>
+
+      <ng-container *ngIf="!carregando && kpis">
+        <div class="alert alert-light border escopo-aplicado" aria-live="polite">
+          <div class="escopo-titulo">
+            <i class="fas fa-filter mr-2"></i><b>Escopo aplicado pelo backend</b>
+          </div>
+          <div>
+            <span class="text-muted">Filiais consultadas:</span>
+            <ng-container *ngIf="kpis.escopo.todasFiliais; else listaFiliais">
+              <span class="badge badge-primary filial">Todas as filiais</span>
+            </ng-container>
+            <ng-template #listaFiliais>
+              <ng-container *ngIf="kpis.escopo.filiais.length; else nenhumaFilial">
+                <span class="badge badge-primary filial" *ngFor="let filial of kpis.escopo.filiais">
+                  {{ rotuloFilial(filial) }}
+                </span>
+              </ng-container>
+            </ng-template>
+            <ng-template #nenhumaFilial><b> Nenhuma filial</b></ng-template>
+          </div>
+          <div><span class="text-muted">Vendedores:</span> <b>{{ descricaoVendedores() }}</b></div>
+        </div>
+
+        <div class="row kpis">
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card kpi-destaque">
+              <span class="kpi-label">Faturamento bruto<i class="fas fa-info-circle kpi-info" [tooltip]="tooltipKpi('faturamentoBruto')" [adaptivePosition]="true" container="body"></i></span>
+              <strong>{{ formatarMoeda(kpis.faturamentoBruto) }}</strong>
+              <small>Total faturado antes das devoluções</small>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">Devoluções<i class="fas fa-info-circle kpi-info" [tooltip]="tooltipKpi('devolucoes')" [adaptivePosition]="true" container="body"></i></span>
+              <strong>{{ formatarMoeda(kpis.devolucoes) }}</strong>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">Faturamento líquido</span>
+              <strong>{{ formatarMoeda(kpis.faturamentoLiquido) }}</strong>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">Quantidade de faturas</span>
+              <strong>{{ formatarQuantidade(kpis.qtdFaturas) }}</strong>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">Quantidade de devoluções</span>
+              <strong>{{ formatarQuantidade(kpis.qtdDevolucoes) }}</strong>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">Clientes ativos<i class="fas fa-info-circle kpi-info" [tooltip]="tooltipKpi('clientesAtivos')" [adaptivePosition]="true" container="body"></i></span>
+              <strong>{{ formatarQuantidade(kpis.clientesAtivos) }}</strong>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">Filiais com venda<i class="fas fa-info-circle kpi-info" [tooltip]="tooltipKpi('filiaisComVenda')" [adaptivePosition]="true" container="body"></i></span>
+              <strong>{{ formatarQuantidade(kpis.filiaisComVenda) }}</strong>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">
+                Ticket médio
+                <i class="fas fa-info-circle kpi-info"
+                   [tooltip]="tooltipKpi('ticketMedio')"
+                   [adaptivePosition]="true" container="body"></i>
+              </span>
+              <strong>{{ formatarMoeda(kpis.ticketMedio) }}</strong>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">
+                Ticket médio por cliente
+                <i class="fas fa-info-circle kpi-info"
+                   [tooltip]="tooltipKpi('ticketMedioPorCliente')"
+                   [adaptivePosition]="true" container="body"></i>
+              </span>
+              <strong>{{ formatarMoeda(kpis.ticketMedioPorCliente) }}</strong>
+            </div>
+          </div>
+
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <div class="kpi-card">
+              <span class="kpi-label">
+                Preço médio
+                <i class="fas fa-info-circle kpi-info"
+                   [tooltip]="tooltipKpi('precoMedio')"
+                   [adaptivePosition]="true" container="body"></i>
+                <!-- O aviso fica VISIVEL, nao so no tooltip: o numero mistura
+                     unidades de medida e sozinho induz a conclusao errada. -->
+                <i *ngIf="!kpis.precoMedioConfiavel"
+                   class="fas fa-exclamation-triangle kpi-alerta"
+                   [tooltip]="'Mistura unidades de medida (kg, un, cx). Use como tendência, não como preço real.'"
+                   container="body"></i>
+              </span>
+              <strong>{{ formatarMoeda(kpis.precoMedio) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <div class="d-flex align-items-baseline justify-content-between flex-wrap">
+            <h4>Evolução das vendas</h4>
+            <small class="text-muted">Agrupamento por {{ granularidade | lowercase }}</small>
+          </div>
+
+          <div *ngIf="evolucao.length === 0" class="alert alert-info">
+            Nenhum dado de evolução encontrado para os filtros informados.
+          </div>
+
+          <div *ngIf="evolucao.length > 0" class="row graficos">
+            <div class="col-xl-8">
+              <div class="grafico-card">
+                <h5>Faturamento</h5>
+                <div class="grafico">
+                  <ngx-charts-line-chart
+                    [results]="graficoFaturamento"
+                    [xAxis]="true"
+                    [yAxis]="true"
+                    [showXAxisLabel]="false"
+                    [showYAxisLabel]="true"
+                    [yAxisLabel]="'Faturamento (R$)'"
+                    [autoScale]="true"
+                    [gradient]="false"
+                    [yAxisTickFormatting]="formatarEixoMoeda"
+                  >
+                    <ng-template #tooltipTemplate let-model="model">
+                      <div class="tooltip-conteudo">
+                        <b>{{ model.name }}</b><br />{{ formatarMoeda(model.value) }}
+                      </div>
+                    </ng-template>
+                  </ngx-charts-line-chart>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-4">
+              <div class="grafico-card">
+                <h5>Quantidade de faturas</h5>
+                <div class="grafico">
+                  <ngx-charts-bar-vertical
+                    [results]="graficoFaturas"
+                    [xAxis]="true"
+                    [yAxis]="true"
+                    [showXAxisLabel]="false"
+                    [showYAxisLabel]="true"
+                    [yAxisLabel]="'Faturas'"
+                    [gradient]="false"
+                  ></ngx-charts-bar-vertical>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</section>

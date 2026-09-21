@@ -1,0 +1,50 @@
+.empty-state {
+  color: #6c757d;
+  padding: 2.5rem 1rem;
+  text-align: center;
+}
+
+.list-group-item.active .text-muted {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.relatorio-list-item {
+  align-items: stretch;
+  display: flex;
+  padding: 0;
+}
+
+/* O item nao tem padding (quem tem e o botao de selecao); sem margem propria o
+   Editar ficava colado na borda direita. */
+.botao-editar {
+  flex: 0 0 auto;
+  margin: 0 1rem 0 0.5rem;
+  white-space: nowrap;
+}
+
+.relatorio-select {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.75rem 1.25rem;
+}
+
+.format-actions {
+  border-top: 1px solid #dee2e6;
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+}
+
+.html-preview iframe {
+  background: #fff;
+  border: 1px solid #ced4da;
+  min-height: 560px;
+  width: 100%;
+}
+
+:host ::ng-deep .ngx-pagination {
+  margin: 1rem;
+  padding: 0;
+}

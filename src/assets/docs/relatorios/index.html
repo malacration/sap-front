@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>Relatórios — Guia do Usuário</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">RE</span>
+        <span class="brand__text">
+          <strong>Relatórios</strong>
+          <small>Guia do Usuário</small>
+        </span>
+      </div>
+      <label for="toc-toggle" class="topbar__menu" aria-label="Abrir índice">
+        <span></span><span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <input type="checkbox" id="toc-toggle" class="toc-toggle" hidden>
+
+  <div class="layout">
+
+    <aside class="toc" id="toc">
+      <p class="toc__title">Conteúdo</p>
+      <nav>
+        <ol>
+          <li><a href="#o-que-e">O que é</a></li>
+          <li><a href="#dois-arquivos">Um relatório são dois arquivos</a></li>
+          <li><a href="#exemplo">Exemplo completo: colaboradores</a></li>
+          <li><a href="#sql">A consulta (SQL)</a></li>
+          <li><a href="#yml">O arquivo .yaml</a></li>
+          <li><a href="#hbs">O arquivo .hbs</a></li>
+          <li><a href="#agrupamento">Agrupamento e totais</a></li>
+          <li><a href="#logo">Logo no cabeçalho</a></li>
+          <li><a href="#ciclo">Como publicar</a></li>
+          <li><a href="#campos">Referência dos campos</a></li>
+          <li><a href="#erros">Erros comuns</a></li>
+          <li><a href="#ia">Deixar uma IA criar</a></li>
+        </ol>
+      </nav>
+    </aside>
+    <label for="toc-toggle" class="toc__backdrop"></label>
+
+    <main class="content">
+
+      <section class="hero">
+        <h1>Relatórios</h1>
+        <p class="hero__lead">
+          Crie relatórios pela própria tela, sem depender de deploy. Você escreve
+          uma consulta e um layout; o sistema valida, mostra o resultado e publica
+          para quem você escolher.
+        </p>
+      </section>
+
+      <section id="o-que-e" class="block">
+        <h2>O que é</h2>
+        <p>
+          A tela de Relatórios tem duas abas. Em <strong>Executar</strong> qualquer
+          usuário roda os relatórios liberados para o seu papel e baixa em PDF, CSV
+          ou vê na tela. Em <strong>Criar / Editar</strong> — visível apenas para
+          administradores — você monta relatórios novos.
+        </p>
+        <div class="callout callout--info">
+          <p class="callout__title">Por que não precisa de deploy</p>
+          <p>
+            O relatório é <em>dado</em>, não código: fica guardado no banco, com
+            histórico de versões. Publicar e voltar atrás são operações imediatas.
+          </p>
+        </div>
+      </section>
+
+      <section id="dois-arquivos" class="block">
+        <h2>Um relatório são dois arquivos</h2>
+        <table class="tbl">
+          <thead>
+            <tr><th>Arquivo</th><th>Para que serve</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>.yaml</code></td>
+              <td>Os <strong>dados</strong>: qual consulta rodar, quais filtros o
+                  usuário preenche, quem pode ver, quais colunas aparecem.</td>
+            </tr>
+            <tr>
+              <td><code>.hbs</code></td>
+              <td>A <strong>aparência</strong>: o HTML que vira o PDF ou a tela.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          A consulta SQL mora <em>dentro</em> do <code>.yaml</code>, no campo
+          <code>consulta.sql</code>. Na tela há um editor dedicado a ela, mas o
+          arquivo continua sendo um só.
+        </p>
+      </section>
+
+      <section id="exemplo" class="block">
+        <h2>Exemplo completo: lista de colaboradores</h2>
+        <p>
+          O relatório mais simples possível que ainda ensina o mecanismo: lista os
+          colaboradores admitidos num período, com nome, cargo e data de admissão.
+        </p>
+        <div class="callout callout--note">
+          <p class="callout__title">Copie e adapte</p>
+          <p>
+            Cole os dois blocos abaixo nos editores da aba <strong>Criar /
+            Editar</strong>, clique em <strong>Validar</strong> e depois em
+            <strong>Pré-visualizar</strong>. Em menos de um minuto você tem um
+            relatório funcionando.
+          </p>
+        </div>
+      </section>
+
+      <section id="sql" class="block">
+        <h2>A consulta (SQL)</h2>
+        <p>
+          Os colaboradores ficam na tabela <code>OHEM</code>. Note o
+          <code>:dataInicio</code> e o <code>:dataFim</code>: são os
+          <strong>filtros</strong> que o usuário preenche na tela.
+        </p>
+
+        <span class="code-label">SQL — vai dentro de consulta.sql</span>
+<pre class="code"><span class="k">SELECT</span>
+    H.<span class="s">"empID"</span>       <span class="k">AS</span> MATRICULA,
+    H.<span class="s">"firstName"</span>   <span class="k">AS</span> NOME,
+    H.<span class="s">"lastName"</span>    <span class="k">AS</span> SOBRENOME,
+    H.<span class="s">"jobTitle"</span>    <span class="k">AS</span> CARGO,
+    H.<span class="s">"startDate"</span>   <span class="k">AS</span> ADMISSAO
+<span class="k">FROM</span> SBOGRUPOROVEMA.OHEM H
+<span class="k">WHERE</span> H.<span class="s">"startDate"</span> &gt;= <span class="v">:dataInicio</span>
+  <span class="k">AND</span> H.<span class="s">"startDate"</span> &lt;= <span class="v">:dataFim</span>
+<span class="k">ORDER BY</span> H.<span class="s">"startDate"</span> <span class="k">DESC</span></pre>
+
+        <div class="callout callout--warn">
+          <p class="callout__title">Três regras que o sistema exige</p>
+          <ul>
+            <li><strong>Sempre <code>SELECT</code>.</strong> Nada de alterar dados.</li>
+            <li><strong>Tabela com o schema na frente</strong> —
+                <code>SBOGRUPOROVEMA.OHEM</code>, nunca só <code>OHEM</code>.</li>
+            <li><strong>Sem comentários</strong> no SQL, e uma consulta só.</li>
+          </ul>
+        </div>
+        <p>
+          Todo valor que varia vira <code>:nome</code>. Nunca escreva a data direto
+          na consulta — além de travar o relatório numa data fixa, é o que abre
+          brecha de segurança.
+        </p>
+      </section>
+
+      <section id="yml" class="block">
+        <h2>O arquivo .yaml</h2>
+        <p>Junta a consulta, os filtros e as permissões:</p>
+
+        <span class="code-label">relatorio.yaml</span>
+<pre class="code"># O número do relatório é gerado pelo sistema ao salvar; o nome é só o título.
+nome: Meu relatório
+descricao: Descreva em uma linha o que este relatório responde
+
+# Quem enxerga este relatório na aba Executar
+papeis: [admin]
+
+# Cada item vira um campo do formulário.
+# O `nome` precisa ser IGUAL ao :nome usado no SQL.
+parametros:
+  - nome: dataInicio
+    tipo: date
+    rotulo: Admitidos a partir de
+    obrigatorio: true
+  - nome: dataFim
+    tipo: date
+    rotulo: Admitidos até
+    obrigatorio: true
+
+consulta:
+  # Regras: sempre SELECT, tabela com o schema na frente, sem comentários,
+  # e todo valor variável como :parametro.
+  sql: &gt;
+    SELECT H."empID" AS MATRICULA, H."firstName" AS NOME,
+           H."lastName" AS SOBRENOME, H."jobTitle" AS CARGO,
+           H."startDate" AS ADMISSAO
+    FROM SBOGRUPOROVEMA.OHEM H
+    WHERE H."startDate" &gt;= :dataInicio AND H."startDate" &lt;= :dataFim
+    ORDER BY H."startDate" DESC
+  maxRows: 2000
+
+# `campo` é o nome que a consulta devolve (o AS)
+colunas:
+  - { campo: MATRICULA, titulo: Matrícula, tipo: texto }
+  - { campo: NOME,      titulo: Nome,      tipo: texto }
+  - { campo: SOBRENOME, titulo: Sobrenome, tipo: texto }
+  - { campo: CARGO,     titulo: Cargo,     tipo: texto }
+  - { campo: ADMISSAO,  titulo: Admissão,  tipo: data }
+
+formatos: [pdf, html, csv]</pre>
+
+        <div class="callout callout--danger">
+          <p class="callout__title">O erro mais comum</p>
+          <p>
+            Filtro declarado em <code>parametros</code> que não aparece no SQL — ou
+            o contrário. O sistema recusa os dois casos e diz exatamente qual nome
+            está sobrando ou faltando.
+          </p>
+        </div>
+      </section>
+
+      <section id="hbs" class="block">
+        <h2>O arquivo .hbs</h2>
+        <p>
+          É HTML comum. O que muda é <code>{{ }}</code> para inserir valores e
+          <code>{{#each linhas}}</code> para repetir uma linha por registro.
+        </p>
+
+        <span class="code-label">template.hbs</span>
+<pre class="code">&lt;style&gt;
+  @page { size: A4; margin: 1.5cm }
+  body  { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #222 }
+  h1    { font-size: 18px; margin: 0 0 4px }
+  .sub  { color: #666; margin-bottom: 12px }
+  table { width: 100%; border-collapse: collapse }
+  thead { display: table-header-group }   /* repete o cabeçalho a cada página */
+  th    { background: #eee; text-align: left; padding: 6px; border-bottom: 2px solid #ccc }
+  td    { padding: 5px 6px; border-bottom: 1px solid #eee }
+&lt;/style&gt;
+
+&lt;h1&gt;{{meta.nome}}&lt;/h1&gt;
+&lt;div class="sub"&gt;De {{params.dataInicio}} até {{params.dataFim}}&lt;/div&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      {{#each colunas}}&lt;th&gt;{{titulo}}&lt;/th&gt;{{/each}}
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    {{#each linhas}}
+    &lt;tr&gt;
+      &lt;td&gt;{{MATRICULA}}&lt;/td&gt;
+      &lt;td&gt;{{NOME}} {{SOBRENOME}}&lt;/td&gt;
+      &lt;td&gt;{{CARGO}}&lt;/td&gt;
+      &lt;td&gt;{{ADMISSAO}}&lt;/td&gt;
+    &lt;/tr&gt;
+    {{else}}
+    &lt;tr&gt;&lt;td colspan="4"&gt;Nenhum registro no período.&lt;/td&gt;&lt;/tr&gt;
+    {{/each}}
+  &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+
+        <div class="callout callout--info">
+          <p class="callout__title">Dois detalhes que valem lembrar</p>
+          <ul>
+            <li><code>{{else}}</code> dentro do <code>{{#each}}</code> aparece
+                quando não há nenhum registro — melhor que uma tabela vazia.</li>
+            <li><code>thead { display: table-header-group }</code> faz o cabeçalho
+                se repetir em todas as páginas do PDF.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="agrupamento" class="block">
+        <h2>Agrupamento e totais</h2>
+        <p>
+          O layout não faz conta. Subtotais e total geral são calculados pelo sistema,
+          sem erro de centavos. Você só declara no <code>.yaml</code> o que quer:
+        </p>
+        <span class="code-label">relatorio.yaml</span>
+<pre class="code">agrupar: [VENDEDOR]          # quebra por vendedor (até 3 níveis)
+colunas:
+  - { campo: VENDEDOR, titulo: Vendedor, tipo: texto }
+  - { campo: NOTAS, titulo: Notas, tipo: numero, total: sum }
+  - { campo: TOTAL, titulo: Total, tipo: moeda,  total: sum }</pre>
+        <p>
+          <code>total</code> é a operação feita na coluna: <code>sum</code> (soma),
+          <code>avg</code> (média), <code>min</code> (mínimo), <code>max</code> (máximo), para
+          colunas de número, moeda ou percentual, e <code>count</code> (contagem, qualquer coluna).
+          O campo usado em <code>agrupar</code> precisa estar em <code>colunas</code>.
+        </p>
+        <span class="code-label">template.hbs</span>
+<pre class="code">{{#each grupos}}
+  &lt;tr&gt;&lt;td colspan="3"&gt;{{titulo}}: {{valor}}&lt;/td&gt;&lt;/tr&gt;
+  {{#each linhas}}&lt;tr&gt;&lt;td&gt;{{NOME}}&lt;/td&gt;&lt;td&gt;{{NOTAS}}&lt;/td&gt;&lt;td&gt;{{TOTAL}}&lt;/td&gt;&lt;/tr&gt;{{/each}}
+  &lt;tr&gt;&lt;td&gt;Subtotal&lt;/td&gt;&lt;td&gt;{{totais.NOTAS}}&lt;/td&gt;&lt;td&gt;{{totais.TOTAL}}&lt;/td&gt;&lt;/tr&gt;
+{{/each}}
+&lt;tr&gt;&lt;td&gt;Total geral&lt;/td&gt;&lt;td&gt;{{totais.NOTAS}}&lt;/td&gt;&lt;td&gt;{{totais.TOTAL}}&lt;/td&gt;&lt;/tr&gt;</pre>
+        <div class="callout callout--note">
+          <p class="callout__title">Ordem dos grupos</p>
+          <p>
+            As linhas são reunidas pelo valor do campo, então um grupo nunca se parte. O
+            <code>ORDER BY</code> do SQL só define a ordem em que os grupos aparecem. No CSV,
+            cada grupo termina numa linha de subtotal e o arquivo termina no total geral.
+          </p>
+        </div>
+        <h3>Resumos: o total do vendedor em todas as filiais</h3>
+        <p>
+          Com <code>agrupar: [FILIAL, VENDEDOR]</code> o vendedor tem subtotal dentro de cada
+          filial, mas não o total dele somando todas. Para esse outro corte use <code>resumos</code>:
+        </p>
+<pre class="code">resumos:
+  - titulo: Total por vendedor (todas as filiais)
+    por: [VENDEDOR]</pre>
+        <p>
+          O template recebe <code>resumos</code>, cada um com <code>titulo</code> e
+          <code>grupos</code> (os mesmos totais das colunas), para montar um quadro no fim.
+        </p>
+        <p>
+          Para ver funcionando, use <strong>Carregar exemplo</strong> no topo da tela de autoria:
+          <em>Vendas por vendedor (agrupado, com totais)</em> e
+          <em>Vendas por filial e vendedor (dois níveis)</em>, que traz o resumo.
+        </p>
+      </section>
+
+      <section id="logo" class="block">
+        <h2>Logo no cabeçalho</h2>
+        <p>
+          A logo do sistema entra sozinha no PDF e no HTML: a tela a envia junto ao gerar o
+          relatório. No layout, use:
+        </p>
+        <span class="code-label">template.hbs</span>
+<pre class="code">&lt;style&gt;
+  .logo { float: right; max-height: 42px; max-width: 160px; margin-left: 12px }
+&lt;/style&gt;
+
+{{#if meta.logo}}&lt;img class="logo" src="{{meta.logo}}" alt="Logo"&gt;{{/if}}</pre>
+        <div class="callout callout--note">
+          <p class="callout__title">Por que só assim</p>
+          <p>
+            O servidor nunca busca imagem de fora ao gerar o PDF, então
+            <code>&lt;img src="https://..."&gt;</code> é recusado. A logo vai embutida no pedido, e
+            <code>{{meta.logo}}</code> é a única expressão aceita em <code>src</code>. O
+            <code>{{#if}}</code> evita imagem quebrada quando o relatório é gerado pela API,
+            sem logo. Os exemplos prontos já vêm com isso.
+          </p>
+        </div>
+      </section>
+
+      <section id="ciclo" class="block">
+        <h2>Como publicar</h2>
+
+        <div class="step">
+          <div class="step__head"><span class="step__badge">1</span> Validar</div>
+          <div class="step__body">
+            Confere tudo sem salvar nada. Se houver problema, aparecem
+            <strong>todos</strong> de uma vez, com o campo exato e a linha.
+            Use quantas vezes quiser.
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step__head"><span class="step__badge">2</span> Salvar rascunho</div>
+          <div class="step__body">
+            Guarda uma versão. Rascunho <strong>não aparece</strong> para os
+            usuários — só para você.
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step__head"><span class="step__badge">3</span> Pré-visualizar</div>
+          <div class="step__body">
+            Roda de verdade, com dados reais, mas sem publicar. É aqui que você
+            confere se os números fazem sentido.
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step__head"><span class="step__badge step__badge--alt">4</span> Publicar</div>
+          <div class="step__body">
+            A partir daqui o relatório aparece na aba Executar para quem tem os
+            papéis listados em <code>papeis</code>.
+          </div>
+        </div>
+
+        <div class="callout callout--note">
+          <p class="callout__title">Errou depois de publicar?</p>
+          <p>
+            Versões antigas nunca são apagadas. Em <strong>Histórico</strong> você
+            volta para qualquer versão anterior num clique — o conteúdo não é
+            sobrescrito, só muda qual está no ar.
+          </p>
+        </div>
+      </section>
+
+      <section id="campos" class="block">
+        <h2>Referência dos campos</h2>
+
+        <h3>Tipos de filtro (<code>parametros[].tipo</code>)</h3>
+        <table class="tbl">
+          <thead><tr><th>Tipo</th><th>Vira na tela</th></tr></thead>
+          <tbody>
+            <tr><td><code>texto</code></td><td>campo de texto</td></tr>
+            <tr><td><code>numero</code></td><td>campo numérico</td></tr>
+            <tr><td><code>date</code></td><td>seletor de data</td></tr>
+            <tr><td><code>datetime</code></td><td>data e hora</td></tr>
+            <tr><td><code>booleano</code></td><td>caixa de marcar</td></tr>
+            <tr><td><code>lista</code></td><td>lista suspensa (exige <code>opcoes</code>)</td></tr>
+            <tr><td><code>filial</code></td><td>cadastro de filiais; envia Bplid/BPLID inteiro</td></tr>
+            <tr><td><code>vendedor</code></td><td>busca de vendedores; envia SalesEmployeeCode inteiro (SlpCode)</td></tr>
+            <tr><td><code>parceiro_negocio</code></td><td>busca de parceiros; envia CardCode textual</td></tr>
+            <tr><td><code>item</code></td><td>busca de itens; envia ItemCode textual</td></tr>
+            <tr><td><code>localidade</code></td><td>busca de localidades; envia Code textual</td></tr>
+          </tbody>
+        </table>
+
+        <p>Cadastros e listas aceitam <code>multiplo: true</code>: envie um array de códigos
+          para <code>IN (:parametro)</code>. Sem essa opção, envie um código para
+          <code>= :parametro</code>. O valor padrão segue a mesma cardinalidade.</p>
+        <p>Obrigatórios exigem seleção. Opcional vazio envia <code>null</code>;
+          <code>IN (NULL)</code> não retorna linhas e não significa “todos”. Para “todos”,
+          declare um booleano separado: <code>:todos = TRUE OR T0."BPLId" IN (:filiais)</code>.
+          Não use <code>:filiais IS NULL</code> com arrays.</p>
+        <p>As buscas usam somente cadastros existentes. Não há SQL de opções configurável.
+          JOINs continuam na consulta; os seletores não substituem autorização.</p>
+        <h3>Tipos de coluna (<code>colunas[].tipo</code>)</h3>
+        <table class="tbl">
+          <thead><tr><th>Tipo</th><th>Como aparece</th></tr></thead>
+          <tbody>
+            <tr><td><code>texto</code></td><td>como veio</td></tr>
+            <tr><td><code>numero</code></td><td>com separador de milhar</td></tr>
+            <tr><td><code>moeda</code></td><td>R$ 1.234,56</td></tr>
+            <tr><td><code>data</code></td><td>31/12/2026</td></tr>
+            <tr><td><code>datahora</code></td><td>31/12/2026 14:30</td></tr>
+            <tr><td><code>percentual</code></td><td>12,5%</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="erros" class="block">
+        <h2>Erros comuns</h2>
+        <table class="tbl">
+          <thead><tr><th>Mensagem</th><th>O que fazer</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Parâmetro não usado / ausente</td>
+              <td>O nome em <code>parametros</code> tem que ser idêntico ao
+                  <code>:nome</code> do SQL. Confira maiúsculas.</td>
+            </tr>
+            <tr>
+              <td>Tabela não permitida</td>
+              <td>Escreva com o schema: <code>SBOGRUPOROVEMA.OHEM</code>. Se a
+                  tabela não estiver liberada, peça a liberação.</td>
+            </tr>
+            <tr>
+              <td>SQL com comentário</td>
+              <td>Remova <code>--</code> e <code>/* */</code> da consulta.</td>
+            </tr>
+            <tr>
+              <td>Uso de <code>{{{ }}}</code></td>
+              <td>Troque por <code>{{ }}</code>. A forma tripla não protege contra
+                  conteúdo malicioso vindo dos dados.</td>
+            </tr>
+            <tr>
+              <td>Recurso externo proibido</td>
+              <td>Imagens precisam estar embutidas no próprio arquivo. Endereços
+                  <code>http://</code> e <code>file://</code> não são aceitos.</td>
+            </tr>
+            <tr>
+              <td>Resultado muito grande</td>
+              <td>Restrinja o período ou os filtros. O relatório não é entregue
+                  pela metade de propósito — número incompleto engana.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="ia" class="block">
+        <h2>Deixar uma IA criar o relatório</h2>
+        <p>
+          Na aba <strong>Criar / Editar</strong> há o botão
+          <strong>Baixar instruções para IA</strong>. O pacote tem duas pastas:
+          uma para o Claude Code e outra para configurar um GPT no ChatGPT.
+        </p>
+        <p>
+          Junto, gere um <strong>token</strong> na mesma tela. Ele permite que a IA
+          valide, crie rascunho e pré-visualize.
+        </p>
+        <div class="callout callout--warn">
+          <p class="callout__title">A IA não publica</p>
+          <p>
+            O token não tem permissão para publicar — de propósito. Publicar define
+            quem passa a enxergar aqueles dados, e essa decisão continua sendo de
+            uma pessoa. A IA prepara; você confere na pré-visualização e libera.
+          </p>
+        </div>
+        <div class="callout callout--danger">
+          <p class="callout__title">Guarde o token na hora</p>
+          <p>
+            Ele aparece <strong>uma única vez</strong>. Não há como recuperá-lo
+            depois — se perder, revogue e gere outro.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+</body>
+</html>

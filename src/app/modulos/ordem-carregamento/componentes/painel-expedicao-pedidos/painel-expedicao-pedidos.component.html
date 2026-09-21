@@ -3,21 +3,11 @@
     <div class="row">
       <div class="col-sm-3">
         <label>Data Início</label>
-        <input
-          type="date"
-          class="form-control"
-          [(ngModel)]="startDate"
-          (ngModelChange)="getPedidos()"
-        />
+        <app-campo-data [(ngModel)]="startDate" (ngModelChange)="getPedidos()"></app-campo-data>
       </div>
       <div class="col-sm-3">
         <label>Data Fim</label>
-        <input
-          type="date"
-          class="form-control"
-          [(ngModel)]="endDate"
-          (ngModelChange)="getPedidos()"
-        />
+        <app-campo-data [(ngModel)]="endDate" (ngModelChange)="getPedidos()"></app-campo-data>
       </div>
       <div class="col-sm-3">
         <app-branch-select

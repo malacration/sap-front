@@ -1,0 +1,24 @@
+<div class="input-group flex-nowrap">
+  <input type="text" class="form-control" autocomplete="off"
+    bsDatepicker #calendario="bsDatepicker" container="body"
+    [bsConfig]="config"
+    [bsValue]="valor"
+    (bsValueChange)="aoMudar($event)"
+    (blur)="tocado()"
+    [placeholder]="textoPlaceholder"
+    [class.is-invalid]="invalido"
+    [disabled]="desabilitado"
+    [attr.id]="inputId || null">
+  <div class="input-group-append">
+    <button type="button" class="btn btn-outline-secondary" tabindex="-1"
+      aria-label="Abrir calendário" [disabled]="desabilitado"
+      [attr.aria-expanded]="calendario.isOpen" (click)="calendario.toggle()">
+      <i class="far fa-calendar-alt" aria-hidden="true"></i>
+    </button>
+    <button type="button" class="btn btn-outline-secondary" tabindex="-1"
+      aria-label="Limpar data" [disabled]="desabilitado || !valor"
+      (click)="calendario.hide(); limpar()">
+      <i class="fas fa-times" aria-hidden="true"></i>
+    </button>
+  </div>
+</div>

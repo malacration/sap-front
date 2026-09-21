@@ -7,3 +7,7 @@
     (selectedOut)="onChange($event)"
     [loading]="loading">
 </app-select>
+<div *ngIf="erro" class="text-danger" role="alert">
+    {{ erro }}
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="carregar()">Tentar novamente</button>
+</div>

@@ -1,0 +1,22 @@
+@import 'dropzone/dist/dropzone.css';
+
+.relatorio-dropzone {
+  align-items: center;
+  background: #f8f9fa;
+  border: 2px dashed #adb5bd;
+  border-radius: 0.25rem;
+  display: flex;
+  justify-content: center;
+  min-height: 150px;
+  padding: 1rem;
+}
+
+.relatorio-dropzone .dz-message {
+  color: #6c757d;
+  margin: 1rem;
+  text-align: center;
+}
+
+.relatorio-dropzone .dz-preview {
+  margin: 0.5rem;
+}

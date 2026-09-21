@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import * as cytoscapeLib from 'cytoscape';
-import { etiquetaSituacao, getCliente, MapaEdge, MapaNode, MapaRelacoesResponse, TIPO_ROTA, toCytoscapeElements } from '../../../model/mapa-relacoes';
+import { elementosCancelados, estaCancelado, etiquetaSituacao, getCliente, MapaEdge, MapaNode, MapaRelacoesResponse, TIPO_ROTA, toCytoscapeElements } from '../../../model/mapa-relacoes';
 
 //interop CJS/ESM: dependendo do bundler, o modulo vem como {default: fn} ou como a propria funcao
 const cytoscape : any = (cytoscapeLib as any).default || cytoscapeLib;
@@ -22,6 +22,11 @@ const ZOOM_FIXO = 1
 //O cliente nao entra nessa distincao.
 const COR_SELECIONADO = '#0d6efd'
 const COR_RELACAO = '#6c757d'
+
+//pilha de cancelados - vermelho, o mesmo do badge "Cancelado" (ver SITUACAO_BADGE)
+const COR_CANCELADO = '#dc3545'
+const COR_CANCELADO_FUNDO = '#f8d7da'
+const COR_CANCELADO_TEXTO = '#842029'
 
 //grade manual: cada coluna comporta no maximo 10 nos (10 linhas); o que passar disso
 //avanca pra proxima coluna a direita, dentro do mesmo "nivel" (ver montarGrade)
@@ -44,11 +49,27 @@ export interface TotaisMapa {
   pagoNaoConciliado : number
 }
 
+//pilha de cancelados: os cards ficam DENTRO do grafo (nos do proprio cytoscape, ver
+//montarPilhaCancelados), entao essas medidas sao em coordenadas do grafo, iguais as da grade.
+//Com a faixa visivel menor que a altura do card, cada um cobre o de baixo e sobra so a tarja
+//do topo - o baralho na mao, reto, sem arco. O passo horizontal remata o efeito de pilha.
+const LARGURA_CARD_CANCELADO = 210
+const ALTURA_CARD_CANCELADO = 52
+const ALTURA_CABECALHO_PILHA = 26
+const FAIXA_VISIVEL_CARD = 24
+const DESLOCAMENTO_X_PILHA = 3
+//espacamento entre os cards com a pilha aberta (aí eles nao se cobrem)
+const ESPACO_CARD_ABERTO = 8
+
+//no sintetico que titula a pilha - nao vem de response.nodes, entao nao entra em totais,
+//arestas, niveis nem ramos; e so posicao + template
+const ID_CABECALHO_PILHA = '__cancelados__'
+
 @Component({
   selector: 'app-mapa-relacoes-grafo',
   templateUrl: './mapa-relacoes-grafo.component.html',
 })
-export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
+export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() response : MapaRelacoesResponse = null
   //id (formato "TIPO:docEntry") do documento que o usuario buscou - destacado em azul
@@ -66,6 +87,14 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
   //cliente fica fora do cytoscape, num painel fixo (ver template) - nunca some com pan/zoom
   cliente : MapaNode = null
 
+  //pilha fechada mostra so a tarja do topo de cada card (aspecto de baralho); aberta, os
+  //cards inteiros. Alterna no clique do cabecalho da pilha (ver o handler em render)
+  private pilhaCanceladosAberta = false
+  //canto onde a pilha comeca (em coordenadas do grafo) e a ordem dos cards nela - guardados
+  //pra reposicionar no abre/fecha sem ter que refazer o grafo inteiro
+  private origemPilha : { x : number, y : number } = null
+  private idsPilha : Array<string> = []
+
   //totais exibidos no rodape (ver calcularTotais)
   totais : TotaisMapa = null
 
@@ -82,6 +111,12 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
       this.render()
   }
 
+  ngOnDestroy(): void {
+    this.viewReady = false
+    this.cy?.destroy()
+    this.cy = null
+  }
+
   changeZoomSensibilidade(){
     if(!this.cy)
       return
@@ -94,6 +129,9 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
     this.cy?.destroy()
     this.cliente = null
     this.totais = null
+    this.origemPilha = null
+    this.idsPilha = []
+    this.pilhaCanceladosAberta = false
     if(!this.response)
       return
 
@@ -106,7 +144,10 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
     const elementos = toCytoscapeElements(this.response)
     const nodeIds = elementos.filter(el => !el.data.source).map(el => el.data.id as string)
     const edgesGrafo = this.response.edges.filter(e => nodeIds.includes(e.from) && nodeIds.includes(e.to))
+    //so os nos de verdade entram na grade - a pilha de cancelados nao pode ocupar slot dela,
+    //e posicionada depois, num canto proprio (ver montarPilhaCancelados)
     const posicoes = montarGrade(nodeIds, edgesGrafo)
+    elementos.push(...this.montarPilhaCancelados(posicoes))
 
     //anota coluna/linha de cada no na propria data do elemento - usado pelo estilo do
     //edge abaixo pra decidir se a aresta precisa arquear (pula coluna) ou pode ficar reta
@@ -169,6 +210,17 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
             'control-point-weights': 0.5,
             'line-style': (e: any) => ESTILO_TRACEJADO.includes(e.data('tipo')) ? 'dashed' : 'solid',
           } as any
+        },
+        {
+          //a pilha de cancelados nao pode medir o no pelo texto como os demais ('label'):
+          //o passo do empilhamento e fixo, entao a caixa tem que ter o mesmo tamanho do
+          //card HTML, senao a tarja visivel de cada card ficaria de um tamanho diferente
+          selector: 'node[?cancelado]',
+          style: { 'width': LARGURA_CARD_CANCELADO, 'height': ALTURA_CARD_CANCELADO, 'label': '' } as any
+        },
+        {
+          selector: 'node[?grupoCancelados]',
+          style: { 'width': LARGURA_CARD_CANCELADO, 'height': ALTURA_CABECALHO_PILHA, 'label': '' } as any
         }
       ],
       //sem "layout" aqui de proposito - roda manualmente logo abaixo, com o listener de
@@ -201,7 +253,9 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
 
     ;(this.cy as any).nodeHtmlLabel([
       {
-        query: 'node',
+        //os nos da pilha de cancelados tem template proprio (logo abaixo) - [!x] casa com
+        //quem NAO tem o campo, entao o card normal fica so com os documentos do desenho
+        query: 'node[!cancelado][!grupoCancelados]',
         halign: 'center',
         valign: 'center',
         halignBox: 'center',
@@ -240,8 +294,113 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
             </div>
           `
         }
+      },
+      {
+        //cabecalho da pilha - tambem e o botao que abre/fecha (ver o tap logo abaixo)
+        query: `node[?grupoCancelados]`,
+        halign: 'center', valign: 'center', halignBox: 'center', valignBox: 'center',
+        tpl: (data: any) => `
+          <div style="width:${LARGURA_CARD_CANCELADO}px; height:${ALTURA_CABECALHO_PILHA}px; box-sizing:border-box;
+                      background:${COR_CANCELADO}; color:#fff; font-weight:600; font-size:12px;
+                      border-radius:4px; padding:0 10px; cursor:pointer; font-family:inherit;
+                      display:flex; align-items:center; justify-content:space-between; gap:6px;
+                      box-shadow:0 1px 4px rgba(0,0,0,0.2);">
+            <span>Cancelados (${data.total})</span>
+            <i class="fas ${data.aberta ? 'fa-chevron-up' : 'fa-chevron-down'}"></i>
+          </div>
+        `
+      },
+      {
+        //card empilhado: a tarja do topo tem exatamente FAIXA_VISIVEL_CARD de altura, que e
+        //o passo do empilhamento - com a pilha fechada e so ela que sobra visivel de cada card
+        query: `node[?cancelado]`,
+        halign: 'center', valign: 'center', halignBox: 'center', valignBox: 'center',
+        tpl: (data: any) => {
+          const url = this.construirUrlAbrir(data)
+          const botaoAbrir = url
+            ? `<a href="${url}" target="_blank" rel="noopener" title="Abrir em nova aba"
+                  style="color:${COR_CANCELADO_TEXTO}; text-decoration:none; flex-shrink:0; line-height:1;"
+                  onmousedown="event.stopPropagation()" onclick="event.stopPropagation()">
+                 <i class="fas fa-external-link-alt"></i>
+               </a>`
+            : ''
+          return `
+            <div style="width:${LARGURA_CARD_CANCELADO}px; height:${ALTURA_CARD_CANCELADO}px; box-sizing:border-box;
+                        border:1px solid ${COR_CANCELADO}; border-radius:4px; background:#fff; overflow:hidden;
+                        box-shadow:0 1px 4px rgba(0,0,0,0.2); font-family:inherit;">
+              <div style="height:${FAIXA_VISIVEL_CARD}px; box-sizing:border-box; background:${COR_CANCELADO_FUNDO};
+                          color:${COR_CANCELADO_TEXTO}; font-size:11px; font-weight:600; padding:0 8px;
+                          display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(data.compacto.titulo)}</span>
+                ${botaoAbrir}
+              </div>
+              <div style="padding:5px 8px; font-size:11px; color:#212529;
+                          display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                <span style="color:#6c757d;">${escapeHtml(data.compacto.data)}</span>
+                <b>${escapeHtml(data.compacto.valor)}</b>
+              </div>
+            </div>
+          `
+        }
       }
     ], { enablePointerEvents: true })
+
+    this.cy.on('tap', `node[?grupoCancelados]`, () => this.alternarPilhaCancelados())
+  }
+
+  /**
+   * Monta os nos da pilha de cancelados e ja grava a posicao deles no mesmo mapa que o
+   * layout 'preset' consome. A pilha fica uma coluna a direita do que a grade ocupou, no
+   * topo da faixa usada - um canto proprio, sem disputar espaco com o desenho.
+   */
+  private montarPilhaCancelados(posicoes: Map<string, {x:number,y:number}>) : Array<any> {
+    const cards = elementosCancelados(this.response)
+    if(cards.length === 0)
+      return []
+
+    const xs = [...posicoes.values()].map(p => p.x)
+    const ys = [...posicoes.values()].map(p => p.y)
+    this.origemPilha = {
+      x: (xs.length > 0 ? Math.max(...xs) : 0) + LARGURA_COLUNA,
+      y: (ys.length > 0 ? Math.min(...ys) : 0),
+    }
+    this.idsPilha = cards.map(el => el.data.id as string)
+
+    const cabecalho = { data: { id: ID_CABECALHO_PILHA, grupoCancelados: true, total: cards.length, aberta: false } }
+    this.posicoesDaPilha().forEach((pos, id) => posicoes.set(id, pos))
+    //ordem importa: o nodeHtmlLabel desenha os divs nesta mesma ordem, entao cada card cobre
+    //o anterior e sobra a tarja do topo de quem esta embaixo - o baralho na mao
+    return [cabecalho, ...cards]
+  }
+
+  //posicao de cada no da pilha (cabecalho + cards), fechada ou aberta. Fechada, o passo
+  //vertical e menor que a altura do card: cada um cobre o anterior e sobra so a tarja do
+  //topo; o passo horizontal da o desencontro de baralho na mao.
+  private posicoesDaPilha() : Map<string, {x:number,y:number}> {
+    const pos = new Map<string, {x:number,y:number}>()
+    if(!this.origemPilha)
+      return pos
+
+    const { x, y } = this.origemPilha
+    pos.set(ID_CABECALHO_PILHA, { x, y })
+    const yPrimeiroCard = y + ALTURA_CABECALHO_PILHA / 2 + ALTURA_CARD_CANCELADO / 2 + ESPACO_CARD_ABERTO
+    const passo = this.pilhaCanceladosAberta
+      ? ALTURA_CARD_CANCELADO + ESPACO_CARD_ABERTO
+      : FAIXA_VISIVEL_CARD
+
+    this.idsPilha.forEach((id, i) => {
+      pos.set(id, {
+        x: this.pilhaCanceladosAberta ? x : x + i * DESLOCAMENTO_X_PILHA,
+        y: yPrimeiroCard + i * passo,
+      })
+    })
+    return pos
+  }
+
+  private alternarPilhaCancelados(){
+    this.pilhaCanceladosAberta = !this.pilhaCanceladosAberta
+    this.cy.getElementById(ID_CABECALHO_PILHA).data('aberta', this.pilhaCanceladosAberta)
+    this.posicoesDaPilha().forEach((pos, id) => this.cy.getElementById(id).position(pos))
   }
 
   /**
@@ -263,9 +422,14 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges {
    *   refletir o valor que de fato pode ser apropriado (a apropriacao sempre saca pelo
    *   DocTotal do adiantamento, nunca pelo valor recebido). Um adiantamento com boleto
    *   ainda em aberto tambem fica de fora - nao e dinheiro recebido.
+   *
+   * Documento cancelado NAO entra em nenhuma dessas somas: o SAP guarda o original
+   * estornado e o documento de cancelamento que o anula, os dois com o mesmo valor, e
+   * eles se anulam - somar os dois inflava principalmente o "Baixado" (cada apropriacao
+   * cancelada contava tres vezes: a valida, a estornada e o estorno).
    */
   private calcularTotais() : TotaisMapa {
-    const nodes = this.response?.nodes || []
+    const nodes = (this.response?.nodes || []).filter(n => !estaCancelado(n))
     const somar = (lista : Array<MapaNode>) => lista.reduce((total, n) => total + (n.valor ?? 0), 0)
     const notas = nodes.filter(n => n.tipo === 'NOTA_FISCAL')
 

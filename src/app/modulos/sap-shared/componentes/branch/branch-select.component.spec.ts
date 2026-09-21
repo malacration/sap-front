@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { BranchSelectComponent } from './branch-select.component';
 import { BranchService } from '../../../../sap/service/branch.service';
 import { Branch } from '../../../../sap/model/branch';
@@ -37,13 +37,29 @@ describe('Branch select component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('tira a razao social repetida da descricao, senao as opcoes ficam identicas na tela', () => {
-    // Todas as filiais vem do SAP com o mesmo prefixo de razao social, mais largo que a
-    // coluna do filtro: sem limpar, o usuario ve varias "FAZENDA RIO MADEIRA S/A - FAR..."
-    // e nao consegue saber qual esta marcando.
+  it('permite tentar novamente quando o cadastro falha', () => {
+    const buscar = spyOn(TestBed.inject(BranchService), 'get').and.returnValue(throwError(() => new Error('falha')));
+    fixture.detectChanges();
+    expect(component.loading).toBeFalse();
+    expect(component.erro).toBeTruthy();
+    buscar.and.returnValue(of(filiais));
+    component.carregar();
+    expect(component.erro).toBe('');
+    expect(component.branches).toEqual(filiais);
+  });
+
+  it('cancela carregamento quando o formulario e destruido', () => {
+    const resposta = new Subject<Branch[]>();
+    spyOn(TestBed.inject(BranchService), 'get').and.returnValue(resposta);
+    fixture.detectChanges();
+    fixture.destroy();
+    expect(resposta.observed).toBeFalse();
+  });
+
+  it('abrevia a razao social preservando a identificacao da empresa', () => {
     fixture.detectChanges();
 
-    expect(component.opcoes.map((it) => it.description)).toEqual(['CSC - Serra Verde', 'Matriz']);
+    expect(component.opcoes.map((it) => it.description)).toEqual(['FAZENDA CSC - Serra Verde', 'SUSTENNUTRI Matriz']);
   });
 
   it('filial cujo nome e so a razao social nao fica com descricao vazia', () => {
@@ -58,7 +74,7 @@ describe('Branch select component', () => {
 
     outro.detectChanges();
 
-    expect(outro.componentInstance.opcoes[0].description).toBe('SUSTENNUTRI NUTRICAO ANIMAL LTDA');
+    expect(outro.componentInstance.opcoes[0].description).toBe('SUSTENNUTRI');
   });
 
   it('no modo multiple a escolha sai por selectedManyOut, nao por selectedOut', () => {
