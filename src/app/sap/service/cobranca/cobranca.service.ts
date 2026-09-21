@@ -7,6 +7,7 @@ import { CobrancaTitulo } from '../../model/cobranca/cobranca-titulo';
 import { CobrancaDominio } from '../../model/cobranca/cobranca-dominio';
 import { CobrancaHistorico } from '../../model/cobranca/cobranca-historico';
 import { CobrancaDashboard, CobrancaMes } from '../../model/cobranca/cobranca-dashboard';
+import { CobrancaTitulosTotal } from '../../model/cobranca/cobranca-titulos-total';
 
 export interface CobrancaFiltro {
   // Multi-selecao: vai como filial=6&filial=7 e o backend recebe List<Int>.
@@ -26,7 +27,16 @@ export interface CobrancaFiltro {
   // lancamentoMes=2026-08 e o backend recebe List<String>.
   lancamentoMes?: string[] | null;
   semAcompanhamento?: boolean | null;
+  // Inverso do de cima: só título que já tem registro de cobrança. É o recorte do card
+  // "Recuperado" do dashboard. Ligar os dois juntos devolve lista vazia.
+  comAcompanhamento?: boolean | null;
   promessaVencidaAte?: string | null;
+  // A vista = lançado e vencido no mesmo dia (DocDate = DueDate).
+  ocultarAvista?: boolean | null;
+  // Recorte do drill-down do card "Recuperado" do dashboard: filtra pela data do recebimento
+  // (não vencimento), pro mesmo período que o dashboard está mostrando.
+  dataPagamentoDe?: string | null;
+  dataPagamentoAte?: string | null;
   tipo?: string | null;
   pagina?: number | null;
   tamanho?: number | null;
@@ -77,6 +87,14 @@ export class CobrancaService {
     return this.http
       .get<any[]>(`${this.url}/titulos`, { params: this.montarParams(filtro) })
       .pipe(map((lista) => (lista ?? []).map((item) => CobrancaTitulo.from(item))));
+  }
+
+  // Total do filtro inteiro, não só da página carregada. O backend roda o mesmo pipeline do
+  // `listar` (mesmo SQL + mesmo filtro em Kotlin), então o número bate com o que a tela mostraria.
+  totais(filtro: CobrancaFiltro = {}): Observable<CobrancaTitulosTotal> {
+    return this.http
+      .get<any>(`${this.url}/titulos/totais`, { params: this.montarParams(filtro) })
+      .pipe(map((json) => CobrancaTitulosTotal.from(json)));
   }
 
   historico(tipo: string, docEntry: number, instlmntId: number): Observable<CobrancaHistorico[]> {
@@ -151,6 +169,13 @@ export class CobrancaService {
       new Column('Situação', 'situacaoFormatada'),
       new Column('Ocorrência', 'ocorrenciaFormatada'),
       new Column('Situação SAP', 'situacaoSapLabel'),
+      new Column('Data Pagamento', 'dataPagamentoFormatada'),
+      new Column('Valor Pago', 'valorPagoCurrency'),
+      // ORCT.Comments vem direto do SAP sem escape - a tabela renderiza toda celula via
+      // innerHTML (appSafeHtml faz bypassSecurityTrustHtml sem sanitizar). O 3o argumento
+      // '{{value}}' passa pelo Handlebars, que HTML-escapa por padrao (so {{{value}}} nao
+      // escaparia) - mesmo mecanismo ja usado na coluna Filial pra neutralizar HTML/JS injetado.
+      new Column('Observação Pagamento', 'observacaoPagamentoFormatada', '{{value}}').withWrap(),
     ];
   }
 

@@ -9,6 +9,7 @@ import { CobrancaTitulo } from '../../../sap/model/cobranca/cobranca-titulo';
 import { Branch } from '../../../sap/model/branch';
 import { SalesPerson } from '../../../sap/model/sales-person/sales-person';
 import { CobrancaFiltro, CobrancaService } from '../../../sap/service/cobranca/cobranca.service';
+import { CobrancaTitulosTotal } from '../../../sap/model/cobranca/cobranca-titulos-total';
 import { RegistrarAcaoModalComponent, CobrancaDominios } from './registrar-acao-modal.component';
 import { Option, OptionGroup } from '../../../sap/model/form/option';
 
@@ -25,6 +26,9 @@ export class CobrancaStatementComponent implements OnInit {
   nomeUsuario: string;
   loading = false;
   carregandoMais = false;
+  calculandoTotal = false;
+  // Total do filtro inteiro (todas as páginas), sob demanda. Null = ainda não foi pedido.
+  totalDoFiltro: CobrancaTitulosTotal | null = null;
 
   titulos: CobrancaTitulo[] = [];
   definition: Column[] = [];
@@ -58,14 +62,30 @@ export class CobrancaStatementComponent implements OnInit {
   mesesPorAno: OptionGroup[] = [];
 
   filtroSemAcompanhamento: boolean | null = null;
+  filtroComAcompanhamento: boolean | null = null;
   filtroPromessaVencidaAte = '';
+  // A vista = lançado e vencido no mesmo dia. Desligado por padrão: mostra tudo até o
+  // cobrador ligar o toggle pra tirar essas vendas da lista.
+  filtroOcultarAvista = false;
+  // Só chega via drill-down do card "Recuperado" do dashboard (sem controle próprio na tela,
+  // igual semAcompanhamento/promessaVencidaAte) - recorta pela data do recebimento.
+  filtroDataPagamentoDe = '';
+  filtroDataPagamentoAte = '';
   vendedorHerdado: number | null = null;
   veioDoDashboard = false;
+  // Valor do card que originou o drill-down, só pra conferência lado a lado. Some assim que o
+  // filtro deixa de ser o que veio do Resultado (ver recorteIntacto) - número de card exibido
+  // sobre outro recorte é pior que número nenhum.
+  valorCardRecuperado: number | null = null;
+  private assinaturaHerdada: string | null = null;
 
   // Carrega a lista e, opcionalmente, os códigos que devem voltar marcados nessa carga. Os
   // códigos viajam com a requisição de propósito: em campo, guardá-los num atributo fazia a
   // remarcação cair na próxima emissão, que pode ser de outro filtro que o usuário mexeu no meio.
   private readonly filtroSolicitado = new Subject<string[]>();
+
+  // Carrega o filtro do momento do clique: a resposta precisa voltar sabendo de que recorte veio.
+  private readonly totalSolicitado = new Subject<CobrancaFiltro>();
 
   // Vencimento padrão (30 dias atrás → 1 mês à frente) é só o recorte inicial da tela. Escolher
   // mês de lançamento sem ter mexido nessas datas limpa o recorte: senão o filtro oferece 24
@@ -108,6 +128,32 @@ export class CobrancaStatementComponent implements OnInit {
       this.remarca(codigosParaRemarcar);
       this.temMais = titulos.length === this.pageSize;
       this.loading = false;
+      // Total calculado pro filtro ANTERIOR não pode sobreviver à troca de filtro: seria um
+      // número errado com cara de oficial, justamente numa tela de conferência.
+      this.totalDoFiltro = null;
+    });
+
+    // Mesmo cuidado do laço de cima, por dois motivos diferentes. switchMap: clicar duas vezes
+    // no botão deixaria duas varreduras em voo e quem mandaria seria a última RESPOSTA. E o
+    // carimbo da assinatura: trocar de filtro NÃO cancela a varredura que já saiu, então sem
+    // conferir de qual recorte a resposta veio, o total da filial A podia pousar sobre a lista
+    // da filial B - zerar o total ao recarregar a lista não impede isso, porque a resposta
+    // atrasada chega depois e preenche de novo.
+    this.totalSolicitado.pipe(
+      switchMap((filtro) => {
+        this.calculandoTotal = true;
+        const assinatura = JSON.stringify(filtro);
+        return this.service.totais(filtro).pipe(
+          catchError(() => of(null as CobrancaTitulosTotal | null)),
+          map((total) => ({ total, assinatura })),
+        );
+      })
+    ).subscribe(({ total, assinatura }) => {
+      this.calculandoTotal = false;
+      if (assinatura !== JSON.stringify(this.getFiltro())) {
+        return;
+      }
+      this.totalDoFiltro = total;
     });
 
     forkJoin({
@@ -125,6 +171,7 @@ export class CobrancaStatementComponent implements OnInit {
 
     this.route.queryParams.subscribe((params) => {
       this.aplicarParametrosDeNavegacao(params);
+      this.assinaturaHerdada = JSON.stringify(this.getFiltro());
       this.filtrar();
     });
   }
@@ -143,11 +190,17 @@ export class CobrancaStatementComponent implements OnInit {
     if (this.filtroSemAcompanhamento) {
       partes.push('sem nenhuma ação registrada');
     }
+    if (this.filtroComAcompanhamento) {
+      partes.push('só título em cobrança');
+    }
     if (this.filtroPromessaVencidaAte) {
       partes.push(`promessa vencida até ${this.filtroPromessaVencidaAte}`);
     }
     if (this.filtroVencimentoDe || this.filtroVencimentoAte) {
       partes.push(`vencimento ${this.filtroVencimentoDe || '...'} a ${this.filtroVencimentoAte || '...'}`);
+    }
+    if (this.filtroDataPagamentoDe || this.filtroDataPagamentoAte) {
+      partes.push(`pagamento ${this.filtroDataPagamentoDe || '...'} a ${this.filtroDataPagamentoAte || '...'}`);
     }
     if (this.filtroLancamentoMeses.length === 1) {
       partes.push(`lançamento em ${this.rotuloDoMes(this.filtroLancamentoMeses[0])}`);
@@ -165,6 +218,42 @@ export class CobrancaStatementComponent implements OnInit {
 
   filtrar(codigosParaRemarcar: string[] = []): void {
     this.filtroSolicitado.next(codigosParaRemarcar);
+  }
+
+  get saldoCarregado(): number {
+    return this.somar((titulo) => titulo.Saldo);
+  }
+
+  get pagoCarregado(): number {
+    return this.somar((titulo) => titulo.ValorPago);
+  }
+
+  get parcelasComPagamentoCarregadas(): number {
+    return this.titulos.filter((titulo) => titulo.ValorPago != null).length;
+  }
+
+  /**
+   * Soma em centavos inteiros: a tela existe pra fechar conta, e somar dezenas de floats
+   * derrapa centavo — R$ 0,01 de diferença num total de conferência vira chamado aberto.
+   */
+  private somar(valor: (titulo: CobrancaTitulo) => number | null | undefined): number {
+    const centavos = this.titulos.reduce(
+      (soma, titulo) => soma + Math.round((Number(valor(titulo)) || 0) * 100),
+      0,
+    );
+    return centavos / 100;
+  }
+
+  /**
+   * Pede ao backend o total de TODAS as páginas do filtro atual. Não dá pra somar isso no front
+   * paginando: `buscarAte` no backend não tem cursor e recomeça da primeira página a cada página
+   * pedida, então um laço aqui custaria K²/2 idas ao Service Layer, que é recurso compartilhado.
+   *
+   * O filtro vai junto no Subject (não é relido na resposta) pra resposta e recorte não se
+   * separarem no meio do caminho - ver o switchMap em ngOnInit.
+   */
+  calcularTotalDoFiltro(): void {
+    this.totalSolicitado.next(this.getFiltro());
   }
 
   carregarMais(): void {
@@ -212,9 +301,16 @@ export class CobrancaStatementComponent implements OnInit {
     this.vencimentoIntocado = true;
     this.filtroLancamentoMeses = [];
     this.filtroSemAcompanhamento = null;
+    this.filtroComAcompanhamento = null;
     this.filtroPromessaVencidaAte = '';
+    this.filtroOcultarAvista = false;
+    this.filtroDataPagamentoDe = '';
+    this.filtroDataPagamentoAte = '';
+    this.totalDoFiltro = null;
     this.vendedorHerdado = null;
     this.veioDoDashboard = false;
+    this.valorCardRecuperado = null;
+    this.assinaturaHerdada = null;
   }
 
   onMesesChange(meses: string[]): void {
@@ -356,9 +452,30 @@ export class CobrancaStatementComponent implements OnInit {
     if (params.semAcompanhamento === 'true') {
       this.filtroSemAcompanhamento = true;
     }
+    if (params.comAcompanhamento === 'true') {
+      this.filtroComAcompanhamento = true;
+    }
     if (params.promessaVencidaAte) {
       this.filtroPromessaVencidaAte = params.promessaVencidaAte;
     }
+    if (params.dataPagamentoDe) {
+      this.filtroDataPagamentoDe = params.dataPagamentoDe;
+    }
+    if (params.dataPagamentoAte) {
+      this.filtroDataPagamentoAte = params.dataPagamentoAte;
+    }
+    if (params.cardRecuperado != null) {
+      const valor = Number(params.cardRecuperado);
+      this.valorCardRecuperado = Number.isFinite(valor) ? valor : null;
+    }
+  }
+
+  /**
+   * O recorte da tela ainda é exatamente o que veio do Resultado? Só enquanto for é honesto
+   * mostrar o número do card: mexeu num filtro, os dois deixam de ser comparáveis.
+   */
+  get recorteIntacto(): boolean {
+    return this.assinaturaHerdada != null && JSON.stringify(this.getFiltro()) === this.assinaturaHerdada;
   }
 
   private idsDasFiliais(): number[] {
@@ -392,7 +509,11 @@ export class CobrancaStatementComponent implements OnInit {
       lancamentoMes: this.filtroLancamentoMeses,
       vencimentoAte: this.filtroVencimentoAte || null,
       semAcompanhamento: this.filtroSemAcompanhamento,
+      comAcompanhamento: this.filtroComAcompanhamento,
       promessaVencidaAte: this.filtroPromessaVencidaAte || null,
+      ocultarAvista: this.filtroOcultarAvista || null,
+      dataPagamentoDe: this.filtroDataPagamentoDe || null,
+      dataPagamentoAte: this.filtroDataPagamentoAte || null,
     };
   }
 
