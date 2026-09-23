@@ -1,0 +1,57 @@
+<br>
+<section class="content">
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title"><b>Regras por Filial</b></h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                Em quais filiais cada regra de autorização está ativa. Aqui se decide
+                <b>onde a regra vale</b> — quem aprova o documento retido se cadastra em
+                <i>Autorizadores</i>, e os documentos retidos ficam em <i>Autorizar Vendas</i>.
+            </p>
+            <div class="form-row align-items-end mb-3">
+                <!-- Select, nao texto livre: o motivo tem que casar exatamente com o que o
+                     motor de regras produz, igual no cadastro de autorizador. -->
+                <div class="col-sm-4 form-group">
+                    <label>Motivo</label>
+                    <select class="form-control" [(ngModel)]="novaRegraFilial.U_motivo"
+                            [disabled]="motivos.length == 0">
+                        <option value="" disabled>Selecione o motivo</option>
+                        <option *ngFor="let motivo of motivos" [value]="motivo">{{motivo}}</option>
+                    </select>
+                    <small *ngIf="motivos.length == 0" class="text-danger">
+                        Não foi possível carregar os motivos do motor de regras.
+                    </small>
+                </div>
+                <div class="col-sm-4 form-group">
+                    <label>Filial</label>
+                    <app-branch-select (selectedOut)="selecionaFilial($event)"></app-branch-select>
+                </div>
+                <div class="col-sm-4 form-group">
+                    <button class="btn btn-success" [disabled]="loading" (click)="adicionar()">
+                        <i class="fas fa-check"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+
+            <!-- O default silencioso desta tela: sem nenhuma linha, a regra vale em todo
+                 lugar. Quem olha uma lista vazia conclui o contrario, entao a tela avisa. -->
+            <div *ngIf="motivosSemRestricao().length > 0" class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                Sem nenhuma filial cadastrada, a regra vale em <b>todas</b> as filiais. Hoje
+                estão assim:
+                <b>{{motivosSemRestricao().join(', ')}}</b>
+            </div>
+
+            <hr>
+            <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
+            <div *ngIf="!loading && lista?.length == 0" class="text-center text-muted p-3">
+                Nenhuma restrição por filial cadastrada — todas as regras valem em todas as filiais.
+            </div>
+        </div>
+        <div *ngIf="loading" class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+    </div>
+</section>

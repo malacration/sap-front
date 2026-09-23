@@ -24,6 +24,7 @@ import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relac
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
+import { RegraFilialComponent } from './sap/components/regra-filial/regra-filial.component';
 import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
 import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
@@ -216,6 +217,142 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
     ]
   },
   {
+    title: 'Aprovações',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-clipboard-check", "role:admin", "role:liberacao_trava"],
+    path: 'aprovacoes',
+    children: [
+      { path: '', redirectTo: 'vendas', pathMatch: 'full' },
+      {
+        // Fila de documentos retidos pelo motor de regras + historico das decisoes.
+        // Quem pode decidir cada motivo se cadastra em Configuracoes > Autorizadores,
+        // e ONDE cada regra vale, em Configuracoes > Regras por Filial.
+        path: 'vendas',
+        title: 'Autorizar Vendas',
+        data: ["icon:fas fa-user-check", "role:admin"],
+        canActivate: [authGuard, roleGuard],
+        component: AutorizacaoComponent
+      },
+      {
+        path: 'liberacao-trava',
+        title: 'Liberação de Trava',
+        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava"],
+        canActivate: [authGuard, roleGuard],
+        component: LiberacaoTravaComponent
+      },
+    ]
+  },
+  {
+    title: 'Financeiro',
+    path: 'financeiro',
+    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'pix',
+        title: 'PIX',
+        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin"],
+        canActivate: [authGuard, roleGuard],
+        component: PixPageComponent,
+      },
+      {
+        path: 'notas-fiscais',
+        title: 'Notas Fiscais',
+        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
+        canActivate: [authGuard, roleGuard],
+        component: DocumentosSapComponent,
+      },
+      {
+        path: 'adiantamentos',
+        title: 'Adiantamentos',
+        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento", "role:admin"],
+        canActivate: [authGuard, roleGuard],
+        component: DocumentosSapComponent,
+      },
+      {
+        path: 'devolucoes',
+        title: 'Devoluções',
+        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao", "role:admin"],
+        canActivate: [authGuard, roleGuard],
+        component: DocumentosSapComponent,
+      },
+      {
+        path: 'recebimentos',
+        title: 'Recebimentos',
+        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin"],
+        canActivate: [authGuard, roleGuard],
+        component: DocumentosSapComponent,
+      },
+    ]
+  },
+  {
+    title: 'Cobrança',
+    data: ["icon:fas fa-hand-holding-usd", "role:cobranca"],
+    canActivate: [authGuard],
+    path: 'cobranca',
+    children: [
+      // Sem title de propósito: o menu lateral é gerado do router e filtra por
+      // route.title != undefined, então o redirect não aparece como item. Serve pra
+      // /cobranca continuar funcionando depois de a tela virar filha de um grupo.
+      { path: '', redirectTo: 'titulos', pathMatch: 'full' },
+      {
+        path: 'titulos',
+        title: 'Títulos',
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-list", "role:cobranca"],
+        component: CobrancaStatementComponent
+      },
+      {
+        path: 'resultado',
+        title: 'Resultado',
+        canActivate: [authGuard, roleGuard],
+        data: ["icon:fas fa-chart-line", "role:cobranca"],
+        component: CobrancaDashboardComponent
+      },
+    ]
+  },
+  {
+    title: 'Logística',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-route", "role:logistica", "role:logistica_faturar"],
+    path: 'logistica',
+    children: [
+      {
+        path: 'ordem-carregamento',
+        title: 'Carregamento',
+        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar"],
+        canActivate: [authGuard, roleGuard],
+        component: OrdemCarregamentoStatementComponent
+      },
+      {
+        path: 'frete',
+        data: ["hidden"],
+        redirectTo: '/configuracoes/frete',
+        pathMatch: 'full',
+      },
+      {
+        path: 'frete/:code',
+        data: ["hidden"],
+        redirectTo: '/configuracoes/frete/:code',
+        pathMatch: 'full',
+      },
+      {
+        path: 'localidades',
+        title: 'Localidades',
+        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar"],
+        canActivate: [authGuard, roleGuard],
+        component: LocalidadeComponent
+      },
+    ]
+  },
+  {
+    title: 'Produção',
+    path: 'producao',
+    data: ["icon:fa-brands fa-product-hunt", "role:qualidade"],
+    canActivate: [authGuard, roleGuard],
+    component: ReprocessamentoComponent,
+  },
+  {
     title: 'Relatórios',
     canActivate: [authGuard],
     data: ["icon:fas fa-chart-pie", "role:vendedor", "role:vendedor_admin", "role:logistica", "role:qualidade"],
@@ -268,43 +405,33 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
     ]
   },
   {
-    title: 'Logística',
+    title: 'Administrador',
     canActivate: [authGuard],
-    data: ["icon:fas fa-route", "role:logistica", "role:logistica_faturar"],
-    path: 'logistica',
-    children: [
+    data: ["hidden","icon:fas fa-cog"],
+    path: 'roles',
+    children: [ 
       {
-        path: 'ordem-carregamento',
-        title: 'Carregamento',
-        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar"],
-        canActivate: [authGuard, roleGuard],
-        component: OrdemCarregamentoStatementComponent
+        path: 'manage-roles',
+        title: 'Roles',
+        data: ["icon:fas fa-users"],
+        canActivate: [authGuard],
+        component: ManageRolesComponent
       },
       {
-        path: 'frete',
-        data: ["hidden"],
-        redirectTo: '/configuracoes/frete',
-        pathMatch: 'full',
-      },
-      {
-        path: 'frete/:code',
-        data: ["hidden"],
-        redirectTo: '/configuracoes/frete/:code',
-        pathMatch: 'full',
-      },
-      {
-        path: 'localidades',
-        title: 'Localidades',
-        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar"],
-        canActivate: [authGuard, roleGuard],
-        component: LocalidadeComponent
+        path: 'assign-role',
+        title: 'Atribuicao',
+        data: ["icon:fas fa-user-check"],
+        canActivate: [authGuard],
+        component: AssignRoleComponent
       },
     ]
   },
   {
     title: 'Configurações',
     canActivate: [authGuard],
-    data: ["icon:fas fa-cogs", "role:admin", "role:liberacao_trava"],
+    // So "role:admin": a Liberacao de Trava (unico item que trazia liberacao_trava pra ca)
+    // virou item de Aprovacoes. Configuracoes agora so tem cadastro.
+    data: ["icon:fas fa-cogs", "role:admin"],
     path: 'configuracoes',
     children: [
       {
@@ -338,11 +465,12 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         component: ComissaoComponent
       },
       {
+        // A fila de documentos retidos saiu daqui pra Aprovacoes: decidir sobre um pedido
+        // e trabalho do dia, nao configuracao. O redirect segura link/favorito antigo.
         path: 'autorizacoes',
-        title: 'Autorizações',
-        data: ["icon:fas fa-user-check", "role:admin"],
-        canActivate: [authGuard, roleGuard],
-        component: AutorizacaoComponent
+        data: ["hidden"],
+        redirectTo: '/aprovacoes/vendas',
+        pathMatch: 'full',
       },
       {
         path: 'autorizadores',
@@ -350,6 +478,13 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         data: ["icon:fas fa-user-shield", "role:admin"],
         canActivate: [authGuard, roleGuard],
         component: AutorizadorComponent
+      },
+      {
+        path: 'regras-filial',
+        title: 'Regras por Filial',
+        data: ["icon:fas fa-code-branch", "role:admin"],
+        canActivate: [authGuard, roleGuard],
+        component: RegraFilialComponent
       },
       {
         //"role:admin" tira o item do menu de quem nao e admin (MenuSidebarComponent.isRolePermitida);
@@ -362,10 +497,9 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       },
       {
         path: 'liberacao-trava',
-        title: 'Liberação de Trava',
-        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava"],
-        canActivate: [authGuard, roleGuard],
-        component: LiberacaoTravaComponent
+        data: ["hidden"],
+        redirectTo: '/aprovacoes/liberacao-trava',
+        pathMatch: 'full',
       },
       {
         path: 'regras-trava',
@@ -375,104 +509,6 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         component: RegrasTravaComponent
       },
     ]
-  },
-  {
-    title: 'Cobrança',
-    data: ["icon:fas fa-hand-holding-usd", "role:cobranca"],
-    canActivate: [authGuard],
-    path: 'cobranca',
-    children: [
-      // Sem title de propósito: o menu lateral é gerado do router e filtra por
-      // route.title != undefined, então o redirect não aparece como item. Serve pra
-      // /cobranca continuar funcionando depois de a tela virar filha de um grupo.
-      { path: '', redirectTo: 'titulos', pathMatch: 'full' },
-      {
-        path: 'titulos',
-        title: 'Títulos',
-        canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-list", "role:cobranca"],
-        component: CobrancaStatementComponent
-      },
-      {
-        path: 'resultado',
-        title: 'Resultado',
-        canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-chart-line", "role:cobranca"],
-        component: CobrancaDashboardComponent
-      },
-    ]
-  },
-  {
-    title: 'Administrador',
-    canActivate: [authGuard],
-    data: ["hidden","icon:fas fa-cog"],
-    path: 'roles',
-    children: [ 
-      {
-        path: 'manage-roles',
-        title: 'Roles',
-        data: ["icon:fas fa-users"],
-        canActivate: [authGuard],
-        component: ManageRolesComponent
-      },
-      {
-        path: 'assign-role',
-        title: 'Atribuicao',
-        data: ["icon:fas fa-user-check"],
-        canActivate: [authGuard],
-        component: AssignRoleComponent
-      },
-    ]
-  },
-  {
-    title: 'Financeiro',
-    path: 'financeiro',
-    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
-    canActivate: [authGuard],
-    children: [
-      {
-        path: 'pix',
-        title: 'PIX',
-        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin"],
-        canActivate: [authGuard, roleGuard],
-        component: PixPageComponent,
-      },
-      {
-        path: 'notas-fiscais',
-        title: 'Notas Fiscais',
-        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
-        canActivate: [authGuard, roleGuard],
-        component: DocumentosSapComponent,
-      },
-      {
-        path: 'adiantamentos',
-        title: 'Adiantamentos',
-        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento", "role:admin"],
-        canActivate: [authGuard, roleGuard],
-        component: DocumentosSapComponent,
-      },
-      {
-        path: 'devolucoes',
-        title: 'Devoluções',
-        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao", "role:admin"],
-        canActivate: [authGuard, roleGuard],
-        component: DocumentosSapComponent,
-      },
-      {
-        path: 'recebimentos',
-        title: 'Recebimentos',
-        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin"],
-        canActivate: [authGuard, roleGuard],
-        component: DocumentosSapComponent,
-      },
-    ]
-  },
-  {
-    title: 'Produção',
-    path: 'producao',
-    data: ["icon:fa-brands fa-product-hunt", "role:qualidade"],
-    canActivate: [authGuard, roleGuard],
-    component: ReprocessamentoComponent,
   },
   {
     path: 'statement-calc',
