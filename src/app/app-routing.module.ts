@@ -19,6 +19,7 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { RegiaoComponent } from './sap/components/regiao/regiao.component';
 import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cadastro/normalizacao-cadastro.component';
+import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
 import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
@@ -494,6 +495,13 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         data: ["icon:fas fa-font", "role:admin"],
         canActivate: [adminGuard],
         component: NormalizacaoCadastroComponent
+      },
+      {
+        path: 'sanitizacao-contratos',
+        title: 'Sanitização de contratos',
+        data: ["icon:fas fa-file-circle-check", "role:admin"],
+        canActivate: [adminGuard],
+        component: SanitizacaoContratoComponent
       },
       {
         path: 'liberacao-trava',

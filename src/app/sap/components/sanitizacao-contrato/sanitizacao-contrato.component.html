@@ -1,0 +1,95 @@
+<div class="card">
+  <div class="card-header"><h3 class="card-title">Sanitização de contratos — venda futura</h3></div>
+  <div class="card-body">
+    <p class="text-muted">
+      Verifica reclassificações marcadas como conciliadas (VFEC) cuja nota de origem foi cancelada ou devolvida.
+      Quando uma das pernas está sem reconciliação interna, permite cancelar as reconciliações manuais restantes,
+      cancelar as notas de apropriação vinculadas e estornar a reclassificação. O SAP lança o estorno e os
+      cancelamentos na data dos documentos originais.
+      Devoluções parciais são exibidas apenas para análise.
+    </p>
+    <button type="button" class="btn btn-primary mr-2" [disabled]="ocupado" (click)="verificar()">
+      <i class="fas fa-search" [class.fa-spin]="carregando"></i>
+      {{carregando ? 'Verificando contratos...' : 'Gerar prévia'}}
+    </button>
+    <button type="button" class="btn btn-warning" [disabled]="ocupado || exigeNovaPrevia || !selecionados.size" (click)="aplicar()">
+      <i class="fas fa-check"></i> {{aplicando ? 'Efetivando...' : 'Confirmar correções selecionadas'}}
+      <span *ngIf="selecionados.size">({{selecionados.size}})</span>
+    </button>
+    <p *ngIf="totalProcessar" class="mt-2" aria-live="polite">{{processados}} de {{totalProcessar}} correções processadas.</p>
+    <div *ngIf="erro" class="alert alert-danger mt-3" role="alert">{{erro}}</div>
+
+    <ng-container *ngIf="previa">
+      <div class="alert alert-info mt-3">
+        <strong>{{previa.itens.length}}</strong> reclassificação(ões) encontrada(s):
+        <strong>{{elegiveis}}</strong> apta(s) para correção, {{previa.itens.length - elegiveis}} apenas para conferência.
+        Prévia gerada em <strong>{{previa.data | date:'dd/MM/yyyy':'UTC'}}</strong>.
+        A prévia vale por 30 minutos e será revalidada antes de cada correção.
+      </div>
+      <div *ngIf="!previa.itens.length" class="alert alert-success">
+        Nenhuma reclassificação VFEC sem estorno vinculada a nota cancelada ou devolvida foi encontrada.
+      </div>
+      <ng-container *ngIf="previa.itens.length">
+        <div class="d-flex flex-wrap align-items-end mb-3">
+          <div class="mr-3 flex-grow-1">
+            <label for="filtro-sanitizacao">Filtrar por contrato, cliente, nota ou reclassificação</label>
+            <input id="filtro-sanitizacao" class="form-control" [(ngModel)]="filtro" [disabled]="ocupado">
+          </div>
+          <button type="button" class="btn btn-outline-secondary mr-2 mt-2" [disabled]="ocupado || exigeNovaPrevia" (click)="selecionarVisiveis()">Selecionar aptas visíveis</button>
+          <button type="button" class="btn btn-link mt-2" [disabled]="ocupado" (click)="selecionados.clear()">Limpar seleção</button>
+        </div>
+        <p class="text-muted">{{itensVisiveis.length}} exibida(s). {{selecionados.size}} selecionada(s), incluindo as ocultas pelo filtro.</p>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped">
+            <thead><tr><th>Selecionar</th><th>Contrato / cliente</th><th>Nota de origem</th><th>Reclassificação</th><th>Conferência e ações</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let it of itensVisiveis">
+                <td><input type="checkbox" [attr.aria-label]="'Selecionar reclassificação ' + it.transId"
+                  [checked]="selecionados.has(it.transId)" [disabled]="ocupado || exigeNovaPrevia || !it.podeAplicar || !!resultados[it.transId]"
+                  (change)="selecionar(it, $any($event.target).checked)"></td>
+                <td><strong>{{it.contrato}}</strong> · Filial {{it.filial}}<br>{{it.cliente}}<br>{{it.nomeCliente}}</td>
+                <td>NF {{it.nota.docNum}}<br><small>DocEntry {{it.nota.docEntry}}</small><br>
+                  {{it.nota.valor | currency:'BRL'}}<br><span class="badge badge-secondary">{{it.situacaoNota}}</span>
+                  <div *ngFor="let d of it.devolucoes" class="mt-1"><small>Devolução {{d.docNum}} (DocEntry {{d.docEntry}}): {{d.valor | currency:'BRL'}}</small></div>
+                </td>
+                <td><strong>LC {{it.transId}}</strong><br><small>Conciliado (VFEC)</small>
+                  <div *ngFor="let p of it.pernas" class="mt-2">
+                    {{p.debito > 0 ? 'Débito' : 'Crédito'}} · {{p.conta}}<br>
+                    <small>Linha {{p.linha}} · Saldo: {{p.saldo | currency:'BRL'}}</small><br>
+                    <span [class.text-danger]="!p.reconciliacoes.length">Reconciliação: {{p.reconciliacoes.join(', ') || 'ausente'}}</span>
+                  </div>
+                </td>
+                <td style="min-width: 320px; max-width: 540px;">
+                  <div *ngIf="resultados[it.transId] as resultado" class="alert p-2"
+                    [ngClass]="resultado.status === 'APLICADO' ? 'alert-success' : 'alert-danger'" role="status">
+                    {{resultado.mensagem}}
+                    <div *ngIf="resultado.estorno">Estorno: LC {{resultado.estorno}}</div>
+                    <div *ngIf="resultado.cancelamentos?.length">Documentos de cancelamento: {{resultado.cancelamentos.join(', ')}}</div>
+                  </div>
+                  <div *ngFor="let impedimento of it.impedimentos" class="text-warning mb-1">{{impedimento}}</div>
+                  <ol *ngIf="it.acoes.length" class="pl-3 mb-2"><li *ngFor="let acao of it.acoes">{{acao}}</li></ol>
+                  <details>
+                    <summary>Ver apropriações e documentos das reconciliações</summary>
+                    <p *ngIf="!it.apropriacoes.length" class="mt-2">Nenhuma nota de apropriação vinculada.</p>
+                    <div *ngFor="let a of it.apropriacoes" class="mt-2">
+                      <strong>Apropriação {{a.docNum}}</strong> (DocEntry {{a.docEntry}}) — {{a.cancelada ? 'já cancelada' : 'ativa'}}<br>
+                      Adiantamento utilizado: {{a.adiantamento | currency:'BRL'}} · Total: {{a.valor | currency:'BRL'}}
+                    </div>
+                    <div *ngFor="let r of it.reconciliacoes" class="mt-2">
+                      <strong>Reconciliação {{r.numero}}</strong> · {{r.data | date:'dd/MM/yyyy':'UTC'}} ·
+                      {{r.cancelavel ? 'manual — será cancelada' : 'de sistema (tipo ' + r.tipo + ') — desfeita pelo SAP ao cancelar a apropriação'}}
+                      <div *ngFor="let p of r.participantes"><small>
+                        Tipo {{p.tipo}} / documento {{p.documento}} · LC {{p.transId}}, linha {{p.linha}} · {{p.valor | currency:'BRL'}}
+                      </small></div>
+                    </div>
+                    <p class="text-muted mt-2" *ngIf="it.reconciliacoes.length">O cancelamento de uma reconciliação desfaz todos os documentos listados no grupo.</p>
+                  </details>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>
