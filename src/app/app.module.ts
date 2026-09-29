@@ -87,6 +87,7 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 import { RegiaoComponent } from './sap/components/regiao/regiao.component';
 import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cadastro/normalizacao-cadastro.component';
+import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { RegiaoFretePdfComponent } from './sap/components/regiao/regiao-frete-pdf/regiao-frete-pdf.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
 import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
@@ -95,6 +96,7 @@ import { MapaRelacoesModalButtonComponent } from './sap/components/mapa-relacoes
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
+import { RegraFilialComponent } from './sap/components/regra-filial/regra-filial.component';
 import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
@@ -185,6 +187,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ParceiroNegocioSingleComponent,
     RegiaoComponent,
     NormalizacaoCadastroComponent,
+    SanitizacaoContratoComponent,
     RegiaoFretePdfComponent,
     LocalidadeComponent,
     MapaRelacoesComponent,
@@ -193,6 +196,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ComissaoComponent,
     AutorizacaoComponent,
     AutorizadorComponent,
+    RegraFilialComponent,
     LiberacaoTravaComponent,
     RegrasTravaComponent,
     MeusDadosComponent,
