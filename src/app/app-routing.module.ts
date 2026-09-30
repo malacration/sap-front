@@ -26,8 +26,7 @@ import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.c
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
 import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
-import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
-import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
+import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { ChangePassowrd } from './shared/components/change-password/change-password.component';
@@ -374,6 +373,15 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         canActivate: [authGuard, roleGuard],
         component: RegrasTravaComponent
       },
+      {
+        // Gestao das regras de acesso (perfil -> URLs/metodos). O backend so aceita admin
+        // (controller + curinga do rules); o adminGuard e so conveniencia de navegacao.
+        path: 'regras-acesso',
+        title: 'Regras de Acesso',
+        data: ["icon:fas fa-user-lock", "role:admin"],
+        canActivate: [authGuard, adminGuard],
+        component: RegrasAcessoComponent
+      },
     ]
   },
   {
@@ -399,28 +407,6 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         canActivate: [authGuard, roleGuard],
         data: ["icon:fas fa-chart-line", "role:cobranca"],
         component: CobrancaDashboardComponent
-      },
-    ]
-  },
-  {
-    title: 'Administrador',
-    canActivate: [authGuard],
-    data: ["hidden","icon:fas fa-cog"],
-    path: 'roles',
-    children: [ 
-      {
-        path: 'manage-roles',
-        title: 'Roles',
-        data: ["icon:fas fa-users"],
-        canActivate: [authGuard],
-        component: ManageRolesComponent
-      },
-      {
-        path: 'assign-role',
-        title: 'Atribuicao',
-        data: ["icon:fas fa-user-check"],
-        canActivate: [authGuard],
-        component: AssignRoleComponent
       },
     ]
   },
