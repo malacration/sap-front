@@ -1,7 +1,7 @@
 import { FormularioParametrosComponent } from '../formulario-parametros/formulario-parametros.component';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -13,7 +13,17 @@ import {
   RelatorioResumo,
 } from '../../modelos/relatorio.model';
 import { RelatorioService } from '../../../../sap/service/relatorio.service';
-import { GrupoDePasta, agruparPorPasta, chaveDaPasta, filtrarRelatorios } from '../../util/agrupar-relatorios';
+import {
+  GrupoDePasta,
+  Trecho,
+  agruparPorPasta,
+  chaveDaPasta,
+  destacar,
+  filtrarRelatorios,
+} from '../../util/agrupar-relatorios';
+
+/** Onde o navegador lembra quais pastas o usuario recolheu. */
+export const CHAVE_PASTAS_FECHADAS = 'relatorios.pastasFechadas';
 
 /**
  * O que a listagem precisa, comum aos dois formatos: o publico
@@ -43,6 +53,10 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
   grupos: GrupoDePasta<RelatorioListado>[] = [];
   busca = '';
   totalFiltrado = 0;
+  /** Trechos marcados de cada relatorio e de cada pasta para a busca atual (vazio sem busca). */
+  destaques = new Map<number, { nome: Trecho[]; descricao: Trecho[] }>();
+  destaquesPasta = new Map<string, Trecho[]>();
+  private totalPorPasta = new Map<string, number>();
   /** Pastas recolhidas pelo usuario (chave do grupo). Com busca ativa, todas ficam abertas. */
   private readonly pastasFechadas = new Set<string>();
 
@@ -74,7 +88,9 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
     private service: RelatorioService,
     private sanitizer: DomSanitizer,
     private toastr: ToastrService
-  ) {}
+  ) {
+    this.restaurarPastasFechadas();
+  }
 
   ngOnInit(): void {
     this.carregarLista();
@@ -130,30 +146,141 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
   }
 
   pastaAberta(grupo: GrupoDePasta<RelatorioListado>): boolean {
-    return this.busca.trim() !== '' || !this.pastasFechadas.has(grupo.chave);
+    return this.buscando || !this.pastasFechadas.has(grupo.chave);
   }
 
   alternarPasta(grupo: GrupoDePasta<RelatorioListado>): void {
     // Durante a busca todas as pastas com resultado ficam abertas; recolher nao teria efeito.
-    if (this.busca.trim() !== '') {
+    if (this.buscando) {
       return;
     }
-    if (this.pastasFechadas.has(grupo.chave)) {
-      this.pastasFechadas.delete(grupo.chave);
-    } else {
-      this.pastasFechadas.add(grupo.chave);
+    const fechar = !this.pastasFechadas.has(grupo.chave);
+    this.alterarPastasFechadas((conjunto) => fechar ? conjunto.add(grupo.chave) : conjunto.delete(grupo.chave));
+  }
+
+  get buscando(): boolean {
+    return this.busca.trim() !== '';
+  }
+
+  /** Abrir/recolher todas so fazem sentido fora da busca e com mais de uma pasta. */
+  get mostrarAbrirRecolher(): boolean {
+    return !this.buscando && this.grupos.length > 1;
+  }
+
+  expandirTodas(): void {
+    this.alterarPastasFechadas((conjunto) => conjunto.clear());
+  }
+
+  /** Recolhe todas, menos a do relatorio aberto: ele nunca fica escondido. */
+  recolherTodas(): void {
+    const selecionado = this.relatorios.find((r) => r.id === this.selecionadoId);
+    const manter = selecionado ? chaveDaPasta(selecionado.pasta) : undefined;
+    const chaves = new Set(this.relatorios.map((r) => chaveDaPasta(r.pasta)));
+    if (manter !== undefined) {
+      chaves.delete(manter);
+    }
+    this.alterarPastasFechadas((conjunto) => chaves.forEach((chave) => conjunto.add(chave)));
+  }
+
+  /** "3" sem busca; "2 de 5" com busca, para mostrar quanto da pasta ficou de fora. */
+  contagemPasta(grupo: GrupoDePasta<RelatorioListado>): string {
+    const aparece = grupo.itens.length;
+    return this.buscando ? `${aparece} de ${this.totalPorPasta.get(grupo.chave) ?? aparece}` : `${aparece}`;
+  }
+
+  /** Esc limpa a busca sem perder o foco do campo. */
+  aoTeclarNoCampo(evento: Event): void {
+    if (this.busca !== '') {
+      evento.preventDefault();
+      this.limparBusca();
+    }
+  }
+
+  /** "/" leva o foco ao campo de busca, como em outras telas; ignora quando se esta digitando em outro campo. */
+  @HostListener('document:keydown', ['$event'])
+  atalhoDeBusca(evento: KeyboardEvent): void {
+    if (evento.key !== '/' || evento.ctrlKey || evento.metaKey || evento.altKey || evento.defaultPrevented) {
+      return;
+    }
+    const campo = this.campoBusca?.nativeElement;
+    // offsetParent nulo = campo escondido (outra aba da tela de relatorios esta ativa).
+    if (!campo || campo.offsetParent === null) {
+      return;
+    }
+    const alvo = evento.target as HTMLElement | null;
+    if (alvo && (alvo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(alvo.tagName))) {
+      return;
+    }
+    evento.preventDefault();
+    campo.focus();
+    campo.select();
+  }
+
+  private restaurarPastasFechadas(): void {
+    this.lerPastasFechadasSalvas().forEach((chave) => this.pastasFechadas.add(chave));
+  }
+
+  private lerPastasFechadasSalvas(): string[] {
+    try {
+      const salvas: unknown = JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS) ?? '[]');
+      return Array.isArray(salvas) ? salvas.filter((chave): chave is string => typeof chave === 'string') : [];
+    } catch {
+      // Sem localStorage (janela privada, dados bloqueados) ou valor corrompido: comeca tudo aberto.
+      return [];
+    }
+  }
+
+  /**
+   * Aplica a mesma alteracao ao estado em memoria e ao que esta salvo. Regravar so o conjunto
+   * carregado quando a tela abriu apagaria o que outra aba do navegador recolheu depois disso.
+   */
+  private alterarPastasFechadas(alterar: (conjunto: Set<string>) => unknown): void {
+    alterar(this.pastasFechadas);
+    try {
+      const salvo = new Set(this.lerPastasFechadasSalvas());
+      alterar(salvo);
+      localStorage.setItem(CHAVE_PASTAS_FECHADAS, JSON.stringify([...salvo]));
+    } catch {
+      // Nao lembrar e aceitavel; a tela segue funcionando.
     }
   }
 
   private atualizarGrupos(): void {
+    const termo = this.busca.trim();
     const filtrados = filtrarRelatorios(this.relatorios, this.busca);
     this.totalFiltrado = filtrados.length;
-    this.grupos = agruparPorPasta(filtrados);
+    this.grupos = agruparPorPasta(filtrados, termo !== '');
+
+    this.totalPorPasta = new Map();
+    this.relatorios.forEach((r) => {
+      const chave = chaveDaPasta(r.pasta);
+      this.totalPorPasta.set(chave, (this.totalPorPasta.get(chave) ?? 0) + 1);
+    });
+
+    // Calculado uma vez por busca, e nao no template: a cada deteccao de mudanca o ngFor
+    // receberia arrays novos e recriaria o DOM inteiro.
+    this.destaques = new Map();
+    this.destaquesPasta = new Map();
+    if (termo !== '') {
+      this.grupos.forEach((grupo) => {
+        // "Sem pasta" nao e texto dos relatorios: marcar nele sugeriria um acerto que nao houve.
+        if (grupo.chave !== '') {
+          this.destaquesPasta.set(grupo.chave, destacar(grupo.titulo, termo));
+        }
+        grupo.itens.forEach((item) => this.destaques.set(item.id, {
+          nome: destacar(item.nome, termo),
+          descricao: destacar(item.descricao, termo),
+        }));
+      });
+    }
   }
 
   selecionar(resumo: RelatorioListado): void {
     // O item marcado nunca fica escondido dentro de uma pasta recolhida.
-    this.pastasFechadas.delete(chaveDaPasta(resumo.pasta));
+    const chaveDoItem = chaveDaPasta(resumo.pasta);
+    if (this.pastasFechadas.has(chaveDoItem)) {
+      this.alterarPastasFechadas((conjunto) => conjunto.delete(chaveDoItem));
+    }
     // Mesmo item ja aberto ou carregando: clicar de novo nao refaz o request.
     if (resumo.id === this.selecionadoId && (this.carregandoDetalhe || this.relatorio?.id === resumo.id)) {
       return;

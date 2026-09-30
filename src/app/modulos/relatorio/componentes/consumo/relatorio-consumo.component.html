@@ -1,3 +1,6 @@
+<!-- Texto com os trechos que casaram com a busca destacados; sem busca, o texto vai puro. -->
+<ng-template #trechos let-lista="lista"><ng-container *ngFor="let t of lista"><mark *ngIf="t.marcado">{{ t.texto }}</mark><ng-container *ngIf="!t.marcado">{{ t.texto }}</ng-container></ng-container></ng-template>
+
 <br>
 <section class="content">
   <div class="row">
@@ -6,6 +9,14 @@
         <div class="card-header">
           <h3 class="card-title"><b>Relatórios disponíveis</b></h3>
           <div class="card-tools">
+            <ng-container *ngIf="mostrarAbrirRecolher">
+              <button type="button" class="btn btn-tool" title="Abrir todas as pastas" aria-label="Abrir todas as pastas" (click)="expandirTodas()">
+                <i class="fas fa-expand-alt" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="btn btn-tool" title="Recolher todas as pastas" aria-label="Recolher todas as pastas" (click)="recolherTodas()">
+                <i class="fas fa-compress-alt" aria-hidden="true"></i>
+              </button>
+            </ng-container>
             <button type="button" class="btn btn-tool" title="Atualizar" [disabled]="carregandoLista" (click)="carregarLista()">
               <i class="fas fa-sync-alt" [class.fa-spin]="carregandoLista"></i>
             </button>
@@ -32,8 +43,10 @@
                 class="form-control"
                 placeholder="Buscar por nome, descrição ou pasta"
                 aria-label="Buscar relatórios"
+                title="Atalhos: / para buscar, Esc para limpar"
                 autocomplete="off"
                 #campoBusca
+                (keydown.escape)="aoTeclarNoCampo($event)"
                 [ngModel]="busca"
                 (ngModelChange)="buscar($event)">
               <div class="input-group-append" *ngIf="busca">
@@ -62,8 +75,13 @@
                 (click)="alternarPasta(grupo)">
                 <i class="fas fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
                 <i class="far fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-folder-open' : 'fa-folder'" aria-hidden="true"></i>
-                <span class="pasta-titulo">{{ grupo.titulo }}</span>
-                <span class="badge badge-pill badge-secondary ml-auto">{{ grupo.itens.length }}</span>
+                <span class="pasta-titulo">
+                  <ng-container *ngIf="destaquesPasta.get(grupo.chave) as marcas; else tituloPlano">
+                    <ng-container *ngTemplateOutlet="trechos; context: { lista: marcas }"></ng-container>
+                  </ng-container>
+                  <ng-template #tituloPlano>{{ grupo.titulo }}</ng-template>
+                </span>
+                <span class="badge badge-pill badge-secondary ml-auto">{{ contagemPasta(grupo) }}</span>
               </button>
               <div class="list-group list-group-flush" *ngIf="pastaAberta(grupo)">
                 <div
@@ -73,11 +91,19 @@
                   [attr.aria-busy]="carregandoDetalhe && selecionadoId === item.id">
                   <button type="button" class="relatorio-select text-left" (click)="selecionar(item)">
                     <span class="d-block font-weight-bold">
-                      {{ item.nome }}
+                      <ng-container *ngIf="destaques.get(item.id) as d; else nomePlano">
+                        <ng-container *ngTemplateOutlet="trechos; context: { lista: d.nome }"></ng-container>
+                      </ng-container>
+                      <ng-template #nomePlano>{{ item.nome }}</ng-template>
                       <i *ngIf="carregandoDetalhe && selecionadoId === item.id" class="fas fa-circle-notch fa-spin ml-1" aria-hidden="true"></i>
                     </span>
                     <span *ngIf="isAdmin && item.versaoPublicada == null" class="badge badge-secondary">Rascunho — abrir para editar</span>
-                    <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">{{ item.descricao || 'Sem descrição' }}</small>
+                    <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">
+                      <ng-container *ngIf="item.descricao && destaques.get(item.id) as d; else descricaoPlana">
+                        <ng-container *ngTemplateOutlet="trechos; context: { lista: d.descricao }"></ng-container>
+                      </ng-container>
+                      <ng-template #descricaoPlana>{{ item.descricao || 'Sem descrição' }}</ng-template>
+                    </small>
                     <small [class.text-white-50]="selecionadoId === item.id" class="text-muted">
                       Formatos: {{ item.formatos.join(', ') | uppercase }}
                     </small>

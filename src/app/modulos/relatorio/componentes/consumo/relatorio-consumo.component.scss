@@ -82,3 +82,16 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* Trecho da busca. No item selecionado (fundo azul) o amarelo some; vira um realce claro. */
+mark {
+  background: #ffe58f;
+  border-radius: 2px;
+  color: inherit;
+  padding: 0 1px;
+}
+
+.list-group-item.active mark {
+  background: rgba(255, 255, 255, 0.35);
+  color: inherit;
+}

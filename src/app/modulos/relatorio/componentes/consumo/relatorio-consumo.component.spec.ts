@@ -5,7 +5,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
 import { Subject, of, throwError } from 'rxjs';
-import { RelatorioConsumoComponent } from './relatorio-consumo.component';
+import { CHAVE_PASTAS_FECHADAS, RelatorioConsumoComponent } from './relatorio-consumo.component';
 import { RelatorioDetalhe } from '../../modelos/relatorio.model';
 import { FormularioParametrosComponent } from '../formulario-parametros/formulario-parametros.component';
 
@@ -18,6 +18,7 @@ describe('Consumo de relatorios', () => {
   });
 
   beforeEach(() => {
+    localStorage.removeItem(CHAVE_PASTAS_FECHADAS);
     service = jasmine.createSpyObj('RelatorioService', ['obter', 'renderizar', 'lerErro']);
     component = new RelatorioConsumoComponent(
       new FormBuilder(), service, {} as any,
@@ -160,7 +161,18 @@ describe('Pastas e busca na lista de relatorios', () => {
     component.carregarLista();
   };
 
+  /** Segunda instancia (outra aba do navegador): le o localStorage ao nascer, como a primeira. */
+  const criarOutro = () => {
+    const outro = new RelatorioConsumoComponent(
+      new FormBuilder(), service, {} as any,
+      jasmine.createSpyObj('ToastrService', ['warning', 'error', 'success']),
+    );
+    outro.carregarLista();
+    return outro;
+  };
+
   beforeEach(() => {
+    localStorage.removeItem(CHAVE_PASTAS_FECHADAS);
     service = jasmine.createSpyObj('RelatorioService', ['listar', 'listarTodos', 'obter', 'lerErro']);
     service.listar.and.returnValue(of([
       item(1, 'Vendas por cliente', 'Vendas'),
@@ -172,7 +184,10 @@ describe('Pastas e busca na lista de relatorios', () => {
     criar();
   });
 
-  afterEach(() => component.ngOnDestroy());
+  afterEach(() => {
+    component.ngOnDestroy();
+    localStorage.removeItem(CHAVE_PASTAS_FECHADAS);
+  });
 
   const titulos = () => component.grupos.map((g) => g.titulo);
 
@@ -231,6 +246,124 @@ describe('Pastas e busca na lista de relatorios', () => {
     expect(component.pastaAberta(vendas)).toBeTrue();
   });
 
+  it('lembra as pastas recolhidas: um componente novo volta como o usuario deixou', () => {
+    const vendas = component.grupos.find((g) => g.titulo === 'Vendas')!;
+    component.alternarPasta(vendas);
+    expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!)).toEqual(['vendas']);
+
+    component.ngOnDestroy();
+    criar();
+    expect(component.pastaAberta(component.grupos.find((g) => g.titulo === 'Vendas')!)).toBeFalse();
+    expect(component.pastaAberta(component.grupos.find((g) => g.titulo === 'Financeiro')!)).toBeTrue();
+  });
+
+  it('duas abas abertas nao apagam as pastas que a outra recolheu', () => {
+    const outra = component;
+    const aba2 = criarOutro();
+    outra.alternarPasta(outra.grupos.find((g) => g.titulo === 'Vendas')!);
+    aba2.alternarPasta(aba2.grupos.find((g) => g.titulo === 'Financeiro')!);
+    expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!).sort()).toEqual(['financeiro', 'vendas']);
+
+    // Reabrir uma pasta numa aba tambem nao desfaz o que a outra recolheu.
+    aba2.alternarPasta(aba2.grupos.find((g) => g.titulo === 'Financeiro')!);
+    expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!)).toEqual(['vendas']);
+    aba2.ngOnDestroy();
+  });
+
+  it('valor corrompido ou ilegivel no localStorage nao quebra: tudo abre', () => {
+    localStorage.setItem(CHAVE_PASTAS_FECHADAS, '{isso nao e json');
+    component.ngOnDestroy();
+    criar();
+    expect(component.grupos.every((g) => component.pastaAberta(g))).toBeTrue();
+
+    localStorage.setItem(CHAVE_PASTAS_FECHADAS, JSON.stringify([1, null, 'vendas', { a: 1 }]));
+    component.ngOnDestroy();
+    criar();
+    expect(component.pastaAberta(component.grupos.find((g) => g.titulo === 'Vendas')!)).toBeFalse();
+    expect(component.pastaAberta(component.grupos.find((g) => g.titulo === 'Financeiro')!)).toBeTrue();
+  });
+
+  it('selecionar um relatorio reabre a pasta e isso tambem e lembrado', () => {
+    service.obter.and.returnValue(new Subject());
+    const vendas = component.grupos.find((g) => g.titulo === 'Vendas')!;
+    component.alternarPasta(vendas);
+    component.selecionar(vendas.itens[0]);
+    expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!)).toEqual([]);
+  });
+
+  it('recolher todas fecha tudo, menos a pasta do relatorio aberto; abrir todas reabre', () => {
+    service.obter.and.returnValue(new Subject());
+    component.selecionar(component.grupos.find((g) => g.titulo === 'Financeiro')!.itens[0]);
+
+    component.recolherTodas();
+    const abertas = () => component.grupos.filter((g) => component.pastaAberta(g)).map((g) => g.titulo);
+    expect(abertas()).toEqual(['Financeiro']);
+
+    component.expandirTodas();
+    expect(abertas()).toEqual(['Financeiro', 'Vendas', 'Sem pasta']);
+    expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!)).toEqual([]);
+  });
+
+  it('recolher todas sem relatorio aberto fecha inclusive "Sem pasta"', () => {
+    component.recolherTodas();
+    expect(component.grupos.some((g) => component.pastaAberta(g))).toBeFalse();
+  });
+
+  it('abrir/recolher todas so aparecem fora da busca e com mais de uma pasta', () => {
+    expect(component.mostrarAbrirRecolher).toBeTrue();
+    component.buscar('vendas');
+    expect(component.mostrarAbrirRecolher).toBeFalse();
+    component.buscar('');
+    expect(component.mostrarAbrirRecolher).toBeTrue();
+  });
+
+  it('a contagem da pasta mostra "N de M" durante a busca', () => {
+    const vendas = () => component.grupos.find((g) => g.titulo === 'Vendas')!;
+    expect(component.contagemPasta(vendas())).toBe('2');
+    component.buscar('cliente');
+    expect(component.contagemPasta(vendas())).toBe('1 de 2');
+  });
+
+  it('guarda os trechos a destacar por relatorio e por pasta, e nada sem busca', () => {
+    expect(component.destaques.size).toBe(0);
+    component.buscar('cobr');
+    expect(component.destaques.get(2)!.nome.filter((t) => t.marcado).map((t) => t.texto)).toEqual(['Cobr']);
+    expect(component.destaquesPasta.get('financeiro')!.some((t) => t.marcado)).toBeFalse();
+
+    component.buscar('financ');
+    expect(component.destaquesPasta.get('financeiro')!.filter((t) => t.marcado).map((t) => t.texto)).toEqual(['Financ']);
+
+    component.buscar('');
+    expect(component.destaques.size).toBe(0);
+    expect(component.destaquesPasta.size).toBe(0);
+  });
+
+  it('nao marca o titulo "Sem pasta", que nao e texto dos relatorios', () => {
+    component.buscar('sem pasta');
+    expect(titulos()).toEqual(['Sem pasta']);
+    expect(component.destaquesPasta.size).toBe(0);
+  });
+
+  it('durante a busca a ordem e por relevancia: o melhor acerto fica na primeira pasta', () => {
+    service.listar.and.returnValue(of([
+      item(1, 'Resumo', 'Alfa'),
+      item(2, 'Saldo de vendas', 'Beta'),
+      item(3, 'Vendas por cliente', 'Zeta'),
+    ]));
+    component.carregarLista();
+    component.buscar('vendas');
+    expect(titulos()).toEqual(['Zeta', 'Beta']);
+  });
+
+  it('Esc no campo limpa a busca', () => {
+    component.buscar('cobr');
+    const evento = new KeyboardEvent('keydown', { key: 'Escape', cancelable: true });
+    component.aoTeclarNoCampo(evento);
+    expect(component.busca).toBe('');
+    expect(evento.defaultPrevented).toBeTrue();
+    expect(component.grupos.length).toBe(3);
+  });
+
   it('relatorio sem pasta reabre o grupo "Sem pasta" ao ser selecionado', () => {
     service.obter.and.returnValue(new Subject());
     const sem = component.grupos.find((g) => g.titulo === 'Sem pasta')!;
@@ -244,7 +377,10 @@ describe('Lista de relatorios renderizada', () => {
   const item = (id: number, nome: string, pasta?: string | null) =>
     ({ id, nome, pasta, formatos: ['pdf'], versaoPublicada: 1, atualizadoEm: '' });
 
+  afterEach(() => localStorage.removeItem(CHAVE_PASTAS_FECHADAS));
+
   async function montar() {
+    localStorage.removeItem(CHAVE_PASTAS_FECHADAS);
     const service = jasmine.createSpyObj('RelatorioService', ['listar', 'listarTodos', 'obter', 'lerErro']);
     service.listar.and.returnValue(of([
       item(1, 'Vendas por cliente', 'Vendas'),
@@ -321,6 +457,81 @@ describe('Lista de relatorios renderizada', () => {
     cabecalho.click();
     fixture.detectChanges();
     expect(estrutura(el)['Financeiro']).toEqual(['Cobrança em aberto']);
+    fixture.destroy();
+  });
+
+  it('destaca o trecho que casou no nome, e a contagem da pasta mostra "N de M"', async () => {
+    const fixture = await montar();
+    const el: HTMLElement = fixture.nativeElement;
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+
+    digitar(fixture, campo, 'cobr');
+    const marcas = Array.from(el.querySelectorAll('.relatorio-select mark')).map((m) => m.textContent);
+    expect(marcas).toEqual(['Cobr']);
+    expect(el.querySelector('.relatorio-select .font-weight-bold')!.textContent!.replace(/\s+/g, ' ').trim())
+      .toBe('Cobrança em aberto');
+
+    digitar(fixture, campo, 'financ');
+    expect(Array.from(el.querySelectorAll('.pasta-titulo mark')).map((m) => m.textContent)).toEqual(['Financ']);
+
+    digitar(fixture, campo, 'cliente');
+    expect(el.querySelector('.pasta-cabecalho .badge')!.textContent!.trim()).toBe('1 de 1');
+    digitar(fixture, campo, '');
+    expect(el.querySelectorAll('mark').length).toBe(0);
+    fixture.destroy();
+  });
+
+  it('recolher todas e abrir todas pelos botoes do cabecalho', async () => {
+    const fixture = await montar();
+    const el: HTMLElement = fixture.nativeElement;
+    const botao = (rotulo: string) => el.querySelector(`button[aria-label="${rotulo}"]`) as HTMLButtonElement;
+
+    botao('Recolher todas as pastas').click();
+    fixture.detectChanges();
+    expect(estrutura(el)).toEqual({ 'Financeiro': [], 'Vendas': [], 'Sem pasta': [] });
+    expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!).sort()).toEqual(['', 'financeiro', 'vendas']);
+
+    botao('Abrir todas as pastas').click();
+    fixture.detectChanges();
+    expect(estrutura(el)['Vendas']).toEqual(['Vendas por cliente']);
+
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+    digitar(fixture, campo, 'vendas');
+    expect(botao('Recolher todas as pastas')).toBeNull();
+    fixture.destroy();
+  });
+
+  it('Esc limpa a busca e a tecla / leva o foco ao campo, exceto ao digitar em outro campo', async () => {
+    const fixture = await montar();
+    const el: HTMLElement = fixture.nativeElement;
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+
+    digitar(fixture, campo, 'zzz');
+    campo.focus();
+    campo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(campo.value).toBe('');
+    expect(Object.keys(estrutura(el)).length).toBe(3);
+
+    (document.activeElement as HTMLElement).blur();
+    const barra = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true });
+    document.body.dispatchEvent(barra);
+    expect(document.activeElement).toBe(campo);
+    expect(barra.defaultPrevented).toBeTrue();
+
+    const outro = document.createElement('input');
+    document.body.appendChild(outro);
+    outro.focus();
+    const barraNoOutro = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true });
+    outro.dispatchEvent(barraNoOutro);
+    expect(document.activeElement).toBe(outro);
+    expect(barraNoOutro.defaultPrevented).toBeFalse();
+
+    const comCtrl = new KeyboardEvent('keydown', { key: '/', ctrlKey: true, bubbles: true, cancelable: true });
+    document.body.dispatchEvent(comCtrl);
+    expect(comCtrl.defaultPrevented).toBeFalse();
+    outro.remove();
     fixture.destroy();
   });
 
