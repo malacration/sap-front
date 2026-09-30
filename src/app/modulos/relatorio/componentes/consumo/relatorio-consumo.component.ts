@@ -1,7 +1,7 @@
 import { FormularioParametrosComponent } from '../formulario-parametros/formulario-parametros.component';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -13,6 +13,7 @@ import {
   RelatorioResumo,
 } from '../../modelos/relatorio.model';
 import { RelatorioService } from '../../../../sap/service/relatorio.service';
+import { GrupoDePasta, agruparPorPasta, chaveDaPasta, filtrarRelatorios } from '../../util/agrupar-relatorios';
 
 /**
  * O que a listagem precisa, comum aos dois formatos: o publico
@@ -23,6 +24,7 @@ type RelatorioListado = {
   id: number;
   nome: string;
   descricao?: string | null;
+  pasta?: string | null;
   formatos: string[];
   versaoPublicada?: number | null;
 };
@@ -37,10 +39,16 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
   @Output() editarRelatorio = new EventEmitter<number>();
 
   relatorios: RelatorioListado[] = [];
+  /** O que a lista mostra: `relatorios` filtrados pela busca e agrupados por pasta. */
+  grupos: GrupoDePasta<RelatorioListado>[] = [];
+  busca = '';
+  totalFiltrado = 0;
+  /** Pastas recolhidas pelo usuario (chave do grupo). Com busca ativa, todas ficam abertas. */
+  private readonly pastasFechadas = new Set<string>();
 
   @ViewChild('formParams') formParams?: FormularioParametrosComponent;
+  @ViewChild('campoBusca') campoBusca?: ElementRef<HTMLInputElement>;
   relatorio?: RelatorioDetalhe;
-  pagina = 1;
   carregandoLista = false;
   carregandoDetalhe = false;
   /**
@@ -98,6 +106,7 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
     origem.pipe(takeUntil(this.destruir)).subscribe({
       next: (relatorios) => {
         this.relatorios = relatorios || [];
+        this.atualizarGrupos();
         this.carregandoLista = false;
       },
       error: async (error) => {
@@ -109,7 +118,42 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
     });
   }
 
+  buscar(termo: string): void {
+    this.busca = termo;
+    this.atualizarGrupos();
+  }
+
+  /** Os botoes de limpar somem junto com a busca; o foco volta ao campo em vez de se perder. */
+  limparBusca(): void {
+    this.buscar('');
+    this.campoBusca?.nativeElement.focus();
+  }
+
+  pastaAberta(grupo: GrupoDePasta<RelatorioListado>): boolean {
+    return this.busca.trim() !== '' || !this.pastasFechadas.has(grupo.chave);
+  }
+
+  alternarPasta(grupo: GrupoDePasta<RelatorioListado>): void {
+    // Durante a busca todas as pastas com resultado ficam abertas; recolher nao teria efeito.
+    if (this.busca.trim() !== '') {
+      return;
+    }
+    if (this.pastasFechadas.has(grupo.chave)) {
+      this.pastasFechadas.delete(grupo.chave);
+    } else {
+      this.pastasFechadas.add(grupo.chave);
+    }
+  }
+
+  private atualizarGrupos(): void {
+    const filtrados = filtrarRelatorios(this.relatorios, this.busca);
+    this.totalFiltrado = filtrados.length;
+    this.grupos = agruparPorPasta(filtrados);
+  }
+
   selecionar(resumo: RelatorioListado): void {
+    // O item marcado nunca fica escondido dentro de uma pasta recolhida.
+    this.pastasFechadas.delete(chaveDaPasta(resumo.pasta));
     // Mesmo item ja aberto ou carregando: clicar de novo nao refaz o request.
     if (resumo.id === this.selecionadoId && (this.carregandoDetalhe || this.relatorio?.id === resumo.id)) {
       return;
@@ -204,6 +248,10 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
 
   identificarRelatorio(_: number, relatorio: RelatorioListado): number {
     return relatorio.id;
+  }
+
+  identificarGrupo(_: number, grupo: GrupoDePasta<RelatorioListado>): string {
+    return grupo.chave;
   }
 
 

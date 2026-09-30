@@ -1,4 +1,6 @@
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { RelatorioService } from '../../../../sap/service/relatorio.service';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
@@ -140,6 +142,211 @@ describe('Consumo de relatorios', () => {
     component.selecionar({ id: 99, nome: 'Rascunho', formatos: ['html'], versaoPublicada: null });
     expect(editar).toHaveBeenCalledWith(99);
     expect(service.obter).not.toHaveBeenCalled();
+  });
+});
+
+describe('Pastas e busca na lista de relatorios', () => {
+  let service: any;
+  let component: RelatorioConsumoComponent;
+  const item = (id: number, nome: string, pasta?: string | null) =>
+    ({ id, nome, pasta, formatos: ['pdf'], versaoPublicada: 1, atualizadoEm: '' });
+
+  const criar = (isAdmin = false) => {
+    component = new RelatorioConsumoComponent(
+      new FormBuilder(), service, {} as any,
+      jasmine.createSpyObj('ToastrService', ['warning', 'error', 'success']),
+    );
+    component.isAdmin = isAdmin;
+    component.carregarLista();
+  };
+
+  beforeEach(() => {
+    service = jasmine.createSpyObj('RelatorioService', ['listar', 'listarTodos', 'obter', 'lerErro']);
+    service.listar.and.returnValue(of([
+      item(1, 'Vendas por cliente', 'Vendas'),
+      item(2, 'Cobrança em aberto', 'Financeiro'),
+      item(3, 'Estoque'),
+      item(4, 'Vendas por vendedor', 'Vendas'),
+    ]));
+    service.listarTodos.and.returnValue(of([item(5, 'Rascunho admin', 'Vendas')]));
+    criar();
+  });
+
+  afterEach(() => component.ngOnDestroy());
+
+  const titulos = () => component.grupos.map((g) => g.titulo);
+
+  it('agrupa por pasta ao carregar, com "Sem pasta" por ultimo', () => {
+    expect(titulos()).toEqual(['Financeiro', 'Vendas', 'Sem pasta']);
+    expect(component.totalFiltrado).toBe(4);
+  });
+
+  it('admin carrega pela lista completa e tambem agrupa', () => {
+    component.ngOnDestroy();
+    criar(true);
+    expect(service.listarTodos).toHaveBeenCalled();
+    expect(titulos()).toEqual(['Vendas']);
+  });
+
+  it('a busca filtra sem acento, some com pastas vazias e conta os resultados', () => {
+    component.buscar('COBRANCA');
+    expect(titulos()).toEqual(['Financeiro']);
+    expect(component.totalFiltrado).toBe(1);
+    component.buscar('nada disso');
+    expect(component.grupos).toEqual([]);
+    expect(component.totalFiltrado).toBe(0);
+    component.buscar('');
+    expect(titulos()).toEqual(['Financeiro', 'Vendas', 'Sem pasta']);
+  });
+
+  it('a busca mantem a lista carregada e sobrevive a um recarregamento', () => {
+    component.buscar('vendas');
+    component.carregarLista();
+    expect(component.relatorios.length).toBe(4);
+    expect(titulos()).toEqual(['Vendas']);
+  });
+
+  it('pasta recolhida fica fechada, e durante a busca todas abrem', () => {
+    const vendas = component.grupos.find((g) => g.titulo === 'Vendas')!;
+    expect(component.pastaAberta(vendas)).toBeTrue();
+    component.alternarPasta(vendas);
+    expect(component.pastaAberta(vendas)).toBeFalse();
+
+    component.buscar('vendas');
+    expect(component.pastaAberta(component.grupos[0])).toBeTrue();
+    component.alternarPasta(component.grupos[0]);
+    expect(component.pastaAberta(component.grupos[0])).toBeTrue();
+
+    component.buscar('');
+    expect(component.pastaAberta(component.grupos.find((g) => g.titulo === 'Vendas')!)).toBeFalse();
+  });
+
+  it('selecionar um item reabre a pasta recolhida dele', () => {
+    service.obter.and.returnValue(new Subject());
+    const vendas = component.grupos.find((g) => g.titulo === 'Vendas')!;
+    component.alternarPasta(vendas);
+    expect(component.pastaAberta(vendas)).toBeFalse();
+
+    component.selecionar(vendas.itens[0]);
+    expect(component.pastaAberta(vendas)).toBeTrue();
+  });
+
+  it('relatorio sem pasta reabre o grupo "Sem pasta" ao ser selecionado', () => {
+    service.obter.and.returnValue(new Subject());
+    const sem = component.grupos.find((g) => g.titulo === 'Sem pasta')!;
+    component.alternarPasta(sem);
+    component.selecionar(sem.itens[0]);
+    expect(component.pastaAberta(sem)).toBeTrue();
+  });
+});
+
+describe('Lista de relatorios renderizada', () => {
+  const item = (id: number, nome: string, pasta?: string | null) =>
+    ({ id, nome, pasta, formatos: ['pdf'], versaoPublicada: 1, atualizadoEm: '' });
+
+  async function montar() {
+    const service = jasmine.createSpyObj('RelatorioService', ['listar', 'listarTodos', 'obter', 'lerErro']);
+    service.listar.and.returnValue(of([
+      item(1, 'Vendas por cliente', 'Vendas'),
+      item(2, 'Cobrança em aberto', 'Financeiro'),
+      item(3, 'Estoque'),
+    ]));
+    await TestBed.configureTestingModule({
+      declarations: [RelatorioConsumoComponent],
+      imports: [CommonModule, ReactiveFormsModule, FormsModule],
+      providers: [
+        { provide: RelatorioService, useValue: service },
+        { provide: ToastrService, useValue: jasmine.createSpyObj('ToastrService', ['warning', 'error', 'success']) },
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(RelatorioConsumoComponent);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  /** Pasta -> nomes dos relatorios DENTRO do painel dela: prova a associacao, nao so as duas listas. */
+  const estrutura = (el: HTMLElement): Record<string, (string | undefined)[]> => {
+    const saida: Record<string, (string | undefined)[]> = {};
+    el.querySelectorAll('.lista-relatorios .pasta-cabecalho').forEach((cabecalho) => {
+      const titulo = cabecalho.querySelector('.pasta-titulo')!.textContent!.trim();
+      const painel = cabecalho.nextElementSibling;
+      const dentro = painel?.classList.contains('list-group') ? painel : null;
+      saida[titulo] = Array.from(dentro?.querySelectorAll('.relatorio-select .font-weight-bold') ?? [])
+        .map((n) => n.textContent?.trim());
+    });
+    return saida;
+  };
+  const digitar = (fixture: any, campo: HTMLInputElement, texto: string) => {
+    campo.value = texto;
+    campo.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+  };
+
+  it('mostra cada relatorio dentro da pasta dele e filtra ao digitar', async () => {
+    const fixture = await montar();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(estrutura(el)).toEqual({
+      'Financeiro': ['Cobrança em aberto'],
+      'Vendas': ['Vendas por cliente'],
+      'Sem pasta': ['Estoque'],
+    });
+    expect(Object.keys(estrutura(el))).toEqual(['Financeiro', 'Vendas', 'Sem pasta']);
+
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+    digitar(fixture, campo, 'cobranca');
+    expect(estrutura(el)).toEqual({ 'Financeiro': ['Cobrança em aberto'] });
+    expect(el.textContent).toContain('1 de 3 relatórios');
+
+    digitar(fixture, campo, 'sem pasta');
+    expect(estrutura(el)).toEqual({ 'Sem pasta': ['Estoque'] });
+
+    digitar(fixture, campo, 'zzz');
+    expect(el.querySelector('.pasta-titulo')).toBeNull();
+    expect(el.textContent).toContain('Nenhum relatório encontrado para «zzz»');
+    fixture.destroy();
+  });
+
+  it('clicar na pasta recolhe e expande apenas os relatorios dela', async () => {
+    const fixture = await montar();
+    const el: HTMLElement = fixture.nativeElement;
+    const cabecalho: HTMLButtonElement = el.querySelector('.pasta-cabecalho')!;
+    expect(cabecalho.getAttribute('aria-expanded')).toBe('true');
+
+    cabecalho.click();
+    fixture.detectChanges();
+    expect(cabecalho.getAttribute('aria-expanded')).toBe('false');
+    expect(estrutura(el)).toEqual({ 'Financeiro': [], 'Vendas': ['Vendas por cliente'], 'Sem pasta': ['Estoque'] });
+
+    cabecalho.click();
+    fixture.detectChanges();
+    expect(estrutura(el)['Financeiro']).toEqual(['Cobrança em aberto']);
+    fixture.destroy();
+  });
+
+  it('limpar a busca devolve o foco ao campo, seja pelo X ou pelo botao do estado vazio', async () => {
+    const fixture = await montar();
+    const el: HTMLElement = fixture.nativeElement;
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+
+    digitar(fixture, campo, 'cobranca');
+    (el.querySelector('button[aria-label="Limpar busca"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable(); // o ngModel escreve o valor de volta no campo de forma assincrona
+    expect(campo.value).toBe('');
+    expect(document.activeElement).toBe(campo);
+
+    campo.blur();
+    digitar(fixture, campo, 'zzz');
+    const vazio = Array.from(el.querySelectorAll('.empty-state button'))
+      .find((b) => b.textContent?.includes('Limpar busca')) as HTMLButtonElement;
+    vazio.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(campo.value).toBe('');
+    expect(Object.keys(estrutura(el)).length).toBe(3);
+    expect(document.activeElement).toBe(campo);
+    fixture.destroy();
   });
 });
 

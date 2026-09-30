@@ -22,42 +22,79 @@
             <p>Nenhum relatório disponível para seus papéis.</p>
           </div>
 
-          <div class="list-group list-group-flush" *ngIf="relatorios.length > 0">
-            <div
-              class="list-group-item relatorio-list-item"
-              *ngFor="let item of relatorios | paginate: { id: 'relatorios-consumo', itemsPerPage: 8, currentPage: pagina }; trackBy: identificarRelatorio"
-              [class.active]="selecionadoId === item.id"
-              [attr.aria-busy]="carregandoDetalhe && selecionadoId === item.id">
-              <button type="button" class="relatorio-select text-left" (click)="selecionar(item)">
-                <span class="d-block font-weight-bold">
-                  {{ item.nome }}
-                  <i *ngIf="carregandoDetalhe && selecionadoId === item.id" class="fas fa-circle-notch fa-spin ml-1" aria-hidden="true"></i>
-                </span>
-                <span *ngIf="isAdmin && item.versaoPublicada == null" class="badge badge-secondary">Rascunho — abrir para editar</span>
-                <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">{{ item.descricao || 'Sem descrição' }}</small>
-                <small [class.text-white-50]="selecionadoId === item.id" class="text-muted">
-                  Formatos: {{ item.formatos.join(', ') | uppercase }}
-                </small>
-              </button>
-              <button
-                *ngIf="isAdmin"
-                type="button"
-                class="btn btn-sm align-self-center botao-editar"
-                [ngClass]="selecionadoId === item.id ? 'btn-outline-light' : 'btn-outline-primary'"
-                [attr.aria-label]="'Editar ' + item.nome"
-                (click)="editar(item.id)">
-                <i class="fas fa-edit mr-1"></i> Editar
-              </button>
+          <div *ngIf="relatorios.length > 0" class="busca-relatorios">
+            <div class="input-group input-group-sm">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fas fa-search" aria-hidden="true"></i></span>
+              </div>
+              <input
+                type="search"
+                class="form-control"
+                placeholder="Buscar por nome, descrição ou pasta"
+                aria-label="Buscar relatórios"
+                autocomplete="off"
+                #campoBusca
+                [ngModel]="busca"
+                (ngModelChange)="buscar($event)">
+              <div class="input-group-append" *ngIf="busca">
+                <button type="button" class="btn btn-outline-secondary" aria-label="Limpar busca" (click)="limparBusca()">
+                  <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
+            <small *ngIf="busca.trim()" class="text-muted d-block mt-1" aria-live="polite">
+              {{ totalFiltrado }} de {{ relatorios.length }} relatórios
+            </small>
           </div>
-          <pagination-controls
-            *ngIf="relatorios.length > 8"
-            id="relatorios-consumo"
-            previousLabel="Anterior"
-            nextLabel="Próxima"
-            [autoHide]="true"
-            (pageChange)="pagina = $event">
-          </pagination-controls>
+
+          <div *ngIf="relatorios.length > 0 && busca.trim() && totalFiltrado === 0" class="empty-state">
+            <i class="fas fa-search fa-2x mb-2"></i>
+            <p>Nenhum relatório encontrado para «{{ busca.trim() }}».</p>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="limparBusca()">Limpar busca</button>
+          </div>
+
+          <div class="lista-relatorios" *ngIf="grupos.length > 0">
+            <ng-container *ngFor="let grupo of grupos; trackBy: identificarGrupo">
+              <button
+                type="button"
+                class="pasta-cabecalho"
+                [attr.aria-expanded]="pastaAberta(grupo)"
+                (click)="alternarPasta(grupo)">
+                <i class="fas fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
+                <i class="far fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-folder-open' : 'fa-folder'" aria-hidden="true"></i>
+                <span class="pasta-titulo">{{ grupo.titulo }}</span>
+                <span class="badge badge-pill badge-secondary ml-auto">{{ grupo.itens.length }}</span>
+              </button>
+              <div class="list-group list-group-flush" *ngIf="pastaAberta(grupo)">
+                <div
+                  class="list-group-item relatorio-list-item"
+                  *ngFor="let item of grupo.itens; trackBy: identificarRelatorio"
+                  [class.active]="selecionadoId === item.id"
+                  [attr.aria-busy]="carregandoDetalhe && selecionadoId === item.id">
+                  <button type="button" class="relatorio-select text-left" (click)="selecionar(item)">
+                    <span class="d-block font-weight-bold">
+                      {{ item.nome }}
+                      <i *ngIf="carregandoDetalhe && selecionadoId === item.id" class="fas fa-circle-notch fa-spin ml-1" aria-hidden="true"></i>
+                    </span>
+                    <span *ngIf="isAdmin && item.versaoPublicada == null" class="badge badge-secondary">Rascunho — abrir para editar</span>
+                    <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">{{ item.descricao || 'Sem descrição' }}</small>
+                    <small [class.text-white-50]="selecionadoId === item.id" class="text-muted">
+                      Formatos: {{ item.formatos.join(', ') | uppercase }}
+                    </small>
+                  </button>
+                  <button
+                    *ngIf="isAdmin"
+                    type="button"
+                    class="btn btn-sm align-self-center botao-editar"
+                    [ngClass]="selecionadoId === item.id ? 'btn-outline-light' : 'btn-outline-primary'"
+                    [attr.aria-label]="'Editar ' + item.nome"
+                    (click)="editar(item.id)">
+                    <i class="fas fa-edit mr-1"></i> Editar
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </div>
         </div>
         <div *ngIf="carregandoLista" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
       </div>
