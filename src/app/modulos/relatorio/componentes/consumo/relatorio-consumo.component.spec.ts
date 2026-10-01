@@ -364,6 +364,107 @@ describe('Pastas e busca na lista de relatorios', () => {
     expect(component.grupos.length).toBe(3);
   });
 
+  describe('com subpastas', () => {
+    beforeEach(() => {
+      service.listar.and.returnValue(of([
+        item(1, 'Posição em aberto', 'Financeiro/Contas a pagar'),
+        item(2, 'Por cliente', 'Financeiro/Contas a receber'),
+        item(3, 'Saldos', 'Financeiro'),
+        item(4, 'Frete', 'Logística/Custos'),
+      ]));
+      component.ngOnDestroy();
+      criar();
+    });
+
+    const no = (...caminho: string[]) => {
+      let nivel = component.grupos;
+      let achado;
+      for (const titulo of caminho) {
+        achado = nivel.find((g) => g.titulo === titulo)!;
+        nivel = achado.filhos;
+      }
+      return achado!;
+    };
+
+    it('monta a arvore e conta as subpastas no total da pasta de cima', () => {
+      expect(titulos()).toEqual(['Financeiro', 'Logística']);
+      expect(no('Financeiro').filhos.map((g) => g.titulo)).toEqual(['Contas a pagar', 'Contas a receber']);
+      expect(component.contagemPasta(no('Financeiro'))).toBe('3');
+      component.buscar('pagar');
+      expect(component.contagemPasta(no('Financeiro'))).toBe('1 de 3');
+    });
+
+    it('abrir/recolher todas aparecem mesmo com uma pasta so, se ela tem subpasta', () => {
+      service.listar.and.returnValue(of([item(1, 'Frete', 'Logística/Custos')]));
+      component.carregarLista();
+      expect(component.grupos.length).toBe(1);
+      expect(component.mostrarAbrirRecolher).toBeTrue();
+    });
+
+    it('recolher todas fecha as pastas de todos os niveis e abrir todas reabre', () => {
+      component.recolherTodas();
+      expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!).sort()).toEqual([
+        'financeiro', 'financeiro/contas a pagar', 'financeiro/contas a receber', 'logistica', 'logistica/custos',
+      ]);
+      expect(component.pastaAberta(no('Financeiro'))).toBeFalse();
+      expect(component.pastaAberta(no('Financeiro', 'Contas a pagar'))).toBeFalse();
+
+      component.expandirTodas();
+      expect(component.pastaAberta(no('Financeiro', 'Contas a pagar'))).toBeTrue();
+    });
+
+    it('recolher todas poupa a cadeia inteira do relatorio aberto, pasta e subpasta', () => {
+      service.obter.and.returnValue(new Subject());
+      component.selecionar(no('Financeiro', 'Contas a pagar').itens[0]);
+      component.recolherTodas();
+      expect(component.pastaAberta(no('Financeiro'))).toBeTrue();
+      expect(component.pastaAberta(no('Financeiro', 'Contas a pagar'))).toBeTrue();
+      expect(component.pastaAberta(no('Financeiro', 'Contas a receber'))).toBeFalse();
+      expect(component.pastaAberta(no('Logística'))).toBeFalse();
+    });
+
+    it('recolher todas reabre a cadeia do relatorio aberto se ela ja estava recolhida', () => {
+      service.obter.and.returnValue(new Subject());
+      component.selecionar(no('Financeiro', 'Contas a pagar').itens[0]);
+      component.alternarPasta(no('Financeiro'));          // o usuario recolhe a pasta do relatorio aberto
+      expect(component.pastaAberta(no('Financeiro'))).toBeFalse();
+
+      component.recolherTodas();
+      expect(component.pastaAberta(no('Financeiro'))).toBeTrue();
+      expect(component.pastaAberta(no('Financeiro', 'Contas a pagar'))).toBeTrue();
+      expect(component.pastaAberta(no('Logística'))).toBeFalse();
+      expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!)).not.toContain('financeiro');
+    });
+
+    it('selecionar um relatorio reabre a pasta e a subpasta recolhidas dele', () => {
+      service.obter.and.returnValue(new Subject());
+      component.alternarPasta(no('Financeiro', 'Contas a pagar'));
+      component.alternarPasta(no('Financeiro'));
+      expect(component.pastaAberta(no('Financeiro'))).toBeFalse();
+
+      component.selecionar(no('Financeiro', 'Contas a pagar').itens[0]);
+      expect(component.pastaAberta(no('Financeiro'))).toBeTrue();
+      expect(component.pastaAberta(no('Financeiro', 'Contas a pagar'))).toBeTrue();
+      expect(JSON.parse(localStorage.getItem(CHAVE_PASTAS_FECHADAS)!)).toEqual([]);
+    });
+
+    it('as pastas recolhidas de um nivel so ficam lembradas como na versao de um nivel', () => {
+      localStorage.setItem(CHAVE_PASTAS_FECHADAS, JSON.stringify(['financeiro']));
+      component.ngOnDestroy();
+      criar();
+      expect(component.pastaAberta(no('Financeiro'))).toBeFalse();
+      expect(component.pastaAberta(no('Logística'))).toBeTrue();
+    });
+
+    it('guarda os trechos a destacar no nome da subpasta, nao so no da pasta', () => {
+      component.buscar('pagar');
+      const marcados = component.destaquesPasta.get('financeiro/contas a pagar')!.filter((t) => t.marcado);
+      expect(marcados.length).toBe(1);
+      expect(marcados[0].texto.toLowerCase()).toBe('pagar');
+      expect(component.destaquesPasta.get('financeiro')!.some((t) => t.marcado)).toBeFalse();
+    });
+  });
+
   it('relatorio sem pasta reabre o grupo "Sem pasta" ao ser selecionado', () => {
     service.obter.and.returnValue(new Subject());
     const sem = component.grupos.find((g) => g.titulo === 'Sem pasta')!;
@@ -379,14 +480,14 @@ describe('Lista de relatorios renderizada', () => {
 
   afterEach(() => localStorage.removeItem(CHAVE_PASTAS_FECHADAS));
 
-  async function montar() {
+  async function montar(dados = [
+    item(1, 'Vendas por cliente', 'Vendas'),
+    item(2, 'Cobrança em aberto', 'Financeiro'),
+    item(3, 'Estoque'),
+  ]) {
     localStorage.removeItem(CHAVE_PASTAS_FECHADAS);
     const service = jasmine.createSpyObj('RelatorioService', ['listar', 'listarTodos', 'obter', 'lerErro']);
-    service.listar.and.returnValue(of([
-      item(1, 'Vendas por cliente', 'Vendas'),
-      item(2, 'Cobrança em aberto', 'Financeiro'),
-      item(3, 'Estoque'),
-    ]));
+    service.listar.and.returnValue(of(dados));
     await TestBed.configureTestingModule({
       declarations: [RelatorioConsumoComponent],
       imports: [CommonModule, ReactiveFormsModule, FormsModule],
@@ -401,15 +502,15 @@ describe('Lista de relatorios renderizada', () => {
     return fixture;
   }
 
-  /** Pasta -> nomes dos relatorios DENTRO do painel dela: prova a associacao, nao so as duas listas. */
+  /**
+   * Caminho da pasta ("Financeiro / Contas a pagar") -> nomes dos relatorios que estao DIRETAMENTE nela:
+   * prova a associacao de cada relatorio a propria pasta, nao so as duas listas soltas.
+   */
   const estrutura = (el: HTMLElement): Record<string, (string | undefined)[]> => {
     const saida: Record<string, (string | undefined)[]> = {};
-    el.querySelectorAll('.lista-relatorios .pasta-cabecalho').forEach((cabecalho) => {
-      const titulo = cabecalho.querySelector('.pasta-titulo')!.textContent!.trim();
-      const painel = cabecalho.nextElementSibling;
-      const dentro = painel?.classList.contains('list-group') ? painel : null;
-      saida[titulo] = Array.from(dentro?.querySelectorAll('.relatorio-select .font-weight-bold') ?? [])
-        .map((n) => n.textContent?.trim());
+    el.querySelectorAll('.lista-relatorios .no-pasta').forEach((no) => {
+      const proprios = no.querySelectorAll(':scope > .no-pasta-corpo > .list-group .relatorio-select .font-weight-bold');
+      saida[no.getAttribute('data-caminho')!] = Array.from(proprios).map((n) => n.textContent?.trim());
     });
     return saida;
   };
@@ -478,6 +579,105 @@ describe('Lista de relatorios renderizada', () => {
     expect(el.querySelector('.pasta-cabecalho .badge')!.textContent!.trim()).toBe('1 de 1');
     digitar(fixture, campo, '');
     expect(el.querySelectorAll('mark').length).toBe(0);
+    fixture.destroy();
+  });
+
+  const comSubpastas = () => [
+    item(1, 'Posição em aberto', 'Financeiro/Contas a pagar'),
+    item(2, 'Vencimentos', 'Financeiro/Contas a pagar'),
+    item(3, 'Por cliente', 'Financeiro/Contas a receber'),
+    item(4, 'Saldos', 'Financeiro'),
+    item(5, 'Comissões', 'Vendas'),
+    item(6, 'Estoque'),
+  ];
+
+  it('mostra as subpastas dentro da pasta, com o total de cada uma', async () => {
+    const fixture = await montar(comSubpastas());
+    const el: HTMLElement = fixture.nativeElement;
+    expect(estrutura(el)).toEqual({
+      'Financeiro': ['Saldos'],
+      'Financeiro / Contas a pagar': ['Posição em aberto', 'Vencimentos'],
+      'Financeiro / Contas a receber': ['Por cliente'],
+      'Vendas': ['Comissões'],
+      'Sem pasta': ['Estoque'],
+    });
+    const selo = (caminho: string) =>
+      el.querySelector(`.no-pasta[data-caminho="${caminho}"] > .pasta-cabecalho .badge`)!.textContent!.trim();
+    expect(selo('Financeiro')).toBe('4');
+    expect(selo('Financeiro / Contas a pagar')).toBe('2');
+    expect(el.querySelector('.no-pasta[data-caminho="Financeiro / Contas a pagar"] > .pasta-cabecalho')!
+      .classList.contains('subpasta')).toBeTrue();
+    expect(el.querySelector('.no-pasta[data-caminho="Financeiro"] > .pasta-cabecalho')!
+      .classList.contains('subpasta')).toBeFalse();
+    fixture.destroy();
+  });
+
+  it('a hierarquia e semantica: listas aninhadas e rotulo com nome e contagem para leitor de tela', async () => {
+    const fixture = await montar(comSubpastas());
+    const el: HTMLElement = fixture.nativeElement;
+    const financeiro = el.querySelector('.no-pasta[data-caminho="Financeiro"]')!;
+
+    expect(financeiro.tagName).toBe('LI');
+    expect(financeiro.parentElement!.tagName).toBe('UL');
+    const subpasta = financeiro.querySelector('.no-pasta[data-caminho="Financeiro / Contas a pagar"]')!;
+    expect(subpasta.tagName).toBe('LI');
+    expect(subpasta.parentElement!.tagName).toBe('UL');
+    expect(financeiro.contains(subpasta.parentElement)).toBeTrue();       // ul dentro do li da pasta
+    expect(subpasta.querySelector('ul.list-group li.relatorio-list-item')).not.toBeNull();
+
+    // list-style: none faz o Safari/VoiceOver descartar a lista; role explicito a restaura.
+    el.querySelectorAll('ul').forEach((lista) => expect(lista.getAttribute('role')).withContext(lista.className).toBe('list'));
+
+    const rotulo = (caminho: string) => el.querySelector(`.no-pasta[data-caminho="${caminho}"] > .pasta-cabecalho`)!
+      .getAttribute('aria-label');
+    expect(rotulo('Financeiro')).toBe('Financeiro, 4 relatórios');
+    expect(rotulo('Vendas')).toBe('Vendas, 1 relatório');
+
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+    digitar(fixture, campo, 'receber');
+    expect(rotulo('Financeiro')).toBe('Financeiro, 1 de 4 relatórios');
+    fixture.destroy();
+  });
+
+  it('recolher a pasta esconde tudo o que tem dentro; reabrir devolve, e a subpasta segue como estava', async () => {
+    const fixture = await montar(comSubpastas());
+    const el: HTMLElement = fixture.nativeElement;
+    const cabecalho = (caminho: string) =>
+      el.querySelector(`.no-pasta[data-caminho="${caminho}"] > .pasta-cabecalho`) as HTMLButtonElement;
+
+    cabecalho('Financeiro / Contas a pagar').click();
+    fixture.detectChanges();
+    expect(estrutura(el)['Financeiro / Contas a pagar']).toEqual([]);
+
+    cabecalho('Financeiro').click();
+    fixture.detectChanges();
+    expect(Object.keys(estrutura(el))).toEqual(['Financeiro', 'Vendas', 'Sem pasta']);
+    expect(estrutura(el)['Financeiro']).toEqual([]);
+
+    cabecalho('Financeiro').click();
+    fixture.detectChanges();
+    expect(estrutura(el)['Financeiro']).toEqual(['Saldos']);
+    expect(estrutura(el)['Financeiro / Contas a pagar']).toEqual([]);          // continua recolhida
+    expect(estrutura(el)['Financeiro / Contas a receber']).toEqual(['Por cliente']);
+    fixture.destroy();
+  });
+
+  it('a busca abre o caminho ate o achado e destaca o nome da subpasta', async () => {
+    const fixture = await montar(comSubpastas());
+    const el: HTMLElement = fixture.nativeElement;
+    const campo: HTMLInputElement = el.querySelector('input[type="search"]')!;
+
+    digitar(fixture, campo, 'receber');
+    expect(estrutura(el)).toEqual({
+      'Financeiro': [],
+      'Financeiro / Contas a receber': ['Por cliente'],
+    });
+    const marcas = Array.from(el.querySelectorAll('.pasta-titulo mark')).map((m) => m.textContent);
+    expect(marcas.length).toBe(1);
+    expect(marcas[0]!.toLowerCase()).toBe('receber');
+    // O selo mostra o que apareceu de quanto existe, com as subpastas somadas.
+    expect(el.querySelector('.no-pasta[data-caminho="Financeiro"] > .pasta-cabecalho .badge')!.textContent!.trim())
+      .toBe('1 de 4');
     fixture.destroy();
   });
 

@@ -95,3 +95,13 @@ mark {
   background: rgba(255, 255, 255, 0.35);
   color: inherit;
 }
+
+/* Subpasta: um tom mais claro e menos peso que a pasta de cima; o recuo vem do padding inline. */
+.pasta-cabecalho.subpasta {
+  background: #fafbfc;
+  font-weight: 500;
+}
+
+.pasta-cabecalho.subpasta:hover {
+  background: #f0f2f5;
+}

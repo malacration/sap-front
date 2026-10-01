@@ -17,9 +17,10 @@ import {
   GrupoDePasta,
   Trecho,
   agruparPorPasta,
-  chaveDaPasta,
+  chavesDoCaminho,
   destacar,
   filtrarRelatorios,
+  todosOsNos,
 } from '../../util/agrupar-relatorios';
 
 /** Onde o navegador lembra quais pastas o usuario recolheu. */
@@ -49,7 +50,7 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
   @Output() editarRelatorio = new EventEmitter<number>();
 
   relatorios: RelatorioListado[] = [];
-  /** O que a lista mostra: `relatorios` filtrados pela busca e agrupados por pasta. */
+  /** O que a lista mostra: `relatorios` filtrados pela busca, na arvore de pastas (estas sao as da raiz). */
   grupos: GrupoDePasta<RelatorioListado>[] = [];
   busca = '';
   totalFiltrado = 0;
@@ -162,29 +163,33 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
     return this.busca.trim() !== '';
   }
 
-  /** Abrir/recolher todas so fazem sentido fora da busca e com mais de uma pasta. */
+  /** Abrir/recolher todas so fazem sentido fora da busca e com mais de uma pasta (em qualquer nivel). */
   get mostrarAbrirRecolher(): boolean {
-    return !this.buscando && this.grupos.length > 1;
+    return !this.buscando && todosOsNos(this.grupos).length > 1;
   }
 
   expandirTodas(): void {
     this.alterarPastasFechadas((conjunto) => conjunto.clear());
   }
 
-  /** Recolhe todas, menos a do relatorio aberto: ele nunca fica escondido. */
+  /**
+   * Recolhe todas (de todos os niveis), menos a cadeia de pastas do relatorio aberto: ele nunca fica
+   * escondido. Se alguma pasta dessa cadeia ja estava recolhida, ela e reaberta.
+   */
   recolherTodas(): void {
     const selecionado = this.relatorios.find((r) => r.id === this.selecionadoId);
-    const manter = selecionado ? chaveDaPasta(selecionado.pasta) : undefined;
-    const chaves = new Set(this.relatorios.map((r) => chaveDaPasta(r.pasta)));
-    if (manter !== undefined) {
-      chaves.delete(manter);
-    }
-    this.alterarPastasFechadas((conjunto) => chaves.forEach((chave) => conjunto.add(chave)));
+    const manter = new Set(selecionado ? chavesDoCaminho(selecionado.pasta) : []);
+    const chaves = new Set(this.relatorios.flatMap((r) => chavesDoCaminho(r.pasta)));
+    manter.forEach((chave) => chaves.delete(chave));
+    this.alterarPastasFechadas((conjunto) => {
+      chaves.forEach((chave) => conjunto.add(chave));
+      manter.forEach((chave) => conjunto.delete(chave));
+    });
   }
 
-  /** "3" sem busca; "2 de 5" com busca, para mostrar quanto da pasta ficou de fora. */
+  /** "3" sem busca; "2 de 5" com busca, para mostrar quanto da pasta ficou de fora (subpastas incluidas). */
   contagemPasta(grupo: GrupoDePasta<RelatorioListado>): string {
-    const aparece = grupo.itens.length;
+    const aparece = grupo.total;
     return this.buscando ? `${aparece} de ${this.totalPorPasta.get(grupo.chave) ?? aparece}` : `${aparece}`;
   }
 
@@ -252,17 +257,16 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
     this.grupos = agruparPorPasta(filtrados, termo !== '');
 
     this.totalPorPasta = new Map();
-    this.relatorios.forEach((r) => {
-      const chave = chaveDaPasta(r.pasta);
+    this.relatorios.forEach((r) => chavesDoCaminho(r.pasta).forEach((chave) => {
       this.totalPorPasta.set(chave, (this.totalPorPasta.get(chave) ?? 0) + 1);
-    });
+    }));
 
     // Calculado uma vez por busca, e nao no template: a cada deteccao de mudanca o ngFor
     // receberia arrays novos e recriaria o DOM inteiro.
     this.destaques = new Map();
     this.destaquesPasta = new Map();
     if (termo !== '') {
-      this.grupos.forEach((grupo) => {
+      todosOsNos(this.grupos).forEach((grupo) => {
         // "Sem pasta" nao e texto dos relatorios: marcar nele sugeriria um acerto que nao houve.
         if (grupo.chave !== '') {
           this.destaquesPasta.set(grupo.chave, destacar(grupo.titulo, termo));
@@ -277,9 +281,9 @@ export class RelatorioConsumoComponent implements OnInit, OnDestroy {
 
   selecionar(resumo: RelatorioListado): void {
     // O item marcado nunca fica escondido dentro de uma pasta recolhida.
-    const chaveDoItem = chaveDaPasta(resumo.pasta);
-    if (this.pastasFechadas.has(chaveDoItem)) {
-      this.alterarPastasFechadas((conjunto) => conjunto.delete(chaveDoItem));
+    const fechadas = chavesDoCaminho(resumo.pasta).filter((chave) => this.pastasFechadas.has(chave));
+    if (fechadas.length > 0) {
+      this.alterarPastasFechadas((conjunto) => fechadas.forEach((chave) => conjunto.delete(chave)));
     }
     // Mesmo item ja aberto ou carregando: clicar de novo nao refaz o request.
     if (resumo.id === this.selecionadoId && (this.carregandoDetalhe || this.relatorio?.id === resumo.id)) {

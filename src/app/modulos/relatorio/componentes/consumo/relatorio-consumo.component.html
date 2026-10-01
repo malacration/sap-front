@@ -1,6 +1,79 @@
 <!-- Texto com os trechos que casaram com a busca destacados; sem busca, o texto vai puro. -->
 <ng-template #trechos let-lista="lista"><ng-container *ngFor="let t of lista"><mark *ngIf="t.marcado">{{ t.texto }}</mark><ng-container *ngIf="!t.marcado">{{ t.texto }}</ng-container></ng-container></ng-template>
 
+<!-- Uma pasta por vez; as subpastas chamam este mesmo modelo de novo. -->
+<!-- Listas aninhadas (ul > li > ul): o leitor de tela anuncia o nivel e quantos itens ha em cada lista.
+     role="list" explicito porque, com list-style: none, o Safari/VoiceOver descarta a semantica de lista. -->
+<ng-template #arvore let-nos="nos">
+  <ul class="lista-pastas list-unstyled mb-0" role="list">
+  <li class="no-pasta" *ngFor="let grupo of nos; trackBy: identificarGrupo" [attr.data-caminho]="grupo.caminho.join(' / ')">
+    <button
+      type="button"
+      class="pasta-cabecalho"
+      [class.subpasta]="grupo.nivel > 0"
+      [style.padding-left.rem]="1 + grupo.nivel * 1.25"
+      [attr.aria-expanded]="pastaAberta(grupo)"
+      [attr.aria-label]="grupo.titulo + ', ' + contagemPasta(grupo) + (buscando ? ' relatórios' : grupo.total === 1 ? ' relatório' : ' relatórios')"
+      (click)="alternarPasta(grupo)">
+      <i class="fas fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
+      <i class="far fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-folder-open' : 'fa-folder'" aria-hidden="true"></i>
+      <span class="pasta-titulo">
+        <ng-container *ngIf="destaquesPasta.get(grupo.chave) as marcas; else tituloPlano">
+          <ng-container *ngTemplateOutlet="trechos; context: { lista: marcas }"></ng-container>
+        </ng-container>
+        <ng-template #tituloPlano>{{ grupo.titulo }}</ng-template>
+      </span>
+      <span class="badge badge-pill badge-secondary ml-auto">{{ contagemPasta(grupo) }}</span>
+    </button>
+    <div class="no-pasta-corpo" *ngIf="pastaAberta(grupo)">
+      <ng-container *ngIf="grupo.filhos.length > 0">
+        <ng-container *ngTemplateOutlet="arvore; context: { nos: grupo.filhos }"></ng-container>
+      </ng-container>
+      <ul class="list-group list-group-flush" role="list" *ngIf="grupo.itens.length > 0">
+        <li
+          class="list-group-item relatorio-list-item"
+          *ngFor="let item of grupo.itens; trackBy: identificarRelatorio"
+          [class.active]="selecionadoId === item.id"
+          [attr.aria-busy]="carregandoDetalhe && selecionadoId === item.id">
+          <button
+            type="button"
+            class="relatorio-select text-left"
+            [style.padding-left.rem]="1.25 + grupo.nivel * 1.25"
+            (click)="selecionar(item)">
+            <span class="d-block font-weight-bold">
+              <ng-container *ngIf="destaques.get(item.id) as d; else nomePlano">
+                <ng-container *ngTemplateOutlet="trechos; context: { lista: d.nome }"></ng-container>
+              </ng-container>
+              <ng-template #nomePlano>{{ item.nome }}</ng-template>
+              <i *ngIf="carregandoDetalhe && selecionadoId === item.id" class="fas fa-circle-notch fa-spin ml-1" aria-hidden="true"></i>
+            </span>
+            <span *ngIf="isAdmin && item.versaoPublicada == null" class="badge badge-secondary">Rascunho — abrir para editar</span>
+            <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">
+              <ng-container *ngIf="item.descricao && destaques.get(item.id) as d; else descricaoPlana">
+                <ng-container *ngTemplateOutlet="trechos; context: { lista: d.descricao }"></ng-container>
+              </ng-container>
+              <ng-template #descricaoPlana>{{ item.descricao || 'Sem descrição' }}</ng-template>
+            </small>
+            <small [class.text-white-50]="selecionadoId === item.id" class="text-muted">
+              Formatos: {{ item.formatos.join(', ') | uppercase }}
+            </small>
+          </button>
+          <button
+            *ngIf="isAdmin"
+            type="button"
+            class="btn btn-sm align-self-center botao-editar"
+            [ngClass]="selecionadoId === item.id ? 'btn-outline-light' : 'btn-outline-primary'"
+            [attr.aria-label]="'Editar ' + item.nome"
+            (click)="editar(item.id)">
+            <i class="fas fa-edit mr-1"></i> Editar
+          </button>
+        </li>
+      </ul>
+    </div>
+  </li>
+  </ul>
+</ng-template>
+
 <br>
 <section class="content">
   <div class="row">
@@ -67,59 +140,7 @@
           </div>
 
           <div class="lista-relatorios" *ngIf="grupos.length > 0">
-            <ng-container *ngFor="let grupo of grupos; trackBy: identificarGrupo">
-              <button
-                type="button"
-                class="pasta-cabecalho"
-                [attr.aria-expanded]="pastaAberta(grupo)"
-                (click)="alternarPasta(grupo)">
-                <i class="fas fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-chevron-down' : 'fa-chevron-right'" aria-hidden="true"></i>
-                <i class="far fa-fw" [ngClass]="pastaAberta(grupo) ? 'fa-folder-open' : 'fa-folder'" aria-hidden="true"></i>
-                <span class="pasta-titulo">
-                  <ng-container *ngIf="destaquesPasta.get(grupo.chave) as marcas; else tituloPlano">
-                    <ng-container *ngTemplateOutlet="trechos; context: { lista: marcas }"></ng-container>
-                  </ng-container>
-                  <ng-template #tituloPlano>{{ grupo.titulo }}</ng-template>
-                </span>
-                <span class="badge badge-pill badge-secondary ml-auto">{{ contagemPasta(grupo) }}</span>
-              </button>
-              <div class="list-group list-group-flush" *ngIf="pastaAberta(grupo)">
-                <div
-                  class="list-group-item relatorio-list-item"
-                  *ngFor="let item of grupo.itens; trackBy: identificarRelatorio"
-                  [class.active]="selecionadoId === item.id"
-                  [attr.aria-busy]="carregandoDetalhe && selecionadoId === item.id">
-                  <button type="button" class="relatorio-select text-left" (click)="selecionar(item)">
-                    <span class="d-block font-weight-bold">
-                      <ng-container *ngIf="destaques.get(item.id) as d; else nomePlano">
-                        <ng-container *ngTemplateOutlet="trechos; context: { lista: d.nome }"></ng-container>
-                      </ng-container>
-                      <ng-template #nomePlano>{{ item.nome }}</ng-template>
-                      <i *ngIf="carregandoDetalhe && selecionadoId === item.id" class="fas fa-circle-notch fa-spin ml-1" aria-hidden="true"></i>
-                    </span>
-                    <span *ngIf="isAdmin && item.versaoPublicada == null" class="badge badge-secondary">Rascunho — abrir para editar</span>
-                    <small [class.text-white-50]="selecionadoId === item.id" class="text-muted d-block">
-                      <ng-container *ngIf="item.descricao && destaques.get(item.id) as d; else descricaoPlana">
-                        <ng-container *ngTemplateOutlet="trechos; context: { lista: d.descricao }"></ng-container>
-                      </ng-container>
-                      <ng-template #descricaoPlana>{{ item.descricao || 'Sem descrição' }}</ng-template>
-                    </small>
-                    <small [class.text-white-50]="selecionadoId === item.id" class="text-muted">
-                      Formatos: {{ item.formatos.join(', ') | uppercase }}
-                    </small>
-                  </button>
-                  <button
-                    *ngIf="isAdmin"
-                    type="button"
-                    class="btn btn-sm align-self-center botao-editar"
-                    [ngClass]="selecionadoId === item.id ? 'btn-outline-light' : 'btn-outline-primary'"
-                    [attr.aria-label]="'Editar ' + item.nome"
-                    (click)="editar(item.id)">
-                    <i class="fas fa-edit mr-1"></i> Editar
-                  </button>
-                </div>
-              </div>
-            </ng-container>
+            <ng-container *ngTemplateOutlet="arvore; context: { nos: grupos }"></ng-container>
           </div>
         </div>
         <div *ngIf="carregandoLista" class="overlay"><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>

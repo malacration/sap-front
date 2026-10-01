@@ -8,11 +8,25 @@ export interface RelatorioPastavel {
   pasta?: string | null;
 }
 
+/** Separador dos niveis no campo `pasta`: `Financeiro/Contas a pagar`. */
+export const SEPARADOR_PASTA = '/';
+
+/** Uma pasta da arvore. Um relatorio mora na pasta do ULTIMO nivel do caminho dele. */
 export interface GrupoDePasta<T> {
-  /** Identifica o grupo (sem acento e sem caixa); vazio para "Sem pasta". */
+  /** Caminho inteiro, sem acento e sem caixa ("financeiro/contas a pagar"); vazio para "Sem pasta". */
   chave: string;
+  /** So o nome deste nivel ("Contas a pagar"). */
   titulo: string;
+  /** Nomes do caminho ate aqui (["Financeiro", "Contas a pagar"]). */
+  caminho: string[];
+  /** 0 na raiz, 1 dentro de uma pasta... */
+  nivel: number;
+  /** Relatorios que estao DIRETAMENTE nesta pasta. */
   itens: T[];
+  /** Pastas dentro desta. */
+  filhos: GrupoDePasta<T>[];
+  /** Relatorios nesta pasta e em todas as de dentro. */
+  total: number;
 }
 
 /** Pedaco de um texto, marcado quando casou com a busca. */
@@ -158,39 +172,89 @@ export function filtrarRelatorios<T extends RelatorioPastavel>(lista: T[], termo
     .map((r) => r.item);
 }
 
-export function chaveDaPasta(pasta: string | null | undefined): string {
-  const chave = normalizarBusca(pasta);
-  // Uma pasta chamada "Sem pasta" cairia num grupo homonimo do de verdade.
-  return chave === normalizarBusca(SEM_PASTA) ? '' : chave;
+/** Niveis do caminho, sem espacos e sem niveis vazios: " A / B " vira ["A", "B"]. */
+export function niveisDaPasta(pasta: string | null | undefined): string[] {
+  return (pasta ?? '').split(SEPARADOR_PASTA).map((nivel) => nivel.trim()).filter((nivel) => nivel !== '');
 }
 
 /**
- * Agrupa por pasta. Por padrao, grupos e itens vao por nome, com "Sem pasta" por ultimo.
- * Com `porRelevancia` (lista ja ordenada por [filtrarRelatorios]), cada grupo e cada item mantem
- * a ordem de chegada - o grupo do melhor acerto fica em cima - e so "Sem pasta" vai para o fim.
+ * Chave de cada pasta do caminho, da raiz ate a ultima: "Financeiro/Contas" -> ["financeiro",
+ * "financeiro/contas"]. Sem pasta -> [""] (o grupo virtual "Sem pasta").
+ */
+export function chavesDoCaminho(pasta: string | null | undefined): string[] {
+  const niveis = niveisDaPasta(pasta).map(normalizarBusca);
+  if (niveis.length === 0) {
+    return [''];
+  }
+  const chaves = niveis.map((_, i) => niveis.slice(0, i + 1).join(SEPARADOR_PASTA));
+  // Uma pasta de raiz chamada "Sem pasta" e o proprio grupo virtual (chave vazia): senao a tela
+  // mostraria duas raizes com o mesmo titulo. As subpastas dela seguem com a chave do caminho.
+  if (niveis[0] === normalizarBusca(SEM_PASTA)) {
+    chaves[0] = '';
+  }
+  return chaves;
+}
+
+/** Chave da pasta onde o relatorio mora (a do ultimo nivel). */
+export function chaveDaPasta(pasta: string | null | undefined): string {
+  const chaves = chavesDoCaminho(pasta);
+  return chaves[chaves.length - 1];
+}
+
+/** Todas as pastas da arvore, em profundidade (pai antes dos filhos). */
+export function todosOsNos<T>(nos: GrupoDePasta<T>[]): GrupoDePasta<T>[] {
+  return nos.flatMap((no) => [no, ...todosOsNos(no.filhos)]);
+}
+
+/**
+ * Monta a arvore de pastas. Por padrao, pastas e itens vao por nome, com "Sem pasta" por ultimo.
+ * Com `porRelevancia` (lista ja ordenada por [filtrarRelatorios]), cada nivel e cada item mantem
+ * a ordem de chegada - a pasta do melhor acerto fica em cima - e so "Sem pasta" vai para o fim.
  */
 export function agruparPorPasta<T extends RelatorioPastavel>(lista: T[], porRelevancia = false): GrupoDePasta<T>[] {
-  const grupos = new Map<string, GrupoDePasta<T>>();
+  const raizes: GrupoDePasta<T>[] = [];
+  const porChave = new Map<string, GrupoDePasta<T>>();
+  const criar = (chave: string, caminho: string[], pai?: GrupoDePasta<T>) => {
+    const grupo: GrupoDePasta<T> = {
+      chave, titulo: caminho[caminho.length - 1], caminho, nivel: caminho.length - 1, itens: [], filhos: [], total: 0,
+    };
+    porChave.set(chave, grupo);
+    (pai ? pai.filhos : raizes).push(grupo);
+    return grupo;
+  };
+
   for (const item of lista) {
-    const chave = chaveDaPasta(item.pasta);
-    let grupo = grupos.get(chave);
-    if (!grupo) {
-      grupo = { chave, titulo: chave ? (item.pasta ?? '').trim() : SEM_PASTA, itens: [] };
-      grupos.set(chave, grupo);
+    const chaves = chavesDoCaminho(item.pasta);
+    const niveis = niveisDaPasta(item.pasta);
+    let pai: GrupoDePasta<T> | undefined;
+    chaves.forEach((chave, i) => {
+      // A raiz virtual sempre se chama "Sem pasta", como quer que o relatorio a tenha escrito.
+      const titulo = chave === '' ? SEM_PASTA : niveis[i];
+      pai = porChave.get(chave) ?? criar(chave, [...(pai?.caminho ?? []), titulo], pai);
+    });
+    pai!.itens.push(item);
+  }
+
+  const fechar = (nos: GrupoDePasta<T>[]) => {
+    for (const no of nos) {
+      fechar(no.filhos);
+      no.total = no.itens.length + no.filhos.reduce((soma, filho) => soma + filho.total, 0);
     }
-    grupo.itens.push(item);
-  }
-  const ultimoSemPasta = (a: GrupoDePasta<T>, b: GrupoDePasta<T>) =>
-    a.chave === '' ? 1 : b.chave === '' ? -1 : 0;
-  const ordenados = [...grupos.values()].sort((a, b) =>
-    a.chave === '' || b.chave === ''
-      ? ultimoSemPasta(a, b)
-      : porRelevancia ? 0 : ORDEM.compare(a.titulo, b.titulo),
-  );
-  if (!porRelevancia) {
-    ordenados.forEach((grupo) => grupo.itens.sort((a, b) => ORDEM.compare(a.nome, b.nome)));
-  }
-  return ordenados;
+  };
+  const ordenar = (nos: GrupoDePasta<T>[]) => {
+    if (porRelevancia) {
+      return;
+    }
+    nos.sort((a, b) => ORDEM.compare(a.titulo, b.titulo));
+    nos.forEach((no) => {
+      no.itens.sort((a, b) => ORDEM.compare(a.nome, b.nome));
+      ordenar(no.filhos);
+    });
+  };
+  fechar(raizes);
+  ordenar(raizes);
+  // "Sem pasta" e sempre o ultimo; o resto mantem a ordem (sort estavel).
+  return raizes.sort((a, b) => (a.chave === '' ? 1 : 0) - (b.chave === '' ? 1 : 0));
 }
 
 /**

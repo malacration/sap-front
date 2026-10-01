@@ -1,9 +1,13 @@
 import {
   SEM_PASTA,
   agruparPorPasta,
+  chaveDaPasta,
+  chavesDoCaminho,
   destacar,
   filtrarRelatorios,
+  niveisDaPasta,
   normalizarBusca,
+  todosOsNos,
 } from './agrupar-relatorios';
 
 describe('Busca e pastas de relatorios', () => {
@@ -22,6 +26,28 @@ describe('Busca e pastas de relatorios', () => {
     it('ignora acento, caixa e espacos nas pontas', () => {
       expect(normalizarBusca('  COBRANÇA ')).toBe('cobranca');
       expect(normalizarBusca(undefined)).toBe('');
+    });
+  });
+
+  describe('niveis e chaves do caminho', () => {
+    it('separa por barra, sem espacos e sem niveis vazios', () => {
+      expect(niveisDaPasta(' Financeiro / Contas a pagar ')).toEqual(['Financeiro', 'Contas a pagar']);
+      expect(niveisDaPasta('A//B/')).toEqual(['A', 'B']);
+      expect(niveisDaPasta('  ')).toEqual([]);
+      expect(niveisDaPasta(null)).toEqual([]);
+    });
+
+    it('a chave de cada nivel e o caminho ate ali, sem acento e sem caixa', () => {
+      expect(chavesDoCaminho('Financeiro/Contas a Pagar')).toEqual(['financeiro', 'financeiro/contas a pagar']);
+      expect(chavesDoCaminho('FINANCEIRO')).toEqual(['financeiro']);
+      expect(chavesDoCaminho('Cobrança/Ação')).toEqual(['cobranca', 'cobranca/acao']);
+      expect(chaveDaPasta('Financeiro/Contas')).toBe('financeiro/contas');
+    });
+
+    it('sem pasta, em branco ou chamada "Sem pasta" e o grupo virtual (chave vazia)', () => {
+      expect(chavesDoCaminho(null)).toEqual(['']);
+      expect(chavesDoCaminho('  /  ')).toEqual(['']);
+      expect(chavesDoCaminho('Sem pasta')).toEqual(['']);
     });
   });
 
@@ -76,6 +102,21 @@ describe('Busca e pastas de relatorios', () => {
       it('empate de relevancia desempata por nome', () => {
         const base = [r('Zeta vendas'), r('Alfa vendas'), r('Mega vendas')];
         expect(nomes(filtrarRelatorios(base, 'vendas'))).toEqual(['Alfa vendas', 'Mega vendas', 'Zeta vendas']);
+      });
+    });
+
+    describe('pastas com subnivel', () => {
+      const base = [r('Posição em aberto', 'Financeiro/Contas a pagar'), r('Saldos', 'Financeiro'), r('Frete', 'Logística/Custos')];
+
+      it('acha pelo nome da subpasta e pelo da pasta', () => {
+        expect(nomes(filtrarRelatorios(base, 'contas'))).toEqual(['Posição em aberto']);
+        expect(nomes(filtrarRelatorios(base, 'financeiro'))).toEqual(['Posição em aberto', 'Saldos']);
+        expect(nomes(filtrarRelatorios(base, 'financeiro pagar'))).toEqual(['Posição em aberto']);
+      });
+
+      it('a barra separa palavras: o comeco da subpasta conta como comeco de palavra', () => {
+        expect(nomes(filtrarRelatorios(base, 'cust'))).toEqual(['Frete']);
+        expect(filtrarRelatorios(base, 'ontas')).toEqual([]);
       });
     });
 
@@ -166,6 +207,82 @@ describe('Busca e pastas de relatorios', () => {
         const grupos = agruparPorPasta([r('Sem dono'), r('Outro', 'Alfa')], true);
         expect(grupos.map((g) => g.titulo)).toEqual(['Alfa', SEM_PASTA]);
       });
+    });
+  });
+
+  describe('arvore de pastas', () => {
+    const arvore = [
+      r('Posição em aberto', 'Financeiro/Contas a pagar'),
+      r('Vencimentos', 'financeiro / contas a pagar'),
+      r('Por cliente', 'Financeiro/Contas a receber'),
+      r('Saldos', 'Financeiro'),
+      r('Comissões', 'Vendas'),
+      r('Sem dono'),
+    ];
+
+    it('monta pasta > subpasta, unindo caixa e espacos, e guarda os relatorios no ultimo nivel', () => {
+      const raizes = agruparPorPasta(arvore);
+      expect(raizes.map((g) => g.titulo)).toEqual(['Financeiro', 'Vendas', SEM_PASTA]);
+      const financeiro = raizes[0];
+      expect(financeiro.nivel).toBe(0);
+      expect(nomes(financeiro.itens)).toEqual(['Saldos']);
+      expect(financeiro.filhos.map((g) => g.titulo)).toEqual(['Contas a pagar', 'Contas a receber']);
+      const pagar = financeiro.filhos[0];
+      expect(pagar.nivel).toBe(1);
+      expect(pagar.caminho).toEqual(['Financeiro', 'Contas a pagar']);
+      expect(pagar.chave).toBe('financeiro/contas a pagar');
+      expect(nomes(pagar.itens)).toEqual(['Posição em aberto', 'Vencimentos']);
+    });
+
+    it('o total de cada pasta inclui as subpastas', () => {
+      const [financeiro, vendas, sem] = agruparPorPasta(arvore);
+      expect(financeiro.total).toBe(4);
+      expect(financeiro.filhos.map((g) => g.total)).toEqual([2, 1]);
+      expect(vendas.total).toBe(1);
+      expect(sem.total).toBe(1);
+    });
+
+    it('uma pasta so com subpastas nao tem itens proprios', () => {
+      const [logistica] = agruparPorPasta([r('Frete', 'Logística/Custos')]);
+      expect(logistica.itens).toEqual([]);
+      expect(logistica.total).toBe(1);
+      expect(logistica.filhos[0].itens.length).toBe(1);
+    });
+
+    it('todosOsNos percorre em profundidade, pai antes dos filhos', () => {
+      expect(todosOsNos(agruparPorPasta(arvore)).map((g) => g.chave)).toEqual([
+        'financeiro', 'financeiro/contas a pagar', 'financeiro/contas a receber', 'vendas', '',
+      ]);
+    });
+
+    it('por relevancia mantem a ordem de chegada em todos os niveis, com "Sem pasta" no fim', () => {
+      const ordem = [r('Melhor', 'Zeta/Y'), r('Medio', 'Alfa/B'), r('Sem dono'), r('Outro', 'Zeta/A')];
+      const raizes = agruparPorPasta(ordem, true);
+      expect(raizes.map((g) => g.titulo)).toEqual(['Zeta', 'Alfa', SEM_PASTA]);
+      expect(raizes[0].filhos.map((g) => g.titulo)).toEqual(['Y', 'A']);
+    });
+
+    it('uma pasta de raiz chamada "Sem pasta" e o proprio grupo virtual; a subpasta dela fica dentro', () => {
+      const raizes = agruparPorPasta([r('Solto'), r('Filho', 'Sem pasta/X'), r('Outro', 'sem pasta')]);
+      expect(raizes.length).toBe(1);
+      expect(raizes[0].titulo).toBe(SEM_PASTA);
+      expect(raizes[0].chave).toBe('');
+      expect(nomes(raizes[0].itens)).toEqual(['Outro', 'Solto']);
+      expect(raizes[0].filhos.map((g) => g.chave)).toEqual(['sem pasta/x']);
+      expect(raizes[0].filhos[0].caminho).toEqual([SEM_PASTA, 'X']);
+      expect(raizes[0].total).toBe(3);
+      expect(chavesDoCaminho('Sem pasta/X')).toEqual(['', 'sem pasta/x']);
+    });
+
+    it('o titulo da raiz virtual e sempre "Sem pasta", mesmo quando o relatorio a escreveu diferente', () => {
+      const [raiz] = agruparPorPasta([r('Filho', 'SEM PASTA / X')]);
+      expect(raiz.titulo).toBe(SEM_PASTA);
+      expect(raiz.filhos[0].titulo).toBe('X');
+    });
+
+    it('nao perde relatorio nenhum na arvore', () => {
+      const soma = agruparPorPasta(arvore).reduce((t, g) => t + g.total, 0);
+      expect(soma).toBe(arvore.length);
     });
   });
 
