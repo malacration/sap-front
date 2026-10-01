@@ -44,7 +44,64 @@
   width: 100%;
 }
 
-:host ::ng-deep .ngx-pagination {
-  margin: 1rem;
-  padding: 0;
+.busca-relatorios {
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
+}
+
+/* Com pastas nao ha paginacao: a lista rola dentro do card. */
+.lista-relatorios {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.pasta-cabecalho {
+  align-items: center;
+  background: #f4f6f9;
+  border: 0;
+  border-bottom: 1px solid #dee2e6;
+  color: #343a40;
+  display: flex;
+  font-weight: 600;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  width: 100%;
+}
+
+.pasta-cabecalho:hover {
+  background: #e9ecef;
+}
+
+.pasta-cabecalho:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: -2px;
+}
+
+.pasta-titulo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Trecho da busca. No item selecionado (fundo azul) o amarelo some; vira um realce claro. */
+mark {
+  background: #ffe58f;
+  border-radius: 2px;
+  color: inherit;
+  padding: 0 1px;
+}
+
+.list-group-item.active mark {
+  background: rgba(255, 255, 255, 0.35);
+  color: inherit;
+}
+
+/* Subpasta: um tom mais claro e menos peso que a pasta de cima; o recuo vem do padding inline. */
+.pasta-cabecalho.subpasta {
+  background: #fafbfc;
+  font-weight: 500;
+}
+
+.pasta-cabecalho.subpasta:hover {
+  background: #f0f2f5;
 }
