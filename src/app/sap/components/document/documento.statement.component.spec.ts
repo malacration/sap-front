@@ -10,6 +10,7 @@ describe('DocumentStatementComponent - frete confiavel na tela', () => {
 
   let component: DocumentStatementComponent;
   let regiaoService: any;
+  let freteManual = false;
 
   function item(quantidade : number) {
     return { quantidade, unitPriceLiquid: () => 10, PriceList: 1, GroupNum: 1 } as any;
@@ -27,7 +28,8 @@ describe('DocumentStatementComponent - frete confiavel na tela', () => {
       { tipoOperacao: [] } as any, {} as any, {} as any,
       { snapshot: { queryParamMap: { get: () => null } } } as any,
       { backendOnline: true, hasValidCatalog: false } as any,
-      {} as any, {} as any);
+      {} as any, {} as any,
+      { isFreteManual: () => freteManual } as any);
     component.ngOnInit();
 
     component.tipoEnvio = 'ent';
@@ -153,3 +155,46 @@ describe('DocumentStatementComponent - frete confiavel na tela', () => {
     }, 500);
   });
 });
+
+describe('DocumentStatementComponent - frete manual', () => {
+
+  let component: DocumentStatementComponent;
+
+  function item(quantidade : number, GroupNum = 'A') {
+    return { quantidade, unitPriceLiquid: () => 10, PriceList: 1, GroupNum } as any;
+  }
+
+  beforeEach(() => {
+    component = new DocumentStatementComponent(
+      {} as any, {} as any, {} as any, { getByLocalidade: () => { throw new Error('nao deve calcular') } } as any,
+      {} as any, { tipoOperacao: [] } as any, {} as any, {} as any,
+      { snapshot: { queryParamMap: { get: () => null } } } as any,
+      { backendOnline: true, hasValidCatalog: false } as any,
+      {} as any, {} as any,
+      { isFreteManual: () => true } as any);
+    component.ngOnInit();
+    component.tipoEnvio = 'ent';
+    component.branchId = 2;
+    component.businesPartner = { CardCode: 'CLI001' } as any;
+    //sem localidade: no modo manual isso nao e erro
+    component.enderecoEntrega = { AddressName: 'ENTREGA' } as any;
+    component.itens = [item(10)];
+  });
+
+  it('mantem o valor digitado ao mudar os itens, sem erro de localidade', () => {
+    component.frete = 150;
+    component.changeItens([item(20)]);
+
+    expect(component.frete).toEqual(150);
+    expect(component.freteCalculado).toBeTrue();
+    expect(component.freteErro).toBeNull();
+  });
+
+  it('rateia o frete digitado entre os documentos pela quantidade, somando o valor exato', () => {
+    component.frete = 100;
+    const fretes = (component as any).rateiaFreteManual([[item(1)], [item(1)], [item(1)]]);
+
+    expect(fretes).toEqual([33.33, 33.33, 33.34]);
+  });
+});
+
