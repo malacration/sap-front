@@ -26,7 +26,8 @@
                 </div>
                 <div class="col-sm-4 form-group">
                     <label>Filial</label>
-                    <app-branch-select (selectedOut)="selecionaFilial($event)"></app-branch-select>
+                    <app-branch-select [selected]="novaRegraFilial.U_filial"
+                                       (selectedOut)="selecionaFilial($event)"></app-branch-select>
                 </div>
                 <div class="col-sm-4 form-group">
                     <button class="btn btn-success" [disabled]="loading" (click)="adicionar()">
@@ -46,8 +47,14 @@
 
             <hr>
             <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
-            <div *ngIf="!loading && lista?.length == 0" class="text-center text-muted p-3">
+            <div *ngIf="carregado && !loading && lista?.length == 0" class="text-center text-muted p-3">
                 Nenhuma restrição por filial cadastrada — todas as regras valem em todas as filiais.
+            </div>
+            <!-- Falha no carregamento nao diz nada sobre o cadastro: sem isto a tela afirmava
+                 "todas as regras valem em todas as filiais" durante uma queda do backend. -->
+            <div *ngIf="erroCarregamento && !loading" class="text-center text-danger p-3" role="alert">
+                Não foi possível carregar as regras por filial. Nada pode ser concluído sobre onde cada regra vale.
+                <button type="button" class="btn btn-sm btn-outline-danger ml-2" (click)="carregar()">Tentar novamente</button>
             </div>
         </div>
         <div *ngIf="loading" class="overlay">

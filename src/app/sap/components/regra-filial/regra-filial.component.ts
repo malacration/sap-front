@@ -16,6 +16,12 @@ export class RegraFilialComponent implements OnInit {
 
   loading = false
   lista : Array<RegraFilial> = []
+
+  //"lista vazia" so e informacao depois de uma resposta de sucesso: vazia por falha ou por
+  //ainda nao ter carregado NAO significa "todas as regras valem em todas as filiais", e a tela
+  //afirmaria isso justamente durante uma queda do backend
+  carregado = false
+  erroCarregamento = false
   filiais : Array<Branch> = []
 
   //form de nova linha (motivo -> filial onde essa regra vale)
@@ -61,15 +67,23 @@ export class RegraFilialComponent implements OnInit {
 
   carregar(){
     this.loading = true
+    this.carregado = false
+    this.erroCarregamento = false
     this.service.getTodos().subscribe({
       next : (it) => {
         this.lista = (it ?? []).map(regra => {
           regra.filialNome = this.nomeFilial(regra.U_filial)
           return regra
         })
+        this.carregado = true
         this.loading = false
       },
-      error : (e) => { this.loading = false; this.alert.error(this.mensagemErro(e)) }
+      error : (e) => {
+        this.lista = []
+        this.erroCarregamento = true
+        this.loading = false
+        this.alert.error(this.mensagemErro(e))
+      }
     })
   }
 
@@ -92,6 +106,8 @@ export class RegraFilialComponent implements OnInit {
     this.loading = true
     this.service.criar(this.novaRegraFilial).subscribe({
       next : () => {
+        //o app-branch-select esta ligado a U_filial ([selected]): zerar aqui tambem limpa o
+        //controle - antes ele seguia mostrando a filial anterior com o modelo ja vazio
         this.novaRegraFilial = { U_motivo: '', U_filial: '' }
         this.carregar()
       },
@@ -119,6 +135,8 @@ export class RegraFilialComponent implements OnInit {
   //alta, porque nesse estado a regra vale em TODAS as filiais, que e o oposto do que quem
   //olha uma lista vazia costuma concluir
   motivosSemRestricao() : Array<string> {
+    if(!this.carregado)
+      return []
     return this.motivos.filter(motivo => !this.lista.some(it => it.U_motivo === motivo))
   }
 
