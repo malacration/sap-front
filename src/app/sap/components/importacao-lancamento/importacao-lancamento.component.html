@@ -1,0 +1,286 @@
+<div class="card card-primary card-outline card-outline-tabs">
+  <div class="card-header p-0 border-bottom-0">
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)" role="tab" [class.active]="aba === 'importar'"
+          [attr.aria-selected]="aba === 'importar'" (click)="aba = 'importar'">
+          <i class="fas fa-file-import"></i> Importar
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)" role="tab" [class.active]="aba === 'historico'"
+          [attr.aria-selected]="aba === 'historico'" (click)="abrirHistorico()">
+          <i class="fas fa-history"></i> Histórico
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body">
+    <ng-container *ngIf="aba === 'importar'">
+      <p class="text-muted">
+        Importa lançamentos contábeis de um arquivo CSV separado por ponto e vírgula. Cada linha vira um
+        lançamento com uma conta de débito e uma de crédito. Valide o arquivo antes: na importação, todos os
+        lançamentos entram juntos no SAP, ou nenhum entra.
+      </p>
+
+      <div class="callout callout-info py-2">
+        <button type="button" class="btn btn-sm btn-outline-primary float-right ml-3" (click)="baixarModelo()">
+          <i class="fas fa-download"></i> Baixar modelo
+        </button>
+        <strong>Primeira vez?</strong> Baixe o modelo, preencha uma linha por lançamento no Excel (apague a linha
+        de exemplo) e salve como <em>CSV (separado por ponto e vírgula)</em>. Mantenha a linha de cabeçalho.
+      </div>
+
+      <div class="d-flex flex-wrap align-items-end">
+        <div class="mr-3 mb-2" style="flex: 1 1 320px; max-width: 480px;">
+          <label for="arquivo-lancamentos">Arquivo CSV</label>
+          <div class="custom-file">
+            <input id="arquivo-lancamentos" type="file" class="custom-file-input" accept=".csv,text/csv"
+              [disabled]="ocupado" (change)="selecionarArquivo($event)">
+            <label class="custom-file-label text-truncate" for="arquivo-lancamentos" data-browse="Procurar"
+              style="padding-right: 6.5rem;" [class.text-muted]="!arquivo">
+              <i class="fas fa-file-csv mr-1"></i>{{arquivo?.name || 'Escolha o arquivo CSV'}}
+            </label>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary mr-2 mb-2" [disabled]="!arquivo || ocupado" (click)="validar()">
+          <i class="fas fa-check-double" [class.fa-spin]="validando"></i> {{validando ? 'Validando...' : 'Validar'}}
+        </button>
+        <button type="button" class="btn btn-success mr-2 mb-2" [disabled]="!podeImportar" (click)="importar()">
+          <i class="fas fa-file-import" [class.fa-spin]="importando"></i> {{importando ? 'Importando...' : 'Importar'}}
+        </button>
+      </div>
+
+      <details class="mb-3">
+        <summary>Layout do arquivo</summary>
+        <table class="table table-sm mt-2 mb-1" style="max-width: 720px;">
+          <thead><tr><th>Coluna</th><th>Conteúdo</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Filial (código da filial no SAP)</td></tr>
+            <tr><td>2</td><td>Livre (não é lida)</td></tr>
+            <tr><td>3</td><td>Data, no formato dd/mm/aaaa</td></tr>
+            <tr><td>4</td><td>Conta de débito</td></tr>
+            <tr><td>5</td><td>Conta de crédito</td></tr>
+            <tr><td>6</td><td>Valor, maior que zero (ex.: 1.234,56)</td></tr>
+            <tr><td>7</td><td>Histórico, até 254 caracteres</td></tr>
+            <tr><td>8</td><td>Grupo econômico (opcional)</td></tr>
+            <tr><td>9</td><td>Centro de custo (opcional)</td></tr>
+            <tr><td>10 a 12</td><td>Referências 1, 2 e 3 (opcionais)</td></tr>
+          </tbody>
+        </table>
+        <small class="text-muted">
+          A primeira linha é o cabeçalho e não é importada. Texto com ponto e vírgula vai entre aspas.
+        </small>
+      </details>
+
+      <div *ngIf="erro" class="alert alert-danger" role="alert">{{erro}}</div>
+
+      <div *ngIf="resultado" class="alert" role="status"
+        [ngClass]="resultado.status === 'IMPORTADO' ? 'alert-success' : 'alert-warning'">
+        {{resultado.mensagem}}
+        <div *ngIf="gerados.size">O número de cada lançamento gerado aparece na tabela abaixo, na coluna Situação.</div>
+        <div *ngIf="!gerados.size && resultado.lancamentos.length">Transações: {{resultado.lancamentos.join(', ')}}</div>
+      </div>
+
+      <ng-container *ngIf="previa">
+        <div class="alert" [ngClass]="previa.podeImportar ? 'alert-info' : 'alert-danger'">
+          <strong>{{previa.totalLinhas}}</strong> lançamento(s), total <strong>{{previa.totalValor | currency:'BRL'}}</strong>.
+          <span *ngIf="previa.linhasComErro" class="ml-1"><strong>{{previa.linhasComErro}}</strong> com erro.</span>
+          <span *ngIf="previa.linhasComAviso" class="ml-1">{{previa.linhasComAviso}} com aviso.</span>
+          <span *ngIf="previa.linhasJaNoSap" class="ml-1"><strong>{{previa.linhasJaNoSap}}</strong> já no SAP.</span>
+          <span *ngIf="previa.podeImportar && !previa.exigeConfirmacao && !resultado" class="ml-1">Pronto para importar.</span>
+          <div><small>Arquivo lido como {{previa.codificacao}}.</small></div>
+          <ul *ngIf="previa.erros.length" class="mb-0 mt-2"><li *ngFor="let e of previa.erros">{{e}}</li></ul>
+        </div>
+
+        <div *ngIf="exigeConfirmacao && !resultado" class="alert alert-warning">
+          <ng-container *ngIf="jaImportado">
+            Este arquivo já foi importado:
+            <ul class="mb-2">
+              <li *ngFor="let a of previa.importacoesAnteriores">
+                por {{a.usuario}} em {{a.data | date:'dd/MM/yyyy':'UTC'}} às {{a.hora}}
+              </li>
+            </ul>
+          </ng-container>
+          <p *ngIf="previa.linhasJaNoSap" class="mb-2">
+            <strong>{{previa.linhasJaNoSap}}</strong> lançamento(s) do arquivo já existem no SAP, com a mesma
+            referência, data, conta de débito e valor (marcados como <em>já no SAP</em> na tabela). Importar duplica
+            esses lançamentos.
+          </p>
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="reimportar" [(ngModel)]="reimportar" [disabled]="ocupado">
+            <label class="custom-control-label" for="reimportar">Importar mesmo assim (duplica os lançamentos)</label>
+          </div>
+        </div>
+
+        <div *ngIf="exigeNovaValidacao" class="alert alert-secondary">
+          Valide o arquivo de novo para continuar.
+        </div>
+
+        <ul *ngIf="previa.linhas.length" class="nav nav-pills mb-3" role="tablist" aria-label="Visão da prévia">
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:void(0)" role="tab" [class.active]="visao === 'linhas'"
+              [attr.aria-selected]="visao === 'linhas'" (click)="mostrar('linhas')">
+              <i class="fas fa-list mr-1"></i> Lançamentos
+              <span class="badge ml-1" [ngClass]="visao === 'linhas' ? 'badge-light' : 'badge-secondary'">{{previa.totalLinhas}}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="javascript:void(0)" role="tab" [class.active]="visao === 'contas'"
+              [attr.aria-selected]="visao === 'contas'" (click)="mostrar('contas')">
+              <i class="fas fa-balance-scale mr-1"></i> Resumo por conta
+              <span class="badge ml-1" [ngClass]="visao === 'contas' ? 'badge-light' : 'badge-secondary'">{{previa.resumoPorConta.length}}</span>
+            </a>
+          </li>
+        </ul>
+
+        <ng-container *ngIf="previa.linhas.length && visao === 'contas'">
+          <p class="text-muted mb-2">
+            Quanto o arquivo lança em cada conta.
+            <span *ngIf="previa.linhasComErro">Inclui as linhas com erro que têm valor: corrija o arquivo antes de importar.</span>
+          </p>
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>Conta</th><th>Nome</th><th class="text-right">Linhas</th>
+                  <th class="text-right">Débito</th><th class="text-right">Crédito</th><th class="text-right">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of previa.resumoPorConta">
+                  <td>{{c.conta}}</td>
+                  <td>{{c.nome || '—'}}</td>
+                  <td class="text-right">{{c.linhas}}</td>
+                  <td class="text-right">{{c.debito ? (c.debito | currency:'BRL') : '—'}}</td>
+                  <td class="text-right">{{c.credito ? (c.credito | currency:'BRL') : '—'}}</td>
+                  <td class="text-right text-nowrap">{{saldo(c.saldo)}}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="font-weight-bold">
+                  <td colspan="3">Total</td>
+                  <td class="text-right">{{totalDebito | currency:'BRL'}}</td>
+                  <td class="text-right">{{totalCredito | currency:'BRL'}}</td>
+                  <td class="text-right text-nowrap">{{saldo(totalDebito - totalCredito)}}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="previa.linhas.length && visao === 'linhas'">
+          <div class="custom-control custom-checkbox mb-2">
+            <input type="checkbox" class="custom-control-input" id="so-problemas" [(ngModel)]="soProblemas" (change)="pagina = 1">
+            <label class="custom-control-label" for="so-problemas">Mostrar só linhas com erro ou aviso</label>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>Linha</th><th>Filial</th><th>Data</th><th>Débito</th><th>Crédito</th>
+                  <th class="text-right">Valor</th><th>Histórico</th><th>Grupo / Centro</th><th>Referência</th>
+                  <th style="min-width: 280px;">Situação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let l of linhasVisiveis | paginate: { id: 'linhas-importacao', itemsPerPage: 50, currentPage: pagina }">
+                  <td>{{l.linha}}</td>
+                  <td>{{l.filial}}</td>
+                  <td>{{l.data | date:'dd/MM/yyyy':'UTC'}}</td>
+                  <td>{{l.contaDebito}}<div *ngIf="l.nomeContaDebito"><small class="text-muted">{{l.nomeContaDebito}}</small></div></td>
+                  <td>{{l.contaCredito}}<div *ngIf="l.nomeContaCredito"><small class="text-muted">{{l.nomeContaCredito}}</small></div></td>
+                  <td class="text-right">{{l.valor | currency:'BRL'}}</td>
+                  <td>{{l.historico}}</td>
+                  <td>{{l.grupoEconomico}}<span *ngIf="l.centroCusto"> / {{l.centroCusto}}</span></td>
+                  <td>{{l.referencia}}</td>
+                  <td>
+                    <div *ngIf="gerados.get(l.linha) as g" class="mb-1">
+                      <ng-container *ngIf="g.numero; else geradoSemNumero">
+                        <span class="badge badge-success">Gerado: nº {{g.numero}}</span>
+                        <small class="text-muted ml-1">transação {{g.transacao}}</small>
+                      </ng-container>
+                      <ng-template #geradoSemNumero>
+                        <span class="badge badge-success">Gerado: transação {{g.transacao}}</span>
+                      </ng-template>
+                    </div>
+                    <span *ngIf="!gerados.get(l.linha) && !l.erros.length && !l.avisos.length" class="badge badge-success">OK</span>
+                    <span *ngIf="l.lancamentoIgual" class="badge badge-warning" [title]="'Transação ' + l.lancamentoIgual">
+                      já no SAP: {{l.numeroLancamentoIgual ? 'nº ' + l.numeroLancamentoIgual : 'transação ' + l.lancamentoIgual}}
+                    </span>
+                    <div *ngFor="let e of l.erros" class="text-danger"><i class="fas fa-times-circle"></i> {{e}}</div>
+                    <div *ngFor="let a of l.avisos" class="text-dark"><i class="fas fa-exclamation-triangle text-warning"></i> {{a}}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pagination-controls id="linhas-importacao" previousLabel="Anterior" nextLabel="Próxima"
+            [autoHide]="true" (pageChange)="pagina = $event">
+          </pagination-controls>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="aba === 'historico'">
+      <p class="text-muted">Últimas importações feitas por esta tela.</p>
+      <p *ngIf="carregandoHistorico"><i class="fas fa-sync-alt fa-spin"></i> Carregando...</p>
+      <div *ngIf="!carregandoHistorico && erroHistorico" class="alert alert-danger" role="alert">
+        {{erroHistorico}}
+        <button type="button" class="btn btn-sm btn-outline-light ml-2" (click)="abrirHistorico()">Tentar de novo</button>
+      </div>
+      <p *ngIf="!carregandoHistorico && !erroHistorico && !historico.length">Nenhuma importação registrada.</p>
+      <div *ngIf="!carregandoHistorico && historico.length" class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Data</th><th>Usuário</th><th>Arquivo</th><th class="text-right">Linhas</th>
+              <th class="text-right">Total</th><th>Lançamentos gerados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let h of historico">
+              <tr>
+                <td class="text-nowrap">{{h.data | date:'dd/MM/yyyy':'UTC'}} {{h.hora}}</td>
+                <td>{{h.usuario}}</td>
+                <td>{{h.arquivo}} <span *ngIf="h.forcado" class="badge badge-warning">reimportação</span></td>
+                <td class="text-right">{{h.linhas}}</td>
+                <td class="text-right">{{h.total | currency:'BRL'}}</td>
+                <td>
+                  <ng-container *ngIf="h.lancamentos.length; else semNumeros">
+                    {{faixaGerada(h)}} <span class="text-muted">({{h.lancamentos.length}})</span>
+                    <button type="button" class="btn btn-link btn-sm py-0" [attr.aria-expanded]="historicoAberto === h.id"
+                      [attr.aria-controls]="'detalhe-' + h.id"
+                      [attr.aria-label]="(historicoAberto === h.id ? 'Ocultar' : 'Ver') + ' os lançamentos de ' + (h.arquivo || 'arquivo') + ' importado em ' + (h.data | date:'dd/MM/yyyy':'UTC') + ' ' + (h.hora || '')"
+                      (click)="alternarDetalhe(h)">
+                      <i class="fas" [ngClass]="historicoAberto === h.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                      {{historicoAberto === h.id ? 'Ocultar' : 'Ver por linha'}}
+                    </button>
+                  </ng-container>
+                  <ng-template #semNumeros>
+                    <span class="text-muted" title="A importação entrou, mas os números não foram gravados no histórico. Procure no SAP pela data e pelo histórico.">não registrados</span>
+                  </ng-template>
+                </td>
+              </tr>
+              <tr *ngIf="historicoAberto === h.id" [id]="'detalhe-' + h.id">
+                <td colspan="6" class="bg-light">
+                  <table class="table table-sm table-borderless mb-0" style="max-width: 520px;">
+                    <thead><tr><th>Linha do arquivo</th><th>Nº do lançamento</th><th>Transação</th></tr></thead>
+                    <tbody>
+                      <tr *ngFor="let l of h.lancamentos">
+                        <td>{{l.linha || '—'}}</td>
+                        <td>{{l.numero || '—'}}</td>
+                        <td>{{l.transacao}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</div>
