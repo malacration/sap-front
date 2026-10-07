@@ -44,6 +44,7 @@ export interface RelatorioResumo {
   id: number;
   nome: string;
   descricao?: string | null;
+  pasta?: string | null;
   formatos: FormatoRelatorio[];
   versaoPublicada: number;
   atualizadoEm?: string;
@@ -92,6 +93,7 @@ export interface RelatorioAdmin {
   id: number;
   nome: string;
   descricao?: string | null;
+  pasta?: string | null;
   status: StatusRelatorio;
   ultimaVersao: number;
   versaoPublicada?: number | null;
