@@ -109,6 +109,7 @@ import { DescontoComponent } from './sap/components/document/desconto/desconto.c
 import { GerarPixComponent } from './shared/components/gerar-pix/gerar-pix.component';
 import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { ImportacaoLancamentoComponent } from './sap/components/importacao-lancamento/importacao-lancamento.component';
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { APP_CONFIG } from '../environments/environment';
@@ -210,6 +211,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     GerarPixComponent,
     PixLinkComponent,
     PixPageComponent,
+    ImportacaoLancamentoComponent,
     OfflineStatusComponent,
     OfflineHistoryComponent,
   ],

@@ -40,6 +40,7 @@ import { PainelVendasV2Component } from './modulos/painel-vendas/componentes/pai
 import { TicketFreteComponent } from './modulos/relatorio-frete/componentes/ticket-frete/ticket-frete.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { ImportacaoLancamentoComponent } from './sap/components/importacao-lancamento/importacao-lancamento.component';
 import { SapLinkButtonDemoComponent } from './shared/components/sap-link-button/sap-link-button-demo.component';
 import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
@@ -246,7 +247,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Financeiro',
     path: 'financeiro',
-    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
+    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "role:contabil_importacao"],
     canActivate: [authGuard],
     children: [
       {
@@ -283,6 +284,13 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
+      },
+      {
+        path: 'importacao-lancamentos',
+        title: 'Importação de Lançamentos',
+        data: ["icon:fas fa-file-import", "role:contabil_importacao"],
+        canActivate: [authGuard, roleGuard],
+        component: ImportacaoLancamentoComponent,
       },
     ]
   },
