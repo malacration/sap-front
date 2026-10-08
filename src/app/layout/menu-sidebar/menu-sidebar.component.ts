@@ -140,6 +140,14 @@ export class MenuSidebarComponent implements OnInit {
      * rota continua visivel pra todo mundo - o filtro e opt-in pra nao mexer no menu existente.
      */
     isRolePermitida(route : Route) : boolean {
+        // "role-not:xxx": visivel para todos MENOS quem tem o papel (ex.: esconder dos usuarios externos).
+        // Vale ate para admin - admin nao deveria ter papel de cliente externo.
+        const excluidas = (route?.data as Array<any> ?? [])
+            .map(it => it.toString())
+            .filter(it => it.startsWith("role-not:"))
+            .map(it => it.replace("role-not:", ""))
+        if(excluidas.some(role => this.authService.hasRole(role)))
+            return false
         const exigidas = (route?.data as Array<any> ?? [])
             .map(it => it.toString())
             .filter(it => it.startsWith("role:"))

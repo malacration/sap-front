@@ -14,6 +14,13 @@
     <code>acesso.regras.fonte=sap</code>.
   </div>
 
+  <div *ngIf="estado.versaoRejeitada" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    A <strong>versão {{ estado.versaoRejeitada }}</strong> do cadastro está inválida e <strong>não foi aplicada</strong>:
+    este backend segue com a versão {{ estado.versaoEmVigor }}. Se ela pretendia revogar um acesso, esse acesso continua aberto.
+    Use <em>Restaurar</em> numa versão válida (aba Histórico), o que grava uma versão nova.
+  </div>
+
   <div *ngIf="conflitoPendente" class="alert alert-danger">
     <i class="fas fa-exclamation-circle"></i>
     Outra pessoa gravou uma versão nova enquanto você editava (agora está na <strong>v{{ estado.versao }}</strong>).
@@ -80,9 +87,12 @@
 
           <div *ngIf="criandoPerfil" class="form-group" style="max-width: 320px;">
             <label>Nome do perfil</label>
-            <input class="form-control" [(ngModel)]="nomeNovoPerfil" placeholder="ex.: conferente" autocomplete="off">
+            <input class="form-control" [(ngModel)]="nomeNovoPerfil" placeholder="ex.: conferente" autocomplete="off" aria-label="Nome do perfil novo">
             <small class="text-muted">
               Minúsculas, números, <code>_</code> ou <code>-</code>. É o mesmo nome da role no Keycloak.
+            </small>
+            <small *ngIf="avisoKeycloakNovoPerfil" class="d-block text-info">
+              <i class="fas fa-key"></i> {{ avisoKeycloakNovoPerfil }}
             </small>
           </div>
 
@@ -99,15 +109,15 @@
               <tbody>
                 <tr *ngFor="let l of linhas; let i = index">
                   <td>
-                    <input class="form-control form-control-sm text-monospace" [(ngModel)]="l.url" autocomplete="off"
+                    <input class="form-control form-control-sm text-monospace" [(ngModel)]="l.url" autocomplete="off" [attr.aria-label]="'URL da regra ' + (i + 1)"
                            placeholder="digite para buscar ou escreva um padrão, ex.: /recurso/*"
                            [typeahead]="sugestoes" typeaheadOptionField="url" container="body"
                            [typeaheadMinLength]="0" [typeaheadOptionsLimit]="40" [typeaheadSelectFirstItem]="false"
                            [typeaheadScrollable]="true" [typeaheadOptionsInScrollableView]="8"
                            [typeaheadItemTemplate]="itemSugestao"
                            (typeaheadOnSelect)="calcularCobertura(l)" (blur)="calcularCobertura(l)">
-                    <small *ngIf="l.cobertura" class="text-muted" [title]="textoCobertura(l)">
-                      cobre {{ l.cobertura.length }} endpoint(s) existente(s)
+                    <small *ngIf="coberturaDe(l) as cob" class="text-muted" [title]="textoCobertura(l)">
+                      cobre {{ cob.length }} endpoint(s) existente(s)
                     </small>
                   </td>
                   <td>
@@ -117,9 +127,9 @@
                       <label class="custom-control-label" [for]="'acao-' + i + '-' + a">{{ a === '*' ? 'todos' : a }}</label>
                     </div>
                   </td>
-                  <td><input class="form-control form-control-sm" [(ngModel)]="l.comentario" placeholder="opcional"></td>
+                  <td><input class="form-control form-control-sm" [(ngModel)]="l.comentario" placeholder="opcional" [attr.aria-label]="'Nota da regra ' + (i + 1)"></td>
                   <td class="text-right">
-                    <button class="btn btn-sm btn-outline-danger" (click)="removerLinha(i)" title="Remover regra">
+                    <button class="btn btn-sm btn-outline-danger" (click)="removerLinha(i)" title="Remover regra" [attr.aria-label]="'Remover a regra ' + (i + 1)">
                       <i class="fas fa-trash"></i>
                     </button>
                   </td>
@@ -130,10 +140,6 @@
               </tbody>
             </table>
           </div>
-          <ng-template #itemSugestao let-model="item">
-            <span class="text-monospace">{{ model.url }}</span>
-            <span *ngFor="let m of model.metodos" class="badge badge-secondary ml-1">{{ m }}</span>
-          </ng-template>
 
           <button class="btn btn-sm btn-outline-primary" (click)="adicionarLinha()"><i class="fas fa-plus"></i> Adicionar regra</button>
         </div>
@@ -180,14 +186,19 @@
       <div class="form-row">
         <div class="form-group col-md-2">
           <label>Método</label>
-          <select class="form-control" [(ngModel)]="teste.metodo" (ngModelChange)="limparResultado()">
+          <select class="form-control" [(ngModel)]="teste.metodo" (ngModelChange)="limparResultado()" aria-label="Método HTTP do teste">
             <option *ngFor="let m of METODOS" [value]="m">{{ m }}</option>
           </select>
         </div>
         <div class="form-group col-md-10">
           <label>Caminho (pode colar a URL do console)</label>
-          <input class="form-control" [(ngModel)]="teste.caminho" (ngModelChange)="limparResultado()" (keyup.enter)="simular()"
-                 placeholder="/sales-person/137" autocomplete="off">
+          <input class="form-control text-monospace" [(ngModel)]="teste.caminho" (ngModelChange)="limparResultado()" aria-label="Caminho a testar"
+                 (keyup.enter)="simular()" placeholder="digite para buscar um endpoint, ex.: /sales-person/137" autocomplete="off"
+                 [typeahead]="sugestoes" typeaheadOptionField="url" container="body"
+                 [typeaheadMinLength]="0" [typeaheadOptionsLimit]="40" [typeaheadSelectFirstItem]="false"
+                 [typeaheadScrollable]="true" [typeaheadOptionsInScrollableView]="8"
+                 [typeaheadItemTemplate]="itemSugestao" (typeaheadOnSelect)="limparResultado()">
+          <small class="text-muted">As sugestões trazem o asterisco (<code>*</code>) no lugar de números e códigos: troque pelo valor real, ex.: <code>/sales-person/137</code>.</small>
         </div>
       </div>
 
@@ -204,15 +215,16 @@
         <div class="alert" [ngClass]="resultado.autorizado ? 'alert-success' : 'alert-danger'">
           <strong><i class="fas" [ngClass]="resultado.autorizado ? 'fa-check-circle' : 'fa-ban'"></i>
             {{ resultado.autorizado ? 'Autorizado' : 'Negado (403)' }}</strong>
-          <span class="ml-2"><code>{{ resultadoMetodo | uppercase }} {{ resultado.caminho }}</code></span>
+          <span class="ml-2"><code class="text-white font-weight-bold">{{ resultadoMetodo | uppercase }} {{ resultado.caminho }}</code></span>
           <div *ngIf="resultado.regra" class="mt-1">
             Liberado pelo perfil <strong>{{ resultado.regra.perfil }}</strong> na regra
-            <code>{{ resultado.regra.url }}</code> [{{ resultado.regra.actions.join(', ') }}]
+            <code class="text-white font-weight-bold">{{ resultado.regra.url }}</code> [{{ resultado.regra.actions.join(', ') }}]
           </div>
           <div *ngIf="!resultado.autorizado" class="mt-1">
             Nenhuma regra dos perfis escolhidos libera esse método nesse caminho.
           </div>
         </div>
+        <p class="small text-muted mb-2">{{ rodapeDoResultado }}</p>
         <div *ngIf="resultado.perfisSemRegras.length" class="alert alert-warning">
           Sem regras cadastradas: <strong>{{ resultado.perfisSemRegras.join(', ') }}</strong>
         </div>
@@ -284,13 +296,13 @@
           </p>
 
           <div class="form-group">
-            <textarea class="form-control text-monospace" rows="12" [(ngModel)]="yaml" (ngModelChange)="invalidarPrevia()"
+            <textarea class="form-control text-monospace" rows="12" [(ngModel)]="yaml" (ngModelChange)="invalidarPrevia()" aria-label="Conteúdo do YAML a importar"
                       placeholder="roles:&#10;  cobranca:&#10;    - url: &quot;/sales-person/*&quot;&#10;      actions: [&quot;get&quot;]"></textarea>
           </div>
 
           <div class="form-row align-items-center mb-2">
             <div class="col-auto">
-              <input type="file" accept=".yml,.yaml,text/yaml,text/plain" (change)="lerArquivo($event)">
+              <input type="file" accept=".yml,.yaml,text/yaml,text/plain" (change)="lerArquivo($event)" aria-label="Escolher arquivo YAML">
             </div>
             <div class="col-auto">
               <button class="btn btn-sm btn-outline-secondary" (click)="carregarArquivoDoServidor()"
@@ -353,6 +365,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Sugestão de endpoint (URL das regras e caminho do teste): fica aqui, fora das abas, para as duas enxergarem -->
+  <ng-template #itemSugestao let-model="item">
+    <span class="text-monospace">{{ model.url }}</span>
+    <span *ngFor="let m of model.metodos" class="badge badge-secondary ml-1">{{ m }}</span>
+  </ng-template>
 
   <!-- Lista de mudanças de um diff (histórico e prévia de importação) -->
   <ng-template #diffTpl let-diff>

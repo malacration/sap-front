@@ -36,6 +36,14 @@ export interface EstadoRegras {
   versaoEmVigor?: number | null;
   perfisProtegidos: string[];
   arquivoLocal: string;
+  /** O Keycloak está em uso (as roles vêm de lá). */
+  keycloakLigado?: boolean;
+  /** Perfil novo vira role no Keycloak sozinho. Sem isso, a role é criada lá à mão. */
+  keycloakCriaRoles?: boolean;
+  /** Versão do SAP que este backend recusou aplicar (ilegível/inválida); ele segue com a anterior. */
+  versaoRejeitada?: number | null;
+  /** Avisos da operação que acabou de ser feita (ex.: a role não pôde ser criada no Keycloak). */
+  avisos?: string[];
 }
 
 export interface MudancaRegra {
@@ -67,6 +75,8 @@ export interface PreviaImportacao {
   documento: DocumentoRegras;
   /** Há algo a gravar (mudança de acesso, ou só de notas/ordem, que não aparece no diff). */
   temMudanca: boolean;
+  /** Avisos sobre as roles no Keycloak dos perfis novos (só ao gravar). */
+  avisosKeycloak?: string[];
 }
 
 export interface ResultadoSimulacao {
@@ -74,6 +84,10 @@ export interface ResultadoSimulacao {
   regra?: { perfil: string; url: string; actions: string[] } | null;
   perfisSemRegras: string[];
   caminho: string;
+  /** Versão do cadastro simulada; ausente quando o teste usou um rascunho. */
+  versaoSimulada?: number | null;
+  /** Essa versão já é a que o filtro aplica neste backend? (falso com fonte=arquivo ou antes do refresh). */
+  valendo?: boolean | null;
 }
 
 export interface EndpointConhecido {

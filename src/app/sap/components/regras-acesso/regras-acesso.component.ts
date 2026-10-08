@@ -72,6 +72,7 @@ export class RegrasAcessoComponent implements OnInit {
   versoes: VersaoResumo[] = [];
   versaoAberta?: VersaoCompleta;
   private historicoDesatualizado = true;
+  private seqHistorico = 0;
 
   // ---- importar / exportar
   yaml = '';
@@ -132,6 +133,8 @@ export class RegrasAcessoComponent implements OnInit {
       next: e => {
         this.aplicarEstado(e, true);
         this.carregando = false;
+        // Versão mais recente ilegível etc.: situação anormal, a pessoa precisa saber já ao abrir a tela.
+        this.mostrarAvisos(e.avisos);
       },
       error: () => { this.carregando = false; },
     });
@@ -142,14 +145,17 @@ export class RegrasAcessoComponent implements OnInit {
       // Recarga tardia (depois de importar, ou de um 409): não pisa em quem já está editando.
       this.estado = e;
       this.historicoDesatualizado = true;
+      this.seqHistorico++;
       this.versaoAberta = undefined;
       this.conflitoPendente = true;
+      if (this.aba === 'historico') { this.carregarHistorico(); }
       return;
     }
     this.estado = e;
     this.conflitoPendente = false;
     this.limparResultado();
     this.historicoDesatualizado = true;
+    this.seqHistorico++;
     this.versaoAberta = undefined;
     if (this.criandoPerfil) { return; }
     const existe = this.perfilSelecionado && e.documento.perfis[this.perfilSelecionado];
@@ -262,11 +268,18 @@ export class RegrasAcessoComponent implements OnInit {
     if (linha.coberturaDe === url) { return; }
     this.service.cobertura(url).subscribe({
       next: lista => {
+        // A linha pode ter mudado de URL enquanto a consulta voltava: só vale para a URL consultada.
+        if (linha.url.trim() !== url) { return; }
         linha.cobertura = lista;
         linha.coberturaDe = url;
       },
-      error: () => { linha.cobertura = undefined; },
+      error: () => { if (linha.url.trim() === url) { linha.cobertura = undefined; } },
     });
+  }
+
+  /** A cobertura só vale para a URL para a qual foi calculada: digitou outra, a contagem antiga some até a nova chegar. */
+  coberturaDe(linha: LinhaRegra): EndpointConhecido[] | undefined {
+    return linha.coberturaDe === linha.url.trim() ? linha.cobertura : undefined;
   }
 
   textoCobertura(linha: LinhaRegra): string {
@@ -303,9 +316,9 @@ export class RegrasAcessoComponent implements OnInit {
         (existe ? 'ela fez neste perfil' : 'está no servidor (este perfil não existe mais e será recriado)') + '. Continuar?');
       if (!seguir.isConfirmed) { return; }
     }
-    const motivo = await this.alert.confirmWithInput(
-      'Descreva o motivo desta alteração (fica no histórico):', 'text',
-      { inputPlaceholder: 'ex.: a cobrança precisa ver o nome do vendedor' });
+    const motivo = await this.pedirMotivo(
+      'Quer registrar o motivo desta alteração? (opcional, fica no histórico)',
+      'ex.: a cobrança precisa ver o nome do vendedor');
     if (!motivo.isConfirmed) { return; }
 
     await this.executar(
@@ -319,9 +332,9 @@ export class RegrasAcessoComponent implements OnInit {
   async excluirPerfil(): Promise<void> {
     const perfil = this.perfilSelecionado;
     if (!this.estado || !perfil || this.criandoPerfil || this.protegido(perfil)) { return; }
-    const motivo = await this.alert.confirmWithInput(
+    const motivo = await this.pedirMotivo(
       `Excluir o perfil "${perfil}"? Quem tiver só esse perfil passa a receber 403 (o menu continua mostrando as ` +
-      `telas, porque ele lê os perfis do token). Informe o motivo:`, 'text');
+      `telas, porque ele lê os perfis do token). Motivo (opcional):`);
     if (!motivo.isConfirmed) { return; }
 
     await this.executar(
@@ -358,6 +371,8 @@ export class RegrasAcessoComponent implements OnInit {
 
   simular(): void {
     const caminho = this.caminhoDigitado();
+    // Um perfil marcado pode ter deixado de existir (renomeado, descartado, excluído): só vale o que ainda está na lista.
+    this.teste.perfis = this.teste.perfis.filter(p => this.perfisParaTeste.includes(p));
     if (!this.teste.perfis.length) {
       this.alert.error('Escolha pelo menos um perfil.');
       return;
@@ -379,6 +394,17 @@ export class RegrasAcessoComponent implements OnInit {
     });
   }
 
+  /** Texto do rodapé do resultado: qual versão do cadastro foi simulada e se ela já está valendo. */
+  get rodapeDoResultado(): string {
+    const r = this.resultado;
+    if (!r) { return ''; }
+    if (r.versaoSimulada == null) { return 'Simulado com o rascunho que está na tela (não salvo).'; }
+    return r.valendo
+      ? `Simulado com a versão ${r.versaoSimulada} do cadastro, que já está valendo neste backend.`
+      : `Simulado com a versão ${r.versaoSimulada} do cadastro, que AINDA NÃO está valendo neste backend ` +
+        `(o filtro usa outra fonte ou outra versão): o acesso real pode ser diferente.`;
+  }
+
   /** Mudou método, caminho ou perfis: o resultado na tela já não responde ao que está no formulário. */
   limparResultado(): void {
     this.seqSimulacao++;
@@ -388,8 +414,11 @@ export class RegrasAcessoComponent implements OnInit {
   // ------------------------------------------------------------------ histórico
 
   carregarHistorico(): void {
+    const seq = ++this.seqHistorico;
     this.service.versoes().subscribe({
       next: v => {
+        // Uma resposta anterior a uma gravação não pode marcar o histórico como atualizado.
+        if (seq !== this.seqHistorico) { return; }
         this.versoes = v;
         this.historicoDesatualizado = false;
       },
@@ -425,16 +454,21 @@ export class RegrasAcessoComponent implements OnInit {
     const entrada = evento.target as HTMLInputElement;
     const arquivo = entrada.files?.[0];
     if (!arquivo) { return; }
+    const antes = this.yaml;
     arquivo.text().then(texto => {
+      entrada.value = '';
+      // Se a pessoa começou a digitar enquanto o arquivo era lido, não pisa no que ela escreveu.
+      if (this.yaml !== antes) { return; }
       this.yaml = texto;
       this.invalidarPrevia();
-      entrada.value = '';
     });
   }
 
   carregarArquivoDoServidor(): void {
+    const antes = this.yaml;
     this.service.arquivo().subscribe({
       next: texto => {
+        if (this.yaml !== antes) { return; }
         this.yaml = texto;
         this.invalidarPrevia();
       },
@@ -462,18 +496,19 @@ export class RegrasAcessoComponent implements OnInit {
     if (!this.previa || !this.podeAplicar) { return; }
     // Aplicar recarrega o cadastro inteiro: um rascunho de perfil em edição seria perdido.
     if (!(await this.podeDescartar())) { return; }
-    const motivo = await this.alert.confirmWithInput(
-      `Aplicar a importação (${this.modo}) como uma versão nova das regras? Informe o motivo:`, 'text');
+    const motivo = await this.pedirMotivo(
+      `Aplicar a importação (${this.modo}) como uma versão nova das regras? Motivo (opcional):`);
     if (!motivo.isConfirmed) { return; }
 
     const versaoBase = this.previa.versaoAtual;
     try {
-      await this.alert.loading(lastValueFrom(
+      const gravada = await this.alert.loading(lastValueFrom(
         this.service.importar(this.yaml, this.modo, false, versaoBase, String(motivo.value))));
       this.yaml = '';
       this.previa = undefined;
       this.descartarRascunho();
       this.carregar();
+      this.mostrarAvisos(gravada.avisosKeycloak);
     } catch (erro) {
       this.aoFalhar(erro);
     }
@@ -507,14 +542,40 @@ export class RegrasAcessoComponent implements OnInit {
    * backend devolveu. O erro já é exibido pelo ErrorInterceptor; num conflito (409) a tela recarrega
    * para mostrar o que a outra pessoa gravou.
    */
+  /**
+   * Pede o motivo da alteração, mas não obriga: o histórico já guarda quem, quando e o resumo do que mudou.
+   * (O confirmWithInput padrão exige texto; o preConfirm abaixo aceita vazio.)
+   */
+  private pedirMotivo(texto: string, placeholder = 'opcional') {
+    return this.alert.confirmWithInput(texto, 'text', {
+      inputPlaceholder: placeholder,
+      preConfirm: (valor: unknown) => String(valor ?? '').trim() as any,
+    });
+  }
+
   private async executar(obs: Observable<EstadoRegras>, aposSalvar: () => void): Promise<void> {
     try {
       const novo = await this.alert.loading(lastValueFrom(obs));
       aposSalvar();
       this.aplicarEstado(novo);
+      this.mostrarAvisos(novo.avisos);
     } catch (erro) {
       this.aoFalhar(erro);
     }
+  }
+
+  /** O que ficou por fazer no Keycloak (a gravação no SAP já deu certo). */
+  private mostrarAvisos(avisos?: string[]): void {
+    // O SweetAlert mostra texto puro e colapsa quebras de linha; marcadores deixam cada aviso distinguivel (sem HTML).
+    if (avisos?.length) { this.alert.info(avisos.map(a => '• ' + a).join('   ')); }
+  }
+
+  /** Texto sob o nome do perfil novo: o que acontece com a role no Keycloak. */
+  get avisoKeycloakNovoPerfil(): string {
+    if (!this.estado?.keycloakLigado) { return ''; }
+    return this.estado.keycloakCriaRoles
+      ? 'Ao salvar, a role com este nome também é criada no Keycloak.'
+      : 'Depois de salvar, crie no Keycloak uma role com este nome exato para poder atribuí-la a usuários.';
   }
 
   private aoFalhar(erro: unknown): void {

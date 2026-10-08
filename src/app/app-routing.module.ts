@@ -354,8 +354,10 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   },
   {
     title: 'Relatórios',
-    canActivate: [authGuard],
-    data: ["icon:fas fa-chart-pie", "role:vendedor", "role:vendedor_admin", "role:logistica", "role:qualidade"],
+    // Todos os papeis internos veem Relatorios; so o usuario externo nao. O que cada um ve DENTRO da tela
+    // continua sendo decidido por relatorio (campo `papeis` do YAML no sap-reports).
+    canActivate: [authGuard, roleGuard],
+    data: ["icon:fas fa-chart-pie", "role-not:business_partner"],
     path: 'relatorios',
     children: [
       {
@@ -370,8 +372,10 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'painel-vendas-v2',
         title: 'Painel de Vendas',
-        data: ["icon:fas fa-chart-area"],
-        canActivate: [authGuard],
+        // O grupo agora abre para todos os papeis: sem restricao aqui o item apareceria para quem o backend
+        // nega (/painel-vendas/** so para vendedor e vendedor_admin), igual ao painel v1 logo acima.
+        data: ["icon:fas fa-chart-area", "role:vendedor", "role:vendedor_admin"],
+        canActivate: [authGuard, roleGuard],
         component: PainelVendasV2Component
       },
       {
