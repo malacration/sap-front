@@ -9,6 +9,9 @@ import { Item } from '../../../model/item';
 import { PedidoTroca } from '../../../model/venda/pedido-troca';
 import { ItemRetirada } from '../../../model/venda/item-retirada';
 import { SelectComponent } from '../../../../shared/components/select/select.component';
+import { CondicaoPagamento, CondicaoPagamentoService } from '../../../service/condicao-pagamento.service';
+import { Observable, forkJoin } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 
 @Component({
   selector: 'app-venda-futura-troca',
@@ -38,9 +41,19 @@ export class TrocaComponent implements OnInit {
   dtEntrega
   itensNovos : Array<Item> = new Array()
 
+  //Condicao de pagamento do contrato aplicada aos produtos novos (ver aplicaCondicaoDoContrato).
+  //pendenciasCondicao bloqueia a confirmacao: produto sem a condicao na tabela dele sairia sem
+  //desconto, e o back recusaria a troca do mesmo jeito.
+  carregandoCondicao = false
+  pendenciasCondicao : Array<string> = []
+  nomeCondicao : string = null
+  private condicaoSeq = 0
+  private prazosPorTabela = new Map<string, Observable<Array<CondicaoPagamento>>>()
+
   constructor(
     private alertService: AlertService,
-    private service : VendaFuturaService){
+    private service : VendaFuturaService,
+    private condicaoPagamentoService : CondicaoPagamentoService){
   }
 
   ngOnInit(): void {
@@ -88,7 +101,15 @@ export class TrocaComponent implements OnInit {
     }
   }
 
+  get podeConfirmar() : boolean {
+    return !this.carregandoCondicao && (this.itensNovos?.length == 0 || this.pendenciasCondicao.length == 0)
+  }
+
   salvarPedido(){
+    if(!this.podeConfirmar){
+      this.alertService.info(this.pendenciasCondicao.join('\n') || 'Aguarde o cálculo do desconto da condição de pagamento.')
+      return
+    }
     this.loadingSalvar = true
     let pedido = new PedidoTroca(
       this.vendaFutura.DocEntry,this.itensRetirados,
@@ -119,6 +140,66 @@ export class TrocaComponent implements OnInit {
 
   changeItensNovos($event){
     this.itensNovos = $event
+    this.aplicaCondicaoDoContrato()
+  }
+
+  /**
+   * Aplica aos produtos novos o desconto/juros da condicao de pagamento do pedido original,
+   * exatamente como a tela de venda faz (DocumentStatementComponent.changeCondicaoPagamento).
+   * O percentual depende da tabela de preco de cada produto, por isso a busca e por tabela.
+   */
+  private aplicaCondicaoDoContrato(){
+    const seq = ++this.condicaoSeq
+    const condicao = this.vendaFutura?.U_condicaoPagamento
+    if(condicao == null){
+      this.carregandoCondicao = false
+      this.pendenciasCondicao = ['O contrato não possui condição de pagamento. Feche e abra a troca novamente para atualizá-lo.']
+      return
+    }
+    const tabelas = [...new Set(this.itensNovos.map(it => String(it.PriceList)))]
+    if(tabelas.length == 0){
+      this.carregandoCondicao = false
+      this.pendenciasCondicao = []
+      return
+    }
+    this.carregandoCondicao = true
+    forkJoin(tabelas.map(tabela => this.prazosDaTabela(tabela).pipe(
+      map(prazos => ({ tabela, prazo : prazos.find(it => String(it.GroupNum) == String(condicao)) }))
+    ))).subscribe({
+      next : resultado => {
+        if(seq != this.condicaoSeq)
+          return
+        const pendencias = []
+        this.itensNovos.forEach(item => {
+          const prazo = resultado.find(it => it.tabela == String(item.PriceList))?.prazo
+          item.GroupNum = prazo?.GroupNum ?? null
+          item.descontoCondicaoPagamento = prazo?.U_desconto ?? 0
+          item.jurosCondicaoPagamento = prazo?.U_juros ?? 0
+          if(prazo)
+            this.nomeCondicao = prazo.PymntGroup
+          else
+            pendencias.push(`${item.ItemDescription}: a condição de pagamento do contrato não está disponível na tabela ${item.ListName || item.PriceList}.`)
+        })
+        this.pendenciasCondicao = pendencias
+        this.carregandoCondicao = false
+      },
+      error : () => {
+        if(seq != this.condicaoSeq)
+          return
+        this.carregandoCondicao = false
+        this.pendenciasCondicao = ['Não foi possível carregar o desconto da condição de pagamento. Remova e adicione o produto novamente.']
+      }
+    })
+  }
+
+  /** Uma busca por tabela: a quantidade dispara recalculo por tecla. Falha nao fica em cache. */
+  private prazosDaTabela(tabela : string) : Observable<Array<CondicaoPagamento>> {
+    if(!this.prazosPorTabela.has(tabela)){
+      const busca = this.condicaoPagamentoService.getByTabela(Number(tabela)).pipe(shareReplay(1))
+      this.prazosPorTabela.set(tabela, busca)
+      busca.subscribe({ error : () => this.prazosPorTabela.delete(tabela) })
+    }
+    return this.prazosPorTabela.get(tabela)
   }
 
   totalBalanco() : number{

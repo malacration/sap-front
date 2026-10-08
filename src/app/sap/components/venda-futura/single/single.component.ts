@@ -347,7 +347,34 @@ export class VendaFuturaSingleComponent implements OnInit {
     this.retiradaModal.openModal();
   }
 
+  /**
+   * Contrato antigo nao guardava a condicao de pagamento do pedido original, e sem ela a troca
+   * nao tem como aplicar o desconto nos produtos novos (o back tambem recusa). Nesse caso o
+   * contrato e atualizado antes de abrir a troca. So muda esse campo, entao basta gravar no
+   * proprio `selected` - a troca recebe o mesmo objeto e le o valor na hora de precificar.
+   */
   openModalTroca(): void {
+    if (this.selected?.U_condicaoPagamento != null) {
+      this.abrirTroca();
+      return;
+    }
+    this.alertService.confirm(
+      'Este contrato foi criado antes de o sistema guardar a condição de pagamento do pedido original. ' +
+      'Para a troca aplicar o desconto correto, o contrato será atualizado agora com a condição do pedido original.'
+    ).then(res => {
+      if (!res.isConfirmed) return;
+      this.alertService.loading(this.vendaFuturaService.sanitizarCondicaoPagamento(this.selected.DocEntry))
+        .then(contrato => {
+          this.selected.U_condicaoPagamento = contrato.U_condicaoPagamento;
+          return this.alertService.info('Contrato atualizado com a condição de pagamento do pedido original.')
+            .then(() => this.abrirTroca());
+        })
+        //a mensagem do back ja aparece pelo ErrorInterceptor
+        .catch(() => {});
+    });
+  }
+
+  private abrirTroca(): void {
     this.trocaModal.classeModal = 'modal-xl';
     this.trocaModal.openModal();
   }
