@@ -101,8 +101,7 @@ import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/libera
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
 import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
-import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
-import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
+import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
 import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
@@ -129,6 +128,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { CobrancaModule } from './modulos/cobranca/cobranca.module';
 import { RelatorioModule } from './modulos/relatorio/relatorio.module';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 
 
 registerLocaleData(localeBr);
@@ -178,8 +178,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListComponent,
     CotacoesStatementComponent,
     PedidosVendaStatementComponent,
-    ManageRolesComponent,
-    AssignRoleComponent,
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
@@ -199,6 +197,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RegraFilialComponent,
     LiberacaoTravaComponent,
     RegrasTravaComponent,
+    RegrasAcessoComponent,
     MeusDadosComponent,
     DocumentosSapComponent,
     RetiradaComponent,
@@ -216,6 +215,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   imports: [
     // Providers do datepicker uma vez so; o campo (app-campo-data) vem do SharedModule.
     BsDatepickerModule.forRoot(),
+    TypeaheadModule.forRoot(),
     NgxPaginationModule,
     CalculadoraModule,
     BrowserModule,
