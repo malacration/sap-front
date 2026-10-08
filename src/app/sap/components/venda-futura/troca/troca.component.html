@@ -81,6 +81,15 @@
                 (changeItens)="changeItensNovos($event)"
                 [branchId]="branchId">
             </card-itens>
+            <small *ngIf="itensNovos?.length > 0 && carregandoCondicao" class="text-muted d-block">
+                <i class="fas fa-sync fa-spin"></i> Aplicando o desconto da condição de pagamento...
+            </small>
+            <small *ngIf="itensNovos?.length > 0 && !carregandoCondicao && nomeCondicao && pendenciasCondicao.length == 0" class="text-muted d-block">
+                Preços com a condição de pagamento do pedido original: <b>{{nomeCondicao}}</b>
+            </small>
+            <div *ngIf="itensNovos?.length > 0 && pendenciasCondicao.length > 0" class="alert alert-danger mt-2 py-2">
+                <div *ngFor="let pendencia of pendenciasCondicao">{{pendencia}}</div>
+            </div>
         </div>
     </div>
 </div>
@@ -109,6 +118,6 @@
 
 <div class="row" *ngIf="itensRetirados?.length > 0 && !loadingSalvar">
     <div class="col">
-        <button (click)="salvarPedido()" class="btn btn-primary">Confirmar troca dos produtos</button>
+        <button (click)="salvarPedido()" class="btn btn-primary" [disabled]="!podeConfirmar">Confirmar troca dos produtos</button>
     </div>
 </div>

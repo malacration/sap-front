@@ -26,6 +26,9 @@ export class VendaFutura {
   U_Localidade: number;
   //Regiao que valia na assinatura - historico, nunca entra em calculo.
   U_RegiaoCode: string;
+  //Condicao de pagamento (GroupNum) do pedido original - define o desconto/juros dos produtos
+  //novos na troca. Nula em contrato antigo: preenchida sob demanda ao abrir a troca.
+  U_condicaoPagamento: number;
   DocEntry: number;
   U_dataCriacao: string;
   DocNum: number;
