@@ -74,6 +74,10 @@
 
 <div class="row">
     <div class="col">
+        <p class="mb-2">
+            Condição de pagamento do contrato: <b>{{ vendaFutura?.condicaoPagamentoLabel }}</b>
+            <small class="text-muted d-block">O desconto/juros dessa condição é aplicado aos novos produtos, conforme a tabela de preço de cada um.</small>
+        </p>
         <div class="form-group">
             <card-itens
                 [geralLoading]="loadingSalvar"

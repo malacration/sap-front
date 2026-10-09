@@ -29,6 +29,17 @@ export class VendaFutura {
   //Condicao de pagamento (GroupNum) do pedido original - define o desconto/juros dos produtos
   //novos na troca. Nula em contrato antigo: preenchida sob demanda ao abrir a troca.
   U_condicaoPagamento: number;
+  //so exibicao, preenchido pelo back no GET do contrato
+  CondicaoPagamentoNome: string;
+
+  /** "76 - VF 3X"; so o codigo se o nome nao veio. */
+  get condicaoPagamentoLabel(): string {
+    if (this.U_condicaoPagamento == null)
+      return 'Não informada (será preenchida ao abrir a troca)';
+    //-1 (a vista) pode nao ter linha no OCTG, entao o nome nao vem da listagem
+    const nome = this.CondicaoPagamentoNome || (this.U_condicaoPagamento == -1 ? 'À vista' : null);
+    return nome ? this.U_condicaoPagamento + ' - ' + nome : String(this.U_condicaoPagamento);
+  }
   DocEntry: number;
   U_dataCriacao: string;
   DocNum: number;

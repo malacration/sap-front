@@ -56,12 +56,11 @@ export class ConfigService {
     }
   }
 
+  /** Mesmo host da API (inclusive o `host` do localStorage), com /ws no final. */
   getWebSocket(){
     if(this.webSocket)
       return this.webSocket
-    else if(this.host)
-      return this.host+"/ws"
-    return "http://localhost:8080/ws"
+    return this.getHost().replace(/\/+$/, '') + "/ws"
   }
 
   getModoOperacao() : string{

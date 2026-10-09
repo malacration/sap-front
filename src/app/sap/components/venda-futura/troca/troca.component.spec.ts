@@ -19,7 +19,7 @@ describe('TrocaComponent - condicao de pagamento do contrato', () => {
   beforeEach(() => {
     buscas = 0;
     const condicoes = {
-      getByTabela: (tabela: number) => {
+      getByTabelaParaContrato: (tabela: number) => {
         buscas++;
         return of(tabela == 3 ? [{ GroupNum: '15', PymntGroup: '30 dias', ListNum: '3', U_desconto: 5, U_juros: 2 }] : []);
       }
