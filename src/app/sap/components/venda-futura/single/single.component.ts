@@ -366,6 +366,7 @@ export class VendaFuturaSingleComponent implements OnInit {
       this.alertService.loading(this.vendaFuturaService.sanitizarCondicaoPagamento(this.selected.DocEntry))
         .then(contrato => {
           this.selected.U_condicaoPagamento = contrato.U_condicaoPagamento;
+          this.selected.CondicaoPagamentoNome = contrato.CondicaoPagamentoNome;
           return this.alertService.info('Contrato atualizado com a condição de pagamento do pedido original.')
             .then(() => this.abrirTroca());
         })

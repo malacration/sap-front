@@ -195,7 +195,7 @@ export class TrocaComponent implements OnInit {
   /** Uma busca por tabela: a quantidade dispara recalculo por tecla. Falha nao fica em cache. */
   private prazosDaTabela(tabela : string) : Observable<Array<CondicaoPagamento>> {
     if(!this.prazosPorTabela.has(tabela)){
-      const busca = this.condicaoPagamentoService.getByTabela(Number(tabela)).pipe(shareReplay(1))
+      const busca = this.condicaoPagamentoService.getByTabelaParaContrato(Number(tabela)).pipe(shareReplay(1))
       this.prazosPorTabela.set(tabela, busca)
       busca.subscribe({ error : () => this.prazosPorTabela.delete(tabela) })
     }

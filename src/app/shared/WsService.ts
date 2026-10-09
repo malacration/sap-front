@@ -3,6 +3,8 @@ import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { Observable } from 'rxjs';
 import { ConfigService } from '../core/services/config.service';
+import { ensureFreshToken } from '../core/keycloak';
+import { AuthService } from './service/auth.service';
 
 export interface ChatEvent {
   type: string;
@@ -21,7 +23,8 @@ export class WsService {
   private connected = false;
 
   constructor(
-    private config : ConfigService
+    private config : ConfigService,
+    private auth : AuthService
   ) {
     this.client = new Client({
       reconnectDelay: 5000,
@@ -29,9 +32,17 @@ export class WsService {
       heartbeatOutgoing: 20000,
       debug: () => undefined
     });
+    // O SockJS nao manda header HTTP: o token vai no frame CONNECT e o back valida no
+    // StompAuthChannelInterceptor. Roda a cada (re)conexao, entao pega o token renovado.
+    this.client.beforeConnect = async () => {
+      const token = await ensureFreshToken();
+      this.client.connectHeaders = token ? { Authorization: token } : {};
+    };
   }
 
+  /** Conecta so com usuario logado: o back recusa CONNECT sem token. */
   connect(url?: string) {
+    if (!this.auth.isLoggedIn()) return;
     if (this.connected || this.client.active) return;
     if (url) {
       this.client.webSocketFactory = () => new SockJS(url);
@@ -47,6 +58,8 @@ export class WsService {
 
     this.client.onWebSocketClose = () => {
       this.connected = false;
+      // sessao acabou (logout/token expirado): para de tentar reconectar a cada 5s
+      if (!this.auth.isLoggedIn()) this.disconnect();
     };
 
     this.client.onStompError = (frame) => {
@@ -125,5 +138,15 @@ export class WsService {
     if (!this.client.active) return;
     this.client.deactivate();
     this.connected = false;
+  }
+
+  /**
+   * Refaz a conexao com o usuario atual. A sessao STOMP fica presa ao usuario do CONNECT, entao
+   * apos login/troca de usuario e preciso reconectar; apos logout so desconecta.
+   */
+  async reconnect(url?: string) {
+    if (this.client.active) await this.client.deactivate();
+    this.connected = false;
+    this.connect(url);
   }
 }
