@@ -9,6 +9,9 @@ import { OfflineContextService } from './offline/offline-context.service';
  * exigidos. Sem "role:" no data -> libera (opt-in). E conveniencia de navegacao;
  * o backend tambem exige o papel (rules.yml + RoleBasedAuthorizationFilter).
  *
+ * "role-not:X" e o inverso: libera todo mundo MENOS quem tem o papel X (ex.: Relatorios
+ * fica aberto a todos os papeis internos, menos o usuario externo `business_partner`).
+ *
  * Usar junto do authGuard: `canActivate: [authGuard, roleGuard]` (authGuard garante
  * login/estado; roleGuard checa papel). Espelha o adminGuard, mas parametrizado
  * pelos papeis declarados na rota.
@@ -32,8 +35,12 @@ export const roleGuard: CanActivateFn = (route, state) => {
     .map(it => (it?.toString() ?? ''))
     .filter(it => it.startsWith('role:'))
     .map(it => it.substring('role:'.length));
+  const excluidas = entries
+    .map(it => (it?.toString() ?? ''))
+    .filter(it => it.startsWith('role-not:'))
+    .map(it => it.substring('role-not:'.length));
 
-  if (exigidas.length === 0) {
+  if (exigidas.length === 0 && excluidas.length === 0) {
     return true;
   }
 
@@ -42,6 +49,13 @@ export const roleGuard: CanActivateFn = (route, state) => {
     for (const r of offline.snapshot.session?.roles ?? []) {
       papeis.add(r);
     }
+  }
+
+  if (excluidas.some(r => papeis.has(r))) {
+    return router.navigate(['/home']);
+  }
+  if (exigidas.length === 0) {
+    return true;
   }
 
   if (papeis.has('admin')) {

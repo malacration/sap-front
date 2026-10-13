@@ -1,0 +1,402 @@
+<div class="container-fluid" *ngIf="estado; else aguardando">
+
+  <h1 class="h3"><i class="fas fa-user-lock"></i> Regras de Acesso</h1>
+  <p class="text-muted">
+    Quais URLs e métodos cada perfil pode chamar (o que antes ficava no <code>rules.yml</code> do servidor).
+    Cada alteração cria uma versão nova, com histórico e como restaurar.
+  </p>
+
+  <div *ngIf="estado.fonteAtiva === 'arquivo'" class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    O que for salvo aqui <strong>ainda não está valendo</strong>: as regras em vigor vêm do arquivo do servidor
+    (<code>{{ estado.arquivoLocal }}</code>). Use as abas <em>Testar acesso</em> e <em>Importar / Exportar</em>
+    para conferir e reconciliar o cadastro; ele passa a valer quando o backend sobe com
+    <code>acesso.regras.fonte=sap</code>.
+  </div>
+
+  <div *ngIf="estado.versaoRejeitada" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    A <strong>versão {{ estado.versaoRejeitada }}</strong> do cadastro está inválida e <strong>não foi aplicada</strong>:
+    este backend segue com a versão {{ estado.versaoEmVigor }}. Se ela pretendia revogar um acesso, esse acesso continua aberto.
+    Use <em>Restaurar</em> numa versão válida (aba Histórico), o que grava uma versão nova.
+  </div>
+
+  <div *ngIf="conflitoPendente" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i>
+    Outra pessoa gravou uma versão nova enquanto você editava (agora está na <strong>v{{ estado.versao }}</strong>).
+    Suas alterações continuam na tela, mas partem de uma versão velha: se salvar de novo, você grava por cima do que
+    ela fez neste perfil. Use <em>Descartar alterações</em> para carregar a versão atual do servidor.
+  </div>
+
+  <p class="small text-muted">
+    Versão <strong>{{ estado.versao }}</strong>
+    <ng-container *ngIf="estado.resumo.usuario">
+      &middot; {{ estado.resumo.usuario }}, {{ estado.resumo.data }} {{ estado.resumo.hora }}
+    </ng-container>
+    <ng-container *ngIf="estado.resumo.comentario"> &middot; “{{ estado.resumo.comentario }}”</ng-container>
+    <ng-container *ngIf="estado.fonteAtiva === 'sap'">
+      &middot; em vigor nesta instância: v{{ estado.versaoEmVigor }} (as outras instâncias aplicam em até 1 minuto)
+    </ng-container>
+  </p>
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="aba === 'perfis'" (click)="selecionarAba('perfis')">
+        Perfis e regras <span *ngIf="sujo" class="badge badge-warning ml-1">não salvo</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="aba === 'testar'" (click)="selecionarAba('testar')">Testar acesso</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="aba === 'historico'" (click)="selecionarAba('historico')">Histórico</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="javascript:void(0)" [class.active]="aba === 'importar'" (click)="selecionarAba('importar')">Importar / Exportar</a>
+    </li>
+  </ul>
+
+  <!-- ============================================================ Perfis e regras -->
+  <div *ngIf="aba === 'perfis'" class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="card-title">Perfis</h3>
+          <button class="btn btn-sm btn-primary ml-auto" (click)="novoPerfil()"><i class="fas fa-plus"></i> Novo</button>
+        </div>
+        <div class="list-group list-group-flush">
+          <a *ngFor="let p of perfis" href="javascript:void(0)"
+             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+             [class.active]="p === perfilSelecionado && !criandoPerfil" (click)="selecionar(p)">
+            <span>
+              <i *ngIf="protegido(p)" class="fas fa-lock mr-1" title="Usado pelo sistema: não pode ser excluído"></i>{{ p }}
+            </span>
+            <span class="badge badge-pill" [ngClass]="p === perfilSelecionado && !criandoPerfil ? 'badge-light' : 'badge-secondary'">{{ contagem(p) }}</span>
+          </a>
+          <div *ngIf="criandoPerfil" class="list-group-item active"><em>novo perfil…</em></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-9">
+      <div class="card card-primary" *ngIf="criandoPerfil || perfilSelecionado; else nenhumPerfil">
+        <div class="card-header">
+          <h3 class="card-title">{{ criandoPerfil ? 'Novo perfil' : perfilSelecionado }}</h3>
+        </div>
+        <div class="card-body">
+
+          <div *ngIf="criandoPerfil" class="form-group" style="max-width: 320px;">
+            <label>Nome do perfil</label>
+            <input class="form-control" [(ngModel)]="nomeNovoPerfil" placeholder="ex.: conferente" autocomplete="off" aria-label="Nome do perfil novo">
+            <small class="text-muted">
+              Minúsculas, números, <code>_</code> ou <code>-</code>. É o mesmo nome da role no Keycloak.
+            </small>
+            <small *ngIf="avisoKeycloakNovoPerfil" class="d-block text-info">
+              <i class="fas fa-key"></i> {{ avisoKeycloakNovoPerfil }}
+            </small>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th style="min-width: 260px;">URL</th>
+                  <th>Métodos</th>
+                  <th style="min-width: 200px;">Nota</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let l of linhas; let i = index">
+                  <td>
+                    <input class="form-control form-control-sm text-monospace" [(ngModel)]="l.url" autocomplete="off" [attr.aria-label]="'URL da regra ' + (i + 1)"
+                           placeholder="digite para buscar ou escreva um padrão, ex.: /recurso/*"
+                           [typeahead]="sugestoes" typeaheadOptionField="url" container="body"
+                           [typeaheadMinLength]="0" [typeaheadOptionsLimit]="40" [typeaheadSelectFirstItem]="false"
+                           [typeaheadScrollable]="true" [typeaheadOptionsInScrollableView]="8"
+                           [typeaheadItemTemplate]="itemSugestao"
+                           (typeaheadOnSelect)="calcularCobertura(l)" (blur)="calcularCobertura(l)">
+                    <small *ngIf="coberturaDe(l) as cob" class="text-muted" [title]="textoCobertura(l)">
+                      cobre {{ cob.length }} endpoint(s) existente(s)
+                    </small>
+                  </td>
+                  <td>
+                    <div class="custom-control custom-checkbox custom-control-inline" *ngFor="let a of ACOES">
+                      <input type="checkbox" class="custom-control-input" [id]="'acao-' + i + '-' + a"
+                             [checked]="temAcao(l, a)" (change)="alternarAcao(l, a)">
+                      <label class="custom-control-label" [for]="'acao-' + i + '-' + a">{{ a === '*' ? 'todos' : a }}</label>
+                    </div>
+                  </td>
+                  <td><input class="form-control form-control-sm" [(ngModel)]="l.comentario" placeholder="opcional" [attr.aria-label]="'Nota da regra ' + (i + 1)"></td>
+                  <td class="text-right">
+                    <button class="btn btn-sm btn-outline-danger" (click)="removerLinha(i)" title="Remover regra" [attr.aria-label]="'Remover a regra ' + (i + 1)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="!linhas.length">
+                  <td colspan="4" class="text-center text-muted">Nenhuma regra. Um perfil precisa de pelo menos uma.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <button class="btn btn-sm btn-outline-primary" (click)="adicionarLinha()"><i class="fas fa-plus"></i> Adicionar regra</button>
+        </div>
+
+        <div class="card-footer d-flex">
+          <button class="btn btn-primary" (click)="salvarPerfil()" [disabled]="!sujo">
+            <i class="fas fa-save"></i> Salvar
+          </button>
+          <button class="btn btn-default ml-2" (click)="descartar()" [disabled]="!sujo && !conflitoPendente">Descartar alterações</button>
+          <button *ngIf="!criandoPerfil && perfilSelecionado && !protegido(perfilSelecionado)"
+                  class="btn btn-outline-danger ml-auto" (click)="excluirPerfil()">
+            <i class="fas fa-trash"></i> Excluir perfil
+          </button>
+          <span *ngIf="!criandoPerfil && perfilSelecionado && protegido(perfilSelecionado)" class="ml-auto text-muted small align-self-center">
+            <i class="fas fa-lock"></i> perfil usado pelo sistema: as regras podem ser editadas, mas ele não pode ser excluído
+          </span>
+        </div>
+      </div>
+      <ng-template #nenhumPerfil>
+        <p class="text-muted">Escolha um perfil ao lado ou crie um novo.</p>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- ============================================================ Testar acesso -->
+  <div *ngIf="aba === 'testar'" class="card card-primary" style="max-width: 900px;">
+    <div class="card-header"><h3 class="card-title">Este perfil pode chamar isto?</h3></div>
+    <div class="card-body">
+      <p class="text-muted">
+        Usa exatamente o mesmo casamento do filtro de autorização. Marque todos os perfis do usuário: basta um deles liberar.
+      </p>
+
+      <div class="form-group">
+        <label>Perfis do usuário</label>
+        <div>
+          <div class="custom-control custom-checkbox custom-control-inline" *ngFor="let p of perfisParaTeste">
+            <input type="checkbox" class="custom-control-input" [id]="'teste-' + p"
+                   [checked]="teste.perfis.includes(p)" (change)="alternarPerfilNoTeste(p)">
+            <label class="custom-control-label" [for]="'teste-' + p">{{ p }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-2">
+          <label>Método</label>
+          <select class="form-control" [(ngModel)]="teste.metodo" (ngModelChange)="limparResultado()" aria-label="Método HTTP do teste">
+            <option *ngFor="let m of METODOS" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-10">
+          <label>Caminho (pode colar a URL do console)</label>
+          <input class="form-control text-monospace" [(ngModel)]="teste.caminho" (ngModelChange)="limparResultado()" aria-label="Caminho a testar"
+                 (keyup.enter)="simular()" placeholder="digite para buscar um endpoint, ex.: /sales-person/137" autocomplete="off"
+                 [typeahead]="sugestoes" typeaheadOptionField="url" container="body"
+                 [typeaheadMinLength]="0" [typeaheadOptionsLimit]="40" [typeaheadSelectFirstItem]="false"
+                 [typeaheadScrollable]="true" [typeaheadOptionsInScrollableView]="8"
+                 [typeaheadItemTemplate]="itemSugestao" (typeaheadOnSelect)="limparResultado()">
+          <small class="text-muted">As sugestões trazem o asterisco (<code>*</code>) no lugar de números e códigos: troque pelo valor real, ex.: <code>/sales-person/137</code>.</small>
+        </div>
+      </div>
+
+      <div class="custom-control custom-checkbox mb-3" *ngIf="sujo">
+        <input type="checkbox" class="custom-control-input" id="usar-rascunho" [(ngModel)]="teste.usarRascunho" (ngModelChange)="limparResultado()">
+        <label class="custom-control-label" for="usar-rascunho">
+          Usar as alterações ainda não salvas do perfil <strong>{{ criandoPerfil ? nomeNovoPerfil : perfilSelecionado }}</strong>
+        </label>
+      </div>
+
+      <button class="btn btn-primary" (click)="simular()"><i class="fas fa-vial"></i> Testar</button>
+
+      <div *ngIf="resultado" class="mt-3">
+        <div class="alert" [ngClass]="resultado.autorizado ? 'alert-success' : 'alert-danger'">
+          <strong><i class="fas" [ngClass]="resultado.autorizado ? 'fa-check-circle' : 'fa-ban'"></i>
+            {{ resultado.autorizado ? 'Autorizado' : 'Negado (403)' }}</strong>
+          <span class="ml-2"><code class="text-white font-weight-bold">{{ resultadoMetodo | uppercase }} {{ resultado.caminho }}</code></span>
+          <div *ngIf="resultado.regra" class="mt-1">
+            Liberado pelo perfil <strong>{{ resultado.regra.perfil }}</strong> na regra
+            <code class="text-white font-weight-bold">{{ resultado.regra.url }}</code> [{{ resultado.regra.actions.join(', ') }}]
+          </div>
+          <div *ngIf="!resultado.autorizado" class="mt-1">
+            Nenhuma regra dos perfis escolhidos libera esse método nesse caminho.
+          </div>
+        </div>
+        <p class="small text-muted mb-2">{{ rodapeDoResultado }}</p>
+        <div *ngIf="resultado.perfisSemRegras.length" class="alert alert-warning">
+          Sem regras cadastradas: <strong>{{ resultado.perfisSemRegras.join(', ') }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ Histórico -->
+  <div *ngIf="aba === 'historico'" class="card">
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th class="text-center">Versão</th>
+            <th>Quando</th>
+            <th>Quem</th>
+            <th>Origem</th>
+            <th>Motivo</th>
+            <th>Mudanças</th>
+            <th class="text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let v of versoes">
+            <tr [class.table-info]="v.versao === estado.versao">
+              <td class="text-center"><strong>{{ v.versao }}</strong>
+                <span *ngIf="v.versao === estado.versao" class="badge badge-success ml-1">atual</span></td>
+              <td>{{ v.data }} {{ v.hora }}</td>
+              <td>{{ v.usuario }}</td>
+              <td><span class="badge" [ngClass]="classeOrigem(v.origem)">{{ v.origem }}</span></td>
+              <td>{{ v.comentario }}</td>
+              <td class="small">{{ v.resumo }}</td>
+              <td class="text-right text-nowrap">
+                <button class="btn btn-sm btn-outline-primary" (click)="verMudancas(v)" title="Ver o que mudou nesta versão">
+                  <i class="fas fa-code-compare"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary ml-1" (click)="baixarVersao(v)" title="Baixar YAML desta versão">
+                  <i class="fas fa-download"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-warning ml-1" (click)="restaurar(v)" [disabled]="v.versao === estado.versao"
+                        title="Restaurar: cria uma versão nova igual a esta">
+                  <i class="fas fa-undo"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="versaoAberta && versaoAberta.resumo.versao === v.versao">
+              <td colspan="7" class="bg-light">
+                <strong>O que a versão {{ v.versao }} mudou em relação à anterior</strong>
+                <ng-container *ngTemplateOutlet="diffTpl; context: { $implicit: versaoAberta.diff }"></ng-container>
+              </td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="!versoes.length">
+            <td colspan="7" class="text-center text-muted">Nenhuma versão.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============================================================ Importar / Exportar -->
+  <div *ngIf="aba === 'importar'" class="row">
+    <div class="col-lg-8">
+      <div class="card card-primary">
+        <div class="card-header"><h3 class="card-title">Importar YAML</h3></div>
+        <div class="card-body">
+          <p class="text-muted">
+            Formato do <code>rules.yml</code>. Nada é gravado antes de você conferir a prévia.
+          </p>
+
+          <div class="form-group">
+            <textarea class="form-control text-monospace" rows="12" [(ngModel)]="yaml" (ngModelChange)="invalidarPrevia()" aria-label="Conteúdo do YAML a importar"
+                      placeholder="roles:&#10;  cobranca:&#10;    - url: &quot;/sales-person/*&quot;&#10;      actions: [&quot;get&quot;]"></textarea>
+          </div>
+
+          <div class="form-row align-items-center mb-2">
+            <div class="col-auto">
+              <input type="file" accept=".yml,.yaml,text/yaml,text/plain" (change)="lerArquivo($event)" aria-label="Escolher arquivo YAML">
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-sm btn-outline-secondary" (click)="carregarArquivoDoServidor()"
+                      title="Coloca no campo o arquivo que o servidor está lendo, para comparar com o cadastro">
+                <i class="fas fa-server"></i> Carregar o arquivo do servidor
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group mb-2">
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" class="custom-control-input" id="modo-mesclar" name="modo" value="mesclar"
+                     [(ngModel)]="modo" (ngModelChange)="invalidarPrevia()">
+              <label class="custom-control-label" for="modo-mesclar">
+                <strong>Mesclar</strong><small class="text-muted ml-2">junta ao cadastro; nunca remove nada</small>
+              </label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" class="custom-control-input" id="modo-substituir" name="modo" value="substituir"
+                     [(ngModel)]="modo" (ngModelChange)="invalidarPrevia()">
+              <label class="custom-control-label" for="modo-substituir">
+                <strong>Substituir</strong><small class="text-muted ml-2">o cadastro passa a ser exatamente este YAML</small>
+              </label>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" (click)="previsualizar()"><i class="fas fa-eye"></i> Pré-visualizar</button>
+          <button class="btn btn-success ml-2" (click)="aplicarImportacao()" [disabled]="!podeAplicar">
+            <i class="fas fa-check"></i> Aplicar importação
+          </button>
+
+          <div *ngIf="previa" class="mt-3">
+            <div *ngIf="previa.erros.length" class="alert alert-danger">
+              <strong>Erros (nada será gravado):</strong>
+              <ul class="mb-0"><li *ngFor="let e of previa.erros">{{ e }}</li></ul>
+            </div>
+            <div *ngIf="previa.avisos.length" class="alert alert-warning">
+              <strong>Avisos:</strong>
+              <ul class="mb-0"><li *ngFor="let a of previa.avisos">{{ a }}</li></ul>
+            </div>
+            <h6>O que muda em relação à versão {{ previa.versaoAtual }}</h6>
+            <ng-container *ngTemplateOutlet="diffTpl; context: { $implicit: previa.diff }"></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Exportar</h3></div>
+        <div class="card-body">
+          <p class="text-muted">YAML no formato do <code>rules.yml</code>; as notas saem como comentários.</p>
+          <button class="btn btn-outline-primary btn-block" (click)="baixarAtual()">
+            <i class="fas fa-download"></i> Cadastro atual (v{{ estado.versao }})
+          </button>
+          <button class="btn btn-outline-secondary btn-block" (click)="baixarArquivoDoServidor()">
+            <i class="fas fa-download"></i> Arquivo que o servidor lê
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sugestão de endpoint (URL das regras e caminho do teste): fica aqui, fora das abas, para as duas enxergarem -->
+  <ng-template #itemSugestao let-model="item">
+    <span class="text-monospace">{{ model.url }}</span>
+    <span *ngFor="let m of model.metodos" class="badge badge-secondary ml-1">{{ m }}</span>
+  </ng-template>
+
+  <!-- Lista de mudanças de um diff (histórico e prévia de importação) -->
+  <ng-template #diffTpl let-diff>
+    <div *ngIf="!diff.length" class="text-muted">Sem mudança de acesso (no máximo notas ou ordem das regras).</div>
+    <div *ngFor="let m of diff" class="mt-2">
+      <strong>{{ m.perfil }}</strong>
+      <span class="badge ml-1"
+            [ngClass]="{ 'badge-success': m.tipo === 'NOVO', 'badge-danger': m.tipo === 'REMOVIDO', 'badge-warning': m.tipo === 'ALTERADO' }">{{ m.tipo }}</span>
+      <ul class="list-unstyled mb-0 ml-3">
+        <li *ngFor="let r of m.adicionadas" class="text-success">
+          <i class="fas fa-plus"></i> <code>{{ r.url }}</code> [{{ r.actions.join(', ') }}]
+        </li>
+        <li *ngFor="let r of m.removidas" class="text-danger">
+          <i class="fas fa-minus"></i> <code>{{ r.url }}</code> [{{ r.actions.join(', ') }}]
+        </li>
+        <li *ngFor="let a of m.alteradas" class="text-warning">
+          <i class="fas fa-pen"></i> <code>{{ a.url }}</code> [{{ a.antes.join(', ') }}] &rarr; [{{ a.depois.join(', ') }}]
+        </li>
+      </ul>
+    </div>
+  </ng-template>
+</div>
+
+<ng-template #aguardando>
+  <div class="container-fluid text-muted">
+    <i class="fas fa-spinner fa-spin"></i> {{ carregando ? 'Carregando as regras…' : 'Não foi possível carregar as regras.' }}
+    <button *ngIf="!carregando" class="btn btn-sm btn-outline-primary ml-2" (click)="carregar()">Tentar de novo</button>
+  </div>
+</ng-template>

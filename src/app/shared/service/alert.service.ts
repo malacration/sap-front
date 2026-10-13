@@ -27,6 +27,26 @@ export class AlertService {
           })
     }
 
+    /**
+     * Três saídas: confirmar (isConfirmed), negar (isDenied) ou cancelar/fechar (aborta tudo). O foco começa no botão de
+     * negar, então apertar Enter sem ler escolhe a opção mais segura.
+     */
+    escolher(text: string, confirmar: string, negar: string, titulo: string = 'Atenção'): Promise<SweetAlertResult> {
+        return Swal.fire({
+            title: titulo,
+            text,
+            icon: 'warning',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: confirmar,
+            denyButtonText: negar,
+            cancelButtonText: 'Cancelar',
+            focusDeny: true,
+            confirmButtonColor: '#dc3545',
+            denyButtonColor: '#6c757d',
+        })
+    }
+
     confirmWithInput(
         text: string = 'Tem certeza? Informe um motivo:',
         input: SweetAlertInput = 'text',
