@@ -119,8 +119,10 @@ export class RegrasAcessoService {
     return this.http.put<EstadoRegras>(this.url + '/perfis/' + encodeURIComponent(perfil), { regras, baseVersao, comentario });
   }
 
-  removerPerfil(perfil: string, baseVersao: number, comentario: string): Observable<EstadoRegras> {
-    const params = new HttpParams().set('baseVersao', baseVersao).set('comentario', comentario);
+  /** `excluirRoleKeycloak`: exclui também a role no Keycloak (tira o perfil de quem a tem). */
+  removerPerfil(perfil: string, baseVersao: number, comentario: string, excluirRoleKeycloak = false): Observable<EstadoRegras> {
+    const params = new HttpParams().set('baseVersao', baseVersao).set('comentario', comentario)
+      .set('excluirRoleKeycloak', excluirRoleKeycloak);
     return this.http.delete<EstadoRegras>(this.url + '/perfis/' + encodeURIComponent(perfil), { params });
   }
 

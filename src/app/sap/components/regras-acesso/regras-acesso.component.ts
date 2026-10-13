@@ -333,12 +333,24 @@ export class RegrasAcessoComponent implements OnInit {
     const perfil = this.perfilSelecionado;
     if (!this.estado || !perfil || this.criandoPerfil || this.protegido(perfil)) { return; }
     const motivo = await this.pedirMotivo(
-      `Excluir o perfil "${perfil}"? Quem tiver só esse perfil passa a receber 403 (o menu continua mostrando as ` +
-      `telas, porque ele lê os perfis do token). Motivo (opcional):`);
+      `Excluir o perfil "${perfil}" do cadastro? Quem tiver só esse perfil passa a receber 403. O menu lê os perfis do ` +
+      `token, então só muda quando o token for renovado. Motivo (opcional):`);
     if (!motivo.isConfirmed) { return; }
 
+    // Com a integração ligada, a role no Keycloak é uma escolha à parte: excluí-la tira o perfil de TODO usuário que a tem.
+    let excluirRole = false;
+    // Só oferece quando o backend vai de fato agir (Keycloak ligado E integração de administração ativa).
+    if (this.estado.keycloakLigado && this.estado.keycloakCriaRoles) {
+      const escolha = await this.alert.escolher(
+        `Excluir também a role "${perfil}" no Keycloak? Quem a tem deixa de ter este perfil quando o token for renovado ` +
+        `(o token atual vale até expirar) e não dá para desfazer pela tela. Só é excluída se estiver marcada como criada por esta tela.`,
+        'Excluir perfil e role', 'Só o perfil', 'Role no Keycloak');
+      if (escolha.isDismissed) { return; }
+      excluirRole = escolha.isConfirmed;
+    }
+
     await this.executar(
-      this.service.removerPerfil(perfil, this.estado.versao, String(motivo.value)),
+      this.service.removerPerfil(perfil, this.estado.versao, String(motivo.value), excluirRole),
       () => { this.perfilSelecionado = null; });
   }
 
