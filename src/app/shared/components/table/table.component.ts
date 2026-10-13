@@ -90,6 +90,15 @@ export class TableComponent implements OnInit {
     return this.getValue(item,definition) instanceof RouteLink
   }
 
+  /**
+   * RouteLink sem path (ex.: produto da calculadora) troca so o query param da tela atual - o
+   * estado esta em memoria, entao abrir em nova aba (app-sap-link-button) perde o contexto.
+   */
+  isLinkNaPagina(item : any, definition : Column) : boolean{
+    const value = this.getValue(item,definition)
+    return value instanceof RouteLink && Array.isArray(value.path) && value.path.length == 0
+  }
+
   isEditable(definition : Column){
     return definition.property.endsWith("Editable")
   }
