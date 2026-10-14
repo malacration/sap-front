@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { NavigationEnd, Route, Router } from '@angular/router';
-import { Observable, Subject, distinctUntilChanged, filter, firstValueFrom, map, timeout } from 'rxjs';
+import { Observable, Subject, distinctUntilChanged, filter, firstValueFrom, interval, map, timeout } from 'rxjs';
 import { MAXIMO_CONSULTAS_POR_CHAMADA, MinhasPermissoesService } from '../sap/service/minhas-permissoes.service';
 import { AuthService } from '../shared/service/auth.service';
 import { OfflineContextService } from './offline/offline-context.service';
@@ -36,6 +36,11 @@ const CHAVE_STORAGE = 'permissoes_api';
 const VALIDADE_MS = 5 * 60 * 1000;
 /** Backend fora do ar: nao tenta de novo a cada navegacao. */
 const ESPERA_APOS_FALHA_MS = 30 * 1000;
+/**
+ * De quanto em quanto tempo confere se a resposta venceu. A conferencia nao chama o backend: so busca quando passou da
+ * validade, senao sai na hora. Sem isto, quem fica parado na mesma tela so veria uma regra nova depois de navegar.
+ */
+const CONFERENCIA_DA_VALIDADE_MS = 60 * 1000;
 /** Requisicao pendurada nao pode segurar as buscas seguintes para sempre. */
 const PRAZO_DA_CHAMADA_MS = 15 * 1000;
 
@@ -93,10 +98,12 @@ export class PermissoesApiService {
     this.offline.state$
       .pipe(map(estado => estado.backendOnline), distinctUntilChanged(), filter(online => online))
       .subscribe(() => this.atualizarSeNecessario());
-    // Cobre o token renovado com outro perfil e a validade de 5 minutos sem timer proprio.
+    // Cobre o token renovado com outro perfil e a validade de 5 minutos ao navegar...
     this.router.events
       .pipe(filter(evento => evento instanceof NavigationEnd))
       .subscribe(() => this.atualizarSeNecessario());
+    // ...e a validade vencendo com o usuario parado na mesma tela.
+    interval(CONFERENCIA_DA_VALIDADE_MS).subscribe(() => this.atualizarSeNecessario());
     this.atualizarSeNecessario();
   }
 

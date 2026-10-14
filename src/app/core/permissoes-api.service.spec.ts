@@ -1,9 +1,15 @@
-import { fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
+import { discardPeriodicTasks, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { NavigationEnd, Routes } from '@angular/router';
 import { BehaviorSubject, NEVER, Observable, Subject, of, throwError } from 'rxjs';
 import { PermissaoConsulta } from '../sap/service/minhas-permissoes.service';
 import { PermissoesApiService } from './permissoes-api.service';
 import { ApiDaRota, lerApi } from './route-flags';
+
+/** fakeAsync que descarta a conferencia periodica da validade, para o teste nao reclamar de timer na fila. */
+const comTempo = (teste: () => void) => fakeAsync(() => {
+  teste();
+  discardPeriodicTasks();
+});
 
 describe('PermissoesApiService', () => {
   const rotas: Routes = [
@@ -190,7 +196,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(carregamento)).toBeUndefined();
   });
 
-  it('troca de usuario com a busca em voo: ja busca a do usuario novo e a resposta antiga nao sobrescreve', fakeAsync(() => {
+  it('troca de usuario com a busca em voo: ja busca a do usuario novo e a resposta antiga nao sobrescreve', comTempo(() => {
     const pendente = new Subject<unknown>();
     responder = () => pendente;
     const service = criar();
@@ -215,7 +221,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(cobranca)).toBeTrue();
   }));
 
-  it('erro na busca do usuario anterior tambem dispara a do usuario novo', fakeAsync(() => {
+  it('erro na busca do usuario anterior tambem dispara a do usuario novo', comTempo(() => {
     const pendente = new Subject<unknown>();
     responder = () => pendente;
     const service = criar();
@@ -230,7 +236,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(cobranca)).toBeTrue();
   }));
 
-  it('o guard do usuario novo espera a busca dele, nao so a do anterior', fakeAsync(() => {
+  it('o guard do usuario novo espera a busca dele, nao so a do anterior', comTempo(() => {
     const doAnterior = new Subject<unknown>();
     const doNovo = new Subject<unknown>();
     responder = () => doAnterior;
@@ -260,7 +266,7 @@ describe('PermissoesApiService', () => {
     tick(4000);
   }));
 
-  it('busca pendurada do usuario anterior nao atrasa a do usuario novo', fakeAsync(() => {
+  it('busca pendurada do usuario anterior nao atrasa a do usuario novo', comTempo(() => {
     responder = () => NEVER;
     const service = criar();
     service.iniciar();
@@ -281,7 +287,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(cobranca)).toBeTrue();
   }));
 
-  it('a busca antiga que termina depois nao fura a espera apos falha da busca nova', fakeAsync(() => {
+  it('a busca antiga que termina depois nao fura a espera apos falha da busca nova', comTempo(() => {
     const doAnterior = new Subject<unknown>();
     responder = () => doAnterior;
     const service = criar();
@@ -313,7 +319,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(cobranca)).toBeTrue();
   }));
 
-  it('u1 -> u2 -> u1: a primeira busca de u1, terminando por ultimo, nao sobrescreve a mais nova', fakeAsync(() => {
+  it('u1 -> u2 -> u1: a primeira busca de u1, terminando por ultimo, nao sobrescreve a mais nova', comTempo(() => {
     const primeiraDeU1 = new Subject<unknown>();
     responder = () => primeiraDeU1;
     const service = criar();
@@ -340,7 +346,7 @@ describe('PermissoesApiService', () => {
     tick(15 * 1000);
   }));
 
-  it('o guard nao espera alem do prazo mesmo encadeando buscas', fakeAsync(() => {
+  it('o guard nao espera alem do prazo mesmo encadeando buscas', comTempo(() => {
     const doAnterior = new Subject<unknown>();
     responder = () => doAnterior;
     const service = criar();
@@ -361,7 +367,7 @@ describe('PermissoesApiService', () => {
     tick(15 * 1000);
   }));
 
-  it('subiu sem backend e ele voltou: busca na volta, sem login nem navegacao', fakeAsync(() => {
+  it('subiu sem backend e ele voltou: busca na volta, sem login nem navegacao', comTempo(() => {
     backendOnline = false;
     estadoOffline.next({ backendOnline: false });
     const service = criar();
@@ -376,7 +382,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(carregamento)).toBeTrue();
   }));
 
-  it('logout descarta a resposta guardada e o proximo login comeca sem ela', fakeAsync(() => {
+  it('logout descarta a resposta guardada e o proximo login comeca sem ela', comTempo(() => {
     const service = criar();
     service.iniciar();
     flushMicrotasks();
@@ -397,7 +403,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(carregamento)).toBeFalse();
   }));
 
-  it('novo login do mesmo usuario dentro dos 5 minutos busca de novo em vez de reusar a resposta', fakeAsync(() => {
+  it('novo login do mesmo usuario dentro dos 5 minutos busca de novo em vez de reusar a resposta', comTempo(() => {
     const service = criar();
     service.iniciar();
     flushMicrotasks();
@@ -410,7 +416,7 @@ describe('PermissoesApiService', () => {
     expect(service.permitido(cobranca)).toBeTrue();
   }));
 
-  it('login enquanto a busca da sessao anterior ainda esta pendente: nao espera por ela', fakeAsync(() => {
+  it('login enquanto a busca da sessao anterior ainda esta pendente: nao espera por ela', comTempo(() => {
     const antiga = new Subject<unknown>();
     responder = () => antiga;
     const service = criar();
@@ -433,7 +439,7 @@ describe('PermissoesApiService', () => {
     expect(chamadas.length).toBe(2);
   }));
 
-  it('login novo pelo redirect do Keycloak (outra sessao, mesmo usuario e perfis) nao reaproveita a resposta guardada', fakeAsync(() => {
+  it('login novo pelo redirect do Keycloak (outra sessao, mesmo usuario e perfis) nao reaproveita a resposta guardada', comTempo(() => {
     const primeiro = criar();
     primeiro.iniciar();
     flushMicrotasks();
@@ -450,7 +456,7 @@ describe('PermissoesApiService', () => {
     expect(depoisDoRedirect.permitido(cobranca)).toBeTrue();
   }));
 
-  it('o F5 na mesma sessao continua usando a resposta guardada', fakeAsync(() => {
+  it('o F5 na mesma sessao continua usando a resposta guardada', comTempo(() => {
     const primeiro = criar();
     primeiro.iniciar();
     flushMicrotasks();
@@ -462,7 +468,25 @@ describe('PermissoesApiService', () => {
     expect(depoisDoF5.permitido(carregamento)).toBeTrue();
   }));
 
-  it('chamada pendurada expira e libera as buscas seguintes', fakeAsync(() => {
+  it('parado na mesma tela, a resposta vencida e buscada de novo sem navegar', comTempo(() => {
+    const service = criar();
+    service.iniciar();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(1);
+    expect(service.permitido(cobranca)).toBeFalse();
+
+    responder = tudoPermitidoMenos([]);
+    tick(4 * 60 * 1000);
+    flushMicrotasks();
+    expect(chamadas.length).toBe(1);
+
+    tick(2 * 60 * 1000);
+    flushMicrotasks();
+    expect(chamadas.length).toBe(2);
+    expect(service.permitido(cobranca)).toBeTrue();
+  }));
+
+  it('chamada pendurada expira e libera as buscas seguintes', comTempo(() => {
     responder = () => NEVER;
     const service = criar();
     service.iniciar();
