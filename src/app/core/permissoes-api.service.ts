@@ -23,6 +23,12 @@ interface Guardado {
 interface Identidade {
   dono: string;
   perfis: string;
+  /**
+   * Sessao do login (claim sid do Keycloak, estavel nas renovacoes do token). Um login novo do mesmo usuario, inclusive
+   * pelo redirect do SSO (a pagina recarrega e nenhum evento de login dispara), tem outra sessao: a resposta
+   * guardada da sessao anterior nao vale. Vazio quando o token nao a traz.
+   */
+  sessao?: string;
 }
 
 const CHAVE_STORAGE = 'permissoes_api';
@@ -246,11 +252,20 @@ export class PermissoesApiService {
     if (!dono) {
       return null;
     }
-    return { dono, perfis: [...new Set(this.auth.getRoles())].sort().join(',') };
+    return { dono, perfis: [...new Set(this.auth.getRoles())].sort().join(','), sessao: this.sessaoDoToken() };
+  }
+
+  private sessaoDoToken(): string {
+    try {
+      const token = this.auth.getDecodeToken();
+      return String(token?.sid ?? token?.session_state ?? '');
+    } catch {
+      return '';
+    }
   }
 
   private mesmaIdentidade(a: Identidade, b: Identidade): boolean {
-    return a.dono === b.dono && a.perfis === b.perfis;
+    return a.dono === b.dono && a.perfis === b.perfis && (a.sessao ?? '') === (b.sessao ?? '');
   }
 
   /**

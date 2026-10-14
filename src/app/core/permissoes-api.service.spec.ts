@@ -28,6 +28,7 @@ describe('PermissoesApiService', () => {
   let flag: boolean;
   let usuario: string;
   let perfis: string[];
+  let sessao: string;
   let backendOnline: boolean;
   let chamadas: { usuario: string; corpo: PermissaoConsulta[] }[];
   let responder: (corpo: PermissaoConsulta[]) => Observable<unknown>;
@@ -45,6 +46,7 @@ describe('PermissoesApiService', () => {
     const config = { isMenuPorPermissao: () => flag };
     const auth = {
       isLoggedIn: () => !!usuario, isCliente: () => false, getRoles: () => perfis, loginChange$: login,
+      getDecodeToken: () => ({ sid: sessao }),
     };
     const offline = {
       get backendOnline() {
@@ -67,6 +69,7 @@ describe('PermissoesApiService', () => {
     flag = true;
     usuario = 'u1';
     perfis = ['logistica'];
+    sessao = 'sessao-1';
     backendOnline = true;
     chamadas = [];
     responder = tudoPermitidoMenos(['get /cobranca/titulos']);
@@ -428,6 +431,35 @@ describe('PermissoesApiService', () => {
     flushMicrotasks();
     expect(service.permitido(cobranca)).toBeTrue();
     expect(chamadas.length).toBe(2);
+  }));
+
+  it('login novo pelo redirect do Keycloak (outra sessao, mesmo usuario e perfis) nao reaproveita a resposta guardada', fakeAsync(() => {
+    const primeiro = criar();
+    primeiro.iniciar();
+    flushMicrotasks();
+    expect(primeiro.permitido(cobranca)).toBeFalse();
+
+    // A pagina recarrega com outro login: nenhum loginChange$ dispara, so o boot le o que ficou no localStorage.
+    sessao = 'sessao-2';
+    responder = tudoPermitidoMenos([]);
+    const depoisDoRedirect = criar();
+    expect(depoisDoRedirect.permitido(cobranca)).toBeUndefined();
+    depoisDoRedirect.iniciar();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(2);
+    expect(depoisDoRedirect.permitido(cobranca)).toBeTrue();
+  }));
+
+  it('o F5 na mesma sessao continua usando a resposta guardada', fakeAsync(() => {
+    const primeiro = criar();
+    primeiro.iniciar();
+    flushMicrotasks();
+
+    const depoisDoF5 = criar();
+    depoisDoF5.iniciar();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(1);
+    expect(depoisDoF5.permitido(carregamento)).toBeTrue();
   }));
 
   it('chamada pendurada expira e libera as buscas seguintes', fakeAsync(() => {
