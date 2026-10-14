@@ -1,6 +1,6 @@
 import { fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { NavigationEnd, Routes } from '@angular/router';
-import { NEVER, Observable, Subject, of, throwError } from 'rxjs';
+import { BehaviorSubject, NEVER, Observable, Subject, of, throwError } from 'rxjs';
 import { PermissaoConsulta } from '../sap/service/minhas-permissoes.service';
 import { PermissoesApiService } from './permissoes-api.service';
 import { ApiDaRota, lerApi } from './route-flags';
@@ -33,6 +33,7 @@ describe('PermissoesApiService', () => {
   let responder: (corpo: PermissaoConsulta[]) => Observable<unknown>;
   let eventos: Subject<unknown>;
   let login: Subject<void>;
+  let estadoOffline: BehaviorSubject<{ backendOnline: boolean }>;
 
   function criar(): PermissoesApiService {
     const minhasPermissoes = {
@@ -50,6 +51,7 @@ describe('PermissoesApiService', () => {
         return backendOnline;
       },
       currentOwnerKey: () => (usuario ? `http://back::${usuario}` : null),
+      state$: estadoOffline.asObservable(),
     };
     const router = { config: rotas, events: eventos };
     return new PermissoesApiService(minhasPermissoes as any, config as any, auth as any, offline as any, router as any);
@@ -70,6 +72,7 @@ describe('PermissoesApiService', () => {
     responder = tudoPermitidoMenos(['get /cobranca/titulos']);
     eventos = new Subject();
     login = new Subject();
+    estadoOffline = new BehaviorSubject({ backendOnline: true });
   });
 
   afterEach(() => localStorage.removeItem('permissoes_api'));
@@ -353,6 +356,78 @@ describe('PermissoesApiService', () => {
     expect(pronto).toBeTrue();
     expect(service.permitido(cobranca)).toBeUndefined();
     tick(15 * 1000);
+  }));
+
+  it('subiu sem backend e ele voltou: busca na volta, sem login nem navegacao', fakeAsync(() => {
+    backendOnline = false;
+    estadoOffline.next({ backendOnline: false });
+    const service = criar();
+    service.iniciar();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(0);
+
+    backendOnline = true;
+    estadoOffline.next({ backendOnline: true });
+    flushMicrotasks();
+    expect(chamadas.length).toBe(1);
+    expect(service.permitido(carregamento)).toBeTrue();
+  }));
+
+  it('logout descarta a resposta guardada e o proximo login comeca sem ela', fakeAsync(() => {
+    const service = criar();
+    service.iniciar();
+    flushMicrotasks();
+    expect(service.permitido(carregamento)).toBeTrue();
+    expect(localStorage.getItem('permissoes_api')).not.toBeNull();
+
+    usuario = '';
+    login.next();
+    flushMicrotasks();
+    expect(localStorage.getItem('permissoes_api')).toBeNull();
+
+    usuario = 'u1';
+    responder = tudoPermitidoMenos(['get /carregamento']);
+    expect(service.permitido(carregamento)).toBeUndefined();
+    login.next();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(2);
+    expect(service.permitido(carregamento)).toBeFalse();
+  }));
+
+  it('novo login do mesmo usuario dentro dos 5 minutos busca de novo em vez de reusar a resposta', fakeAsync(() => {
+    const service = criar();
+    service.iniciar();
+    flushMicrotasks();
+    expect(service.permitido(cobranca)).toBeFalse();
+
+    responder = tudoPermitidoMenos([]);
+    login.next();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(2);
+    expect(service.permitido(cobranca)).toBeTrue();
+  }));
+
+  it('login enquanto a busca da sessao anterior ainda esta pendente: nao espera por ela', fakeAsync(() => {
+    const antiga = new Subject<unknown>();
+    responder = () => antiga;
+    const service = criar();
+    service.iniciar();
+
+    responder = tudoPermitidoMenos([]);
+    login.next();
+    flushMicrotasks();
+    expect(chamadas.length).toBe(2);
+    expect(service.permitido(cobranca)).toBeTrue();
+
+    antiga.next([
+      { metodo: 'get', caminho: '/carregamento', permitido: false },
+      { metodo: 'get', caminho: '/cobranca/titulos', permitido: false },
+      { metodo: 'post', caminho: '/locais/search', permitido: false },
+    ]);
+    antiga.complete();
+    flushMicrotasks();
+    expect(service.permitido(cobranca)).toBeTrue();
+    expect(chamadas.length).toBe(2);
   }));
 
   it('chamada pendurada expira e libera as buscas seguintes', fakeAsync(() => {

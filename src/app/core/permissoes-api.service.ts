@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { NavigationEnd, Route, Router } from '@angular/router';
-import { Observable, Subject, filter, firstValueFrom, timeout } from 'rxjs';
+import { Observable, Subject, distinctUntilChanged, filter, firstValueFrom, map, timeout } from 'rxjs';
 import { MAXIMO_CONSULTAS_POR_CHAMADA, MinhasPermissoesService } from '../sap/service/minhas-permissoes.service';
 import { AuthService } from '../shared/service/auth.service';
 import { OfflineContextService } from './offline/offline-context.service';
@@ -56,6 +56,8 @@ export class PermissoesApiService {
   private vooDe: Identidade | null = null;
   /** Numero da busca mais recente: so ela grava resposta ou falha (uma antiga pode terminar depois, u1 -> u2 -> u1). */
   private geracao = 0;
+  /** Geracao da busca em voo: uma busca de antes do login ou do logout nao segura a do usuario que entrou agora. */
+  private vooGeracao = 0;
   private falhou: { assinatura: string; em: number } | null = null;
   private iniciado = false;
 
@@ -80,7 +82,11 @@ export class PermissoesApiService {
     }
     this.iniciado = true;
     this.guardado = this.lerStorage();
-    this.auth.loginChange$.subscribe(() => this.atualizarSeNecessario());
+    this.auth.loginChange$.subscribe(() => this.aoMudarLogin());
+    // Subiu sem backend e ele voltou sem login nem navegacao: sem isto o menu ficaria no role: ate o proximo evento.
+    this.offline.state$
+      .pipe(map(estado => estado.backendOnline), distinctUntilChanged(), filter(online => online))
+      .subscribe(() => this.atualizarSeNecessario());
     // Cobre o token renovado com outro perfil e a validade de 5 minutos sem timer proprio.
     this.router.events
       .pipe(filter(evento => evento instanceof NavigationEnd))
@@ -150,7 +156,7 @@ export class PermissoesApiService {
     }
     // Ja ha busca para esta identidade: espera ela. Se a busca em voo e de outro usuario (troca de login com ela
     // pendente), a do usuario atual comeca agora; a antiga termina sozinha e e descartada.
-    if (this.emVoo && this.vooDe && this.mesmaIdentidade(this.vooDe, quem)) {
+    if (this.emVoo && this.vooDe && this.mesmaIdentidade(this.vooDe, quem) && this.vooGeracao === this.geracao) {
       return;
     }
     const lista = apis.map(api => api.chave).join('|');
@@ -195,13 +201,36 @@ export class PermissoesApiService {
           this.emVoo = null;
           this.vooDe = null;
         }
-        // Com sucesso ou erro: se ninguem buscou ainda para a identidade nova, busca agora, sem esperar navegacao.
-        if (trocouNoMeio()) {
+        // Com sucesso ou erro: se esta busca ficou para tras (outro usuario, login ou logout no meio) e ninguem buscou
+        // ainda para quem esta agora, busca agora, sem esperar navegacao.
+        if (obsoleta()) {
           this.atualizarSeNecessario();
         }
       });
     this.emVoo = voo;
     this.vooDe = quem;
+    this.vooGeracao = geracao;
+  }
+
+  /**
+   * Login ou logout: a resposta guardada era da sessao anterior. Ao sair ela e descartada (o proximo login, do mesmo
+   * usuario ou de outro, comeca sem ela); ao entrar fica velha e e buscada de novo. O F5 nao passa por aqui e segue
+   * usando a resposta guardada.
+   */
+  private aoMudarLogin(): void {
+    this.geracao++;
+    if (!this.auth.isLoggedIn()) {
+      this.guardado = null;
+      this.falhou = null;
+      this.removerStorage();
+      this.mudou.next();
+      return;
+    }
+    if (this.guardado) {
+      this.guardado = { ...this.guardado, buscadoEm: 0 };
+    }
+    this.falhou = null;
+    this.atualizarSeNecessario();
   }
 
   private esperar(promessa: Promise<void>, ms: number): Promise<void> {
@@ -284,6 +313,14 @@ export class PermissoesApiService {
       return valido ? lido : null;
     } catch {
       return null;
+    }
+  }
+
+  private removerStorage(): void {
+    try {
+      localStorage.removeItem(CHAVE_STORAGE);
+    } catch {
+      // sem storage nao ha o que apagar
     }
   }
 
