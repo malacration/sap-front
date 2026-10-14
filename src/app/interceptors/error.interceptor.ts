@@ -1,11 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptor, HttpHandler, HttpRequest, HttpEvent, HttpErrorResponse, HttpContextToken } from '@angular/common/http';
 import { EMPTY, Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AlertService } from '../shared/service/alert.service';
 import { clearTokens, isKeycloakSession } from '../core/keycloak';
 
+/**
+ * Requisicao de fundo que trata o proprio erro: sem modal e sem ir para o login no 401. Ex.: a consulta de
+ * permissoes do menu, que sem resposta so volta a usar o "role:" das rotas.
+ */
+export const SILENT_ERRORS = new HttpContextToken<boolean>(() => false);
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
@@ -23,7 +28,9 @@ export class ErrorInterceptor implements HttpInterceptor {
 
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    
+    if (req.context.get(SILENT_ERRORS)) {
+      return next.handle(req);
+    }
 
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {

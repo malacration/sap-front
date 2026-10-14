@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Route, Router } from '@angular/router';
 import { Observable, lastValueFrom } from 'rxjs';
+import { apisDaRota } from '../../../core/route-flags';
 import { ConfigService } from '../../../core/services/config.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import {
@@ -20,6 +22,8 @@ type Aba = 'perfis' | 'testar' | 'historico' | 'importar';
 interface SugestaoUrl {
   url: string;
   metodos: string[];
+  /** Telas do menu cuja chamada principal (api: da rota) e esta URL, com o metodo: "Logística › Carregamento (GET)". */
+  telas: string[];
 }
 
 /** Uma linha da tabela de regras do perfil em edição (cópia local, só vai ao backend ao salvar). */
@@ -41,6 +45,7 @@ interface LinhaRegra {
 @Component({
   selector: 'app-regras-acesso',
   templateUrl: './regras-acesso.component.html',
+  styleUrls: ['./regras-acesso.component.scss'],
 })
 export class RegrasAcessoComponent implements OnInit {
 
@@ -71,6 +76,10 @@ export class RegrasAcessoComponent implements OnInit {
   // ---- histórico
   versoes: VersaoResumo[] = [];
   versaoAberta?: VersaoCompleta;
+  /** Versao cujas mudancas estao sendo buscadas (o botao mostra o relogio). */
+  carregandoVersao?: number;
+  /** Versoes ja lidas: o conteudo de uma versao gravada nunca muda. */
+  private readonly versoesLidas = new Map<number, VersaoCompleta>();
   private historicoDesatualizado = true;
   private seqHistorico = 0;
 
@@ -83,6 +92,7 @@ export class RegrasAcessoComponent implements OnInit {
     private service: RegrasAcessoService,
     private alert: AlertService,
     private config: ConfigService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -102,9 +112,44 @@ export class RegrasAcessoComponent implements OnInit {
       metodos.add(e.metodo === '*' ? 'TODOS' : e.metodo.toUpperCase());
       porUrl.set(e.url, metodos);
     }
+    const telas = this.telasPorApi();
+    // A chamada principal de uma tela que nao esta no catalogo do sap-service (ex.: a do sap-reports) tambem entra.
+    for (const chave of telas.keys()) {
+      const espaco = chave.indexOf(' ');
+      const url = chave.substring(espaco + 1);
+      const metodos = porUrl.get(url) ?? new Set<string>();
+      metodos.add(chave.substring(0, espaco).toUpperCase());
+      porUrl.set(url, metodos);
+    }
     return [...porUrl.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([url, metodos]) => ({ url, metodos: [...metodos] }));
+      .map(([url, metodos]) => ({
+        url,
+        metodos: [...metodos],
+        telas: [...metodos].flatMap(m => (telas.get(`${m.toLowerCase()} ${url}`) ?? []).map(t => `${t} (${m})`)),
+      }));
+  }
+
+  /**
+   * "get /carregamento" -> ["Logística › Carregamento"]: as telas cuja chamada principal (marcação api: da rota) e
+   * essa. Liberar essa URL faz a tela aparecer no menu do perfil (com a flag menuPorPermissao).
+   */
+  private telasPorApi(): Map<string, string[]> {
+    const mapa = new Map<string, string[]>();
+    const visitar = (rotas: Route[] | undefined, grupo: string) => {
+      for (const rota of rotas ?? []) {
+        const nome = rota.title ? [grupo, String(rota.title)].filter(Boolean).join(' › ') : grupo;
+        for (const api of apisDaRota(rota)) {
+          const atuais = mapa.get(api.chave) ?? [];
+          if (!atuais.includes(nome)) {
+            mapa.set(api.chave, [...atuais, nome]);
+          }
+        }
+        visitar(rota.children, rota.children?.length ? String(rota.title ?? grupo) : grupo);
+      }
+    };
+    visitar(this.router.config, '');
+    return mapa;
   }
 
   // ------------------------------------------------------------------ estado geral
@@ -146,7 +191,7 @@ export class RegrasAcessoComponent implements OnInit {
       this.estado = e;
       this.historicoDesatualizado = true;
       this.seqHistorico++;
-      this.versaoAberta = undefined;
+      this.fecharVersao();
       this.conflitoPendente = true;
       if (this.aba === 'historico') { this.carregarHistorico(); }
       return;
@@ -156,7 +201,7 @@ export class RegrasAcessoComponent implements OnInit {
     this.limparResultado();
     this.historicoDesatualizado = true;
     this.seqHistorico++;
-    this.versaoAberta = undefined;
+    this.fecharVersao();
     if (this.criandoPerfil) { return; }
     const existe = this.perfilSelecionado && e.documento.perfis[this.perfilSelecionado];
     this.perfilSelecionado = existe ? this.perfilSelecionado : (Object.keys(e.documento.perfis)[0] ?? null);
@@ -439,10 +484,33 @@ export class RegrasAcessoComponent implements OnInit {
 
   verMudancas(v: VersaoResumo): void {
     if (this.versaoAberta?.resumo.versao === v.versao) {
-      this.versaoAberta = undefined;
+      this.fecharVersao();
       return;
     }
-    this.service.versao(v.versao).subscribe({ next: r => this.versaoAberta = r });
+    // Uma versao gravada nunca muda: depois da primeira leitura (duas idas ao SAP no backend) abre na hora.
+    const guardada = this.versoesLidas.get(v.versao);
+    if (guardada) {
+      this.fecharVersao();
+      this.versaoAberta = guardada;
+      return;
+    }
+    this.carregandoVersao = v.versao;
+    const aindaEsperada = () => this.carregandoVersao === v.versao;
+    this.service.versao(v.versao).subscribe({
+      next: r => {
+        this.versoesLidas.set(v.versao, r);
+        if (aindaEsperada()) { this.versaoAberta = r; }
+      },
+      // O erro ja e mostrado pelo interceptor; o botao volta a funcionar para tentar de novo.
+      error: () => { if (aindaEsperada()) { this.carregandoVersao = undefined; } },
+      complete: () => { if (aindaEsperada()) { this.carregandoVersao = undefined; } },
+    });
+  }
+
+  /** Fecha a versao aberta e descarta qualquer leitura de versao que ainda esteja pendente. */
+  private fecharVersao(): void {
+    this.versaoAberta = undefined;
+    this.carregandoVersao = undefined;
   }
 
   async restaurar(v: VersaoResumo): Promise<void> {
@@ -601,7 +669,7 @@ export class RegrasAcessoComponent implements OnInit {
       next: e => {
         this.estado = e;
         this.historicoDesatualizado = true;
-        this.versaoAberta = undefined;
+        this.fecharVersao();
         this.conflitoPendente = true;
       },
     });

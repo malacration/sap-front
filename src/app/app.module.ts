@@ -115,6 +115,7 @@ import { APP_CONFIG } from '../environments/environment';
 import { OfflineStatusComponent } from './core/offline/offline-status/offline-status.component';
 import { OfflineHistoryComponent } from './core/offline/offline-history/offline-history.component';
 import { OfflineContextService } from './core/offline/offline-context.service';
+import { PermissoesApiService } from './core/permissoes-api.service';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
 import { LoadingBarModule } from '@ngx-loading-bar/core';
@@ -253,8 +254,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: (offline: OfflineContextService) => () => offline.initialize(),
-      deps: [OfflineContextService],
+      // As permissoes do menu so disparam a busca (nao seguram o boot); o roleGuard espera a resposta.
+      useFactory: (offline: OfflineContextService, permissoes: PermissoesApiService) =>
+        () => offline.initialize().then(() => permissoes.iniciar()),
+      deps: [OfflineContextService, PermissoesApiService],
       multi: true
     },
     {

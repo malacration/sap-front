@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -11,7 +11,7 @@ import { MenuItem } from '../menu-item.model';
   styleUrls: ['./menu-item.component.scss'],
   animations: [openCloseAnimation, rotateAnimation],
 })
-export class MenuItemComponent implements OnInit, OnDestroy {
+export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   @Input() menuItem!: MenuItem;
   @Input() depth = 0;
 
@@ -35,6 +35,13 @@ export class MenuItemComponent implements OnInit, OnDestroy {
         this.currentUrl = this.normalizeUrl(url);
         this.updateActivationState();
       });
+  }
+
+  /** O menu se refaz sem navegar (resposta das permissoes) e o trackBy reaproveita o componente com o item novo. */
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.menuItem && !changes.menuItem.firstChange) {
+      this.updateActivationState();
+    }
   }
 
   ngOnDestroy(): void {

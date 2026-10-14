@@ -8,6 +8,8 @@ import { Route, Router } from '@angular/router';
 import { MenuItem } from './menu-item.model';
 import { AuthService } from '../../shared/service/auth.service';
 import { OfflineContextService } from '../../core/offline/offline-context.service';
+import { PermissoesApiService } from '../../core/permissoes-api.service';
+import { apisDaRota, flagsDaRota } from '../../core/route-flags';
 
 const BASE_CLASSES = 'main-sidebar elevation-4';
 @Component({
@@ -29,6 +31,7 @@ export class MenuSidebarComponent implements OnInit {
         private router: Router,
         private authService : AuthService,
         private offline: OfflineContextService,
+        private permissoes: PermissoesApiService,
         private ref: ChangeDetectorRef
     ) {}
 
@@ -41,6 +44,10 @@ export class MenuSidebarComponent implements OnInit {
         });
         this.menu = this.createMenu(this.router.config);
         this.authService.loginChange$.subscribe(() => {
+            this.menu = this.createMenu(this.router.config);
+        })
+        // Chegou (ou mudou) a resposta de quais URLs o usuario pode chamar.
+        this.permissoes.changes$.subscribe(() => {
             this.menu = this.createMenu(this.router.config);
         })
         let onlineSalesAvailable = this.offline.onlineSalesAvailable
@@ -81,7 +88,7 @@ export class MenuSidebarComponent implements OnInit {
     createMenu(routes: Route[], parentSegments: string[] = []) : Array<MenuItem> {
         const menu: MenuItem[] = [];
         routes.filter(it =>
-            this.isTemTitulo(it) && !this.isHidden(it) && this.isShowGuard(it) && this.isRolePermitida(it)
+            this.isTemTitulo(it) && !this.isHidden(it) && this.isShowGuard(it) && this.isRotaPermitida(it)
             && this.isOfflineRoutePermitida(it, parentSegments)
             && (
                 (this.modoOperacao == "internal" && this.isRouteInternal(it))
@@ -94,6 +101,13 @@ export class MenuSidebarComponent implements OnInit {
             const item = new MenuItem(route, parentSegments);
             if (route.children) {
                 item.children = this.createMenu(route.children, item.childSegments);
+                // Com a flag, o grupo depende dos filhos: sem nenhum visivel e sem tela propria, nao leva a lugar
+                // nenhum. Desligada, fica como sempre foi.
+                if (this.permissoes.ativo) {
+                    if (item.children.length === 0 && !item.isNavigable)
+                        return;
+                    item.hasChildren = item.children.length > 0;
+                }
             }
             menu.push(item);
         })
@@ -136,27 +150,40 @@ export class MenuSidebarComponent implements OnInit {
     }
 
     /**
+     * Quem ve cada item:
+     *  1. "role-not:xxx" esconde de quem tem o papel, sempre (ate de admin, que nao deveria ter papel de cliente externo).
+     *  2. Com a flag menuPorPermissao, a "api:" da rota decide quando o backend ja respondeu (pode chamar a URL,
+     *     ve a tela). Grupo ignora o proprio "role:" e aparece se algum filho aparecer.
+     *  3. Sem "api:" ou sem resposta: o "role:" de sempre.
+     */
+    isRotaPermitida(route : Route) : boolean {
+        if(flagsDaRota(route, "role-not").some(role => this.authService.hasRole(role)))
+            return false
+        if(this.permissoes.ativo) {
+            const resposta = this.permissoes.permitido(apisDaRota(route))
+            if(resposta !== undefined)
+                return resposta
+            if(route.children?.length)
+                return true
+        }
+        return this.isRolePermitida(route)
+    }
+
+    /**
      * Item marcado com "role:xxx" no data so aparece pra quem tem o papel. Sem a marcacao, a
      * rota continua visivel pra todo mundo - o filtro e opt-in pra nao mexer no menu existente.
      */
     isRolePermitida(route : Route) : boolean {
-        // "role-not:xxx": visivel para todos MENOS quem tem o papel (ex.: esconder dos usuarios externos).
-        // Vale ate para admin - admin nao deveria ter papel de cliente externo.
-        const excluidas = (route?.data as Array<any> ?? [])
-            .map(it => it.toString())
-            .filter(it => it.startsWith("role-not:"))
-            .map(it => it.replace("role-not:", ""))
-        if(excluidas.some(role => this.authService.hasRole(role)))
-            return false
-        const exigidas = (route?.data as Array<any> ?? [])
-            .map(it => it.toString())
-            .filter(it => it.startsWith("role:"))
-            .map(it => it.replace("role:", ""))
+        const exigidas = flagsDaRota(route, "role")
         if(exigidas.length === 0)
             return true
         if(this.authService.hasRole("admin"))
             return true
         return exigidas.some(role => this.authService.hasRole(role))
+    }
+
+    trackByUrl(_: number, item: MenuItem): string {
+        return item.url
     }
 
     isHidden(it){
