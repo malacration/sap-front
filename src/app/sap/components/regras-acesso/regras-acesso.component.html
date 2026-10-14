@@ -1,10 +1,22 @@
 <div class="container-fluid" *ngIf="estado; else aguardando">
 
-  <h1 class="h3"><i class="fas fa-user-lock"></i> Regras de Acesso</h1>
-  <p class="text-muted">
-    Quais URLs e métodos cada perfil pode chamar (o que antes ficava no <code>rules.yml</code> do servidor).
-    Cada alteração cria uma versão nova, com histórico e como restaurar.
-  </p>
+  <div class="cabecalho">
+    <h1 class="h3"><i class="fas fa-user-lock"></i> Regras de Acesso</h1>
+    <div class="versao">
+      <span class="selo">Versão <strong>{{ estado.versao }}</strong></span>
+      <ng-container *ngIf="estado.resumo.usuario">
+        <span>{{ estado.resumo.usuario }}, {{ estado.resumo.data }} {{ estado.resumo.hora }}</span>
+      </ng-container>
+      <span *ngIf="estado.resumo.comentario">“{{ estado.resumo.comentario }}”</span>
+      <span *ngIf="estado.fonteAtiva === 'sap'" class="selo" title="As outras instâncias do backend aplicam a versão em até 1 minuto">
+        em vigor nesta instância: v{{ estado.versaoEmVigor }}
+      </span>
+    </div>
+    <p class="descricao text-muted">
+      Quais URLs e métodos cada perfil pode chamar (o que antes ficava no <code>rules.yml</code> do servidor).
+      Cada alteração cria uma versão nova, com histórico e como restaurar.
+    </p>
+  </div>
 
   <div *ngIf="estado.fonteAtiva === 'arquivo'" class="alert alert-warning">
     <i class="fas fa-exclamation-triangle"></i>
@@ -28,18 +40,8 @@
     ela fez neste perfil. Use <em>Descartar alterações</em> para carregar a versão atual do servidor.
   </div>
 
-  <p class="small text-muted">
-    Versão <strong>{{ estado.versao }}</strong>
-    <ng-container *ngIf="estado.resumo.usuario">
-      &middot; {{ estado.resumo.usuario }}, {{ estado.resumo.data }} {{ estado.resumo.hora }}
-    </ng-container>
-    <ng-container *ngIf="estado.resumo.comentario"> &middot; “{{ estado.resumo.comentario }}”</ng-container>
-    <ng-container *ngIf="estado.fonteAtiva === 'sap'">
-      &middot; em vigor nesta instância: v{{ estado.versaoEmVigor }} (as outras instâncias aplicam em até 1 minuto)
-    </ng-container>
-  </p>
-
-  <ul class="nav nav-tabs mb-3">
+  <div class="painel">
+  <ul class="nav nav-tabs abas">
     <li class="nav-item">
       <a class="nav-link" href="javascript:void(0)" [class.active]="aba === 'perfis'" (click)="selecionarAba('perfis')">
         Perfis e regras <span *ngIf="sujo" class="badge badge-warning ml-1">não salvo</span>
@@ -56,10 +58,12 @@
     </li>
   </ul>
 
+  <div class="conteudo">
+
   <!-- ============================================================ Perfis e regras -->
   <div *ngIf="aba === 'perfis'" class="row">
     <div class="col-md-3">
-      <div class="card">
+      <div class="card lista-perfis">
         <div class="card-header d-flex justify-content-between align-items-center">
           <h3 class="card-title">Perfis</h3>
           <button class="btn btn-sm btn-primary ml-auto" (click)="novoPerfil()"><i class="fas fa-plus"></i> Novo</button>
@@ -97,7 +101,7 @@
           </div>
 
           <div class="table-responsive">
-            <table class="table table-sm table-striped">
+            <table class="table table-sm table-hover tabela-regras">
               <thead>
                 <tr>
                   <th style="min-width: 260px;">URL</th>
@@ -121,15 +125,15 @@
                     </small>
                   </td>
                   <td>
-                    <div class="custom-control custom-checkbox custom-control-inline" *ngFor="let a of ACOES">
-                      <input type="checkbox" class="custom-control-input" [id]="'acao-' + i + '-' + a"
-                             [checked]="temAcao(l, a)" (change)="alternarAcao(l, a)">
-                      <label class="custom-control-label" [for]="'acao-' + i + '-' + a">{{ a === '*' ? 'todos' : a }}</label>
+                    <div class="metodos" role="group" [attr.aria-label]="'Métodos da regra ' + (i + 1)">
+                      <button *ngFor="let a of ACOES" type="button" class="metodo"
+                              [class.ligado]="temAcao(l, a)" [ngClass]="'metodo-' + (a === '*' ? 'todos' : a)"
+                              [attr.aria-pressed]="temAcao(l, a)" (click)="alternarAcao(l, a)">{{ a === '*' ? 'todos' : a }}</button>
                     </div>
                   </td>
                   <td><input class="form-control form-control-sm" [(ngModel)]="l.comentario" placeholder="opcional" [attr.aria-label]="'Nota da regra ' + (i + 1)"></td>
                   <td class="text-right">
-                    <button class="btn btn-sm btn-outline-danger" (click)="removerLinha(i)" title="Remover regra" [attr.aria-label]="'Remover a regra ' + (i + 1)">
+                    <button class="btn btn-sm btn-link text-danger" (click)="removerLinha(i)" title="Remover regra" [attr.aria-label]="'Remover a regra ' + (i + 1)">
                       <i class="fas fa-trash"></i>
                     </button>
                   </td>
@@ -144,7 +148,7 @@
           <button class="btn btn-sm btn-outline-primary" (click)="adicionarLinha()"><i class="fas fa-plus"></i> Adicionar regra</button>
         </div>
 
-        <div class="card-footer d-flex">
+        <div class="card-footer d-flex rodape-perfil">
           <button class="btn btn-primary" (click)="salvarPerfil()" [disabled]="!sujo">
             <i class="fas fa-save"></i> Salvar
           </button>
@@ -258,8 +262,9 @@
               <td>{{ v.comentario }}</td>
               <td class="small">{{ v.resumo }}</td>
               <td class="text-right text-nowrap">
-                <button class="btn btn-sm btn-outline-primary" (click)="verMudancas(v)" title="Ver o que mudou nesta versão">
-                  <i class="fas fa-code-compare"></i>
+                <button class="btn btn-sm btn-outline-primary" (click)="verMudancas(v)" [disabled]="carregandoVersao === v.versao"
+                        title="Ver o que mudou nesta versão">
+                  <i class="fas" [ngClass]="carregandoVersao === v.versao ? 'fa-spinner fa-spin' : 'fa-code-compare'"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-secondary ml-1" (click)="baixarVersao(v)" title="Baixar YAML desta versão">
                   <i class="fas fa-download"></i>
@@ -366,10 +371,17 @@
     </div>
   </div>
 
+  </div>
+  </div>
+
   <!-- Sugestão de endpoint (URL das regras e caminho do teste): fica aqui, fora das abas, para as duas enxergarem -->
   <ng-template #itemSugestao let-model="item">
     <span class="text-monospace">{{ model.url }}</span>
     <span *ngFor="let m of model.metodos" class="badge badge-secondary ml-1">{{ m }}</span>
+    <span *ngFor="let t of model.telas" class="badge badge-info ml-1"
+          title="Chamada principal desta tela: liberar esta URL permite abri-la e, se ela tiver item de menu, mostra o item">
+      <i class="fas fa-desktop"></i> Tela: {{ t }}
+    </span>
   </ng-template>
 
   <!-- Lista de mudanças de um diff (histórico e prévia de importação) -->
