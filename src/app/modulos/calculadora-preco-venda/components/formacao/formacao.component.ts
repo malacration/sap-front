@@ -172,10 +172,10 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDes
 
   getByTipoCustosAcabado(lastPrice : LastPrice | undefined) : number{
     if(this.tipoCustosAcabado == 'precoAnalisado'){
-      return lastPrice?.LstEvlPric ?? 0; 
+      return lastPrice?.PrecoUltimaNfUnEstoque ?? 0;
     }
     else if(this.tipoCustosAcabado == 'precoCompra'){
-      return lastPrice?.LastPurPrc ?? 0;
+      return lastPrice?.CustoComFreteUnEstoque ?? 0;
     }
     else if(this.tipoCustosAcabado == 'precoCustoProducao'){
       return lastPrice?.U_productionCost ?? 0;
