@@ -38,6 +38,23 @@
         <i class="fas mr-1" [ngClass]="copiadoJson ? 'fa-check' : 'fa-copy'"></i>
         {{ copiadoJson ? 'JSON copiado' : 'Copiar token + endereço (JSON)' }}
       </button>
+
+      <!-- Cliente com suporte a MCP dispensa o curl: as operacoes viram ferramentas. -->
+      <label class="token-novo__rotulo" for="comando-mcp">
+        Servidor MCP — para Claude Code e outros clientes MCP
+      </label>
+      <textarea #campoMcp id="comando-mcp" class="form-control token-valor" rows="3" readonly
+                (focus)="$any($event.target).select()">{{ mcpComando }}</textarea>
+      <button class="btn btn-block botao-copiar mt-2"
+              [ngClass]="copiadoMcp ? 'btn-success' : 'btn-outline-dark'"
+              type="button" (click)="copiarMcp(campoMcp)">
+        <i class="fas mr-1" [ngClass]="copiadoMcp ? 'fa-check' : 'fa-copy'"></i>
+        {{ copiadoMcp ? 'Comando copiado' : 'Copiar comando do servidor MCP' }}
+      </button>
+      <p class="token-novo__expira">
+        Em outros clientes: transporte HTTP, URL <code>{{ mcpUrl }}</code> e o
+        cabeçalho <code>Authorization: Bearer &lt;token&gt;</code>.
+      </p>
     </div>
 
     <!-- Geracao -->
@@ -84,13 +101,13 @@
     </div>
 
     <!-- Lista -->
-    <h6 class="mb-2">Tokens existentes</h6>
+    <h6 class="mb-2">Seus tokens</h6>
     <div *ngIf="carregando" class="text-muted py-3">
       <i class="fas fa-spinner fa-spin mr-1"></i> Carregando…
     </div>
 
     <p *ngIf="!carregando && tokens.length === 0" class="text-muted">
-      Nenhum token gerado ainda.
+      Você ainda não gerou nenhum token.
     </p>
 
     <div class="table-responsive" *ngIf="!carregando && tokens.length > 0">
@@ -103,10 +120,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let t of tokens" [class.text-muted]="!t.ativo">
-            <td>
-              {{ t.nome }}
-              <small class="d-block text-muted">criado por {{ t.criadoPor }}</small>
-            </td>
+            <td>{{ t.nome }}</td>
             <td><code>{{ t.prefixo }}…</code></td>
             <td><span class="badge" [ngClass]="situacao(t).classe">{{ situacao(t).texto }}</span></td>
             <td>

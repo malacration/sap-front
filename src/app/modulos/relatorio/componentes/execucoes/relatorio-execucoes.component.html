@@ -1,0 +1,59 @@
+<div class="execucoes" *ngIf="execucoes.length > 0">
+  <button type="button" class="execucoes__titulo btn btn-link" (click)="aberto = !aberto"
+          [attr.aria-expanded]="aberto">
+    <i class="fas mr-1" [ngClass]="aberto ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+    Minhas execuções
+    <span *ngIf="ativas > 0" class="badge badge-info ml-1">
+      <i class="fas fa-spinner fa-spin mr-1"></i>{{ ativas }} em andamento
+    </span>
+  </button>
+  <button type="button" class="btn btn-sm btn-link text-muted float-right" (click)="atualizar()"
+          [disabled]="carregando" title="Atualizar">
+    <i class="fas fa-sync-alt" [class.fa-spin]="carregando"></i>
+  </button>
+
+  <div *ngIf="aberto" class="table-responsive">
+    <table class="table table-sm mb-0">
+      <tbody>
+        <tr *ngFor="let e of execucoes; trackBy: identificar" [class.execucoes__nova]="nova(e)">
+          <td>
+            <b>{{ e.relatorioNome }}</b>
+            <span class="badge badge-light text-uppercase ml-1">{{ e.formato }}</span>
+            <span *ngIf="e.tipo === 'PREVIEW'" class="badge badge-warning ml-1">Prévia v{{ e.versao }}</span>
+            <span *ngIf="nova(e)" class="badge badge-primary ml-1">Novo</span>
+            <small class="d-block text-muted">
+              Pedido em {{ e.criadoEm | date:'dd/MM/yyyy HH:mm' }}
+              <ng-container *ngIf="e.status === 'CONCLUIDO' && e.expiraEm">
+                · disponível até {{ e.expiraEm | date:'dd/MM HH:mm' }}
+              </ng-container>
+            </small>
+            <small *ngIf="e.status === 'FALHOU'" class="d-block text-danger">{{ e.erro?.mensagem }}</small>
+            <small *ngIf="e.status === 'EXCLUIDO'" class="d-block text-muted">
+              O arquivo foi excluído (fica disponível por 24h). Gere novamente com os mesmos parâmetros.
+            </small>
+          </td>
+          <td class="text-nowrap align-middle">
+            <span class="badge" [ngClass]="situacao(e).classe">
+              <i *ngIf="ativa(e)" class="fas fa-spinner fa-spin mr-1"></i>{{ situacao(e).texto }}
+            </span>
+          </td>
+          <td class="text-right text-nowrap align-middle">
+            <button *ngIf="e.status === 'CONCLUIDO'" type="button" class="btn btn-sm btn-primary"
+                    (click)="abrir(e)" [disabled]="ocupadas.has(e.id)">
+              <i class="fas mr-1" [ngClass]="e.formato === 'html' ? 'fa-external-link-alt' : 'fa-download'"></i>
+              {{ e.formato === 'html' ? 'Abrir' : 'Baixar' }}
+            </button>
+            <button *ngIf="e.status === 'EXCLUIDO' || e.status === 'FALHOU'" type="button"
+                    class="btn btn-sm btn-outline-primary" (click)="gerarNovamente(e)" [disabled]="ocupadas.has(e.id)">
+              <i class="fas fa-redo mr-1"></i> Gerar novamente
+            </button>
+            <button *ngIf="!ativa(e)" type="button" class="btn btn-sm btn-link text-muted ml-1"
+                    (click)="remover(e)" [disabled]="ocupadas.has(e.id)" title="Remover da lista">
+              <i class="fas fa-times"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

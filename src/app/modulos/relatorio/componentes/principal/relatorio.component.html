@@ -19,6 +19,8 @@
       </div>
     </div>
     <div class="card-body p-0">
+      <!-- Geracao e assincrona: recarregar a pagina nao perde o que esta na fila. -->
+      <app-relatorio-execucoes></app-relatorio-execucoes>
       <tabset class="relatorio-tabs">
         <tab heading="Executar" (selectTab)="abrirExecucao()">
           <app-relatorio-consumo
