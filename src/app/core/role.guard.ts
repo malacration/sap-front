@@ -2,12 +2,24 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthService } from '../shared/service/auth.service';
 import { OfflineContextService } from './offline/offline-context.service';
+import { PermissoesApiService } from './permissoes-api.service';
+import { apisDaRota, flagsDaRota } from './route-flags';
+
+/** O guard espera a resposta das permissoes no maximo isto (F5 e login, quando ela ainda nao chegou). */
+const ESPERA_PERMISSOES_MS = 4000;
 
 /**
  * Rota restrita por papel. Le os "role:X" do `data` da rota (que aqui e um array)
  * e libera se o usuario for `admin` (superusuario) ou tiver QUALQUER um dos papeis
  * exigidos. Sem "role:" no data -> libera (opt-in). E conveniencia de navegacao;
  * o backend tambem exige o papel (rules.yml + RoleBasedAuthorizationFilter).
+ *
+ * "role-not:X" e o inverso: libera todo mundo MENOS quem tem o papel X (ex.: Relatorios
+ * fica aberto a todos os papeis internos, menos o usuario externo `business_partner`).
+ *
+ * "api:metodo:/url" (com a flag menuPorPermissao): a rota abre se o backend disser que o usuario
+ * pode chamar essa URL (PermissoesApiService), e o "role:" so vale quando nao ha resposta.
+ * O "role-not:" vale sempre.
  *
  * Usar junto do authGuard: `canActivate: [authGuard, roleGuard]` (authGuard garante
  * login/estado; roleGuard checa papel). Espelha o adminGuard, mas parametrizado
@@ -17,23 +29,19 @@ import { OfflineContextService } from './offline/offline-context.service';
  * offline valida (canEnterOfflineRoutes), usamos os papeis gravados na sessao —
  * senao as rotas de venda offline (que carregam "role:") redirecionariam pra /home.
  */
-export const roleGuard: CanActivateFn = (route, state) => {
+export const roleGuard: CanActivateFn = async (route) => {
   const authService = inject(AuthService);
   const offline = inject(OfflineContextService);
+  const permissoes = inject(PermissoesApiService);
   const router = inject(Router);
+  const negado = () => router.createUrlTree(['/home']);
 
-  // O data das rotas aqui e um array (["icon:...","role:..."]) - fora do padrao do Angular.
-  // No snapshot o data pode vir mesclado/spreadado (array virando objeto {0:..,1:..}), o que
-  // quebraria .map. Por isso lemos do routeConfig.data (array bruto) e caimos pra Object.values
-  // como fallback, cobrindo os dois formatos.
-  const raw: unknown = route.routeConfig?.data ?? route.data ?? [];
-  const entries: any[] = Array.isArray(raw) ? raw : Object.values(raw as object);
-  const exigidas = entries
-    .map(it => (it?.toString() ?? ''))
-    .filter(it => it.startsWith('role:'))
-    .map(it => it.substring('role:'.length));
+  // routeConfig.data (array bruto) com fallback para Object.values: ver route-flags.ts.
+  const exigidas = flagsDaRota(route, 'role');
+  const excluidas = flagsDaRota(route, 'role-not');
+  const apis = apisDaRota(route);
 
-  if (exigidas.length === 0) {
+  if (exigidas.length === 0 && excluidas.length === 0 && apis.length === 0) {
     return true;
   }
 
@@ -44,11 +52,26 @@ export const roleGuard: CanActivateFn = (route, state) => {
     }
   }
 
+  if (excluidas.some(r => papeis.has(r))) {
+    return negado();
+  }
+
+  if (permissoes.ativo && apis.length > 0) {
+    await permissoes.whenReady(ESPERA_PERMISSOES_MS);
+    const resposta = permissoes.permitido(apis);
+    if (resposta !== undefined) {
+      return resposta ? true : negado();
+    }
+  }
+
+  if (exigidas.length === 0) {
+    return true;
+  }
   if (papeis.has('admin')) {
     return true;
   }
   if (exigidas.some(r => papeis.has(r))) {
     return true;
   }
-  return router.navigate(['/home']);
+  return negado();
 };

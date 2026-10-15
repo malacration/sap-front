@@ -28,8 +28,7 @@ import { AutorizadorComponent } from './sap/components/autorizador/autorizador.c
 import { RegraFilialComponent } from './sap/components/regra-filial/regra-filial.component';
 import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
-import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
-import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
+import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
 import { ChangePassowrd } from './shared/components/change-password/change-password.component';
@@ -40,6 +39,7 @@ import { PainelVendasV2Component } from './modulos/painel-vendas/componentes/pai
 import { TicketFreteComponent } from './modulos/relatorio-frete/componentes/ticket-frete/ticket-frete.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { ImportacaoLancamentoComponent } from './sap/components/importacao-lancamento/importacao-lancamento.component';
 import { SapLinkButtonDemoComponent } from './shared/components/sap-link-button/sap-link-button-demo.component';
 import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
@@ -48,6 +48,14 @@ import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobra
 import { OfflineHistoryComponent } from './core/offline/offline-history/offline-history.component';
 import { RelatorioComponent } from './modulos/relatorio/componentes/principal/relatorio.component';
 
+ /**
+  * Marcacoes do data (array): "icon:", "hidden", "internal", "role:x" (papel exigido), "role-not:x" (papel barrado)
+  * e "api:metodo:/url" - a chamada principal da tela. Com a flag menuPorPermissao a tela aparece se o backend
+  * disser que o usuario pode chamar essa URL (mesmas regras do filtro); o "role:" fica de reserva para quando
+  * nao ha resposta. Escolha uma URL que identifique a tela, nao uma compartilhada por varias (ex.: /branch).
+  * Sem "api:" de proposito: Calculadora (WebSocket), telas que o backend so
+  * libera para admin (adminGuard), Romaneio e Cotacoes offline (modos de operacao proprios).
+  */
  let routes: Routes = [
   {
     path: '',
@@ -123,21 +131,21 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
+        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/business-partners/cientes"],
         canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
       },
       {
         path: 'parceiro-negocio/:cardCode',
         title: 'Parceiro Negocio',
-        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
+        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/business-partners/*"],
         canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
       },
       {
         path: 'transferencia',
         title: 'Transferências',
-        data: ["icon:fas fa-exchange-alt", "role:vendedor_admin"],
+        data: ["icon:fas fa-exchange-alt", "role:vendedor_admin", "api:get:/sales-person/replace/*/por/*"],
         canActivate: [authGuard, roleGuard],
         component: TransferenciaClientesComponent
       },
@@ -153,7 +161,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         path: 'document',
         title: 'Vender',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-shopping-cart", "role:vendedor", "role:vendedor_admin"],
+        data: ["icon:fas fa-shopping-cart", "role:vendedor", "role:vendedor_admin", "api:post:/quotation/angular"],
         component: DocumentStatementComponent
       },
       {
@@ -167,7 +175,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         path: 'cotacao',
         title: 'Cotação',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-file-alt", "role:vendedor", "role:vendedor_admin"],
+        data: ["icon:fas fa-file-alt", "role:vendedor", "role:vendedor_admin", "api:get:/quotation"],
         component: CotacoesStatementComponent
       },
       {
@@ -175,12 +183,12 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         title: 'Pedidos',
         canActivate: [authGuard, roleGuard],
         component: PedidosVendaStatementComponent,
-        data: ["icon:fas fa-file-signature", "role:vendedor", "role:vendedor_admin"],
+        data: ["icon:fas fa-file-signature", "role:vendedor", "role:vendedor_admin", "api:get:/pedido-venda/listar"],
       },
       {
         path: 'venda-futura',
         title: 'Contratos',
-        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca"],
+        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/contrato-venda-futura"],
         canActivate: [authGuard, roleGuard],
         component: VendaFuturaStatementComponent
       },
@@ -199,7 +207,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'mapa-relacoes',
         title: 'Mapa de Relações',
-        data: ["hidden", "icon:fas fa-project-diagram", "role:admin"],
+        data: ["hidden", "icon:fas fa-project-diagram", "role:admin", "api:get:/mapa-relacoes/*/*"],
         canActivate: [authGuard, roleGuard],
         component: MapaRelacoesComponent
       },
@@ -230,14 +238,14 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         // e ONDE cada regra vale, em Configuracoes > Regras por Filial.
         path: 'vendas',
         title: 'Autorizar Vendas',
-        data: ["icon:fas fa-user-check", "role:admin"],
+        data: ["icon:fas fa-user-check", "role:admin", "api:get:/autorizacao/pendentes"],
         canActivate: [authGuard, roleGuard],
         component: AutorizacaoComponent
       },
       {
         path: 'liberacao-trava',
         title: 'Liberação de Trava',
-        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava"],
+        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava", "api:get:/trava/otp"],
         canActivate: [authGuard, roleGuard],
         component: LiberacaoTravaComponent
       },
@@ -246,43 +254,50 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Financeiro',
     path: 'financeiro',
-    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
+    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "role:contabil_importacao"],
     canActivate: [authGuard],
     children: [
       {
         path: 'pix',
         title: 'PIX',
-        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin"],
+        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin", "api:post:/pix/gerar-chave"],
         canActivate: [authGuard, roleGuard],
         component: PixPageComponent,
       },
       {
         path: 'notas-fiscais',
         title: 'Notas Fiscais',
-        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin"],
+        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "api:get:/invoice"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'adiantamentos',
         title: 'Adiantamentos',
-        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento", "role:admin"],
+        data: ["icon:fas fa-hand-holding-usd", "sapDocumentKind:adiantamento", "role:admin", "api:get:/down-payment"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'devolucoes',
         title: 'Devoluções',
-        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao", "role:admin"],
+        data: ["icon:fas fa-undo-alt", "sapDocumentKind:devolucao", "role:admin", "api:get:/credit-notes"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'recebimentos',
         title: 'Recebimentos',
-        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin"],
+        data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin", "api:get:/incoming-payments"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
+      },
+      {
+        path: 'importacao-lancamentos',
+        title: 'Importação de Lançamentos',
+        data: ["icon:fas fa-file-import", "role:contabil_importacao", "api:post:/journal/importacao/validar"],
+        canActivate: [authGuard, roleGuard],
+        component: ImportacaoLancamentoComponent,
       },
     ]
   },
@@ -300,14 +315,15 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         path: 'titulos',
         title: 'Títulos',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-list", "role:cobranca"],
+        // /cobranca/dominios e nao /cobranca/titulos: o vendedor tem o GET de titulos (aba do parceiro), nao a tela.
+        data: ["icon:fas fa-list", "role:cobranca", "api:get:/cobranca/dominios"],
         component: CobrancaStatementComponent
       },
       {
         path: 'resultado',
         title: 'Resultado',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-chart-line", "role:cobranca"],
+        data: ["icon:fas fa-chart-line", "role:cobranca", "api:get:/cobranca/dashboard"],
         component: CobrancaDashboardComponent
       },
     ]
@@ -321,7 +337,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'ordem-carregamento',
         title: 'Carregamento',
-        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar"],
+        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar", "api:get:/carregamento"],
         canActivate: [authGuard, roleGuard],
         component: OrdemCarregamentoStatementComponent
       },
@@ -340,7 +356,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'localidades',
         title: 'Localidades',
-        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar"],
+        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar", "api:post:/locais/search"],
         canActivate: [authGuard, roleGuard],
         component: LocalidadeComponent
       },
@@ -349,14 +365,16 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Produção',
     path: 'producao',
-    data: ["icon:fa-brands fa-product-hunt", "role:qualidade"],
+    data: ["icon:fa-brands fa-product-hunt", "role:qualidade", "api:post:/reprocessamento"],
     canActivate: [authGuard, roleGuard],
     component: ReprocessamentoComponent,
   },
   {
     title: 'Relatórios',
-    canActivate: [authGuard],
-    data: ["icon:fas fa-chart-pie", "role:vendedor", "role:vendedor_admin", "role:logistica", "role:qualidade", "role:calculadora"],
+    // Todos os papeis internos veem Relatorios; so o usuario externo nao. O que cada um ve DENTRO da tela
+    // continua sendo decidido por relatorio (campo `papeis` do YAML no sap-reports).
+    canActivate: [authGuard, roleGuard],
+    data: ["icon:fas fa-chart-pie", "role-not:business_partner"],
     path: 'relatorios',
     children: [
       {
@@ -364,21 +382,23 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         title: 'Painel de Vendas',
         // Escondido do menu (o v2 ocupou o lugar), mas com a mesma restricao de
         // papel do RBAC: some da navegacao e segue protegido por URL.
-        data: ["hidden", "icon:fas fa-chart-line", "role:vendedor", "role:vendedor_admin"],
+        data: ["hidden", "icon:fas fa-chart-line", "role:vendedor", "role:vendedor_admin", "api:get:/painel-vendas/mensal"],
         canActivate: [authGuard, roleGuard],
         component: PainelVendasComponent
       },
       {
         path: 'painel-vendas-v2',
         title: 'Painel de Vendas',
-        data: ["icon:fas fa-chart-area"],
-        canActivate: [authGuard],
+        // O grupo agora abre para todos os papeis: sem restricao aqui o item apareceria para quem o backend
+        // nega (/painel-vendas/** so para vendedor e vendedor_admin), igual ao painel v1 logo acima.
+        data: ["icon:fas fa-chart-area", "role:vendedor", "role:vendedor_admin", "api:get:/painel-vendas/v2/kpis"],
+        canActivate: [authGuard, roleGuard],
         component: PainelVendasV2Component
       },
       {
         path: 'analise-pedidos',
         title: 'Análise Pedidos',
-        data: ["icon:fas fa-clipboard-list", "role:vendedor_admin", "role:logistica", "role:qualidade"],
+        data: ["icon:fas fa-clipboard-list", "role:vendedor_admin", "role:logistica", "role:qualidade", "api:get:/painel/pedidos"],
         canActivate: [authGuard, roleGuard],
         component: PainelExpedicaoPedidosComponent
       },
@@ -392,38 +412,18 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'ticket-frete',
         title: 'Ticket Médio de Frete',
-        data: ["icon:fas fa-truck-moving", "role:admin"],
+        data: ["icon:fas fa-truck-moving", "role:admin", "api:get:/relatorios/frete/ticket-medio-localidade"],
         canActivate: [authGuard, roleGuard],
         component: TicketFreteComponent
       },
       {
         path: 'relatorio',
         title: 'Relatórios',
-        data: ["icon:fas fa-file-alt"],
-        canActivate: [authGuard],
+        // Chamada do sap-reports. O sap-service nao a intercepta: a regra de acesso so decide se o item aparece no menu,
+        // e o que cada um ve dentro da tela segue sendo o campo papeis do YAML de cada relatorio.
+        data: ["icon:fas fa-file-alt", "api:get:/reports/api/v1/relatorios"],
+        canActivate: [authGuard, roleGuard],
         component: RelatorioComponent
-      },
-    ]
-  },
-  {
-    title: 'Administrador',
-    canActivate: [authGuard],
-    data: ["hidden","icon:fas fa-cog"],
-    path: 'roles',
-    children: [ 
-      {
-        path: 'manage-roles',
-        title: 'Roles',
-        data: ["icon:fas fa-users"],
-        canActivate: [authGuard],
-        component: ManageRolesComponent
-      },
-      {
-        path: 'assign-role',
-        title: 'Atribuicao',
-        data: ["icon:fas fa-user-check"],
-        canActivate: [authGuard],
-        component: AssignRoleComponent
       },
     ]
   },
@@ -440,28 +440,28 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         //que esta sendo renomeado pra Frete
         path: 'frete',
         title: 'Frete',
-        data: ["icon:fas fa-map-marked-alt", "role:admin"],
+        data: ["icon:fas fa-map-marked-alt", "role:admin", "api:get:/regioes"],
         canActivate: [authGuard, roleGuard],
         component: RegiaoComponent
       },
       {
         path: 'frete/:code',
         title: 'Frete',
-        data: ["hidden", "role:admin"],
+        data: ["hidden", "role:admin", "api:get:/regioes/*"],
         canActivate: [authGuard, roleGuard],
         component: RegiaoComponent
       },
       {
         path: 'comissao',
         title: 'Comissão',
-        data: ["icon:fas fa-percentage", "role:admin"],
+        data: ["icon:fas fa-percentage", "role:admin", "api:get:/comissao"],
         canActivate: [authGuard, roleGuard],
         component: ComissaoComponent
       },
       {
         path: 'comissao/:code',
         title: 'Comissão',
-        data: ["hidden", "role:admin"],
+        data: ["hidden", "role:admin", "api:get:/comissao/*"],
         canActivate: [authGuard, roleGuard],
         component: ComissaoComponent
       },
@@ -476,14 +476,14 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'autorizadores',
         title: 'Autorizadores',
-        data: ["icon:fas fa-user-shield", "role:admin"],
+        data: ["icon:fas fa-user-shield", "role:admin", "api:get:/autorizador"],
         canActivate: [authGuard, roleGuard],
         component: AutorizadorComponent
       },
       {
         path: 'regras-filial',
         title: 'Regras por Filial',
-        data: ["icon:fas fa-code-branch", "role:admin"],
+        data: ["icon:fas fa-code-branch", "role:admin", "api:get:/regra-filial"],
         canActivate: [authGuard, roleGuard],
         component: RegraFilialComponent
       },
@@ -512,9 +512,18 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'regras-trava',
         title: 'Regras de Trava',
-        data: ["icon:fas fa-list-ul", "role:admin"],
+        data: ["icon:fas fa-list-ul", "role:admin", "api:post:/trava/regras"],
         canActivate: [authGuard, roleGuard],
         component: RegrasTravaComponent
+      },
+      {
+        // Gestao das regras de acesso (perfil -> URLs/metodos). O backend so aceita admin
+        // (controller + curinga do rules); o adminGuard e so conveniencia de navegacao.
+        path: 'regras-acesso',
+        title: 'Regras de Acesso',
+        data: ["icon:fas fa-user-lock", "role:admin"],
+        canActivate: [authGuard, adminGuard],
+        component: RegrasAcessoComponent
       },
     ]
   },

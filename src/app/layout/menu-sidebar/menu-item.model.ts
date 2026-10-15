@@ -9,7 +9,8 @@ export class MenuItem {
   children: MenuItem[] = [];
   readonly segments: string[];
   readonly isNavigable: boolean;
-  readonly hasChildren: boolean;
+  /** Pelos filhos da rota; o menu recalcula pelos que sobraram do filtro quando a flag menuPorPermissao esta ligada. */
+  hasChildren: boolean;
 
   constructor(route: Route, parentSegments: string[]) {
     this.name = route.title?.toString() ?? '';
