@@ -405,7 +405,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'calculadora',
         title: 'Calculadora',
-        data: ["icon:fas fa-calculator", "role:admin"],
+        data: ["icon:fas fa-calculator", "role:admin", "role:calculadora"],
         canActivate: [authGuard, roleGuard],
         component: CalculadoraStatementComponent,
       },

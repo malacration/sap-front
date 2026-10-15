@@ -1,0 +1,98 @@
+<div class="card card-outline card-primary mb-0">
+    <div class="card-header">
+        <h3 class="card-title">
+            <b>Fontes de preço</b> - {{ itemCode }}<small *ngIf="descricao"> {{ descricao }}</small>
+        </h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="fechar.emit()">
+                <i class="fas fa-times"></i> Fechar sem alterar
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div *ngIf="carregando" class="text-center text-muted py-3">
+            <i class="fas fa-sync-alt fa-spin"></i> Consultando preços no SAP...
+        </div>
+
+        <div *ngIf="erro" class="alert alert-warning mb-0">{{ erro }}</div>
+
+        <ng-container *ngIf="dados && !carregando">
+            <div class="d-flex flex-wrap mb-2" style="gap: 1.5rem">
+                <div>
+                    <span class="text-muted">Unidade de estoque:</span>
+                    <b> {{ dados.InvntryUom || '—' }}</b>
+                </div>
+                <div>
+                    <span class="text-muted">Grupo de unidades:</span>
+                    <b> {{ dados.UgpCode || '—' }}</b><span *ngIf="dados.UgpName && dados.UgpName !== dados.UgpCode"> ({{ dados.UgpName }})</span>
+                </div>
+                <div *ngIf="temPrecoAtual">
+                    <span class="text-muted">Preço atual:</span>
+                    <b> {{ precoAtual | currency:'BRL':'symbol':'1.2-4':'pt' }}</b>
+                </div>
+            </div>
+
+            <div *ngIf="unidadeDiferente" class="alert alert-warning py-2">
+                A receita usa <b>{{ unidadeReceita }}</b>, mas os preços abaixo são por <b>{{ dados.InvntryUom }}</b>
+                (unidade de estoque). Confira a conversão antes de aplicar.
+            </div>
+
+            <p *ngIf="dados.UltimaNf" class="text-muted mb-2">
+                Última NF de entrada: <b>{{ dados.UltimaNf.DocNum ?? dados.UltimaNf.DocEntry }}</b>
+                <span *ngIf="dataNf()"> de {{ dataNf() }}</span>
+                <span *ngIf="dados.UltimaNf.Quantidade">
+                    - {{ dados.UltimaNf.Quantidade | number:'1.0-4':'pt' }} {{ dados.UltimaNf.UnidadeCompra }}
+                    = {{ dados.UltimaNf.InvQty | number:'1.0-4':'pt' }} {{ dados.InvntryUom }}
+                </span>
+                - {{ dados.QtdCtesUltimaNf || 0 }} CTe(s), frete total {{ dados.FreteUltimaNf | currency:'BRL':'symbol':'1.2-2':'pt' }}
+            </p>
+            <p *ngIf="!dados.UltimaNf" class="text-muted mb-2">Nenhuma NF de entrada encontrada para o item.</p>
+
+            <div class="form-group">
+                <label for="fontePreco">Fonte do preço</label>
+                <select id="fontePreco" class="form-control" [(ngModel)]="selecionada">
+                    <option *ngFor="let f of fontes" [ngValue]="f.codigo">{{ f.descricao }}</option>
+                </select>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-hover table-bordered mb-2">
+                    <thead class="thead-light">
+                        <tr>
+                            <th></th>
+                            <th>Fonte</th>
+                            <th class="text-right">Preço / {{ dados.InvntryUom || 'un' }}</th>
+                            <th class="text-right">Despesa importação (frete) / {{ dados.InvntryUom || 'un' }}</th>
+                            <th class="text-right">Total / {{ dados.InvntryUom || 'un' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let f of fontes" (click)="selecionar(f.codigo)" style="cursor: pointer"
+                            [class.table-primary]="f.codigo === selecionada">
+                            <td><input type="radio" name="fonte" [checked]="f.codigo === selecionada"></td>
+                            <td>
+                                {{ f.descricao }}
+                                <div *ngIf="f.observacao"><small class="text-muted">{{ f.observacao }}</small></div>
+                            </td>
+                            <td class="text-right">{{ f.preco | currency:'BRL':'symbol':'1.2-4':'pt' }}</td>
+                            <td class="text-right">
+                                <span *ngIf="f.frete !== null">{{ f.frete | currency:'BRL':'symbol':'1.2-4':'pt' }}</span>
+                                <span *ngIf="f.frete === null" class="text-muted">—</span>
+                            </td>
+                            <td class="text-right"><b>{{ f.total | currency:'BRL':'symbol':'1.2-4':'pt' }}</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+    </div>
+
+    <div class="card-footer d-flex flex-wrap align-items-center" style="gap: .5rem">
+        <button type="button" class="btn btn-primary" [disabled]="!fonteSelecionada" (click)="usar()">
+            Usar preço selecionado
+            <span *ngIf="fonteSelecionada">({{ fonteSelecionada.total | currency:'BRL':'symbol':'1.2-4':'pt' }})</span>
+        </button>
+        <button type="button" class="btn btn-default" (click)="fechar.emit()">Cancelar</button>
+    </div>
+</div>

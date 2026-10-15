@@ -10,6 +10,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { RelatorioAutoriaComponent } from './componentes/autoria/relatorio-autoria.component';
 import { FormularioParametrosComponent } from './componentes/formulario-parametros/formulario-parametros.component';
 import { RelatorioTokensComponent } from './componentes/tokens/relatorio-tokens.component';
+import { RelatorioExecucoesComponent } from './componentes/execucoes/relatorio-execucoes.component';
 import { RelatorioConsumoComponent } from './componentes/consumo/relatorio-consumo.component';
 import { EditorCodigoComponent } from './componentes/editor-codigo/editor-codigo.component';
 import { RelatorioComponent } from './componentes/principal/relatorio.component';
@@ -24,6 +25,7 @@ import { NgxDropzoneCompatComponent } from './componentes/upload/ngx-dropzone-co
     EditorCodigoComponent,
     NgxDropzoneCompatComponent,
     RelatorioTokensComponent,
+    RelatorioExecucoesComponent,
     FormularioParametrosComponent,
   ],
   imports: [

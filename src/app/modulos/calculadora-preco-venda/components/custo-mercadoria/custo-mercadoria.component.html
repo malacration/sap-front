@@ -254,11 +254,24 @@
                         </div>
                     </div>
                 </div>
-                    <div class="form-group">
+                    <div class="form-group" *ngIf="!ingredienteFontes">
+                        <small class="text-muted">Clique no código da matéria-prima para ver as fontes de preço.</small>
                         <app-table 
                             [content]="receita?.Ingredientes" 
-                            [definition]="definition">
+                            [definition]="definition"
+                            (cellClick)="abrirFontes($event.item)">
                         </app-table>
+                    </div>
+                    <div class="form-group" *ngIf="ingredienteFontes">
+                        <fontes-preco
+                            [itemCode]="ingredienteFontes.ItemCode"
+                            [deposito]="ingredienteFontes.DefaultWareHouse"
+                            [descricao]="ingredienteFontes.Descricao"
+                            [precoAtual]="ingredienteFontes.custoMateriaPrimaCurrencyEditable"
+                            [unidadeReceita]="ingredienteFontes.UnidadeMedida"
+                            (precoSelecionado)="aplicarPreco($event)"
+                            (fechar)="ingredienteFontes = null">
+                        </fontes-preco>
                     </div>
                     
                 <div>

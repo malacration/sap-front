@@ -5,12 +5,17 @@ import { ConfigService } from '../../../../core/services/config.service';
 import { RelatorioService } from '../../../../sap/service/relatorio.service';
 import { TokenCriado, TokenResumo } from '../../modelos/token.model';
 
+type AlvoCopia = 'token' | 'json' | 'mcp';
+
 /**
  * Gerência dos tokens de serviço usados por agentes de IA.
  *
  * O valor do token aparece UMA vez, na criação — o servidor guarda só o hash.
  * Por isso a tela trata o momento da exibição com destaque: se o usuário fechar
  * sem copiar, não há como recuperar, só gerar outro.
+ *
+ * A lista traz apenas os tokens de quem está logado: o servidor filtra pelo
+ * dono, e ninguém revoga o token de outra pessoa.
  */
 @Component({
   selector: 'app-relatorio-tokens',
@@ -31,6 +36,7 @@ export class RelatorioTokensComponent {
   recemCriado: TokenCriado | null = null;
   copiado = false;
   copiadoJson = false;
+  copiadoMcp = false;
 
   private modal?: BsModalRef;
 
@@ -64,10 +70,25 @@ export class RelatorioTokensComponent {
     );
   }
 
+  /** Endpoint MCP do sap-reports: as mesmas operações, como ferramentas. */
+  get mcpUrl(): string {
+    return `${this.apiUrl}/admin/mcp`;
+  }
+
+  /** Comando pronto para registrar o servidor MCP num cliente (Claude Code). */
+  get mcpComando(): string {
+    if (!this.recemCriado) {
+      return '';
+    }
+    return `claude mcp add --transport http sap-reports ${this.mcpUrl} ` +
+      `--header "Authorization: Bearer ${this.recemCriado.token}"`;
+  }
+
   abrir(): void {
     this.recemCriado = null;
     this.copiado = false;
     this.copiadoJson = false;
+    this.copiadoMcp = false;
     this.modal = this.modalService.show(this.modalTokens, { class: 'modal-lg' });
     this.carregar();
   }
@@ -97,6 +118,7 @@ export class RelatorioTokensComponent {
         this.recemCriado = criado;
         this.copiado = false;
         this.copiadoJson = false;
+        this.copiadoMcp = false;
         this.nome = '';
         this.criando = false;
         this.carregar();
@@ -108,25 +130,25 @@ export class RelatorioTokensComponent {
     });
   }
 
-  copiar(campo?: HTMLInputElement, valor: string = this.recemCriado?.token || '', json = false): void {
+  copiar(campo?: HTMLInputElement, valor: string = this.recemCriado?.token || '', alvo: AlvoCopia = 'token'): void {
     if (!valor) {
       return;
     }
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(valor).then(() => this.marcarCopiado(json), () => this.copiarPeloCampo(campo, json));
+      navigator.clipboard.writeText(valor).then(() => this.marcarCopiado(alvo), () => this.copiarPeloCampo(campo, alvo));
       return;
     }
     // Sem a API de area de transferencia (http, navegador antigo): seleciona e
     // usa o comando do proprio documento, em vez de mandar o usuario copiar a mao.
-    this.copiarPeloCampo(campo, json);
+    this.copiarPeloCampo(campo, alvo);
   }
 
-  private copiarPeloCampo(campo?: HTMLInputElement, json = false): void {
+  private copiarPeloCampo(campo?: HTMLInputElement, alvo: AlvoCopia = 'token'): void {
     if (campo) {
       campo.focus();
       campo.select();
       if (document.execCommand('copy')) {
-        this.marcarCopiado(json);
+        this.marcarCopiado(alvo);
         return;
       }
     }
@@ -134,16 +156,24 @@ export class RelatorioTokensComponent {
   }
 
   copiarJson(campo?: HTMLTextAreaElement): void {
-    this.copiar(campo as unknown as HTMLInputElement, this.credenciaisJson, true);
+    this.copiar(campo as unknown as HTMLInputElement, this.credenciaisJson, 'json');
   }
 
-  private marcarCopiado(json: boolean): void {
-    if (json) {
+  copiarMcp(campo?: HTMLTextAreaElement): void {
+    this.copiar(campo as unknown as HTMLInputElement, this.mcpComando, 'mcp');
+  }
+
+  private marcarCopiado(alvo: AlvoCopia): void {
+    if (alvo === 'json') {
       this.copiadoJson = true;
+      this.toastr.success('Token e endereço copiados.');
+    } else if (alvo === 'mcp') {
+      this.copiadoMcp = true;
+      this.toastr.success('Comando do servidor MCP copiado.');
     } else {
       this.copiado = true;
+      this.toastr.success('Token copiado.');
     }
-    this.toastr.success(json ? 'Token e endereço copiados.' : 'Token copiado.');
   }
 
   revogar(token: TokenResumo): void {

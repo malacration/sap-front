@@ -5,6 +5,7 @@ import { SelecaoProdutoComponent } from './components/selecao-produto/selecao-pr
 import { CalculadoraStatementComponent } from './components/statement/statement.component';
 import { SharedModule } from '../../shared/shared.module';
 import { CalculadoraPdfComponent } from './components/calculadora-pdf/calculadora-pdf.component';
+import { FontesPrecoComponent } from './components/fontes-preco/fontes-preco.component';
 
 
 @NgModule({
@@ -14,6 +15,7 @@ import { CalculadoraPdfComponent } from './components/calculadora-pdf/calculador
     SelecaoProdutoComponent,
     CalculadoraStatementComponent,
     CalculadoraPdfComponent,
+    FontesPrecoComponent,
   ],
   imports: [
     SharedModule

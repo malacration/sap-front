@@ -88,3 +88,28 @@ describe('TableComponent posicao da coluna de acoes', () => {
     expect(celula.textContent).toContain('Cliente com um nome suficientemente longo');
   });
 });
+
+describe('TableComponent coluna clicavel', () => {
+  it('withClick vira link e o clique sai no cellClick com a linha', () => {
+    TestBed.configureTestingModule({
+      declarations: [TableComponent, SafeHtmlDirective],
+      providers: [{ provide: AlertService, useValue: {} }],
+      schemas: [NO_ERRORS_SCHEMA],
+    });
+    const fixture = TestBed.createComponent(TableComponent);
+    const linha = { ItemCode: 'INS01', Descricao: 'Milho' };
+    const coluna = new Column('ID', 'ItemCode').withClick();
+    fixture.componentInstance.definition = [coluna, new Column('Nome', 'Descricao')];
+    fixture.componentInstance.content = [linha];
+    const cliques: any[] = [];
+    fixture.componentInstance.cellClick.subscribe(it => cliques.push(it));
+    fixture.detectChanges();
+
+    const links = fixture.nativeElement.querySelectorAll('tbody a');
+    expect(links.length).toBe(1);
+    expect(links[0].textContent.trim()).toBe('INS01');
+    links[0].click();
+
+    expect(cliques).toEqual([{ item: linha, column: coluna }]);
+  });
+});

@@ -36,6 +36,10 @@ export class TableComponent implements OnInit {
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
+  /** Clique numa coluna marcada com Column.withClick(). */
+  @Output()
+  cellClick : EventEmitter<{item : any, column : Column}> = new EventEmitter()
+
   formControlList : Map<String,FormControl> = new Map()
 
   tableColumns : any
@@ -72,7 +76,7 @@ export class TableComponent implements OnInit {
   }
 
   renderContent(item : any, definition : Column){
-    if (this.isEditable(definition) || this.isRouterLink(item, definition)) {
+    if (definition.clickable || this.isEditable(definition) || this.isRouterLink(item, definition)) {
       return undefined
     }
     
@@ -168,6 +172,11 @@ export class TableComponent implements OnInit {
     this.cdr.markForCheck();
   }
   
+  clicarCelula(event : Event, item : any, column : Column){
+    event.preventDefault()
+    this.cellClick.emit({item, column})
+  }
+
   evento(retorno : any){
     this.actionOutput.emit(retorno)
   }

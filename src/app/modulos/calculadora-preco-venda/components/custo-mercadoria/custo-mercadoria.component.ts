@@ -45,12 +45,26 @@ export class CustoMecadoriaStatementComponent implements OnInit {
     }
   }
 
+  /** Materia-prima com as fontes de preco abertas (clique no codigo). */
+  ingredienteFontes : Produto | null = null
+
+  abrirFontes(ingrediente : Produto){
+    this.ingredienteFontes = ingrediente
+  }
+
+  aplicarPreco(preco : number){
+    if (this.ingredienteFontes) {
+      this.ingredienteFontes.custoMateriaPrimaCurrencyEditable = preco
+    }
+    this.ingredienteFontes = null
+  }
+
   resumo(){
     return formatCurrency(this.receita?.Ingredientes?.reduce((acc, it) => acc + it.getTotalMateriaPrimaComPlanejadoCurrency(),0), 'pt', 'R$');
   }
 
   definition = [
-    new Column('ID', 'ItemCode'),
+    new Column('ID', 'ItemCode').withClick(),
     new Column('Materia Prima', 'Descricao'),
     new Column('Quantidade', 'QuantidadeNaReceita'),
     new Column('Unidade', 'UnidadeMedida'),

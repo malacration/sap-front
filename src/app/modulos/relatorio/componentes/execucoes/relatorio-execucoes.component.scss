@@ -1,0 +1,16 @@
+.execucoes {
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+
+  &__titulo {
+    color: inherit;
+    font-weight: 600;
+    padding-left: 0;
+    text-decoration: none;
+  }
+
+  // Pronto e ainda nao aberto: o usuario precisa notar sem procurar.
+  &__nova td {
+    background: #f1f6fd;
+  }
+}
