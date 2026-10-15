@@ -212,6 +212,35 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDes
     return [...Array.from(this.uniqueIngredients.values())];
   }
 
+  /** Materia-prima com as fontes de preco abertas dentro do modal de custos. */
+  materiaFontes : Produto | null = null
+
+  abrirFontesMateria(materia : Produto){
+    this.materiaFontes = materia
+    this.custoModal.forceDetectChanges()
+  }
+
+  fecharFontesMateria(){
+    this.materiaFontes = null
+    this.custoModal.forceDetectChanges()
+  }
+
+  /** Preco escolhido nas fontes vale para a materia-prima em todos os produtos da analise. */
+  aplicarPrecoMateria(preco : number){
+    const codigo = this.materiaFontes?.ItemCode
+    if (codigo) {
+      this.uniqueIngredients.get(codigo).custoMateriaPrimaCurrencyEditable = preco
+      this.analise.produtos.forEach(produto =>
+        produto.Ingredientes
+          .filter(it => it.ItemCode == codigo)
+          .forEach(it => it.custoMateriaPrimaCurrencyEditable = preco))
+    }
+    this.materiaFontes = null
+    this.cdRef.detectChanges()
+    this.custoModal.forceDetectChanges()
+    this.table.forceDetectChanges()
+  }
+
   changeCustoAllProdutos(){
     this.analise.produtos.forEach(produto => {
       produto.Ingredientes.forEach(it => {
@@ -304,7 +333,7 @@ export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDes
 
 
   materiaCustoDefinition = [
-    new Column('Id', 'ItemCode',null,true),
+    new Column('Id', 'ItemCode',null,true).withClick(),
     new Column('Produtos', 'Descricao',null,true),
     new Column('Custo', 'custoMateriaPrimaCurrencyEditable')
   ]
