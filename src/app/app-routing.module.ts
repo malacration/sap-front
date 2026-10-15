@@ -356,7 +356,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Relatórios',
     canActivate: [authGuard],
-    data: ["icon:fas fa-chart-pie", "role:vendedor", "role:vendedor_admin", "role:logistica", "role:qualidade"],
+    data: ["icon:fas fa-chart-pie", "role:vendedor", "role:vendedor_admin", "role:logistica", "role:qualidade", "role:calculadora"],
     path: 'relatorios',
     children: [
       {
@@ -385,7 +385,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
       {
         path: 'calculadora',
         title: 'Calculadora',
-        data: ["icon:fas fa-calculator", "role:admin"],
+        data: ["icon:fas fa-calculator", "role:admin", "role:calculadora"],
         canActivate: [authGuard, roleGuard],
         component: CalculadoraStatementComponent,
       },
