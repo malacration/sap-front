@@ -23,6 +23,12 @@ export class ConfigService {
   primaryColor : string = '#25A246'
   successColor : string = '#198754'
   disableTogglefeature: string[] = []
+  /**
+   * Menu e guards decidem pelas regras de acesso do backend ("api:" das rotas) em vez do nome do perfil
+   * ("role:"). Desligado = menu de antes. O localStorage "menuPorPermissao" (true/false) sobrepoe, para
+   * testar num navegador antes de ligar para todos.
+   */
+  menuPorPermissao = false
 
   getHost(){
     if(this.host)
@@ -56,12 +62,22 @@ export class ConfigService {
     }
   }
 
+  /** Mesmo host da API (inclusive o `host` do localStorage), com /ws no final. */
   getWebSocket(){
     if(this.webSocket)
       return this.webSocket
-    else if(this.host)
-      return this.host+"/ws"
-    return "http://localhost:8080/ws"
+    return this.getHost().replace(/\/+$/, '') + "/ws"
+  }
+
+  isMenuPorPermissao(): boolean {
+    try {
+      const local = localStorage.getItem("menuPorPermissao")
+      if(local === "true" || local === "false")
+        return local === "true"
+    } catch {
+      // sem storage vale a config
+    }
+    return this.menuPorPermissao === true
   }
 
   getModoOperacao() : string{

@@ -23,6 +23,7 @@ import { ActivatedRoute } from '@angular/router';
 import { OfflineContextService } from '../../../core/offline/offline-context.service';
 import { OfflineQueueService } from '../../../core/offline/offline-queue.service';
 import { OfflineCatalogRepository } from '../../../core/offline/offline-catalog.repository';
+import { AuthService } from '../../../shared/service/auth.service';
 
 @Component({
   selector: 'app-document-statement',
@@ -61,6 +62,9 @@ export class DocumentStatementComponent implements OnInit {
   //e sem isso o botao sumiria no meio da propria acao do usuario.
   retentandoFrete = false
   freteErro : string = null
+  //frete.manual no back (ver AuthService.isFreteManual): o vendedor digita o valor e nao ha
+  //calculo por regiao nem exigencia de localidade no endereco de entrega
+  readonly freteManual : boolean
   //Regiao e localidade resolvidas no ultimo calculo de frete. Guardadas porque o frete de cada
   //documento gerado precisa ser recalculado com a quantidade daquele grupo - a faixa de preco
   //depende da quantidade, entao ratear o valor combinado gera um numero que o backend nao
@@ -94,8 +98,9 @@ export class DocumentStatementComponent implements OnInit {
     private route: ActivatedRoute,
     public offline: OfflineContextService,
     private offlineQueue: OfflineQueueService,
-    private offlineCatalog: OfflineCatalogRepository){
-
+    private offlineCatalog: OfflineCatalogRepository,
+    auth: AuthService){
+    this.freteManual = auth.isFreteManual()
   }
 
   ngOnInit(): void {
@@ -336,6 +341,13 @@ export class DocumentStatementComponent implements OnInit {
       this.limpaLocalidade()
       return
     }
+    if(this.freteManual){
+      //valor digitado pelo vendedor continua valendo - nada a recalcular
+      this.freteCalculado = true
+      this.calculandoFrete = false
+      this.retentandoFrete = false
+      return
+    }
     if(!this.businesPartner || !this.itens || this.itens.length == 0){
       this.defineFrete(0)
       this.calculandoFrete = false
@@ -448,6 +460,8 @@ export class DocumentStatementComponent implements OnInit {
   private buildDocuments() : Array<PedidoVenda> {
     const documents = new Array<PedidoVenda>()
     const grupos = this.agruparPorGroupNum()
+    const fretesManuais = this.freteManual ? this.rateiaFreteManual(Array.from(grupos.values())) : null
+    let indice = 0
     grupos.forEach((itens,groupNum) => {
       const order = new PedidoVenda()
       order.CardCode = this.businesPartner.CardCode
@@ -460,7 +474,7 @@ export class DocumentStatementComponent implements OnInit {
       order.shipToCode = this.tipoEnvio == 'ent' ? this.enderecoEntrega?.AddressName : null
       //frete da quantidade DESTE grupo, nao um rateio do combinado - e o unico valor que o
       //backend consegue reproduzir ao revalidar o documento sozinho
-      order.Frete = this.freteDoGrupo(itens)
+      order.Frete = fretesManuais ? fretesManuais[indice++] : this.freteDoGrupo(itens)
       order.TaxExtension = {
         VehicleState: this.setVehicleState(),
         Incoterms: this.tipoEnvio == 'ret' ? 9 : 0
@@ -496,6 +510,19 @@ export class DocumentStatementComponent implements OnInit {
   private somaDoFretePorGrupo() : number {
     return Array.from(this.agruparPorGroupNum().values())
       .reduce((acc, itens) => acc + this.freteDoGrupo(itens), 0)
+  }
+
+  /**
+   * Frete digitado dividido entre os documentos proporcionalmente a quantidade de cada grupo.
+   * Trabalha em centavos e joga a sobra do arredondamento no ultimo, pra soma bater com o digitado.
+   */
+  private rateiaFreteManual(grupos : Item[][]) : number[] {
+    const centavos = Math.round((Number(this.frete) || 0) * 100)
+    const quantidades = grupos.map(itens => itens.reduce((acc,it) => acc + (Number(it.quantidade) || 0), 0))
+    const total = quantidades.reduce((acc,q) => acc + q, 0)
+    const partes = quantidades.map(q => total > 0 ? Math.floor(centavos * q / total) : 0)
+    partes[partes.length - 1] += centavos - partes.reduce((acc,p) => acc + p, 0)
+    return partes.map(p => p / 100)
   }
 
   private async saveOffline(documents : Array<PedidoVenda>){
@@ -614,6 +641,7 @@ export class DocumentStatementComponent implements OnInit {
       && this.itens.filter(it => !it.GroupNum).length == 0
       && !this.freteErro
       && !this.calculandoFrete
+      && (!this.freteManual || this.tipoEnvio != 'ent' || Number(this.frete) >= 0)
       && (!this.offlineMode || this.offline.hasValidCatalog)
   }
 

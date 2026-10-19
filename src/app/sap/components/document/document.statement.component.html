@@ -76,6 +76,12 @@
                                 [options]="businesPartner.getAddressOptions('bo_ShipTo')">
                             </app-select>
                             <div *ngIf="tipoEnvio == 'ent'" class="mt-3">
+                                <ng-container *ngIf="freteManual">
+                                    <label for="frete">Valor do Frete</label>
+                                    <input type="number" min="0" step="0.01" id="frete" name="frete"
+                                           class="form-control text-center" [(ngModel)]="frete">
+                                </ng-container>
+                                <ng-container *ngIf="!freteManual">
                                 <small class="d-block mb-2">
                                     Localidade:
                                     <strong *ngIf="localidadeEntrega">{{localidadeEntrega}}</strong>
@@ -114,6 +120,7 @@
                                         <i class="fas fa-sync"></i> Recalcular frete
                                     </button>
                                 </div>
+                                </ng-container>
                             </div>
                         </div>
                     </div>

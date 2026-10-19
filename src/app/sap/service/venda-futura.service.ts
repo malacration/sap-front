@@ -109,6 +109,15 @@ export class VendaFuturaService{
       return vendaFutura
     }
 
+    /**
+     * Preenche a condicao de pagamento de contrato antigo com a do pedido original. O valor e
+     * resolvido no back - aqui so se dispara. Idempotente.
+     */
+    sanitizarCondicaoPagamento(docEntry : number) : Observable<VendaFutura> {
+      return this.http.post<any>(this.url+"/"+docEntry+"/condicao-pagamento/sanitizar", {})
+        .pipe(map(it => this.vendaFuturaAssing(it)))
+    }
+
     trocar(pedido : PedidoTroca) : Observable<any> {
       return this.http.post<any>(this.url+"/troca",pedido)
     }

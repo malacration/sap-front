@@ -36,6 +36,10 @@ export class TableComponent implements OnInit {
   @Output()
   actionOutput : EventEmitter<any> = new EventEmitter<any>()
 
+  /** Clique numa coluna marcada com Column.withClick(). */
+  @Output()
+  cellClick : EventEmitter<{item : any, column : Column}> = new EventEmitter()
+
   formControlList : Map<String,FormControl> = new Map()
 
   tableColumns : any
@@ -72,7 +76,7 @@ export class TableComponent implements OnInit {
   }
 
   renderContent(item : any, definition : Column){
-    if (this.isEditable(definition) || this.isRouterLink(item, definition)) {
+    if (definition.clickable || this.isEditable(definition) || this.isRouterLink(item, definition)) {
       return undefined
     }
     
@@ -88,6 +92,15 @@ export class TableComponent implements OnInit {
 
   isRouterLink(item : any, definition : Column) : boolean{
     return this.getValue(item,definition) instanceof RouteLink
+  }
+
+  /**
+   * RouteLink sem path (ex.: produto da calculadora) troca so o query param da tela atual - o
+   * estado esta em memoria, entao abrir em nova aba (app-sap-link-button) perde o contexto.
+   */
+  isLinkNaPagina(item : any, definition : Column) : boolean{
+    const value = this.getValue(item,definition)
+    return value instanceof RouteLink && Array.isArray(value.path) && value.path.length == 0
   }
 
   isEditable(definition : Column){
@@ -159,6 +172,11 @@ export class TableComponent implements OnInit {
     this.cdr.markForCheck();
   }
   
+  clicarCelula(event : Event, item : any, column : Column){
+    event.preventDefault()
+    this.cellClick.emit({item, column})
+  }
+
   evento(retorno : any){
     this.actionOutput.emit(retorno)
   }

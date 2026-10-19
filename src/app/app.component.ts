@@ -83,6 +83,13 @@ export class AppComponent {
 
     if (this.offlineContext.backendOnline)
       this.wsService.connect(this.config.getWebSocket());
+    // login, logout e troca de usuario: a sessao do websocket e autenticada no CONNECT
+    this.authService.loginChange$.subscribe(() => {
+      if (this.offlineContext.backendOnline)
+        this.wsService.reconnect(this.config.getWebSocket())
+      else
+        this.wsService.disconnect()
+    })
     
     this.ui = this.store.select('ui');
     this.renderer.removeClass(

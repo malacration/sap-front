@@ -23,7 +23,13 @@
               [ngClass]="getCellClass(item, def)"
               [class.table-cell-wrap]="def.wrap">
             <div *ngIf="renderContent(item, def)" [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
-            <div *ngIf="isRouterLink(item,def)">
+            <div *ngIf="def.clickable">
+              <a href="#" (click)="clicarCelula($event, item, def)">{{getValue(item, def)}}</a>
+            </div>
+            <div *ngIf="isLinkNaPagina(item,def)">
+              <a [routerLink]="[]" [queryParams]="getValue(item, def)?.params">{{getValue(item, def)?.label}}</a>
+            </div>
+            <div *ngIf="isRouterLink(item,def) && !isLinkNaPagina(item,def)">
               <app-sap-link-button
                 [label]="getValue(item, def)?.label"
                 [sapRouterLink]="getValue(item, def)?.path"

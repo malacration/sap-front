@@ -44,6 +44,11 @@ export class AuthService {
     return (window as any)['auth-config']?.offlineEnabled === true
   }
 
+  /** `frete.manual` no back: vendedor digita o frete em vez de usar o calculado pela regiao. */
+  isFreteManual(): boolean {
+    return (window as any)['auth-config']?.freteManual === true
+  }
+
   login(username: string, password: string): Observable<boolean> {
     return this.http.post<Token>(`${this.apiUrl}/logar`,new UserPassword(username,password))
       .pipe(map((response) => this.setToken(response)))

@@ -67,13 +67,25 @@
 
 <app-modal #custoMercadoria 
     [title]="'Custo das mateiras prima'"> 
-    <app-table #table [content]="getArrayUniqueIngredients()" [definition]="materiaCustoDefinition">
-
-    </app-table>
-    <hr>
-    <div class="row">
-        <button (click)="changeCustoAllProdutos()" class="btn btn-primary">Confrimar</button>
+    <!-- [hidden] e nao *ngIf: a tabela e @ViewChild static -->
+    <div [hidden]="materiaFontes">
+        <small class="text-muted">Clique no código da matéria-prima para ver as fontes de preço.</small>
+        <app-table #table [content]="getArrayUniqueIngredients()" [definition]="materiaCustoDefinition"
+            (cellClick)="abrirFontesMateria($event.item)">
+        </app-table>
+        <hr>
+        <div class="row">
+            <button (click)="changeCustoAllProdutos()" class="btn btn-primary">Confrimar</button>
+        </div>
     </div>
+    <fontes-preco *ngIf="materiaFontes"
+        [itemCode]="materiaFontes.ItemCode"
+        [deposito]="materiaFontes.DefaultWareHouse"
+        [descricao]="materiaFontes.Descricao"
+        [precoAtual]="materiaFontes.custoMateriaPrimaCurrencyEditable"
+        (precoSelecionado)="aplicarPrecoMateria($event)"
+        (fechar)="fecharFontesMateria()">
+    </fontes-preco>
 </app-modal>
 
 <app-modal #modalAdicionarItem 
@@ -91,7 +103,7 @@
         <select class="form-control" name="tipoCustosAcabado" [(ngModel)]="tipoCustosAcabado">
             <option value="-1" selected disabled>Selecione</option>
             <option value="precoAnalisado">Ultimo Preço Analisado</option>
-            <option value="precoCompra">Ultimpo Preço de Compra</option>
+            <option value="precoCompra">Último Preço de Compra (c/ frete, un. estoque)</option>
             <option value="precoContabil">Custo Contabil</option>
             <option value="precoCustoProducao">Custo Apontado p/ Produção</option>
         </select>

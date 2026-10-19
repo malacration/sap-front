@@ -24,6 +24,14 @@ export class CondicaoPagamentoService {
       return from(this.catalog.get('paymentTerms', String(tabela))).pipe(map(value => value?.terms || []))
     return this.hppCliente.get<Array<CondicaoPagamento>>(this.url+"/tabela/"+tabela)
   }
+
+  /**
+   * Condicoes para a troca de contrato de venda futura: inclui a condicao a vista (-1) e
+   * condicoes que deixaram de ser oferecidas na venda nova - o contrato ja usou a dele.
+   */
+  getByTabelaParaContrato(tabela : number) : Observable<Array<CondicaoPagamento>>{
+    return this.hppCliente.get<Array<CondicaoPagamento>>(this.url+"/tabela/"+tabela+"/contrato")
+  }
 }
 
 

@@ -10,6 +10,7 @@ export interface AuthConfig {
   mode: 'internal' | 'keycloak';
   keycloak?: KeycloakClientConfig | null;
   offlineEnabled?: boolean;
+  freteManual?: boolean;
 }
 
 const TOKEN_KEY = 'token';

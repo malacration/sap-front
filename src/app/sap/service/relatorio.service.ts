@@ -1,7 +1,8 @@
 import { TokenCriado, TokenResumo } from '../../modulos/relatorio/modelos/token.model';
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, from, switchMap } from 'rxjs';
+import { Observable, Subject, defer, finalize, first, from, retry, switchMap, tap, throwError, timer } from 'rxjs';
+import { EXECUCAO_ATIVA, Execucao } from '../../modulos/relatorio/modelos/execucao.model';
 import { ConfigService } from '../../core/services/config.service';
 import { LogoService } from '../../core/services/logo.service';
 import {
@@ -20,9 +21,24 @@ import {
   Versao,
 } from '../../modulos/relatorio/modelos/relatorio.model';
 
+/** Intervalo de consulta do estado de uma execucao em andamento. */
+export const INTERVALO_EXECUCAO_MS = 2000;
+
+const CHAVE_ENTREGUES = 'relatorio-execucoes-entregues';
+
 @Injectable({ providedIn: 'root' })
 export class RelatorioService {
   private readonly apiUrl: string;
+
+  /** Avisa o painel "Minhas execuções" que um pedido novo entrou na fila. */
+  readonly execucaoIniciada$ = new Subject<Execucao>();
+
+  /**
+   * Execucoes que uma tela esta esperando agora (via [aguardarExecucao]). O
+   * painel nao entrega essas - quem pediu entrega. Se a tela desistir (troca de
+   * relatorio, recarga), o id sai daqui e o painel assume.
+   */
+  private readonly acompanhadas = new Set<string>();
 
   constructor(private config: ConfigService, private http: HttpClient, private logo: LogoService) {
     // Pode ser host dedicado (config `hostRelatorios`) ou o mesmo host com o
@@ -38,20 +54,27 @@ export class RelatorioService {
     return this.http.get<RelatorioDetalhe>(`${this.apiUrl}/relatorios/${this.id(id)}`);
   }
 
+  /**
+   * Gera o relatorio e entrega o arquivo - mesma assinatura de quando a rota era
+   * sincrona. Por baixo: pede a execucao (202 na hora), acompanha o estado e
+   * baixa o arquivo ao concluir. Nenhuma requisicao fica presa a consulta, que
+   * e o que o proxy na frente da API exige.
+   */
   renderizar(
     id: number,
     formato: FormatoRelatorio,
     request: RenderRequest
   ): Observable<HttpResponse<Blob>> {
+    return this.iniciarRender(id, formato, request).pipe(switchMap((execucao) => this.aguardarExecucao(execucao)));
+  }
+
+  iniciarRender(id: number, formato: FormatoRelatorio, request: RenderRequest): Observable<Execucao> {
     const params = new HttpParams().set('formato', formato);
     return this.comLogo(request).pipe(
       switchMap((corpo) =>
-        this.http.post(`${this.apiUrl}/relatorios/${this.id(id)}/render`, corpo, {
-          params,
-          observe: 'response',
-          responseType: 'blob',
-        })
-      )
+        this.http.post<Execucao>(`${this.apiUrl}/relatorios/${this.id(id)}/execucoes`, corpo, { params })
+      ),
+      tap((execucao) => this.execucaoIniciada$.next(execucao)),
     );
   }
 
@@ -86,25 +109,108 @@ export class RelatorioService {
     return this.http.post<ValidacaoOk>(`${this.apiUrl}/admin/relatorios/validar`, request);
   }
 
+  /** Prévia assíncrona, como [renderizar]. */
   preview(
     id: number,
     formato: FormatoRelatorio,
     request: RenderRequest,
     versao?: number
   ): Observable<HttpResponse<Blob>> {
+    return this.iniciarPreview(id, formato, request, versao).pipe(
+      switchMap((execucao) => this.aguardarExecucao(execucao)),
+    );
+  }
+
+  iniciarPreview(id: number, formato: FormatoRelatorio, request: RenderRequest, versao?: number | null): Observable<Execucao> {
     let params = new HttpParams().set('formato', formato);
     if (versao != null) {
       params = params.set('versao', versao.toString());
     }
     return this.comLogo(request).pipe(
       switchMap((corpo) =>
-        this.http.post(`${this.apiUrl}/admin/relatorios/${this.id(id)}/preview`, corpo, {
-          params,
-          observe: 'response',
-          responseType: 'blob',
-        })
-      )
+        this.http.post<Execucao>(`${this.apiUrl}/admin/relatorios/${this.id(id)}/preview/execucoes`, corpo, { params })
+      ),
+      tap((execucao) => this.execucaoIniciada$.next(execucao)),
     );
+  }
+
+  // ---------------------------------------------------------- execuções
+
+  listarExecucoes(): Observable<Execucao[]> {
+    return this.http.get<Execucao[]>(`${this.apiUrl}/execucoes`);
+  }
+
+  obterExecucao(id: string): Observable<Execucao> {
+    return this.http.get<Execucao>(`${this.apiUrl}/execucoes/${encodeURIComponent(id)}`);
+  }
+
+  baixarExecucao(id: string): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.apiUrl}/execucoes/${encodeURIComponent(id)}/arquivo`, {
+      observe: 'response',
+      responseType: 'blob',
+    }).pipe(tap(() => this.marcarEntregue(id)));
+  }
+
+  removerExecucao(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/execucoes/${encodeURIComponent(id)}`);
+  }
+
+  /**
+   * Acompanha a execucao ate terminar e devolve o arquivo. Falha vira
+   * HttpErrorResponse com o status e o envelope `erro`/`mensagem` que a rota
+   * sincrona daria - as telas tratam erro exatamente como antes.
+   */
+  aguardarExecucao(execucao: Execucao, intervaloMs = INTERVALO_EXECUCAO_MS): Observable<HttpResponse<Blob>> {
+    return defer(() => {
+      this.acompanhadas.add(execucao.id);
+      return timer(0, intervaloMs).pipe(
+        // Falha de rede passageira nao derruba a espera.
+        switchMap(() => this.obterExecucao(execucao.id).pipe(retry({ count: 3, delay: intervaloMs }))),
+        first((atual) => !EXECUCAO_ATIVA.includes(atual.status)),
+        switchMap((atual) => {
+          if (atual.status === 'CONCLUIDO') {
+            return this.baixarExecucao(atual.id);
+          }
+          const erro = atual.status === 'EXCLUIDO'
+            ? { status: 410, erro: 'execucao_excluida', mensagem: 'O arquivo foi excluído. Gere o relatório novamente.' }
+            : atual.erro || { status: 500, erro: 'erro_interno', mensagem: 'Não foi possível gerar o relatório.' };
+          return throwError(() => new HttpErrorResponse({
+            status: erro.status,
+            error: { erro: erro.erro, mensagem: erro.mensagem },
+          }));
+        }),
+        finalize(() => this.acompanhadas.delete(execucao.id)),
+      );
+    });
+  }
+
+  /** Uma tela esta esperando esta execucao agora? */
+  estaSendoAcompanhada(id: string): boolean {
+    return this.acompanhadas.has(id);
+  }
+
+  /** Ja foi baixada/aberta neste navegador? Evita entregar duas vezes apos recarregar. */
+  foiEntregue(id: string): boolean {
+    return this.entregues().includes(id);
+  }
+
+  marcarEntregue(id: string): void {
+    const ids = this.entregues().filter((outro) => outro !== id);
+    ids.push(id);
+    try {
+      localStorage.setItem(CHAVE_ENTREGUES, JSON.stringify(ids.slice(-200)));
+    } catch {
+      // Sem armazenamento (modo privado): no pior caso, o painel oferece de novo.
+    }
+  }
+
+  private entregues(): string[] {
+    try {
+      const valor = JSON.parse(localStorage.getItem(CHAVE_ENTREGUES) || '[]');
+      return Array.isArray(valor) ? valor : [];
+    } catch {
+      return [];
+    }
   }
 
   publicar(id: number, versao: number): Observable<RelatorioAdmin> {

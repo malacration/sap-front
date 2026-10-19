@@ -1,0 +1,111 @@
+// Tela de Regras de Acesso: o que dá "cara de organizada" e não depende do tema do AdminLTE.
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem 1.5rem;
+  padding-bottom: .75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+
+  h1 { margin: 0; }
+  .descricao { flex-basis: 100%; margin: .25rem 0 0; }
+}
+
+.versao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .5rem;
+  align-items: center;
+  font-size: .8rem;
+  color: #6c757d;
+
+  .selo {
+    background: #e9ecef;
+    border-radius: 1rem;
+    padding: .1rem .6rem;
+    color: #495057;
+  }
+}
+
+// Todo o conteúdo das abas vive num cartão só, em vez de solto sobre o fundo cinza.
+.painel {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, .1);
+  border-radius: .5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+
+  .abas {
+    padding: .5rem .75rem 0;
+    margin: 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    border-radius: .5rem .5rem 0 0;
+  }
+
+  .conteudo { padding: 1rem; }
+
+  // Cartões internos sem sombra: a moldura é a do painel.
+  .card { box-shadow: none; border: 1px solid rgba(0, 0, 0, .1); margin-bottom: 0; }
+}
+
+.lista-perfis {
+  position: sticky;
+  top: 1rem;
+
+  .list-group-item { padding: .55rem .9rem; font-size: .95rem; }
+}
+
+.tabela-regras {
+  th {
+    background: #f8f9fa;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #6c757d;
+    border-top: 0;
+    white-space: nowrap;
+  }
+  td { vertical-align: middle; }
+  tbody tr:hover { background: #f4f9ff; }
+}
+
+// Métodos como botões de ligar/desligar, cada um com a sua cor.
+.metodos {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: .25rem;
+}
+
+.metodo {
+  min-width: 3.4rem;
+  padding: .15rem .5rem;
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6c757d;
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background .1s, color .1s, border-color .1s;
+
+  &:hover { border-color: #adb5bd; }
+  &:focus-visible { outline: 2px solid #80bdff; outline-offset: 1px; }
+
+  &.ligado { color: #fff; }
+  &.ligado.metodo-get { background: #28a745; border-color: #28a745; }
+  &.ligado.metodo-post { background: #007bff; border-color: #007bff; }
+  &.ligado.metodo-put { background: #fd7e14; border-color: #fd7e14; }
+  &.ligado.metodo-patch { background: #17a2b8; border-color: #17a2b8; }
+  &.ligado.metodo-delete { background: #dc3545; border-color: #dc3545; }
+  &.ligado.metodo-todos { background: #343a40; border-color: #343a40; }
+}
+
+.rodape-perfil {
+  background: #f8f9fa;
+  border-top: 1px solid rgba(0, 0, 0, .1);
+}

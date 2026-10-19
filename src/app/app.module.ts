@@ -101,20 +101,21 @@ import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/libera
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
 import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
-import { ManageRolesComponent } from './sap/components/manage-roles/manage-roles.component';
-import { AssignRoleComponent } from './sap/components/assign-role/assign-role.component';
+import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
 import { QuotationService } from './sap/service/document/quotation.service';
 import { TrocaComponent } from './sap/components/venda-futura/troca/troca.component';
 import { DescontoComponent } from './sap/components/document/desconto/desconto.component';
 import { GerarPixComponent } from './shared/components/gerar-pix/gerar-pix.component';
 import { PixLinkComponent } from './shared/components/pix-link/pix-link.component';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
+import { ImportacaoLancamentoComponent } from './sap/components/importacao-lancamento/importacao-lancamento.component';
 import { GerarPdfComponent } from './sap/components/venda-futura/gerar-pdf/gerar-pdf.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { APP_CONFIG } from '../environments/environment';
 import { OfflineStatusComponent } from './core/offline/offline-status/offline-status.component';
 import { OfflineHistoryComponent } from './core/offline/offline-history/offline-history.component';
 import { OfflineContextService } from './core/offline/offline-context.service';
+import { PermissoesApiService } from './core/permissoes-api.service';
 import { CalculadoraModule } from './modulos/calculadora-preco-venda/calculadora.module';
 import { ProducaoModule } from './modulos/producao/producao.module';
 import { LoadingBarModule } from '@ngx-loading-bar/core';
@@ -130,6 +131,7 @@ import { CobrancaModule } from './modulos/cobranca/cobranca.module';
 import { NotaFiscalLoteModule } from './modulos/nota-fiscal-lote/nota-fiscal-lote.module';
 import { RelatorioModule } from './modulos/relatorio/relatorio.module';
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { TypeaheadModule } from 'ngx-bootstrap/typeahead';
 
 
 registerLocaleData(localeBr);
@@ -179,8 +181,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ListComponent,
     CotacoesStatementComponent,
     PedidosVendaStatementComponent,
-    ManageRolesComponent,
-    AssignRoleComponent,
     DocumentCoreComponent,
     VendaFuturaStatementComponent,
     VendaFuturaSingleComponent,
@@ -200,6 +200,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     RegraFilialComponent,
     LiberacaoTravaComponent,
     RegrasTravaComponent,
+    RegrasAcessoComponent,
     MeusDadosComponent,
     DocumentosSapComponent,
     RetiradaComponent,
@@ -211,12 +212,14 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     GerarPixComponent,
     PixLinkComponent,
     PixPageComponent,
+    ImportacaoLancamentoComponent,
     OfflineStatusComponent,
     OfflineHistoryComponent,
   ],
   imports: [
     // Providers do datepicker uma vez so; o campo (app-campo-data) vem do SharedModule.
     BsDatepickerModule.forRoot(),
+    TypeaheadModule.forRoot(),
     NgxPaginationModule,
     CalculadoraModule,
     BrowserModule,
@@ -253,8 +256,10 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: (offline: OfflineContextService) => () => offline.initialize(),
-      deps: [OfflineContextService],
+      // As permissoes do menu so disparam a busca (nao seguram o boot); o roleGuard espera a resposta.
+      useFactory: (offline: OfflineContextService, permissoes: PermissoesApiService) =>
+        () => offline.initialize().then(() => permissoes.iniciar()),
+      deps: [OfflineContextService, PermissoesApiService],
       multi: true
     },
     {

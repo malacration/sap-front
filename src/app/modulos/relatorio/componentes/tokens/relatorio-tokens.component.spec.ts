@@ -22,6 +22,15 @@ describe('Tokens para IA', () => {
     });
   });
 
+  it('monta o comando do servidor MCP com a URL e o token', () => {
+    const { component } = criar('https://portal.exemplo/reports/api/v1');
+    expect(component.mcpUrl).toBe('https://portal.exemplo/reports/api/v1/admin/mcp');
+    expect(component.mcpComando).toBe(
+      'claude mcp add --transport http sap-reports https://portal.exemplo/reports/api/v1/admin/mcp ' +
+      '--header "Authorization: Bearer rpt_abc123"',
+    );
+  });
+
   it('torna absoluto um endereco relativo', () => {
     const { component } = criar('/api/sap-reports/api/v1');
     expect(component.apiUrl).toBe(`${window.location.origin}/api/sap-reports/api/v1`);
@@ -42,6 +51,12 @@ describe('Tokens para IA', () => {
     await Promise.resolve();
     expect(escrever.calls.mostRecent().args[0]).toContain('"api"');
     expect(component.copiadoJson).toBeTrue();
-    expect(toastr.success).toHaveBeenCalledTimes(2);
+    expect(component.copiadoMcp).toBeFalse();
+
+    component.copiarMcp();
+    await Promise.resolve();
+    expect(escrever.calls.mostRecent().args[0]).toContain('claude mcp add');
+    expect(component.copiadoMcp).toBeTrue();
+    expect(toastr.success).toHaveBeenCalledTimes(3);
   });
 });
