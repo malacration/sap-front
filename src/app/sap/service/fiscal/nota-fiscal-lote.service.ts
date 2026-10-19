@@ -4,7 +4,9 @@ import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
-import { NotaFiscalLote, StatusSapNota, StatusSefaz } from '../../model/fiscal/nota-fiscal-lote';
+import {
+  CategoriaDocumentoLote, FormaPagamentoLote, NotaFiscalLote, StatusSapNota, StatusSefaz, TrocaFormaPagamentoResultado,
+} from '../../model/fiscal/nota-fiscal-lote';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 
 export interface NotaFiscalLoteFiltro {
@@ -23,6 +25,8 @@ export interface NotaFiscalLoteFiltro {
   statusSap?: StatusSapNota | null;
   // ID da "ProcessStatus" da TaxPlus.
   statusSefaz?: number | null;
+  // Nulo = todas (NF-e de saida, NF-e venda futura antiga e adiantamentos).
+  categoria?: CategoriaDocumentoLote | null;
 }
 
 export interface NotaFiscalLoteDownload {
@@ -73,9 +77,18 @@ export class NotaFiscalLoteService {
     return this.http.get<StatusSefaz[]>(this.url + '/status-sefaz');
   }
 
-  baixar(docEntries: number[], pdf: boolean, xml: boolean, boleto = false): Observable<NotaFiscalLoteDownload> {
+  // OINV e ODPI tem DocEntry proprio: o backend recebe NF e adiantamentos em listas separadas.
+  static porTipo(documentos: NotaFiscalLote[]): { docEntries: number[]; adiantamentos: number[] } {
+    return {
+      docEntries: documentos.filter((d) => d.tipo !== 'AD').map((d) => d.docEntry),
+      adiantamentos: documentos.filter((d) => d.tipo === 'AD').map((d) => d.docEntry),
+    };
+  }
+
+  baixar(documentos: NotaFiscalLote[], pdf: boolean, xml: boolean, boleto = false): Observable<NotaFiscalLoteDownload> {
+    const corpo = { ...NotaFiscalLoteService.porTipo(documentos), pdf, xml, boleto };
     return this.http
-      .post(this.url + '/download', { docEntries, pdf, xml, boleto }, { observe: 'response', responseType: 'blob' })
+      .post(this.url + '/download', corpo, { observe: 'response', responseType: 'blob' })
       .pipe(
         map((resposta: HttpResponse<Blob>) => ({
           arquivo: resposta.body,
@@ -86,11 +99,23 @@ export class NotaFiscalLoteService {
       );
   }
 
+  formasPagamento(): Observable<FormaPagamentoLote[]> {
+    return this.http.get<FormaPagamentoLote[]>(this.url + '/formas-pagamento');
+  }
+
+  // Grava no SAP: troca a forma dos documentos e, se o parceiro nao tiver a forma, vincula a ele.
+  trocarFormaPagamento(formaPagamento: string, documentos: NotaFiscalLote[]): Observable<TrocaFormaPagamentoResultado[]> {
+    return this.http.post<TrocaFormaPagamentoResultado[]>(this.url + '/forma-pagamento',
+      { formaPagamento, ...NotaFiscalLoteService.porTipo(documentos) });
+  }
+
   getDefinition(): Column[] {
     return [
       // Toda coluna com texto vindo do SAP passa por '{{value}}': a tabela renderiza a celula via
       // innerHTML sem sanitizar, e o Handlebars escapa (so {{{value}}} nao escaparia).
-      new Column('NF / Série', 'notaFormatada', '{{value}}'),
+      new Column('Tipo', 'tipoHtml'),
+      new Column('Nº / Série', 'notaFormatada', '{{value}}'),
+      new Column('Contrato', 'contratoFormatado'),
       new Column('Emissão', 'dataFormatada'),
       new Column('Vencimento', 'vencimentoFormatado'),
       new Column('Filial', 'filialFormatada', '<span class="cel-filial" title="{{value}}">{{value}}</span>'),
@@ -98,6 +123,7 @@ export class NotaFiscalLoteService {
       new Column('Cliente', 'cardName', '{{value}}'),
       new Column('Vendedor', 'vendedor', '{{value}}'),
       new Column('Total', 'totalCurrency'),
+      new Column('Forma de pagamento', 'formaPagamento', '{{value}}'),
       new Column('Status SAP', 'statusSapLabel'),
       new Column('Status SEFAZ', 'statusSefazLabel', '{{value}}'),
       new Column('Chave de acesso', 'chaveAcesso', '<span class="cel-chave">{{value}}</span>'),

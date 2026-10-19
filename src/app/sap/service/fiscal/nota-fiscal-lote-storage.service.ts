@@ -14,8 +14,9 @@ import { NotaFiscalLote } from '../../model/fiscal/nota-fiscal-lote';
 export class NotaFiscalLoteStorageService {
 
   static readonly CHAVE = 'nota-fiscal-lote:lote';
-  // Subir so quando o formato mudar de um jeito que a versao anterior nao leia.
-  private static readonly VERSAO = 1;
+  // Subir so quando o formato mudar de um jeito que a versao anterior nao leia. v2 trouxe o tipo
+  // (NF ou adiantamento); a v1 so tinha NF e e lida como NF.
+  private static readonly VERSAO = 2;
 
   salvar(notas: NotaFiscalLote[], usuario: string): void {
     try {
@@ -41,15 +42,17 @@ export class NotaFiscalLoteStorageService {
         return [];
       }
       const dados = JSON.parse(bruto);
-      if (dados?.v !== NotaFiscalLoteStorageService.VERSAO || dados.usuario !== usuario || !Array.isArray(dados.notas)) {
+      if (![1, NotaFiscalLoteStorageService.VERSAO].includes(dados?.v) || dados.usuario !== usuario || !Array.isArray(dados.notas)) {
         this.limpar();
         return [];
       }
-      const porDocEntry = new Map<number, NotaFiscalLote>();
+      const porChave = new Map<string, NotaFiscalLote>();
       dados.notas
         .filter((nota: any) => Number.isInteger(nota?.docEntry) && nota.docEntry > 0)
-        .forEach((nota: any) => porDocEntry.set(nota.docEntry, NotaFiscalLote.from(nota)));
-      return Array.from(porDocEntry.values());
+        .filter((nota: any) => nota.tipo == null || nota.tipo === 'NF' || nota.tipo === 'AD')
+        .map((nota: any) => NotaFiscalLote.from({ ...nota, tipo: nota.tipo ?? 'NF', categoria: nota.categoria ?? nota.tipo ?? 'NF' }))
+        .forEach((nota: NotaFiscalLote) => porChave.set(nota.chave, nota));
+      return Array.from(porChave.values());
     } catch {
       // JSON corrompido: descarta.
       this.limpar();

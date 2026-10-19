@@ -1,12 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { Column } from '../../../shared/components/table/column.model';
 import { Branch } from '../../../sap/model/branch';
 import { SalesPerson } from '../../../sap/model/sales-person/sales-person';
-import { NotaFiscalLote, STATUS_SAP_NOTA, StatusSapNota, StatusSefaz } from '../../../sap/model/fiscal/nota-fiscal-lote';
+import {
+  CATEGORIAS_DOCUMENTO_LOTE, CategoriaDocumentoLote, FormaPagamentoLote, NotaFiscalLote, SITUACAO_TROCA_ROTULO,
+  STATUS_SAP_NOTA, StatusSapNota, StatusSefaz, TipoDocumentoLote, TrocaFormaPagamentoResultado, categoriaInfo,
+} from '../../../sap/model/fiscal/nota-fiscal-lote';
 import { NotaFiscalLoteFiltro, NotaFiscalLoteService } from '../../../sap/service/fiscal/nota-fiscal-lote.service';
 import { NotaFiscalLoteStorageService } from '../../../sap/service/fiscal/nota-fiscal-lote-storage.service';
 import { SearchService } from '../../../sap/service/search.service';
@@ -47,8 +51,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   filtroStatusSap: StatusSapNota | '' = '';
   // ID da "ProcessStatus"; '' = todos. String porque o <select> devolve string.
   filtroStatusSefaz = '';
+  // '' = todas: NF-e de saida, NF-e venda futura antiga e adiantamentos.
+  filtroCategoria: CategoriaDocumentoLote | '' = '';
 
   readonly statusSapOpcoes = STATUS_SAP_NOTA;
+  readonly categoriaOpcoes = CATEGORIAS_DOCUMENTO_LOTE;
   statusSefazOpcoes: StatusSefaz[] = [];
 
   baixarPdf = true;
@@ -66,18 +73,31 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   readonly buscaCliente: SearchService<BusinessPartner> = { search: (palavra) => this.service.buscarClientes(palavra) };
 
   /**
-   * O lote, montado a mao: por docEntry, na ordem em que entrou. Sobrevive a troca de pagina, de
+   * O lote, montado a mao: por tipo + docEntry, na ordem em que entrou. Sobrevive a troca de pagina, de
    * filtro e ao Limpar dos filtros - o usuario marca uma nota, vai atras de outra com outros
    * filtros e marca de novo. So "Limpar lote" e o X de cada nota tiram algo. Fica guardado na aba
    * (NotaFiscalLoteStorageService).
    */
-  private selecao = new Map<number, NotaFiscalLote>();
+  // Chave tipo + docEntry (NotaFiscalLote.chave): NF e adiantamento podem ter o mesmo docEntry.
+  private selecao = new Map<string, NotaFiscalLote>();
 
   // Copia do lote para o painel, refeita a cada mudanca (loteAlterado), e nao getter: o painel
   // redesenharia a lista a cada ciclo de deteccao.
   notasDoLote: NotaFiscalLote[] = [];
   totalDoLote = 0;
   quantidadeBaixando = 0;
+
+  // Troca da forma de pagamento dos documentos do lote (grava no SAP).
+  formasPagamento: FormaPagamentoLote[] = [];
+  formaEscolhida = '';
+  trocandoForma = false;
+  // Confirmacao da troca aberta: o lote fica travado para o que vai ser gravado ser o que foi confirmado.
+  private confirmandoTroca = false;
+  // A confirmacao e uma Promise do dialogo: sair da tela nao a cancela como cancela as subscriptions.
+  private destruido = false;
+  resultadosTroca: TrocaFormaPagamentoResultado[] = [];
+  readonly situacaoRotulo = SITUACAO_TROCA_ROTULO;
+  private troca?: Subscription;
 
 
   // Filtro da lista que esta na tela. Paginar e "selecionar todas" usam este, nao o que esta
@@ -97,14 +117,17 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
               private auth: AuthService) {}
 
   ngOnDestroy(): void {
+    this.destruido = true;
     this.consultaLista?.unsubscribe();
     this.consultaTodas?.unsubscribe();
     this.download?.unsubscribe();
+    this.troca?.unsubscribe();
   }
 
   ngOnInit(): void {
     this.definition = this.service.getDefinition();
     this.service.statusSefaz().subscribe((status) => (this.statusSefazOpcoes = status ?? []));
+    this.service.formasPagamento().subscribe((formas) => (this.formasPagamento = formas ?? []));
     this.carregarLote();
     this.definirPeriodoPadrao();
     this.filtrar();
@@ -138,6 +161,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       vencimentoAte: porNf ? null : this.vencimentoAte || null,
       statusSap: this.filtroStatusSap || null,
       statusSefaz: this.filtroStatusSefaz !== '' ? Number(this.filtroStatusSefaz) : null,
+      categoria: this.filtroCategoria || null,
     };
   }
 
@@ -169,17 +193,27 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
         this.notas = page.content;
         // Nota do lote que reaparece na busca: troca pelo dado novo (status SEFAZ pode ter
         // mudado). O set mantem a posicao no lote.
-        this.notas.filter((nota) => this.selecao.has(nota.docEntry))
-          .forEach((nota) => this.selecao.set(nota.docEntry, nota));
+        this.notas.filter((nota) => this.selecao.has(nota.chave))
+          .forEach((nota) => this.selecao.set(nota.chave, nota));
         this.totalItens = page.totalElements;
         this.paginaAtual = pagina;
         this.loading = false;
         this.loteAlterado();
       },
-      error: () => {
+      error: (erro) => {
         this.loading = false;
+        this.avisarFalhaInesperada(erro, 'Não foi possível montar a lista.');
       },
     });
+  }
+
+  // Erro HTTP o interceptor ja mostra. O resto (bug ao montar a resposta) sumia em silencio:
+  // a lista so ficava vazia, parecendo "nenhum documento".
+  private avisarFalhaInesperada(erro: any, mensagem: string): void {
+    if (!(erro instanceof HttpErrorResponse)) {
+      console.error(erro);
+      this.toastr.error(mensagem);
+    }
   }
 
   limparFiltros(): void {
@@ -192,6 +226,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.vendedorSelecionado = null;
     this.filtroStatusSap = '';
     this.filtroStatusSefaz = '';
+    this.filtroCategoria = '';
     this.versaoFiltros++;
     this.filtrar();
   }
@@ -222,8 +257,8 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   action(event: ActionReturn): void {
     if (event.type === 'nota-lote-toggle-selecao' && !this.loteTravado()) {
       const nota = event.data as NotaFiscalLote;
-      if (this.selecao.has(nota.docEntry)) {
-        this.remover(nota.docEntry);
+      if (this.selecao.has(nota.chave)) {
+        this.remover(nota.chave);
       } else {
         this.adicionar([nota]);
       }
@@ -235,7 +270,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.todasDaPaginaSelecionadas) {
-      this.remover(...this.notas.map((nota) => nota.docEntry));
+      this.remover(...this.notas.map((nota) => nota.chave));
     } else {
       this.adicionar(this.notas);
     }
@@ -291,8 +326,8 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     if (this.loteTravado()) {
       return false;
     }
-    const novas = new Map<number, NotaFiscalLote>();
-    notas.filter((nota) => !this.selecao.has(nota.docEntry)).forEach((nota) => novas.set(nota.docEntry, nota));
+    const novas = new Map<string, NotaFiscalLote>();
+    notas.filter((nota) => !this.selecao.has(nota.chave)).forEach((nota) => novas.set(nota.chave, nota));
     if (novas.size === 0) {
       return true;
     }
@@ -301,17 +336,17 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
         `O lote tem ${this.selecao.size} nota(s); com estas ficaria com ${this.selecao.size + novas.size}, e o limite é ${this.limite}.`);
       return false;
     }
-    novas.forEach((nota, docEntry) => this.selecao.set(docEntry, nota));
+    novas.forEach((nota, chave) => this.selecao.set(chave, nota));
     this.loteAlterado();
     return true;
   }
 
-  // Pelo docEntry: a linha da tabela costuma ser outro objeto da mesma nota que esta no lote.
-  remover(...docEntries: number[]): void {
+  // Pela chave: a linha da tabela costuma ser outro objeto do mesmo documento que esta no lote.
+  remover(...chaves: string[]): void {
     if (this.loteTravado()) {
       return;
     }
-    const removeu = docEntries.map((docEntry) => this.selecao.delete(docEntry)).some((r) => r);
+    const removeu = chaves.map((chave) => this.selecao.delete(chave)).some((r) => r);
     if (removeu) {
       this.loteAlterado();
     }
@@ -334,11 +369,144 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.loteAlterado();
   }
 
-  trackByDocEntry(_: number, nota: NotaFiscalLote): number {
-    return nota.docEntry;
+  trackByChave(_: number, nota: NotaFiscalLote): string {
+    return nota.chave;
+  }
+
+  /**
+   * Troca a forma de pagamento de todos os documentos do lote, inclusive fechados e cancelados:
+   * o que o SAP recusar volta como erro. Se o parceiro nao tiver a forma no cadastro, o backend
+   * vincula e repete. Boleto ja emitido nao e mexido; o resultado avisa quando ficou ativo.
+   */
+  trocarFormaPagamento(): void {
+    if (this.loteTravado()) {
+      return;
+    }
+    if (this.selecao.size === 0) {
+      this.toastr.warning('O lote está vazio.');
+      return;
+    }
+    const forma = this.formasPagamento.find((f) => f.codigo === this.formaEscolhida);
+    if (!forma) {
+      this.toastr.warning('Escolha a forma de pagamento.');
+      return;
+    }
+    // Um "adicionar todas" pendente mudaria o lote com a confirmacao aberta, e a troca gravaria so
+    // o lote de antes: cancela e trava ate a resposta do usuario.
+    this.cancelarAdicionarTodas();
+    this.confirmandoTroca = true;
+    const documentos = Array.from(this.selecao.values());
+    this.alert.confirm(
+      `Trocar a forma de pagamento de ${documentos.length} documento(s) para "${forma.descricao || forma.codigo}"? ` +
+      'Grava no SAP. Parceiro que não tiver essa forma no cadastro vai recebê-la.'
+    ).then((resposta) => {
+      this.confirmandoTroca = false;
+      // Confirmado depois de sair da tela (voltar do navegador com o dialogo aberto): nao grava.
+      if (resposta.isConfirmed && !this.destruido) {
+        this.executarTroca(forma.codigo, documentos);
+      }
+    }, () => {
+      this.confirmandoTroca = false;
+    });
+  }
+
+  private executarTroca(forma: string, documentos: NotaFiscalLote[]): void {
+    this.trocandoForma = true;
+    this.resultadosTroca = [];
+    this.troca?.unsubscribe();
+    this.troca = this.service.trocarFormaPagamento(forma, documentos).subscribe({
+      next: (resultados) => {
+        this.trocandoForma = false;
+        this.resultadosTroca = resultados ?? [];
+        // Atualiza a forma mostrada no lote; a lista da tela e recarregada para refletir o SAP.
+        // SEM_MUDANCA tambem: o SAP confirmou que o documento ja esta com a forma, e a copia do lote
+        // pode estar velha (documento fora da pagina que vai ser recarregada).
+        this.resultadosTroca
+          .filter((r) => r.situacao === 'ATUALIZADO' || r.situacao === 'VINCULADO_E_ATUALIZADO' || r.situacao === 'SEM_MUDANCA')
+          .forEach((r) => {
+            const nota = this.selecao.get(`${r.tipo}-${r.docEntry}`);
+            if (nota) {
+              nota.formaPagamento = forma;
+            }
+          });
+        this.loteAlterado();
+        this.avisarResultadoTroca();
+        this.carregarPagina(this.paginaAtual);
+      },
+      error: (erro) => {
+        this.trocandoForma = false;
+        // Sem resposta do backend (rede, gateway que desistiu antes do prazo da troca): a troca pode
+        // ter gravado parte do lote. Recusa do proprio backend (validacao) nao grava nada, e o
+        // interceptor ja mostra.
+        if (!(erro instanceof HttpErrorResponse) || erro.status === 0 || erro.status >= 502) {
+          this.toastr.warning('Não deu para confirmar o resultado da troca: parte dos documentos pode ter sido gravada. ' +
+            'Confira no SAP antes de repetir.', 'Forma de pagamento', { timeOut: 15000 });
+          this.carregarPagina(this.paginaAtual);
+        }
+      },
+    });
+  }
+
+  private avisarResultadoTroca(): void {
+    const conta = (...situacoes: string[]) => this.resultadosTroca.filter((r) => situacoes.includes(r.situacao)).length;
+    const trocados = conta('ATUALIZADO', 'VINCULADO_E_ATUALIZADO');
+    const vinculados = conta('VINCULADO_E_ATUALIZADO');
+    const falhas = conta('ERRO', 'NAO_ENCONTRADO');
+    const semConfirmacao = conta('SEM_CONFIRMACAO');
+    const pendentes = this.resultadosTroca.filter((r) => r.pendencia).length;
+    const comBoleto = this.resultadosTroca.filter((r) => r.boletoAtivo).length;
+    const partes = [`${trocados} trocado(s)`];
+    if (vinculados > 0) {
+      partes.push(`${vinculados} com a forma vinculada ao parceiro`);
+    }
+    if (conta('SEM_MUDANCA') > 0) {
+      partes.push(`${conta('SEM_MUDANCA')} já estavam com essa forma`);
+    }
+    if (falhas > 0 || semConfirmacao > 0 || pendentes > 0) {
+      const problemas = [];
+      if (falhas > 0) {
+        problemas.push(`${falhas} com erro`);
+      }
+      // O prazo acabou com a gravacao em andamento: pode ter gravado ou nao.
+      if (semConfirmacao > 0) {
+        problemas.push(`${semConfirmacao} sem confirmação (confira no SAP)`);
+      }
+      if (pendentes > 0) {
+        problemas.push(`${pendentes} com pendência`);
+      }
+      this.toastr.warning(`${partes.join(', ')}; ${problemas.join(', ')}. Veja o resultado no lote.`,
+        'Forma de pagamento', { timeOut: 15000 });
+    } else {
+      this.toastr.success(partes.join(', ') + '.', 'Forma de pagamento');
+    }
+    if (comBoleto > 0) {
+      this.toastr.info(`${comBoleto} documento(s) ainda têm boleto ativo na BankPlus.`, 'Boletos', { timeOut: 15000 });
+    }
+  }
+
+  // So o que pede atencao: erro, nao encontrado ou aviso (boleto ativo, conferencia que falhou).
+  get resultadosComAtencao(): TrocaFormaPagamentoResultado[] {
+    return this.resultadosTroca.filter((r) =>
+      r.situacao === 'ERRO' || r.situacao === 'NAO_ENCONTRADO' || r.situacao === 'SEM_CONFIRMACAO' || !!r.mensagem);
+  }
+
+  get quantidadeTrocada(): number {
+    return this.resultadosTroca.filter((r) => r.situacao === 'ATUALIZADO' || r.situacao === 'VINCULADO_E_ATUALIZADO').length;
+  }
+
+  fecharResultadosTroca(): void {
+    this.resultadosTroca = [];
+  }
+
+  categoriaDo(r: TrocaFormaPagamentoResultado) {
+    return categoriaInfo(r.categoria, r.tipo);
   }
 
   baixar(): void {
+    if (this.trocandoForma) {
+      this.toastr.info('Espere a troca da forma de pagamento terminar.');
+      return;
+    }
     if (this.selecao.size === 0) {
       this.toastr.warning('Selecione ao menos uma nota.');
       return;
@@ -351,22 +519,39 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       this.toastr.warning(`O lote aceita até ${this.limite} notas; há ${this.selecao.size} selecionadas.`);
       return;
     }
+    // Adiantamento nao tem DANFE nem XML: lote so de adiantamentos sem "Boleto" daria um zip vazio.
+    const temNotaFiscal = Array.from(this.selecao.values()).some((n) => n.tipo !== 'AD');
+    if (!temNotaFiscal && !this.baixarBoleto) {
+      this.toastr.warning('Adiantamento só tem boleto (não emite NF-e): marque "Boleto" para baixar.');
+      return;
+    }
     this.baixando = true;
-    const quantidade = this.selecao.size;
+    // Sem "Boleto", adiantamento nao tem o que baixar: vai so para o avisos.txt do zip.
+    const adiantamentosSemArquivo = this.baixarBoleto ? 0 : Array.from(this.selecao.values()).filter((n) => n.tipo === 'AD').length;
+    // O erro pode ser de qualquer documento pedido, adiantamento incluido (nao encontrado, por exemplo).
+    const pedidos = this.selecao.size;
+    const quantidade = pedidos - adiantamentosSemArquivo;
     this.quantidadeBaixando = quantidade;
     this.boletoNoDownload = this.baixarBoleto;
     this.download?.unsubscribe();
-    this.download = this.service.baixar(Array.from(this.selecao.keys()), this.baixarPdf, this.baixarXml, this.baixarBoleto).subscribe({
+    this.download = this.service.baixar(Array.from(this.selecao.values()), this.baixarPdf, this.baixarXml, this.baixarBoleto).subscribe({
       next: (download) => {
         this.salvar(download.arquivo, download.nome);
         this.baixando = false;
         if (download.notasComErro > 0) {
           this.toastr.warning(
-            `${download.notasComErro} de ${quantidade} nota(s) não vieram completas. O motivo está no arquivo erros.txt dentro do zip.`,
+            `${download.notasComErro} de ${pedidos} documento(s) não vieram completos. O motivo está no arquivo erros.txt dentro do zip.`,
             'Lote baixado com pendências',
             { timeOut: 15000 });
         } else {
           this.toastr.success(`${quantidade} nota(s) baixada(s).`);
+        }
+        if (adiantamentosSemArquivo > 0) {
+          this.toastr.info(
+            `${adiantamentosSemArquivo} adiantamento(s) sem arquivo: adiantamento só tem boleto, e "Boleto" não estava marcado. ` +
+            'O detalhe de cada um está no zip (avisos.txt ou, se houve erro, erros.txt).',
+            'Adiantamentos',
+            { timeOut: 15000 });
         }
         // Nao e erro: a forma de pagamento da nota nao e boleto, ou o boleto foi cancelado.
         if (download.notasSemBoleto > 0) {
@@ -392,10 +577,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
    * errada do que vem no arquivo.
    */
   private loteTravado(): boolean {
-    if (this.baixando) {
-      this.toastr.info('Espere o download terminar para mudar o lote.');
+    if (this.baixando || this.trocandoForma || this.confirmandoTroca) {
+      this.toastr.info(`Espere ${this.baixando ? 'o download' : 'a troca da forma de pagamento'} terminar para mudar o lote.`);
+      return true;
     }
-    return this.baixando;
+    return false;
   }
 
   // Toda mudanca do lote passa por aqui: refaz a copia do painel, a marcacao da tabela e o que
@@ -403,12 +589,12 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   private loteAlterado(): void {
     this.notasDoLote = Array.from(this.selecao.values());
     this.totalDoLote = this.notasDoLote.reduce((soma, nota) => soma + (Number(nota.total) || 0), 0);
-    this.notas.forEach((nota) => (nota.selecionado = this.selecao.has(nota.docEntry)));
+    this.notas.forEach((nota) => (nota.selecionado = this.selecao.has(nota.chave)));
     this.storage.salvar(this.notasDoLote, this.usuario());
   }
 
   private carregarLote(): void {
-    this.storage.carregar(this.usuario()).forEach((nota) => this.selecao.set(nota.docEntry, nota));
+    this.storage.carregar(this.usuario()).forEach((nota) => this.selecao.set(nota.chave, nota));
     this.loteAlterado();
   }
 

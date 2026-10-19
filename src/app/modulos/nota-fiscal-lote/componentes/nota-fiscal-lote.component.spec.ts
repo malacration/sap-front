@@ -1,5 +1,6 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { fakeAsync, flushMicrotasks } from '@angular/core/testing';
-import { Subject, of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { NotaFiscalLoteComponent } from './nota-fiscal-lote.component';
 import { NotaFiscalLoteStorageService } from '../../../sap/service/fiscal/nota-fiscal-lote-storage.service';
 import { NotaFiscalLote } from '../../../sap/model/fiscal/nota-fiscal-lote';
@@ -15,8 +16,13 @@ describe('NotaFiscalLoteComponent', () => {
   beforeEach(() => sessionStorage.removeItem(CHAVE));
   afterEach(() => sessionStorage.removeItem(CHAVE));
 
-  // Storage de verdade; auth e confirm falsos.
+  const FORMAS = [{ codigo: 'AVISTA', descricao: 'DEPOSITO' }, { codigo: 'pix-vencimento', descricao: 'Pix uzzipay' }];
+
+  // Storage de verdade; auth e confirm falsos. Fake de service sem as chamadas de forma de
+  // pagamento ganha as padrao aqui.
   function novoComponente(service: any, toastr: any, opcoes: { confirma?: boolean; usuario?: string; token?: any } = {}) {
+    service.formasPagamento ??= () => of(FORMAS);
+    service.trocarFormaPagamento ??= () => of([]);
     const alert = { confirm: jasmine.createSpy('confirm').and.returnValue(Promise.resolve({ isConfirmed: opcoes.confirma ?? true })) };
     // Token Keycloak por padrao; name igual para todo mundo de proposito: o lote nao separa por nome.
     const auth = { getDecodeToken: () => opcoes.token ?? ({ iss: 'https://sso', sub: opcoes.usuario ?? 'Fulano', name: 'Nome Igual' }) };
@@ -45,8 +51,8 @@ describe('NotaFiscalLoteComponent', () => {
         }
         return of(paginas[page] ?? pagina([]));
       },
-      baixar: (docEntries: number[], pdf: boolean, xml: boolean, boleto: boolean) => {
-        chamadas.baixar.push({ docEntries, pdf, xml, boleto });
+      baixar: (documentos: NotaFiscalLote[], pdf: boolean, xml: boolean, boleto: boolean) => {
+        chamadas.baixar.push({ docEntries: documentos.map((d) => d.docEntry), pdf, xml, boleto });
         return of({ arquivo: null, nome: 'notas.zip', notasComErro: 0, notasSemBoleto: boleto ? 1 : 0 });
       },
     } as any;
@@ -372,7 +378,10 @@ describe('NotaFiscalLoteComponent', () => {
       const service = {
         getDefinition: () => [], statusSefaz: () => of([]),
         listar: (filtro: any) => of(pagina(filtro.statusSap === 'CANCELADO' ? [nota(2)] : [nota(1)])),
-        baixar: (docEntries: number[]) => { chamadas.baixar.push(docEntries); return of({ arquivo: null, nome: 'n.zip', notasComErro: 0, notasSemBoleto: 0 }); },
+        baixar: (documentos: NotaFiscalLote[]) => {
+          chamadas.baixar.push(documentos.map((d) => d.docEntry));
+          return of({ arquivo: null, nome: 'n.zip', notasComErro: 0, notasSemBoleto: 0 });
+        },
       } as any;
       const componente = novoComponente(service, jasmine.createSpyObj('ToastrService', ['warning', 'success', 'info']));
       componente.ngOnInit();
@@ -395,7 +404,7 @@ describe('NotaFiscalLoteComponent', () => {
       const antes = componente.notas[0];
       componente.filtrar();
       expect(componente.notas[0]).not.toBe(antes);
-      componente.remover(1);
+      componente.remover('NF-1');
       expect(componente.notasDoLote.map((n) => n.docEntry)).toEqual([2]);
       expect(componente.notas.map((n) => n.selecionado)).toEqual([false, true]);
     });
@@ -413,7 +422,7 @@ describe('NotaFiscalLoteComponent', () => {
       componente.baixar();
 
       marcar(componente, 2);
-      componente.remover(1);
+      componente.remover('NF-1');
       componente.alternarSelecaoDaPagina();
       expect(componente.notasDoLote.map((n) => n.docEntry)).toEqual([1]);
       expect(toastr.info).toHaveBeenCalled();
@@ -493,7 +502,8 @@ describe('NotaFiscalLoteComponent', () => {
         const { componente } = tela({ 0: pagina([nota(1), nota(2)]) });
         componente.alternarSelecaoDaPagina();
         const salvo = JSON.parse(sessionStorage.getItem(CHAVE)!);
-        expect(salvo.v).toBe(1);
+        expect(salvo.v).toBe(2);
+        expect(salvo.notas[0].tipo).toBe('NF');
         expect(salvo.usuario).toBe('kc:Fulano');
         expect(Object.keys(salvo.notas[0])).not.toContain('selecionado');
 
@@ -513,7 +523,7 @@ describe('NotaFiscalLoteComponent', () => {
       it('lote de outro usuario, versao desconhecida, JSON quebrado ou docEntry invalido sao ignorados', () => {
         const casos = [
           JSON.stringify({ v: 1, usuario: 'kc:Outro', notas: [{ docEntry: 1 }] }),
-          JSON.stringify({ v: 2, usuario: 'kc:Fulano', notas: [{ docEntry: 1 }] }),
+          JSON.stringify({ v: 3, usuario: 'kc:Fulano', notas: [{ docEntry: 1 }] }),
           '{quebrado',
           JSON.stringify({ v: 1, usuario: 'kc:Fulano', notas: [{ docEntry: 'x' }, { docEntry: -1 }, { docEntry: 7 }, { docEntry: 7 }] }),
         ];
@@ -551,6 +561,381 @@ describe('NotaFiscalLoteComponent', () => {
       });
     });
 
+  });
+
+  describe('adiantamento de venda futura', () => {
+    const ad = (docEntry: number, numero = docEntry + 5000) =>
+      NotaFiscalLote.from({ tipo: 'AD', docEntry, numero, contrato: 412, data: '2026-09-30', total: 100, statusSap: 'ABERTO' });
+
+    it('filtro de tipo (categoria) vai para a busca e o limpar volta para todos', () => {
+      const { componente, chamadas } = tela({ 0: pagina([]) });
+      componente.filtroCategoria = 'NF_FUTURA';
+      componente.filtrar();
+      expect(chamadas.listar[1].filtro.categoria).toBe('NF_FUTURA');
+      componente.limparFiltros();
+      expect(chamadas.listar[2].filtro.categoria).toBeNull();
+    });
+
+    it('NF de venda futura do padrao antigo tem rotulo e cor proprios', () => {
+      const futura = NotaFiscalLote.from({ tipo: 'NF', categoria: 'NF_FUTURA', docEntry: 1 });
+      const saida = NotaFiscalLote.from({ tipo: 'NF', categoria: 'NF', docEntry: 2 });
+      expect(futura.tipoLabel).toBe('NF-e venda futura');
+      expect(futura.tipoBadge).toBe('badge-warning');
+      expect(saida.tipoLabel).toBe('NF-e');
+      expect(futura.tipoHtml).toBe('<span class="badge badge-warning">NF-e venda futura</span>');
+      // sem categoria (lote antigo), vale a do tipo
+      expect(NotaFiscalLote.from({ tipo: 'AD', docEntry: 3 }).tipoLabel).toBe('Adiant. venda futura');
+    });
+
+    it('lote guardado sem categoria recebe a do tipo; NF futura volta como NF futura', () => {
+      sessionStorage.setItem(CHAVE, JSON.stringify({ v: 2, usuario: 'kc:Fulano', notas: [
+        { tipo: 'AD', docEntry: 7 }, { tipo: 'NF', categoria: 'NF_FUTURA', docEntry: 8 }] }));
+      const lote = tela({ 0: pagina([]) }).componente.notasDoLote;
+      expect(lote.map((n) => n.categoria)).toEqual(['AD', 'NF_FUTURA']);
+    });
+
+    it('NF e adiantamento com o mesmo docEntry entram os dois no lote e vao em listas separadas', () => {
+      const chamadas: any[] = [];
+      const service = {
+        getDefinition: () => [], statusSefaz: () => of([]), listar: () => of(pagina([nota(10), ad(10)])),
+        baixar: (documentos: NotaFiscalLote[]) => {
+          chamadas.push(NotaFiscalLoteService.porTipo(documentos));
+          return of({ arquivo: null, nome: 'n.zip', notasComErro: 0, notasSemBoleto: 0 });
+        },
+      } as any;
+      const componente = novoComponente(service, jasmine.createSpyObj('ToastrService', ['warning', 'success', 'info']));
+      componente.ngOnInit();
+      componente.alternarSelecaoDaPagina();
+      expect(componente.notasDoLote.map((n) => n.chave)).toEqual(['NF-10', 'AD-10']);
+      componente.baixar();
+      expect(chamadas).toEqual([{ docEntries: [10], adiantamentos: [10] }]);
+    });
+
+    it('lote so de adiantamentos sem Boleto nao baixa (nao tem DANFE nem XML); com Boleto ou com NF baixa', () => {
+      const { componente, chamadas, toastr } = tela({ 0: pagina([ad(10), nota(1)]) });
+      componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[0] } as any);
+      componente.baixar();
+      expect(chamadas.baixar.length).toBe(0);
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('Boleto'));
+
+      componente.baixarBoleto = true;
+      componente.baixar();
+      expect(chamadas.baixar.length).toBe(1);
+
+      componente.baixarBoleto = false;
+      componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[1] } as any);
+      componente.baixar();
+      expect(chamadas.baixar.length).toBe(2);
+    });
+
+    it('NF com adiantamento sem Boleto: conta so a NF como baixada e avisa o adiantamento sem arquivo', () => {
+      const { componente, toastr } = tela({ 0: pagina([ad(10), nota(1)]) });
+      componente.alternarSelecaoDaPagina();
+      componente.baixar();
+      expect(toastr.success).toHaveBeenCalledWith('1 nota(s) baixada(s).');
+      expect(toastr.info)
+        .toHaveBeenCalledWith(jasmine.stringContaining('1 adiantamento(s) sem arquivo'), 'Adiantamentos', jasmine.anything());
+
+      toastr.info.calls.reset();
+      componente.baixarBoleto = true;
+      componente.baixar();
+      expect(toastr.success).toHaveBeenCalledWith('2 nota(s) baixada(s).');
+      expect(toastr.info).not.toHaveBeenCalledWith(jasmine.anything(), 'Adiantamentos', jasmine.anything());
+    });
+
+    it('erro de adiantamento sem Boleto conta sobre o total pedido, nao so sobre as NF', () => {
+      const service = {
+        getDefinition: () => [], statusSefaz: () => of([]), listar: () => of(pagina([nota(1), ad(10), ad(11)])),
+        baixar: () => of({ arquivo: null, nome: 'n.zip', notasComErro: 2, notasSemBoleto: 0 }),
+      } as any;
+      const toastr = jasmine.createSpyObj('ToastrService', ['warning', 'success', 'info']);
+      const componente = novoComponente(service, toastr);
+      componente.ngOnInit();
+      componente.alternarSelecaoDaPagina();
+      componente.baixar();
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('2 de 3 documento(s)'), jasmine.anything(), jasmine.anything());
+    });
+
+    it('rotulos do adiantamento', () => {
+      const a = ad(10, 5831);
+      expect(a.tipoLabel).toBe('Adiant. venda futura');
+      expect(a.contratoFormatado).toBe('VF 412');
+      expect(a.statusSefazLabel).toBe('Sem NF-e');
+      expect(NotaFiscalLote.from({ tipo: 'AD', docEntry: 1, statusSap: 'DEVOLVIDO' }).statusSapLabel).toBe('Devolvido');
+    });
+
+    it('lote guardado na versao 1 (so NF) e lido como NF; adiantamento volta com o tipo', () => {
+      sessionStorage.setItem(CHAVE, JSON.stringify({ v: 1, usuario: 'kc:Fulano', notas: [{ docEntry: 7, numero: 507 }] }));
+      expect(tela({ 0: pagina([]) }).componente.notasDoLote.map((n) => n.chave)).toEqual(['NF-7']);
+
+      sessionStorage.removeItem(CHAVE);
+      const { componente } = tela({ 0: pagina([ad(10)]) });
+      componente.alternarSelecaoDaPagina();
+      const recarregado = tela({ 0: pagina([]) }).componente.notasDoLote[0];
+      expect(recarregado.chave).toBe('AD-10');
+      expect(recarregado.contrato).toBe(412);
+    });
+  });
+
+  describe('troca da forma de pagamento', () => {
+    function telaTroca(resultados: any[] | Subject<any[]>, opcoes: { confirma?: boolean } = {}) {
+      const chamadas = { troca: [] as any[], listar: 0 };
+      // O que o SAP tem gravado: a lista recarregada depois da troca devolve a forma nova.
+      const formaNoSap: { [docEntry: number]: string } = {};
+      const service = {
+        getDefinition: () => [], statusSefaz: () => of([]), formasPagamento: () => of(FORMAS),
+        listar: () => {
+          chamadas.listar++;
+          return of(pagina([nota(1), nota(2)].map((n) => Object.assign(n, { formaPagamento: formaNoSap[n.docEntry] }))));
+        },
+        trocarFormaPagamento: (forma: string, documentos: NotaFiscalLote[]) => {
+          chamadas.troca.push({ forma, chaves: documentos.map((d) => d.chave) });
+          if (Array.isArray(resultados)) {
+            resultados.filter((x) => ['ATUALIZADO', 'VINCULADO_E_ATUALIZADO', 'SEM_MUDANCA'].includes(x.situacao))
+              .forEach((x) => (formaNoSap[x.docEntry] = forma));
+            return of(resultados);
+          }
+          return resultados;
+        },
+      } as any;
+      const toastr = jasmine.createSpyObj('ToastrService', ['warning', 'success', 'error', 'info']);
+      const componente = novoComponente(service, toastr, opcoes);
+      componente.ngOnInit();
+      return { componente, chamadas, toastr };
+    }
+    const r = (docEntry: number, situacao: string, extra: any = {}) =>
+      ({ tipo: 'NF', categoria: 'NF', docEntry, numero: docEntry + 500, cardCode: 'C1', cardName: 'Cliente C1', formaAnterior: 'AVISTA',
+        situacao, mensagem: null, boletoAtivo: false, ...extra });
+
+    it('resultado separa a categoria de cada documento', () => {
+      const { componente } = telaTroca([]);
+      expect(componente.categoriaDo(r(1, 'ERRO', { categoria: 'NF_FUTURA' }) as any).rotulo).toBe('NF-e venda futura');
+      expect(componente.categoriaDo(r(1, 'NAO_ENCONTRADO', { categoria: null, tipo: 'AD' }) as any).rotulo).toBe('Adiant. venda futura');
+    });
+
+    it('carrega as formas de recebimento para escolher', () => {
+      expect(telaTroca([]).componente.formasPagamento.map((f) => f.codigo)).toEqual(['AVISTA', 'pix-vencimento']);
+    });
+
+    it('sem forma escolhida ou com lote vazio nao chama', fakeAsync(() => {
+      const { componente, chamadas, toastr } = telaTroca([]);
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = '';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(chamadas.troca.length).toBe(0);
+      expect(toastr.warning).toHaveBeenCalledTimes(2);
+    }));
+
+    it('confirmacao cancelada nao grava nada', fakeAsync(() => {
+      const { componente, chamadas } = telaTroca([], { confirma: false });
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(chamadas.troca.length).toBe(0);
+    }));
+
+    it('aplica no lote inteiro, atualiza a forma mostrada e recarrega a lista', fakeAsync(() => {
+      const { componente, chamadas, toastr } = telaTroca([r(1, 'ATUALIZADO'), r(2, 'VINCULADO_E_ATUALIZADO')]);
+      componente.alternarSelecaoDaPagina();
+      const listagensAntes = chamadas.listar;
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(chamadas.troca).toEqual([{ forma: 'pix-vencimento', chaves: ['NF-1', 'NF-2'] }]);
+      expect(componente.notasDoLote.map((n) => n.formaPagamento)).toEqual(['pix-vencimento', 'pix-vencimento']);
+      expect(componente.quantidadeTrocada).toBe(2);
+      expect(chamadas.listar).toBe(listagensAntes + 1);
+      expect(toastr.success).toHaveBeenCalled();
+    }));
+
+    it('mostra so o que pede atencao: erro, nao encontrado e boleto ativo', fakeAsync(() => {
+      const { componente, toastr } = telaTroca([
+        r(1, 'ATUALIZADO', { boletoAtivo: true, mensagem: 'ainda tem 1 boleto(s) ativo(s) na BankPlus' }),
+        r(2, 'ERRO', { mensagem: 'Document is already closed' }),
+      ]);
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(componente.resultadosComAtencao.map((x) => x.docEntry)).toEqual([1, 2]);
+      // a nota com erro continua com a forma antiga no lote
+      expect(componente.notasDoLote.find((n) => n.docEntry === 2)?.formaPagamento).toBeUndefined();
+      expect(toastr.warning).toHaveBeenCalled();
+      expect(toastr.info).toHaveBeenCalled();
+      componente.fecharResultadosTroca();
+      expect(componente.resultadosTroca.length).toBe(0);
+    }));
+
+    it('ja estava com a forma: o lote mostra a forma confirmada pelo SAP, mesmo fora da pagina', fakeAsync(() => {
+      const { componente } = telaTroca([r(1, 'SEM_MUDANCA'), r(2, 'ATUALIZADO')]);
+      componente.alternarSelecaoDaPagina();
+      // documentos de outra busca: a lista recarregada nao os traz
+      spyOn(componente, 'carregarPagina');
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(componente.notasDoLote.map((n) => n.formaPagamento)).toEqual(['pix-vencimento', 'pix-vencimento']);
+      expect(componente.quantidadeTrocada).toBe(1);
+    }));
+
+    it('sem confirmacao (prazo acabou gravando) pede atencao, avisa para conferir e nao muda a forma', fakeAsync(() => {
+      const { componente, toastr } = telaTroca([
+        r(1, 'SEM_CONFIRMACAO', { mensagem: 'o prazo da troca (300s) acabou' }),
+        r(2, 'ATUALIZADO'),
+      ]);
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(componente.resultadosComAtencao.map((x) => x.docEntry)).toEqual([1]);
+      expect(componente.notasDoLote.find((n) => n.docEntry === 1)?.formaPagamento).toBeUndefined();
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('1 sem confirmação'), jasmine.anything(), jasmine.anything());
+      expect(toastr.warning.calls.mostRecent().args[0]).not.toContain('com erro');
+      expect(toastr.success).not.toHaveBeenCalled();
+    }));
+
+    it('troca com pendencia (forma nao vinculada ao parceiro) nao da aviso de sucesso', fakeAsync(() => {
+      const { componente, toastr } = telaTroca([
+        r(1, 'ATUALIZADO', { pendencia: true, mensagem: 'forma NAO vinculada ao parceiro (Business partner is locked)' }),
+        r(2, 'ATUALIZADO'),
+      ]);
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(toastr.success).not.toHaveBeenCalled();
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('1 com pendência'), jasmine.anything(), jasmine.anything());
+      expect(componente.resultadosComAtencao.map((x) => x.docEntry)).toEqual([1]);
+    }));
+
+    it('sem resposta do backend avisa que pode ter gravado e recarrega; recusa do backend nao', fakeAsync(() => {
+      for (const [status, avisa] of [[504, true], [0, true], [400, false]] as [number, boolean][]) {
+        // cada volta e uma tela nova: o lote da volta anterior nao pode ser restaurado
+        sessionStorage.removeItem(CHAVE);
+        const { componente, chamadas, toastr } = telaTroca(throwError(() => new HttpErrorResponse({ status })) as any);
+        componente.alternarSelecaoDaPagina();
+        const listagensAntes = chamadas.listar;
+        componente.formaEscolhida = 'pix-vencimento';
+        componente.trocarFormaPagamento();
+        flushMicrotasks();
+        expect(componente.trocandoForma).toBeFalse();
+        expect(toastr.warning.calls.count()).withContext(`status ${status}`).toBe(avisa ? 1 : 0);
+        expect(chamadas.listar).withContext(`status ${status}`).toBe(listagensAntes + (avisa ? 1 : 0));
+      }
+    }));
+
+    describe('com a confirmacao aberta', () => {
+      // Confirmacao que o teste responde quando quiser; troca espionada.
+      function telaConfirmando() {
+        const t = telaAssincrona();
+        let responder!: (r: any) => void;
+        let recusar!: (e: any) => void;
+        (t.componente as any).alert.confirm.and.returnValue(new Promise((ok, falha) => { responder = ok; recusar = falha; }));
+        const troca = jasmine.createSpy('trocarFormaPagamento').and.returnValue(of([]));
+        (t.componente as any).service.trocarFormaPagamento = troca;
+        t.responde(0, pagina([nota(1), nota(2)], 3));
+        t.componente.action({ type: 'nota-lote-toggle-selecao', data: t.componente.notas[0] } as any);
+        t.componente.formaEscolhida = 'pix-vencimento';
+        return { ...t, troca, responder: (resposta: any) => responder(resposta), recusar: (e: any) => recusar(e) };
+      }
+
+      it('o lote nao muda, o adicionar todas pendente cai e grava so o que foi confirmado', fakeAsync(() => {
+        const { componente, pendentes, responde, troca, responder } = telaConfirmando();
+        componente.adicionarTodasDoFiltro();
+        componente.trocarFormaPagamento();
+        responde(1, pagina([nota(1), nota(2), nota(3)]));
+        componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[1] } as any);
+        componente.remover('NF-1');
+        expect(pendentes[1].resposta.observed).toBeFalse();
+        expect(componente.notasDoLote.map((n) => n.chave)).toEqual(['NF-1']);
+
+        responder({ isConfirmed: true });
+        flushMicrotasks();
+        expect(troca).toHaveBeenCalledTimes(1);
+        expect(troca.calls.mostRecent().args[1].map((n: NotaFiscalLote) => n.chave)).toEqual(['NF-1']);
+      }));
+
+      it('confirmada depois de sair da tela nao grava', fakeAsync(() => {
+        const { componente, troca, responder } = telaConfirmando();
+        componente.trocarFormaPagamento();
+        componente.ngOnDestroy();
+        responder({ isConfirmed: true });
+        flushMicrotasks();
+        expect(troca).not.toHaveBeenCalled();
+      }));
+
+      it('cancelada destrava o lote', fakeAsync(() => {
+        const { componente, troca, responder } = telaConfirmando();
+        componente.trocarFormaPagamento();
+        responder({ isConfirmed: false });
+        flushMicrotasks();
+        componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[1] } as any);
+        expect(componente.notasDoLote.map((n) => n.chave)).toEqual(['NF-1', 'NF-2']);
+        expect(troca).not.toHaveBeenCalled();
+      }));
+
+      it('dialogo que falha destrava o lote', fakeAsync(() => {
+        const { componente, troca, recusar } = telaConfirmando();
+        componente.trocarFormaPagamento();
+        recusar(new Error('fechou'));
+        flushMicrotasks();
+        componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[1] } as any);
+        expect(componente.notasDoLote.length).toBe(2);
+        expect(troca).not.toHaveBeenCalled();
+      }));
+    });
+
+    it('durante a troca o lote nao muda e o download espera', fakeAsync(() => {
+      const resposta = new Subject<any[]>();
+      const { componente } = telaTroca(resposta);
+      componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[0] } as any);
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect(componente.trocandoForma).toBeTrue();
+      componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[1] } as any);
+      componente.remover('NF-1');
+      componente.baixar();
+      expect(componente.notasDoLote.map((n) => n.docEntry)).toEqual([1]);
+      expect(componente.baixando).toBeFalse();
+      resposta.next([r(1, 'ATUALIZADO')]);
+      resposta.complete();
+      expect(componente.trocandoForma).toBeFalse();
+    }));
+
+    it('sair da tela durante a troca cancela a resposta', fakeAsync(() => {
+      const resposta = new Subject<any[]>();
+      const { componente, toastr } = telaTroca(resposta);
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      componente.ngOnDestroy();
+      resposta.next([r(1, 'ATUALIZADO')]);
+      expect(toastr.success).not.toHaveBeenCalled();
+    }));
+  });
+
+  it('JSON com um campo chave nao quebra a montagem da nota', () => {
+    const n = NotaFiscalLote.from({ tipo: 'AD', docEntry: 7, chave: { tipo: 'AD', docEntry: 7 } });
+    expect(n.chave).toBe('AD-7');
+  });
+
+  it('falha que nao e HTTP ao montar a lista avisa em vez de mostrar lista vazia', () => {
+    const service = {
+      getDefinition: () => [], statusSefaz: () => of([]),
+      listar: () => throwError(() => new TypeError('Cannot set property chave')),
+    } as any;
+    const toastr = jasmine.createSpyObj('ToastrService', ['warning', 'success', 'error', 'info']);
+    spyOn(console, 'error');
+    const componente = novoComponente(service, toastr);
+    componente.ngOnInit();
+    expect(toastr.error).toHaveBeenCalled();
+    expect(componente.loading).toBeFalse();
   });
 
   it('formata nota sem numero pelo documento', () => {

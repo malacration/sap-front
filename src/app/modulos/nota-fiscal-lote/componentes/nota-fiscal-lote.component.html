@@ -28,10 +28,21 @@
             <app-campo-data inputId="vencimentoAte" name="vencimentoAte" [(ngModel)]="vencimentoAte" [disabled]="filtrandoPorNf"></app-campo-data>
           </div>
           <div class="col-md-2 col-sm-6">
-            <label for="numeroNf">
-              Nº da NF
+            <label for="filtroCategoria">
+              Tipo
               <i class="fas fa-info-circle text-muted"
-                 title="Com a NF preenchida, as datas de emissão e vencimento não filtram. O mesmo número pode existir em filiais ou séries diferentes: aparecem todas."></i>
+                 title="NF-e venda futura (padrão antigo) é a de simples faturamento (CFOP 5922/6922): fatura de reserva com as entregas feitas em cima dela. O SAP não deixa trocar a forma de pagamento nela."></i>
+            </label>
+            <select class="form-control" id="filtroCategoria" name="filtroCategoria" [(ngModel)]="filtroCategoria" (ngModelChange)="filtrar()">
+              <option value="">Todos</option>
+              <option *ngFor="let c of categoriaOpcoes" [value]="c.valor">{{ c.filtro }}</option>
+            </select>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label for="numeroNf">
+              Nº do documento
+              <i class="fas fa-info-circle text-muted"
+                 title="Número da NF ou do adiantamento. Preenchido, as datas de emissão e vencimento não filtram. O mesmo número pode existir em filiais, séries ou tipos diferentes: aparecem todos."></i>
             </label>
             <input type="text" inputmode="numeric" maxlength="9" class="form-control" id="numeroNf" name="numeroNf"
                    placeholder="Enter para buscar" [(ngModel)]="numeroNf">
@@ -92,11 +103,11 @@
       <hr>
 
       <div class="d-flex flex-wrap align-items-center mb-2">
-        <button type="button" class="btn btn-outline-secondary mr-2 mb-1" [disabled]="notas.length === 0 || baixando" (click)="alternarSelecaoDaPagina()">
+        <button type="button" class="btn btn-outline-secondary mr-2 mb-1" [disabled]="notas.length === 0 || baixando || trocandoForma" (click)="alternarSelecaoDaPagina()">
           {{ todasDaPaginaSelecionadas ? 'Desmarcar a página' : 'Marcar a página' }}
         </button>
         <button type="button" class="btn btn-outline-secondary mr-2 mb-1"
-                [disabled]="totalItens === 0 || selecionandoFiltro || baixando"
+                [disabled]="totalItens === 0 || selecionandoFiltro || baixando || trocandoForma"
                 [title]="'Põe no lote as ' + totalItens + ' notas do filtro, não só as desta página, somando ao que já está nele (até ' + limite + ')'"
                 (click)="adicionarTodasDoFiltro()">
           {{ selecionandoFiltro ? 'Adicionando...' : 'Adicionar todas do filtro (' + totalItens + ')' }}
@@ -148,7 +159,7 @@
           <span class="lote-resumo-valor">{{ totalDoLote | currency:'BRL' }}</span>
           <span class="lote-resumo-notas">{{ quantidadeSelecionada }} {{ quantidadeSelecionada === 1 ? 'nota' : 'notas' }}</span>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="quantidadeSelecionada === 0 || baixando"
+        <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="quantidadeSelecionada === 0 || baixando || trocandoForma"
                 (click)="limparLote()">
           Limpar lote
         </button>
@@ -160,27 +171,31 @@
         <table class="table table-sm table-hover mb-0">
           <thead>
             <tr>
-              <th>NF / Série</th>
+              <th>Tipo</th>
+              <th>Nº / Série</th>
               <th>Cliente</th>
               <th>Emissão</th>
               <th>Filial</th>
+              <th>Forma de pagamento</th>
               <th class="text-right">Total</th>
               <th>Status SEFAZ</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let nota of notasDoLote; trackBy: trackByDocEntry">
-              <td>{{ nota.notaFormatada }}</td>
+            <tr *ngFor="let nota of notasDoLote; trackBy: trackByChave">
+              <td class="text-nowrap"><span class="badge" [ngClass]="nota.tipoBadge">{{ nota.tipoLabel }}</span></td>
+              <td>{{ nota.notaFormatada }}<span class="text-muted small" *ngIf="nota.contrato"> · {{ nota.contratoFormatado }}</span></td>
               <td>{{ nota.cardCode }} {{ nota.cardName }}</td>
               <td>{{ nota.dataFormatada }}</td>
               <td><span class="cel-filial" [title]="nota.filialFormatada">{{ nota.filialFormatada }}</span></td>
+              <td class="text-nowrap">{{ nota.formaPagamento || '—' }}</td>
               <td class="text-right">{{ nota.totalCurrency }}</td>
               <td>{{ nota.statusSefazLabel }}</td>
               <td class="text-right">
-                <button type="button" class="btn btn-sm btn-link text-danger p-0" [disabled]="baixando"
-                        [attr.aria-label]="'Tirar a NF ' + nota.notaFormatada + ' do lote'" title="Tirar do lote"
-                        (click)="remover(nota.docEntry)">
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" [disabled]="baixando || trocandoForma"
+                        [attr.aria-label]="'Tirar ' + nota.tipoLabel + ' ' + nota.notaFormatada + ' do lote'" title="Tirar do lote"
+                        (click)="remover(nota.chave)">
                   <i class="fas fa-times"></i>
                 </button>
               </td>
@@ -189,7 +204,7 @@
           <!-- Fixo no rodape da lista: com o lote rolando, o total continua a vista. -->
           <tfoot>
             <tr class="lote-total">
-              <td colspan="4" class="text-right">Total · {{ quantidadeSelecionada }} {{ quantidadeSelecionada === 1 ? 'nota' : 'notas' }}</td>
+              <td colspan="6" class="text-right">Total · {{ quantidadeSelecionada }} {{ quantidadeSelecionada === 1 ? 'documento' : 'documentos' }}</td>
               <td class="text-right text-nowrap">{{ totalDoLote | currency:'BRL' }}</td>
               <td colspan="2"></td>
             </tr>
@@ -204,6 +219,46 @@
       <div class="alert alert-warning py-2 mt-2 mb-0" *ngIf="quantidadeSelecionada > limite">
         <i class="fas fa-exclamation-triangle mr-1"></i>
         O lote tem {{ quantidadeSelecionada }} notas; o download aceita até {{ limite }} por vez.
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center mt-3" *ngIf="quantidadeSelecionada > 0">
+        <label for="formaEscolhida" class="mb-1 mr-2 font-weight-bold">Trocar forma de pagamento</label>
+        <select class="form-control form-control-sm mr-2 mb-1 forma-select" id="formaEscolhida"
+                [(ngModel)]="formaEscolhida" [disabled]="trocandoForma || baixando">
+          <option value="">Escolha a forma</option>
+          <option *ngFor="let f of formasPagamento" [value]="f.codigo">{{ f.descricao || f.codigo }} ({{ f.codigo }})</option>
+        </select>
+        <button type="button" class="btn btn-sm btn-warning mb-1"
+                [disabled]="!formaEscolhida || trocandoForma || baixando"
+                title="Grava no SAP em todos os documentos do lote. Parceiro sem essa forma no cadastro passa a ter."
+                (click)="trocarFormaPagamento()">
+          <i class="fas" [ngClass]="trocandoForma ? 'fa-sync-alt fa-spin' : 'fa-exchange-alt'"></i>
+          {{ trocandoForma ? 'Trocando...' : 'Aplicar no lote (' + quantidadeSelecionada + ')' }}
+        </button>
+      </div>
+
+      <div class="border rounded p-2 mt-2" *ngIf="resultadosTroca.length > 0">
+        <div class="d-flex align-items-center">
+          <span>
+            <b>Forma de pagamento:</b> {{ quantidadeTrocada }} de {{ resultadosTroca.length }} documento(s) trocado(s).
+          </span>
+          <button type="button" class="btn btn-sm btn-link ml-auto" (click)="fecharResultadosTroca()">Fechar</button>
+        </div>
+        <table class="table table-sm mb-0 mt-1" *ngIf="resultadosComAtencao.length > 0">
+          <thead>
+            <tr><th>Tipo</th><th>Nº</th><th>Parceiro</th><th>Situação</th><th>Detalhe</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of resultadosComAtencao" [class.table-danger]="r.situacao === 'ERRO' || r.situacao === 'NAO_ENCONTRADO' || r.situacao === 'SEM_CONFIRMACAO'"
+                [class.table-warning]="r.boletoAtivo">
+              <td class="text-nowrap"><span class="badge" [ngClass]="categoriaDo(r).badge">{{ categoriaDo(r).rotulo }}</span></td>
+              <td>{{ r.numero ?? r.docEntry }}</td>
+              <td>{{ r.cardCode }}<span *ngIf="r.cardName"> {{ r.cardName }}</span></td>
+              <td class="text-nowrap">{{ situacaoRotulo[r.situacao] }}</td>
+              <td>{{ r.mensagem }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div class="d-flex flex-wrap align-items-center justify-content-end mt-2">
@@ -221,7 +276,7 @@
           <label class="custom-control-label" for="baixarBoleto">Boleto</label>
         </div>
         <button type="button" class="btn btn-primary mb-1"
-                [disabled]="quantidadeSelecionada === 0 || baixando || !algumTipoMarcado"
+                [disabled]="quantidadeSelecionada === 0 || baixando || trocandoForma || !algumTipoMarcado"
                 (click)="baixar()">
           <i class="fas" [ngClass]="baixando ? 'fa-sync-alt fa-spin' : 'fa-file-archive'"></i>
           {{ baixando ? 'Baixando...' : 'Baixar zip (' + quantidadeSelecionada + ')' }}
