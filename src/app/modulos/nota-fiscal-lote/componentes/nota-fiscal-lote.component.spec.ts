@@ -26,7 +26,9 @@ describe('NotaFiscalLoteComponent', () => {
     const alert = { confirm: jasmine.createSpy('confirm').and.returnValue(Promise.resolve({ isConfirmed: opcoes.confirma ?? true })) };
     // Token Keycloak por padrao; name igual para todo mundo de proposito: o lote nao separa por nome.
     const auth = { getDecodeToken: () => opcoes.token ?? ({ iss: 'https://sso', sub: opcoes.usuario ?? 'Fulano', name: 'Nome Igual' }) };
-    return new NotaFiscalLoteComponent(service, toastr, alert as any, new NotaFiscalLoteStorageService(), auth as any);
+    // Logo do deploy: data: URI fixa.
+    const logo = { dataUri: () => Promise.resolve('data:image/png;base64,AAA=') };
+    return new NotaFiscalLoteComponent(service, toastr, alert as any, new NotaFiscalLoteStorageService(), auth as any, logo as any);
   }
 
   function nota(docEntry: number, numero = docEntry + 500): NotaFiscalLote {
@@ -44,8 +46,8 @@ describe('NotaFiscalLoteComponent', () => {
     const service = {
       getDefinition: () => [],
       statusSefaz: () => of([{ id: 4, descricao: 'Autorizada' }]),
-      listar: (filtro: any, page: number, size: number) => {
-        chamadas.listar.push({ filtro, page, size });
+      listar: (filtro: any, page: number, size: number, porDocumento?: boolean) => {
+        chamadas.listar.push({ filtro, page, size, porDocumento });
         if (size === NotaFiscalLoteService.LIMITE_LOTE && todasDoFiltro) {
           return of(todasDoFiltro);
         }
@@ -102,8 +104,27 @@ describe('NotaFiscalLoteComponent', () => {
     const { componente, chamadas, toastr } = tela({ 0: pagina([nota(1)], NotaFiscalLoteService.LIMITE_LOTE + 1) });
     componente.adicionarTodasDoFiltro();
     expect(componente.quantidadeSelecionada).toBe(0);
-    expect(chamadas.listar.length).toBe(1);
+    // a lista e por parcela: o teto e conferido pedindo por documento
+    expect(chamadas.listar.length).toBe(2);
+    expect(chamadas.listar[1].porDocumento).toBeTrue();
     expect(toastr.warning).toHaveBeenCalled();
+  });
+
+  it('linha de parcela mostra numero, vencimento e valor dela; o lote junta as parcelas do documento', () => {
+    const parcela = (n: number, valor: number, venc: string) =>
+      NotaFiscalLote.from({ tipo: 'NF', docEntry: 7, numero: 507, total: 1000, parcelas: 3, parcela: n, valorParcela: valor,
+        vencimentoParcela: venc, vencimentoInicial: '2026-10-01', vencimentoFinal: '2026-12-01' });
+    const linhas = [parcela(1, 333.33, '2026-10-01'), parcela(2, 333.33, '2026-11-01'), parcela(3, 333.34, '2026-12-01')];
+    expect(linhas[1].parcelaFormatada).toBe('2/3');
+    expect(linhas[1].vencimentoFormatado).toBe('01/11/2026');
+    expect(linhas[2].valorParcelaCurrency).toContain('333,34');
+    const { componente } = tela({ 0: pagina(linhas) });
+    componente.action({ type: 'nota-lote-toggle-selecao', data: componente.notas[1] } as any);
+    expect(componente.notasDoLote.length).toBe(1);
+    expect(componente.notas.every((n) => n.selecionado)).toBeTrue();
+    // sem parcela (lote guardado antes), o vencimento volta a ser o do documento
+    expect(NotaFiscalLote.from({ docEntry: 1, parcelas: 3, vencimentoInicial: '2026-10-01', vencimentoFinal: '2026-12-01' })
+      .vencimentoFormatado).toBe('01/10/2026 a 01/12/2026 (3 parc.)');
   });
 
   it('baixa os docEntries selecionados com os tipos marcados', () => {
@@ -656,6 +677,49 @@ describe('NotaFiscalLoteComponent', () => {
       expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('2 de 3 documento(s)'), jasmine.anything(), jasmine.anything());
     });
 
+    it('contrato: adiantamento baixa so com Contrato marcado, e o logo da tela vai junto', fakeAsync(() => {
+      const chamadas: any[] = [];
+      const service = {
+        getDefinition: () => [], statusSefaz: () => of([]), listar: () => of(pagina([ad(10)])),
+        baixar: (...args: any[]) => {
+          chamadas.push(args);
+          return of({ arquivo: null, nome: 'n.zip', notasComErro: 0, notasSemBoleto: 0 });
+        },
+      } as any;
+      const toastr = jasmine.createSpyObj('ToastrService', ['warning', 'success', 'info']);
+      const componente = novoComponente(service, toastr);
+      componente.ngOnInit();
+      componente.alternarSelecaoDaPagina();
+      componente.baixarPdf = false;
+      componente.baixarXml = false;
+      componente.baixarContrato = true;
+      componente.baixar();
+      flushMicrotasks();
+      expect(chamadas.length).toBe(1);
+      const [, pdf, xml, boleto, contrato, logo] = chamadas[0];
+      expect([pdf, xml, boleto, contrato]).toEqual([false, false, false, true]);
+      expect(logo).toBe('data:image/png;base64,AAA=');
+      expect(toastr.success).toHaveBeenCalledWith('1 nota(s) baixada(s).');
+    }));
+
+    it('so Contrato marcado com lote so de NF-e nem vai ao servidor', () => {
+      const { componente, chamadas, toastr } = tela({ 0: pagina([nota(1)]) });
+      componente.alternarSelecaoDaPagina();
+      componente.baixarPdf = false;
+      componente.baixarXml = false;
+      componente.baixarContrato = true;
+      componente.baixar();
+      expect(chamadas.baixar.length).toBe(0);
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('O contrato só vem de adiantamento'));
+    });
+
+    it('sem Contrato o logo nem e buscado e o pedido sai na hora', () => {
+      const { componente, chamadas } = tela({ 0: pagina([nota(1)]) });
+      componente.alternarSelecaoDaPagina();
+      componente.baixar();
+      expect(chamadas.baixar.length).toBe(1);
+    });
+
     it('rotulos do adiantamento', () => {
       const a = ad(10, 5831);
       expect(a.tipoLabel).toBe('Adiant. venda futura');
@@ -674,6 +738,94 @@ describe('NotaFiscalLoteComponent', () => {
       const recarregado = tela({ 0: pagina([]) }).componente.notasDoLote[0];
       expect(recarregado.chave).toBe('AD-10');
       expect(recarregado.contrato).toBe(412);
+    });
+  });
+
+  describe('importar planilha do banco', () => {
+    const linha = (n: number, situacao: string, extra: any = {}) =>
+      ({ linha: n, nossoNumero: `3515854000002100${n}`, beneficiario: `005715 ${n}`, pagador: 'P', valor: 10, vencimento: '2026-11-16',
+        situacaoBanco: 'Normal', tipo: 'NF', docEntry: 250976, parcela: n, situacao, mensagem: null, ...extra });
+    function telaImportacao(resposta: any) {
+      const t = tela({ 0: pagina([]) });
+      const chamadas: Blob[] = [];
+      (t.componente as any).service.importarPlanilha = (arquivo: Blob) => { chamadas.push(arquivo); return resposta; };
+      const input = { files: [new File(['x'], 'titulos.xlsx')], value: 'C:\\fakepath\\titulos.xlsx' } as any;
+      return { ...t, chamadas, input };
+    }
+
+    it('poe os documentos no lote e lista so as linhas que pedem atencao', () => {
+      const { componente, toastr, input, chamadas } = telaImportacao(of({
+        documentos: [nota(250976)],
+        linhas: [
+          linha(1, 'ENCONTRADO'),
+          linha(2, 'DIVERGENTE', { mensagem: 'valor' }),
+          linha(3, 'NAO_ENCONTRADO', { tipo: null, docEntry: null }),
+        ],
+      }));
+      componente.importarPlanilha(input);
+      expect(chamadas.length).toBe(1);
+      expect(input.value).toBe('');
+      expect(componente.notasDoLote.map((n) => n.chave)).toEqual(['NF-250976']);
+      expect(componente.linhasImportacao.map((l) => l.linha)).toEqual([2, 3]);
+      expect(toastr.warning).toHaveBeenCalledWith(
+        jasmine.stringContaining('3 título(s) da planilha: 1 documento(s) no lote, 1 sem documento, 1 com divergência'),
+        'Planilha', jasmine.anything());
+      componente.fecharImportacao();
+      expect(componente.linhasImportacao.length).toBe(0);
+    });
+
+    it('tudo encontrado: sucesso e nada para olhar', () => {
+      const { componente, toastr, input } = telaImportacao(of({ documentos: [nota(1)], linhas: [linha(1, 'ENCONTRADO')] }));
+      componente.importarPlanilha(input);
+      expect(toastr.success).toHaveBeenCalled();
+      expect(componente.linhasImportacao.length).toBe(0);
+    });
+
+    it('nenhum documento: avisa e o lote nao muda', () => {
+      const { componente, toastr, input } = telaImportacao(of({ documentos: [], linhas: [linha(1, 'NAO_ENCONTRADO')] }));
+      componente.importarPlanilha(input);
+      expect(componente.notasDoLote.length).toBe(0);
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('Nenhum dos 1 título(s)'));
+      expect(componente.linhasImportacao.length).toBe(1);
+    });
+
+    it('arquivo que nao e .xlsx nem vai para o servidor', () => {
+      const { componente, toastr, input, chamadas } = telaImportacao(of({ documentos: [], linhas: [] }));
+      input.files = [new File(['x'], 'titulos.xls')];
+      componente.importarPlanilha(input);
+      expect(chamadas.length).toBe(0);
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('.xlsx'));
+    });
+
+    it('durante a importacao o lote, o download e a troca esperam; a resposta entra no lote', () => {
+      const resposta = new Subject<any>();
+      const { componente, chamadas, input, toastr } = telaImportacao(resposta);
+      componente.importarPlanilha(input);
+      expect(componente.importando).toBeTrue();
+      componente.baixar();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      componente.action({ type: 'nota-lote-toggle-selecao', data: nota(99) } as any);
+      expect(chamadas.length).toBe(1);
+      expect(componente.baixando).toBeFalse();
+      expect(componente.notasDoLote.length).toBe(0);
+      expect(toastr.info).toHaveBeenCalledWith(jasmine.stringContaining('importação da planilha'));
+      resposta.next({ documentos: [nota(250976)], linhas: [linha(1, 'ENCONTRADO')] });
+      expect(componente.notasDoLote.map((n) => n.chave)).toEqual(['NF-250976']);
+    });
+
+    it('com o adicionar todas pendente a importacao espera', () => {
+      const { componente, input, chamadas, toastr } = telaImportacao(of({ documentos: [], linhas: [] }));
+      componente.selecionandoFiltro = true;
+      componente.importarPlanilha(input);
+      expect(chamadas.length).toBe(0);
+      expect(toastr.info).toHaveBeenCalledWith(jasmine.stringContaining('Adicionar todas do filtro'));
+    });
+
+    it('erro do servidor libera o botao', () => {
+      const { componente, input } = telaImportacao(throwError(() => new Error('x')));
+      componente.importarPlanilha(input);
+      expect(componente.importando).toBeFalse();
     });
   });
 
@@ -826,6 +978,51 @@ describe('NotaFiscalLoteComponent', () => {
         expect(toastr.warning.calls.count()).withContext(`status ${status}`).toBe(avisa ? 1 : 0);
         expect(chamadas.listar).withContext(`status ${status}`).toBe(listagensAntes + (avisa ? 1 : 0));
       }
+    }));
+
+    it('NF de venda futura antiga: a confirmacao avisa que fica de fora e conta so o resto', fakeAsync(() => {
+      const { componente, chamadas, toastr } = telaTroca([
+        r(1, 'NAO_PERMITIDO', { categoria: 'NF_FUTURA', mensagem: 'o SAP nao deixa' }),
+        r(2, 'ATUALIZADO'),
+      ]);
+      componente.notas[0].categoria = 'NF_FUTURA';
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      const texto = (componente as any).alert.confirm.calls.mostRecent().args[0];
+      expect(texto).toContain('de 1 documento(s)');
+      expect(texto).toContain('1 NF(s) de venda futura do padrão antigo ficam de fora');
+      // o backend recebe o lote inteiro e decide
+      expect(chamadas.troca).toEqual([{ forma: 'pix-vencimento', chaves: ['NF-1', 'NF-2'] }]);
+      // ja avisado: nao e problema, mas aparece no resultado
+      expect(toastr.success).toHaveBeenCalledWith(jasmine.stringContaining('1 NF(s) de venda futura antiga de fora'), jasmine.anything());
+      expect(componente.resultadosComAtencao.map((x) => x.docEntry)).toEqual([1]);
+      expect(componente.notasDoLote.find((n) => n.docEntry === 1)?.formaPagamento).toBeUndefined();
+    }));
+
+    it('lote so de NF de venda futura antiga nem pede confirmacao', fakeAsync(() => {
+      const { componente, chamadas, toastr } = telaTroca([]);
+      componente.notas.forEach((n) => (n.categoria = 'NF_FUTURA'));
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect((componente as any).alert.confirm).not.toHaveBeenCalled();
+      expect(chamadas.troca.length).toBe(0);
+      expect(toastr.warning).toHaveBeenCalledWith(jasmine.stringContaining('venda futura do padrão antigo'));
+      expect((componente as any).confirmandoTroca).toBeFalse();
+    }));
+
+    it('NF de venda futura antiga que ja esta com a forma escolhida nao conta como fora', fakeAsync(() => {
+      const { componente } = telaTroca([r(1, 'SEM_MUDANCA'), r(2, 'ATUALIZADO')]);
+      componente.notas[0].categoria = 'NF_FUTURA';
+      componente.notas[0].formaPagamento = 'pix-vencimento';
+      componente.alternarSelecaoDaPagina();
+      componente.formaEscolhida = 'pix-vencimento';
+      componente.trocarFormaPagamento();
+      flushMicrotasks();
+      expect((componente as any).alert.confirm.calls.mostRecent().args[0]).not.toContain('ficam de fora');
     }));
 
     describe('com a confirmacao aberta', () => {

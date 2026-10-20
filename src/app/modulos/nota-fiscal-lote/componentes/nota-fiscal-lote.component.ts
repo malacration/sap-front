@@ -2,13 +2,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subscription } from 'rxjs';
+import { Subscription, from, of, switchMap } from 'rxjs';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { Column } from '../../../shared/components/table/column.model';
 import { Branch } from '../../../sap/model/branch';
 import { SalesPerson } from '../../../sap/model/sales-person/sales-person';
 import {
-  CATEGORIAS_DOCUMENTO_LOTE, CategoriaDocumentoLote, FormaPagamentoLote, NotaFiscalLote, SITUACAO_TROCA_ROTULO,
+  CATEGORIAS_DOCUMENTO_LOTE, CategoriaDocumentoLote, FormaPagamentoLote, LinhaImportacaoLote, NotaFiscalLote,
+  SITUACAO_IMPORTACAO_ROTULO, SITUACAO_TROCA_ROTULO,
   STATUS_SAP_NOTA, StatusSapNota, StatusSefaz, TipoDocumentoLote, TrocaFormaPagamentoResultado, categoriaInfo,
 } from '../../../sap/model/fiscal/nota-fiscal-lote';
 import { NotaFiscalLoteFiltro, NotaFiscalLoteService } from '../../../sap/service/fiscal/nota-fiscal-lote.service';
@@ -17,6 +18,7 @@ import { SearchService } from '../../../sap/service/search.service';
 import { BusinessPartner } from '../../../sap/model/business-partner/business-partner';
 import { AlertService } from '../../../shared/service/alert.service';
 import { AuthService } from '../../../shared/service/auth.service';
+import { LogoService } from '../../../core/services/logo.service';
 
 @Component({
   selector: 'app-nota-fiscal-lote',
@@ -63,6 +65,8 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   // Desmarcado por padrao: so parte das notas tem boleto (forma de pagamento) e cada um e mais
   // uma chamada a BankPlus por parcela.
   baixarBoleto = false;
+  // PDF do contrato de venda futura de cada adiantamento (NF nao tem).
+  baixarContrato = false;
   // Tipos do download em andamento, para o aviso nao mudar se alguem mexer nas caixas.
   boletoNoDownload = false;
 
@@ -96,6 +100,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   // A confirmacao e uma Promise do dialogo: sair da tela nao a cancela como cancela as subscriptions.
   private destruido = false;
   resultadosTroca: TrocaFormaPagamentoResultado[] = [];
+  // Importacao da planilha do banco: so as linhas que pedem atencao (o resto ja foi para o lote).
+  importando = false;
+  linhasImportacao: LinhaImportacaoLote[] = [];
+  readonly situacaoImportacaoRotulo = SITUACAO_IMPORTACAO_ROTULO;
+  private importacao?: Subscription;
   readonly situacaoRotulo = SITUACAO_TROCA_ROTULO;
   private troca?: Subscription;
 
@@ -114,7 +123,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
 
   constructor(private service: NotaFiscalLoteService, private toastr: ToastrService,
               private alert: AlertService, private storage: NotaFiscalLoteStorageService,
-              private auth: AuthService) {}
+              private auth: AuthService, private logoService?: LogoService) {}
 
   ngOnDestroy(): void {
     this.destruido = true;
@@ -122,6 +131,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.consultaTodas?.unsubscribe();
     this.download?.unsubscribe();
     this.troca?.unsubscribe();
+    this.importacao?.unsubscribe();
   }
 
   ngOnInit(): void {
@@ -278,21 +288,17 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
 
   /**
    * Poe no lote tudo o que o filtro da lista devolve, nao so a pagina, somando ao que ja estava.
-   * Busca uma pagina do tamanho do teto; se o filtro tiver mais notas que isso, nao adiciona nada
-   * e pede para estreitar, em vez de pegar um pedaco arbitrario. Confere o total de novo na
-   * resposta: entre a lista e o clique podem ter entrado notas.
+   * Busca uma pagina do tamanho do teto, POR DOCUMENTO (a lista da tela e por parcela, e o total
+   * dela conta parcelas); se o filtro tiver mais documentos que isso, nao adiciona nada e pede
+   * para estreitar, em vez de pegar um pedaco arbitrario.
    */
   adicionarTodasDoFiltro(): void {
     if (this.loteTravado()) {
       return;
     }
-    if (this.totalItens > this.limite) {
-      this.avisarFiltroGrande(this.totalItens);
-      return;
-    }
     this.consultaTodas?.unsubscribe();
     this.selecionandoFiltro = true;
-    this.consultaTodas = this.service.listar(this.filtroAplicado, 0, this.limite).subscribe({
+    this.consultaTodas = this.service.listar(this.filtroAplicado, 0, this.limite, true).subscribe({
       next: (page) => {
         this.selecionandoFiltro = false;
         if (page.totalElements > this.limite) {
@@ -305,6 +311,67 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
         this.selecionandoFiltro = false;
       },
     });
+  }
+
+  /**
+   * Monta o lote a partir da planilha de titulos do banco: o backend acha o documento e a parcela
+   * de cada titulo pelo nosso numero. Os documentos somam ao lote (tudo ou nada, como o resto); as
+   * linhas que nao viraram documento, ou que divergem, ficam listadas.
+   */
+  importarPlanilha(input: HTMLInputElement): void {
+    const arquivo = input.files?.[0];
+    // Limpa ja: escolher o mesmo arquivo de novo tem de disparar o change.
+    input.value = '';
+    if (!arquivo || this.loteTravado()) {
+      return;
+    }
+    // O "adicionar todas" pendente poria documentos no lote no meio da importacao (e seria recusado
+    // pela trava): espera ele terminar.
+    if (this.selecionandoFiltro) {
+      this.toastr.info('Espere o "Adicionar todas do filtro" terminar.');
+      return;
+    }
+    if (!arquivo.name.toLowerCase().endsWith('.xlsx')) {
+      this.toastr.warning('Use a planilha em .xlsx (se o banco exportou .xls, abra e salve como .xlsx).');
+      return;
+    }
+    this.importacao?.unsubscribe();
+    this.importando = true;
+    this.importacao = this.service.importarPlanilha(arquivo).subscribe({
+      next: (r) => {
+        this.importando = false;
+        this.linhasImportacao = r.linhas.filter((l) => l.situacao !== 'ENCONTRADO');
+        const titulos = r.linhas.length;
+        const naoViraram = r.linhas.filter((l) => l.situacao === 'NAO_ENCONTRADO' || l.situacao === 'FORA_DA_TELA').length;
+        if (r.documentos.length === 0) {
+          this.toastr.warning(`Nenhum dos ${titulos} título(s) da planilha virou documento do lote. Veja o motivo abaixo da lista.`);
+          return;
+        }
+        if (!this.adicionar(r.documentos)) {
+          return;
+        }
+        const partes = [`${titulos} título(s) da planilha: ${r.documentos.length} documento(s) no lote`];
+        if (naoViraram > 0) {
+          partes.push(`${naoViraram} sem documento`);
+        }
+        const divergentes = r.linhas.filter((l) => l.situacao === 'DIVERGENTE').length;
+        if (divergentes > 0) {
+          partes.push(`${divergentes} com divergência`);
+        }
+        if (this.linhasImportacao.length > 0) {
+          this.toastr.warning(partes.join(', ') + '. Veja as linhas abaixo da lista.', 'Planilha', { timeOut: 15000 });
+        } else {
+          this.toastr.success(partes.join(', ') + '.', 'Planilha');
+        }
+      },
+      error: () => {
+        this.importando = false;
+      },
+    });
+  }
+
+  fecharImportacao(): void {
+    this.linhasImportacao = [];
   }
 
   private avisarFiltroGrande(total: number): void {
@@ -391,14 +458,24 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       this.toastr.warning('Escolha a forma de pagamento.');
       return;
     }
+    const documentos = Array.from(this.selecao.values());
+    // NF de venda futura do padrao antigo: o SAP nao deixa trocar a forma, e o backend nem tenta.
+    // Lote guardado antes da categoria existir nao sabe: o resultado mostra como "Não permitido".
+    const naoPermitidos = documentos.filter((d) => d.categoria === 'NF_FUTURA' && d.formaPagamento !== forma.codigo).length;
+    if (naoPermitidos === documentos.length) {
+      this.toastr.warning('O SAP não deixa trocar a forma de pagamento de NF de venda futura do padrão antigo (fatura de reserva).');
+      return;
+    }
     // Um "adicionar todas" pendente mudaria o lote com a confirmacao aberta, e a troca gravaria so
     // o lote de antes: cancela e trava ate a resposta do usuario.
     this.cancelarAdicionarTodas();
     this.confirmandoTroca = true;
-    const documentos = Array.from(this.selecao.values());
+    const foraDaTroca = naoPermitidos > 0
+      ? ` ${naoPermitidos} NF(s) de venda futura do padrão antigo ficam de fora: o SAP não deixa trocar a forma delas.`
+      : '';
     this.alert.confirm(
-      `Trocar a forma de pagamento de ${documentos.length} documento(s) para "${forma.descricao || forma.codigo}"? ` +
-      'Grava no SAP. Parceiro que não tiver essa forma no cadastro vai recebê-la.'
+      `Trocar a forma de pagamento de ${documentos.length - naoPermitidos} documento(s) para "${forma.descricao || forma.codigo}"? ` +
+      'Grava no SAP. Parceiro que não tiver essa forma no cadastro vai recebê-la.' + foraDaTroca
     ).then((resposta) => {
       this.confirmandoTroca = false;
       // Confirmado depois de sair da tela (voltar do navegador com o dialogo aberto): nao grava.
@@ -462,6 +539,10 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     if (conta('SEM_MUDANCA') > 0) {
       partes.push(`${conta('SEM_MUDANCA')} já estavam com essa forma`);
     }
+    // Ja avisado na confirmacao: fica de fora, nao e problema.
+    if (conta('NAO_PERMITIDO') > 0) {
+      partes.push(`${conta('NAO_PERMITIDO')} NF(s) de venda futura antiga de fora`);
+    }
     if (falhas > 0 || semConfirmacao > 0 || pendentes > 0) {
       const problemas = [];
       if (falhas > 0) {
@@ -503,8 +584,8 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   }
 
   baixar(): void {
-    if (this.trocandoForma) {
-      this.toastr.info('Espere a troca da forma de pagamento terminar.');
+    if (this.trocandoForma || this.importando) {
+      this.toastr.info(`Espere ${this.importando ? 'a importação da planilha' : 'a troca da forma de pagamento'} terminar.`);
       return;
     }
     if (this.selecao.size === 0) {
@@ -512,29 +593,42 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.algumTipoMarcado) {
-      this.toastr.warning('Marque DANFE, XML ou boleto.');
+      this.toastr.warning('Marque DANFE, XML, boleto ou contrato.');
       return;
     }
     if (this.selecao.size > this.limite) {
       this.toastr.warning(`O lote aceita até ${this.limite} notas; há ${this.selecao.size} selecionadas.`);
       return;
     }
-    // Adiantamento nao tem DANFE nem XML: lote so de adiantamentos sem "Boleto" daria um zip vazio.
-    const temNotaFiscal = Array.from(this.selecao.values()).some((n) => n.tipo !== 'AD');
-    if (!temNotaFiscal && !this.baixarBoleto) {
-      this.toastr.warning('Adiantamento só tem boleto (não emite NF-e): marque "Boleto" para baixar.');
+    // Adiantamento nao tem DANFE nem XML (so boleto e contrato); NF nao tem contrato. Lote que nao
+    // geraria arquivo nenhum nem vai ao servidor.
+    const documentos = Array.from(this.selecao.values());
+    const notasFiscais = documentos.filter((n) => n.tipo !== 'AD').length;
+    const adiantamentos = documentos.length - notasFiscais;
+    const nfGeraArquivo = this.baixarPdf || this.baixarXml || this.baixarBoleto;
+    const adGeraArquivo = this.baixarBoleto || this.baixarContrato;
+    if ((notasFiscais === 0 || !nfGeraArquivo) && (adiantamentos === 0 || !adGeraArquivo)) {
+      this.toastr.warning(adiantamentos === 0
+        ? 'O contrato só vem de adiantamento de venda futura: marque DANFE, XML ou boleto para as NF-e.'
+        : 'Adiantamento só tem boleto e contrato (não emite NF-e): marque "Boleto" ou "Contrato" para baixar.');
       return;
     }
     this.baixando = true;
-    // Sem "Boleto", adiantamento nao tem o que baixar: vai so para o avisos.txt do zip.
-    const adiantamentosSemArquivo = this.baixarBoleto ? 0 : Array.from(this.selecao.values()).filter((n) => n.tipo === 'AD').length;
+    // Sem "Boleto" nem "Contrato", adiantamento nao tem o que baixar: vai so para o avisos.txt do zip.
+    const adiantamentosSemArquivo = adGeraArquivo ? 0 : adiantamentos;
+    const notasSemArquivo = nfGeraArquivo ? 0 : notasFiscais;
     // O erro pode ser de qualquer documento pedido, adiantamento incluido (nao encontrado, por exemplo).
     const pedidos = this.selecao.size;
-    const quantidade = pedidos - adiantamentosSemArquivo;
+    const quantidade = pedidos - adiantamentosSemArquivo - notasSemArquivo;
     this.quantidadeBaixando = quantidade;
     this.boletoNoDownload = this.baixarBoleto;
     this.download?.unsubscribe();
-    this.download = this.service.baixar(Array.from(this.selecao.values()), this.baixarPdf, this.baixarXml, this.baixarBoleto).subscribe({
+    const [pdf, xml, boleto, contrato] = [this.baixarPdf, this.baixarXml, this.baixarBoleto, this.baixarContrato];
+    // O logo do PDF do contrato e o do deploy da tela; sem contrato nem busca (e o pedido sai na hora).
+    const logo = contrato && this.logoService ? from(this.logoService.dataUri()) : of(null);
+    this.download = logo.pipe(
+      switchMap((dataUri) => this.service.baixar(documentos, pdf, xml, boleto, contrato, dataUri))
+    ).subscribe({
       next: (download) => {
         this.salvar(download.arquivo, download.nome);
         this.baixando = false;
@@ -548,7 +642,8 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
         }
         if (adiantamentosSemArquivo > 0) {
           this.toastr.info(
-            `${adiantamentosSemArquivo} adiantamento(s) sem arquivo: adiantamento só tem boleto, e "Boleto" não estava marcado. ` +
+            `${adiantamentosSemArquivo} adiantamento(s) sem arquivo: adiantamento só tem boleto e contrato, ` +
+            'e nenhum dos dois estava marcado. ' +
             'O detalhe de cada um está no zip (avisos.txt ou, se houve erro, erros.txt).',
             'Adiantamentos',
             { timeOut: 15000 });
@@ -568,7 +663,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   }
 
   get algumTipoMarcado(): boolean {
-    return this.baixarPdf || this.baixarXml || this.baixarBoleto;
+    return this.baixarPdf || this.baixarXml || this.baixarBoleto || this.baixarContrato;
   }
 
   /**
@@ -576,9 +671,12 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
    * painel enquanto isso (tirar uma nota que esta sendo baixada, por exemplo) daria a impressao
    * errada do que vem no arquivo.
    */
+  // Importacao tambem trava: a resposta dela poe documentos no lote, e um download ou uma troca
+  // no meio faria o adicionar recusar e os documentos se perderem.
   private loteTravado(): boolean {
-    if (this.baixando || this.trocandoForma || this.confirmandoTroca) {
-      this.toastr.info(`Espere ${this.baixando ? 'o download' : 'a troca da forma de pagamento'} terminar para mudar o lote.`);
+    if (this.baixando || this.trocandoForma || this.confirmandoTroca || this.importando) {
+      const oQue = this.baixando ? 'o download' : this.importando ? 'a importação da planilha' : 'a troca da forma de pagamento';
+      this.toastr.info(`Espere ${oQue} terminar para mudar o lote.`);
       return true;
     }
     return false;

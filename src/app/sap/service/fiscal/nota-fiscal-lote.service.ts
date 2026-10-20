@@ -5,7 +5,8 @@ import { ConfigService } from '../../../core/services/config.service';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
 import {
-  CategoriaDocumentoLote, FormaPagamentoLote, NotaFiscalLote, StatusSapNota, StatusSefaz, TrocaFormaPagamentoResultado,
+  CategoriaDocumentoLote, FormaPagamentoLote, ImportacaoLoteResultado, NotaFiscalLote, StatusSapNota, StatusSefaz,
+  TrocaFormaPagamentoResultado,
 } from '../../model/fiscal/nota-fiscal-lote';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 
@@ -52,8 +53,12 @@ export class NotaFiscalLoteService {
     this.url = config.getHost() + '/nota-fiscal-lote';
   }
 
-  listar(filtro: NotaFiscalLoteFiltro, page = 0, size = 50): Observable<Page<NotaFiscalLote>> {
-    const params = this.montarParams(filtro).set('page', page).set('size', size);
+  // A lista vem com uma linha por parcela; porDocumento = uma por documento (o lote e de documentos).
+  listar(filtro: NotaFiscalLoteFiltro, page = 0, size = 50, porDocumento = false): Observable<Page<NotaFiscalLote>> {
+    let params = this.montarParams(filtro).set('page', page).set('size', size);
+    if (porDocumento) {
+      params = params.set('porDocumento', true);
+    }
     return this.http.get<Page<NotaFiscalLote>>(this.url, { params }).pipe(
       map((pagina) => {
         pagina.content = (pagina.content ?? []).map((nota) => NotaFiscalLote.from(nota));
@@ -85,8 +90,10 @@ export class NotaFiscalLoteService {
     };
   }
 
-  baixar(documentos: NotaFiscalLote[], pdf: boolean, xml: boolean, boleto = false): Observable<NotaFiscalLoteDownload> {
-    const corpo = { ...NotaFiscalLoteService.porTipo(documentos), pdf, xml, boleto };
+  // contrato: PDF do contrato de venda futura de cada adiantamento; logo (data: URI) vai no PDF dele.
+  baixar(documentos: NotaFiscalLote[], pdf: boolean, xml: boolean, boleto = false, contrato = false,
+         logo: string | null = null): Observable<NotaFiscalLoteDownload> {
+    const corpo = { ...NotaFiscalLoteService.porTipo(documentos), pdf, xml, boleto, contrato, ...(contrato && logo ? { logo } : {}) };
     return this.http
       .post(this.url + '/download', corpo, { observe: 'response', responseType: 'blob' })
       .pipe(
@@ -97,6 +104,15 @@ export class NotaFiscalLoteService {
           notasSemBoleto: Number(resposta.headers.get('notas-sem-boleto') || 0),
         }))
       );
+  }
+
+  // Planilha de titulos do banco (.xlsx) vai crua no corpo; volta o que por no lote e o que houve
+  // com cada linha. Nao grava nada.
+  importarPlanilha(arquivo: Blob): Observable<ImportacaoLoteResultado> {
+    return this.http.post<ImportacaoLoteResultado>(this.url + '/importar-planilha', arquivo,
+      { headers: { 'Content-Type': 'application/octet-stream' } }).pipe(
+      map((r) => ({ linhas: r?.linhas ?? [], documentos: (r?.documentos ?? []).map((d) => NotaFiscalLote.from(d)) }))
+    );
   }
 
   formasPagamento(): Observable<FormaPagamentoLote[]> {
@@ -117,12 +133,13 @@ export class NotaFiscalLoteService {
       new Column('Nº / Série', 'notaFormatada', '{{value}}'),
       new Column('Contrato', 'contratoFormatado'),
       new Column('Emissão', 'dataFormatada'),
+      new Column('Parcela', 'parcelaFormatada'),
       new Column('Vencimento', 'vencimentoFormatado'),
       new Column('Filial', 'filialFormatada', '<span class="cel-filial" title="{{value}}">{{value}}</span>'),
       new Column('Código', 'cardCode', '{{value}}'),
       new Column('Cliente', 'cardName', '{{value}}'),
       new Column('Vendedor', 'vendedor', '{{value}}'),
-      new Column('Total', 'totalCurrency'),
+      new Column('Valor da parcela', 'valorParcelaCurrency'),
       new Column('Forma de pagamento', 'formaPagamento', '{{value}}'),
       new Column('Status SAP', 'statusSapLabel'),
       new Column('Status SEFAZ', 'statusSefazLabel', '{{value}}'),

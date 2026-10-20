@@ -44,7 +44,7 @@ export interface FormaPagamentoLote {
 }
 
 export type SituacaoTrocaFormaPagamento =
-  'ATUALIZADO' | 'VINCULADO_E_ATUALIZADO' | 'SEM_MUDANCA' | 'SEM_CONFIRMACAO' | 'ERRO' | 'NAO_ENCONTRADO';
+  'ATUALIZADO' | 'VINCULADO_E_ATUALIZADO' | 'SEM_MUDANCA' | 'SEM_CONFIRMACAO' | 'ERRO' | 'NAO_ENCONTRADO' | 'NAO_PERMITIDO';
 
 export interface TrocaFormaPagamentoResultado {
   tipo: TipoDocumentoLote;
@@ -70,7 +70,41 @@ export const SITUACAO_TROCA_ROTULO: { [s in SituacaoTrocaFormaPagamento]: string
   SEM_CONFIRMACAO: 'Sem confirmação (confira no SAP)',
   ERRO: 'Erro',
   NAO_ENCONTRADO: 'Não encontrado',
+  // NF de venda futura do padrao antigo: o SAP recusa trocar a forma, entao o backend nem tenta.
+  NAO_PERMITIDO: 'Não permitido',
 };
+
+// Importacao da planilha de titulos do banco (POST /nota-fiscal-lote/importar-planilha).
+export type SituacaoLinhaImportacao = 'ENCONTRADO' | 'DIVERGENTE' | 'NAO_ENCONTRADO' | 'FORA_DA_TELA';
+
+export const SITUACAO_IMPORTACAO_ROTULO: { [s in SituacaoLinhaImportacao]: string } = {
+  ENCONTRADO: 'Encontrado',
+  // Entra no lote (o nosso numero manda), mas nro beneficiario ou valor nao batem.
+  DIVERGENTE: 'Divergente',
+  NAO_ENCONTRADO: 'Não encontrado',
+  // A BankPlus conhece o boleto, mas o documento nao aparece nesta tela.
+  FORA_DA_TELA: 'Fora da tela',
+};
+
+export interface LinhaImportacaoLote {
+  linha: number;
+  nossoNumero: string;
+  beneficiario: string;
+  pagador: string;
+  valor: number;
+  vencimento: string;
+  situacaoBanco: string;
+  tipo: TipoDocumentoLote;
+  docEntry: number;
+  parcela: number;
+  situacao: SituacaoLinhaImportacao;
+  mensagem: string;
+}
+
+export interface ImportacaoLoteResultado {
+  documentos: NotaFiscalLote[];
+  linhas: LinhaImportacaoLote[];
+}
 
 export interface StatusSefaz {
   id: number;
@@ -98,6 +132,11 @@ export class NotaFiscalLote {
   vencimentoInicial: string;
   vencimentoFinal: string;
   parcelas: number;
+  // A parcela desta linha da lista (uma linha por parcela): numero, valor original e vencimento.
+  // O lote continua sendo de documentos: linhas do mesmo documento tem a mesma chave.
+  parcela: number;
+  valorParcela: number;
+  vencimentoParcela: string;
   vendedorCodigo: number;
   vendedor: string;
   formaPagamento: string;
@@ -168,8 +207,12 @@ export class NotaFiscalLote {
     return this.data ? moment(this.data, 'YYYY-MM-DD').format('DD/MM/YYYY') : '';
   }
 
-  // Parcela unica: a data. Varias: primeira a ultima, para nao esconder parcela antes do DocDueDate.
+  // Linha de parcela: o vencimento dela. Sem parcela (lote guardado), parcela unica: a data;
+  // varias: primeira a ultima, para nao esconder parcela antes do DocDueDate.
   get vencimentoFormatado(): string {
+    if (this.vencimentoParcela) {
+      return this.formatar(this.vencimentoParcela);
+    }
     const final = this.formatar(this.vencimentoFinal);
     if (!(this.parcelas > 1) || !this.vencimentoInicial || this.vencimentoInicial === this.vencimentoFinal) {
       return final;
@@ -198,5 +241,14 @@ export class NotaFiscalLote {
 
   get totalCurrency(): string {
     return formatCurrency(this.total ?? 0, 'pt', 'R$');
+  }
+
+  get parcelaFormatada(): string {
+    return this.parcela != null ? `${this.parcela}/${this.parcelas || this.parcela}` : '';
+  }
+
+  // Sem parcela na linha, o total do documento.
+  get valorParcelaCurrency(): string {
+    return formatCurrency(Number(this.valorParcela ?? this.total ?? 0), 'pt', 'R$');
   }
 }

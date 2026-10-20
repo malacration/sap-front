@@ -103,16 +103,46 @@
       <hr>
 
       <div class="d-flex flex-wrap align-items-center mb-2">
-        <button type="button" class="btn btn-outline-secondary mr-2 mb-1" [disabled]="notas.length === 0 || baixando || trocandoForma" (click)="alternarSelecaoDaPagina()">
+        <button type="button" class="btn btn-outline-secondary mr-2 mb-1" [disabled]="notas.length === 0 || baixando || trocandoForma || importando" (click)="alternarSelecaoDaPagina()">
           {{ todasDaPaginaSelecionadas ? 'Desmarcar a página' : 'Marcar a página' }}
         </button>
         <button type="button" class="btn btn-outline-secondary mr-2 mb-1"
-                [disabled]="totalItens === 0 || selecionandoFiltro || baixando || trocandoForma"
-                [title]="'Põe no lote as ' + totalItens + ' notas do filtro, não só as desta página, somando ao que já está nele (até ' + limite + ')'"
+                [disabled]="totalItens === 0 || selecionandoFiltro || baixando || trocandoForma || importando"
+                [title]="'Põe no lote os documentos do filtro, não só os desta página, somando ao que já está nele (até ' + limite + ')'"
                 (click)="adicionarTodasDoFiltro()">
-          {{ selecionandoFiltro ? 'Adicionando...' : 'Adicionar todas do filtro (' + totalItens + ')' }}
+          {{ selecionandoFiltro ? 'Adicionando...' : 'Adicionar todas do filtro' }}
+        </button>
+        <input #arquivoPlanilha type="file" accept=".xlsx" class="d-none" (change)="importarPlanilha(arquivoPlanilha)">
+        <button type="button" class="btn btn-outline-secondary mr-2 mb-1"
+                [disabled]="importando || selecionandoFiltro || baixando || trocandoForma"
+                title="Planilha de títulos do banco (.xlsx): cada título vira o documento dele no lote, pelo nosso número"
+                (click)="arquivoPlanilha.click()">
+          <i class="fas fa-file-excel mr-1"></i>{{ importando ? 'Importando...' : 'Importar planilha do banco' }}
         </button>
         <span class="small text-muted mb-1">As notas marcadas vão para o lote, logo abaixo da lista, e ficam lá ao trocar o filtro.</span>
+      </div>
+
+      <div class="border rounded p-2 mb-2" *ngIf="linhasImportacao.length > 0">
+        <div class="d-flex align-items-center">
+          <span><b>Planilha do banco:</b> {{ linhasImportacao.length }} linha(s) pedem atenção.</span>
+          <button type="button" class="btn btn-sm btn-link ml-auto" (click)="fecharImportacao()">Fechar</button>
+        </div>
+        <table class="table table-sm mb-0 mt-1">
+          <thead>
+            <tr><th>Linha</th><th>Nosso número</th><th>Nro beneficiário</th><th>Pagador</th><th class="text-right">Valor</th><th>Situação</th><th>Detalhe</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of linhasImportacao" [class.table-danger]="l.situacao !== 'DIVERGENTE'" [class.table-warning]="l.situacao === 'DIVERGENTE'">
+              <td>{{ l.linha }}</td>
+              <td class="text-nowrap">{{ l.nossoNumero }}</td>
+              <td class="text-nowrap">{{ l.beneficiario }}</td>
+              <td>{{ l.pagador }}</td>
+              <td class="text-right text-nowrap">{{ l.valor | currency:'BRL' }}</td>
+              <td class="text-nowrap">{{ situacaoImportacaoRotulo[l.situacao] }}</td>
+              <td>{{ l.mensagem }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div *ngIf="!loading && notas.length === 0" class="text-muted">
@@ -159,7 +189,7 @@
           <span class="lote-resumo-valor">{{ totalDoLote | currency:'BRL' }}</span>
           <span class="lote-resumo-notas">{{ quantidadeSelecionada }} {{ quantidadeSelecionada === 1 ? 'nota' : 'notas' }}</span>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="quantidadeSelecionada === 0 || baixando || trocandoForma"
+        <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="quantidadeSelecionada === 0 || baixando || trocandoForma || importando"
                 (click)="limparLote()">
           Limpar lote
         </button>
@@ -193,7 +223,7 @@
               <td class="text-right">{{ nota.totalCurrency }}</td>
               <td>{{ nota.statusSefazLabel }}</td>
               <td class="text-right">
-                <button type="button" class="btn btn-sm btn-link text-danger p-0" [disabled]="baixando || trocandoForma"
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" [disabled]="baixando || trocandoForma || importando"
                         [attr.aria-label]="'Tirar ' + nota.tipoLabel + ' ' + nota.notaFormatada + ' do lote'" title="Tirar do lote"
                         (click)="remover(nota.chave)">
                   <i class="fas fa-times"></i>
@@ -229,7 +259,7 @@
           <option *ngFor="let f of formasPagamento" [value]="f.codigo">{{ f.descricao || f.codigo }} ({{ f.codigo }})</option>
         </select>
         <button type="button" class="btn btn-sm btn-warning mb-1"
-                [disabled]="!formaEscolhida || trocandoForma || baixando"
+                [disabled]="!formaEscolhida || trocandoForma || baixando || importando"
                 title="Grava no SAP em todos os documentos do lote. Parceiro sem essa forma no cadastro passa a ter."
                 (click)="trocarFormaPagamento()">
           <i class="fas" [ngClass]="trocandoForma ? 'fa-sync-alt fa-spin' : 'fa-exchange-alt'"></i>
@@ -250,7 +280,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let r of resultadosComAtencao" [class.table-danger]="r.situacao === 'ERRO' || r.situacao === 'NAO_ENCONTRADO' || r.situacao === 'SEM_CONFIRMACAO'"
-                [class.table-warning]="r.boletoAtivo">
+                [class.table-warning]="r.boletoAtivo || r.situacao === 'NAO_PERMITIDO'">
               <td class="text-nowrap"><span class="badge" [ngClass]="categoriaDo(r).badge">{{ categoriaDo(r).rotulo }}</span></td>
               <td>{{ r.numero ?? r.docEntry }}</td>
               <td>{{ r.cardCode }}<span *ngIf="r.cardName"> {{ r.cardName }}</span></td>
@@ -275,8 +305,13 @@
           <input type="checkbox" class="custom-control-input" id="baixarBoleto" name="baixarBoleto" [(ngModel)]="baixarBoleto" [disabled]="baixando">
           <label class="custom-control-label" for="baixarBoleto">Boleto</label>
         </div>
+        <div class="custom-control custom-checkbox mr-3 mb-1"
+             title="PDF do contrato de venda futura (Controle de Pedido) de cada adiantamento do lote, um por contrato. NF-e não tem contrato.">
+          <input type="checkbox" class="custom-control-input" id="baixarContrato" name="baixarContrato" [(ngModel)]="baixarContrato" [disabled]="baixando">
+          <label class="custom-control-label" for="baixarContrato">Contrato (VF)</label>
+        </div>
         <button type="button" class="btn btn-primary mb-1"
-                [disabled]="quantidadeSelecionada === 0 || baixando || trocandoForma || !algumTipoMarcado"
+                [disabled]="quantidadeSelecionada === 0 || baixando || trocandoForma || importando || !algumTipoMarcado"
                 (click)="baixar()">
           <i class="fas" [ngClass]="baixando ? 'fa-sync-alt fa-spin' : 'fa-file-archive'"></i>
           {{ baixando ? 'Baixando...' : 'Baixar zip (' + quantidadeSelecionada + ')' }}
