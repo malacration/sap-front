@@ -1,0 +1,27 @@
+// Rolagem dentro da tabela: o sticky do cabecalho so funciona em relacao ao container que rola,
+// e o .table-responsive ja corta o overflow, entao a altura maxima fica nele.
+.tabela-rolagem {
+  max-height: 70vh;
+  overflow: auto;
+
+  &.compacto {
+    max-height: 55vh;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  tfoot th {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background-color: #f8f9fa;
+  }
+}
+
+.subtotais {
+  font-size: 0.875rem;
+}

@@ -1,0 +1,197 @@
+<section class="content necessidade-producao">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Necessidade de Produção</b></h3>
+    </div>
+
+    <div class="card-body">
+      <div class="form-row align-items-end filtros">
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <label for="necessidade-item-de">Produto de</label>
+          <input id="necessidade-item-de" class="form-control" [(ngModel)]="itemDe" (change)="carregarDepositos()" />
+        </div>
+
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <label for="necessidade-item-ate">Produto até</label>
+          <input id="necessidade-item-ate" class="form-control" [(ngModel)]="itemAte" (change)="carregarDepositos()" />
+        </div>
+
+        <div class="col-xl-3 col-md-6 col-sm-6">
+          <app-select
+            label="Filiais da venda"
+            [multiple]="true"
+            [loading]="carregandoDepositos"
+            [options]="opcoesFiliais"
+            [initialSelectMany]="filiaisSelecionadas"
+            rotuloSemSelecao="Todas"
+            nomeNoPlural="filiais"
+            (selectedOut)="aoSelecionarFiliais($event)"
+          ></app-select>
+        </div>
+
+        <div class="col-xl-3 col-md-6 col-sm-6">
+          <app-select
+            label="Depósitos do estoque"
+            [multiple]="true"
+            [loading]="carregandoDepositos"
+            [grupos]="gruposDepositos"
+            [initialSelectMany]="depositosSelecionados"
+            rotuloSemSelecao="Todos"
+            nomeNoPlural="depósitos"
+            (selectedOut)="aoSelecionarDepositos($event)"
+          ></app-select>
+        </div>
+
+        <div class="col-xl-2 col-md-3 col-sm-6">
+          <button type="button" class="btn btn-success btn-block" [disabled]="carregando || carregandoDepositos" (click)="gerar()">
+            {{ carregando ? 'Gerando...' : 'Gerar' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="form-check mt-2">
+        <input id="necessidade-ocultar" type="checkbox" class="form-check-input" [(ngModel)]="ocultarSemMovimento" />
+        <label for="necessidade-ocultar" class="form-check-label">Ocultar produtos sem estoque, pedido ou venda sem previsão</label>
+      </div>
+
+      <div class="callout callout-info ajuda mt-2 mb-3">
+        <p class="mb-1"><b>Como montar o relatório</b></p>
+        <ol class="mb-1 pl-3">
+          <li><b>Produto de / até:</b> a faixa de códigos. Ela define quais depósitos e filiais aparecem nos filtros.</li>
+          <li>
+            <b>Depósitos do estoque:</b> de onde sai a coluna <b>Estoque</b>. Marque os depósitos cujo saldo pode
+            atender a venda, por exemplo a fábrica e o CD da filial.
+          </li>
+          <li>
+            <b>Filiais da venda:</b> de onde saem as colunas <b>Pedido</b> e <b>Sem previsão</b>. Entram os pedidos,
+            os contratos de venda futura e as notas de simples faturamento lançados nessas filiais.
+          </li>
+        </ol>
+        <p class="mb-1">
+          Os dois filtros são independentes: marcar uma filial não limita os depósitos. Assim dá para ver a venda de
+          uma filial contra o estoque da fábrica mais o da própria filial. Sem nada marcado, o filtro considera todos.
+        </p>
+        <p class="mb-0 text-muted">
+          <b>A fabricar</b> = Estoque − Pedido; negativo é o que falta produzir. Clique em Pedido ou Sem previsão para
+          ver os documentos. Somente produtos ativos, na unidade de estoque.
+        </p>
+      </div>
+
+      <div *ngIf="erro" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle mr-2"></i>{{ erro }}
+      </div>
+
+      <ng-container *ngIf="resultado">
+        <div class="alert alert-light border recorte">
+          <div><span class="text-muted">Estoque somado nos depósitos:</span> {{ resumoDepositos }}</div>
+          <div><span class="text-muted">Venda somada nas filiais:</span> {{ resumoFiliais }}</div>
+          <div *ngIf="resultado.depositosExcluidos.length">
+            <span class="text-muted">Fora da conta por configuração:</span> {{ resultado.depositosExcluidos.join(', ') }}
+          </div>
+          <div>
+            <span class="text-muted">Utilização de simples faturamento:</span>
+            {{ resultado.utilizacoesSimplesFaturamento.join(', ') }} — fora do pedido; o que falta entregar entra em sem previsão
+          </div>
+        </div>
+
+        <div class="table-responsive tabela-rolagem">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th>Produto</th>
+                <th>Grupo</th>
+                <th class="text-right" title="Saldo nos depósitos do estoque">Estoque</th>
+                <th class="text-right" title="Pedidos de venda em aberto das filiais da venda, sem os de simples faturamento">Pedido</th>
+                <th class="text-right" title="Estoque - pedido">A fabricar</th>
+                <th class="text-right" title="Das filiais da venda: saldo de contrato de venda futura sem pedido + o que falta entregar do simples faturamento">
+                  Sem previsão
+                </th>
+              </tr>
+            </thead>
+            <tbody *ngFor="let grupo of grupos; trackBy: trackByGrupo">
+              <tr class="grupo-linha">
+                <th colspan="2">
+                  {{ grupo.nome }}
+                  <span class="text-muted font-weight-normal small ml-1">{{ grupo.linhas.length }} produtos</span>
+                </th>
+                <th class="text-right">{{ numero(grupo.estoque) }}</th>
+                <th class="text-right">{{ numero(grupo.pedido) }}</th>
+                <th class="text-right" [class.text-danger]="grupo.aFabricar < 0">{{ numero(grupo.aFabricar) }}</th>
+                <th class="text-right">{{ numero(grupo.semPrevisao) }}</th>
+              </tr>
+              <tr *ngFor="let linha of grupo.linhas; let impar = odd" [class.zebra]="impar">
+                <td>
+                  <b>{{ linha.itemName }}</b>
+                  <div class="text-muted small">{{ linha.itemCode }} · {{ linha.unidade }}</div>
+                </td>
+                <td class="small">{{ linha.grupo }}</td>
+                <td class="text-right">{{ numero(linha.estoque) }}</td>
+                <td class="text-right">
+                  <button
+                    *ngIf="linha.pedido != 0; else zeroPedido"
+                    type="button"
+                    class="btn btn-link btn-sm p-0 celula-detalhe"
+                    title="Ver os pedidos"
+                    (click)="abrirDetalhe(linha, 'PEDIDO')"
+                  >{{ numero(linha.pedido) }}</button>
+                  <ng-template #zeroPedido>{{ numero(linha.pedido) }}</ng-template>
+                </td>
+                <td class="text-right a-fabricar" [class.text-danger]="linha.aFabricar < 0">
+                  <b>{{ numero(linha.aFabricar) }}</b>
+                </td>
+                <td class="text-right">
+                  <button
+                    *ngIf="linha.semPrevisao != 0; else zeroSemPrevisao"
+                    type="button"
+                    class="btn btn-link btn-sm p-0 celula-detalhe"
+                    [title]="descricaoSemPrevisao(linha) + '\nClique para ver os contratos e notas'"
+                    (click)="abrirDetalhe(linha, 'SEM_PREVISAO')"
+                  >{{ numero(linha.semPrevisao) }}</button>
+                  <ng-template #zeroSemPrevisao>{{ numero(linha.semPrevisao) }}</ng-template>
+                </td>
+              </tr>
+            </tbody>
+            <tbody *ngIf="linhas.length == 0">
+              <tr>
+                <td colspan="6" class="text-center text-muted">Nenhum produto na faixa e nos depósitos escolhidos.</td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="linhas.length > 0">
+              <tr>
+                <th colspan="2">Total ({{ linhas.length }} produtos)</th>
+                <th class="text-right">{{ numero(total('estoque')) }}</th>
+                <th class="text-right">{{ numero(total('pedido')) }}</th>
+                <th class="text-right" [class.text-danger]="total('aFabricar') < 0">{{ numero(total('aFabricar')) }}</th>
+                <th class="text-right">{{ numero(total('semPrevisao')) }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </ng-container>
+    </div>
+
+    <div *ngIf="carregando" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+  </div>
+
+  <app-modal #modalDetalhe [title]="tituloModal" modalSize="xl">
+    <div class="d-flex flex-wrap align-items-center mb-2">
+      <span *ngIf="celula" class="text-muted small mr-auto">
+        {{ celula.linha.itemCode }} · {{ celula.linha.unidade }}
+        <ng-container *ngIf="detalhe"> · Total {{ numero(detalhe.total) }}</ng-container>
+      </span>
+      <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="!celula" (click)="abrirDetalheNovaAba()">
+        <i class="fas fa-external-link-alt mr-1"></i>Abrir em nova aba
+      </button>
+    </div>
+
+    <div *ngIf="carregandoDetalhe" class="text-center p-4">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+    <div *ngIf="erroDetalhe" class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-circle mr-2"></i>{{ erroDetalhe }}
+    </div>
+    <app-necessidade-producao-documentos *ngIf="detalhe" [detalhe]="detalhe" [compacto]="true"></app-necessidade-producao-documentos>
+  </app-modal>
+</section>

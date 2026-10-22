@@ -1,0 +1,75 @@
+<div *ngIf="subtotais.length > 1" class="d-flex flex-wrap mb-2 subtotais">
+  <span *ngFor="let it of subtotais" class="mr-3">
+    <span class="badge" [ngClass]="classeTipo(it.tipo)">{{ it.rotulo }}</span>
+    {{ it.documentos }} doc. · <b>{{ numero(it.saldo) }}</b>
+  </span>
+</div>
+
+<div class="table-responsive tabela-rolagem" [class.compacto]="compacto">
+  <table class="table table-sm table-hover table-bordered mb-0">
+    <thead class="thead-light">
+      <tr>
+        <th>Documento</th>
+        <th>Data</th>
+        <th *ngIf="!semPrevisao || !compacto">Previsão</th>
+        <th>Cliente</th>
+        <th *ngIf="!compacto">Filial</th>
+        <th>Depósito</th>
+        <th *ngIf="!compacto">Vendedor</th>
+        <th>Contrato VF</th>
+        <th class="text-right" *ngIf="!compacto">Quantidade</th>
+        <th class="text-right" *ngIf="!compacto">Entregue</th>
+        <th class="text-right" *ngIf="semPrevisao && !compacto" title="Retirada do contrato que já virou pedido">Em pedido</th>
+        <th class="text-right">Saldo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let documento of documentos; trackBy: trackBy">
+        <td class="text-nowrap">
+          <span *ngIf="semPrevisao" class="badge mr-1" [ngClass]="classeTipo(documento.tipo)">{{ rotulo(documento.tipo) }}</span>
+          <app-sap-link-button
+            [label]="documento.docNum"
+            [sapRouterLink]="[link(documento) || '/home']"
+            [queryParams]="{ id: documento.docEntry }"
+            [somenteCopiar]="!link(documento)"
+            [title]="link(documento) ? 'Abrir em nova aba' : 'Copiar número'"
+          ></app-sap-link-button>
+        </td>
+        <td class="text-nowrap">{{ data(documento.data) }}</td>
+        <td class="text-nowrap" *ngIf="!semPrevisao || !compacto">{{ data(documento.previsao) }}</td>
+        <td>
+          {{ documento.cardName }}
+          <div class="text-muted small">{{ documento.cardCode }}</div>
+        </td>
+        <td class="small" *ngIf="!compacto">{{ documento.filialNome || documento.filial }}</td>
+        <td class="text-nowrap">{{ documento.deposito || '-' }}</td>
+        <td class="small" *ngIf="!compacto">{{ documento.vendedor || '-' }}</td>
+        <td class="text-nowrap">
+          <app-sap-link-button
+            *ngIf="documento.contratoVendaFutura && documento.tipo != 'VENDA_FUTURA'; else semContrato"
+            [label]="documento.contratoVendaFutura"
+            [sapRouterLink]="['/venda/venda-futura']"
+            [queryParams]="{ id: documento.contratoVendaFutura }"
+          ></app-sap-link-button>
+          <ng-template #semContrato>-</ng-template>
+        </td>
+        <td class="text-right" *ngIf="!compacto">{{ numero(documento.quantidade) }}</td>
+        <td class="text-right" *ngIf="!compacto">{{ numero(documento.entregue) }}</td>
+        <td class="text-right" *ngIf="semPrevisao && !compacto">{{ numero(documento.emPedido) }}</td>
+        <td class="text-right"><b>{{ numero(documento.saldo) }}</b></td>
+      </tr>
+      <tr *ngIf="documentos.length == 0">
+        <td colspan="12" class="text-center text-muted">Nenhum documento em aberto.</td>
+      </tr>
+    </tbody>
+    <tfoot *ngIf="documentos.length > 0">
+      <tr>
+        <th [attr.colspan]="compacto ? (semPrevisao ? 5 : 6) : 8">Total ({{ documentos.length }} documentos)</th>
+        <th class="text-right" *ngIf="!compacto">{{ numero(total('quantidade')) }}</th>
+        <th class="text-right" *ngIf="!compacto">{{ numero(total('entregue')) }}</th>
+        <th class="text-right" *ngIf="semPrevisao && !compacto">{{ numero(total('emPedido')) }}</th>
+        <th class="text-right">{{ numero(total('saldo')) }}</th>
+      </tr>
+    </tfoot>
+  </table>
+</div>

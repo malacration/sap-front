@@ -126,6 +126,7 @@ import { InvoiceGenerationService } from './sap/service/invoice-generation.servi
 import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carregamento.module';
 import { PainelVendasModule } from './modulos/painel-vendas/painel-vendas.module';
 import { RelatorioFreteModule } from './modulos/relatorio-frete/relatorio-frete.module';
+import { NecessidadeProducaoModule } from './modulos/necessidade-producao/necessidade-producao.module';
 import { QRCodeModule } from 'angularx-qrcode';
 import { CobrancaModule } from './modulos/cobranca/cobranca.module';
 import { RelatorioModule } from './modulos/relatorio/relatorio.module';
@@ -232,6 +233,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     OrdemCarregamentoModule,
     PainelVendasModule,
     RelatorioFreteModule,
+    NecessidadeProducaoModule,
     RelatorioModule,
     CobrancaModule,
     ReactiveFormsModule,
