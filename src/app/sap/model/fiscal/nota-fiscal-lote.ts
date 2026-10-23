@@ -41,6 +41,8 @@ export function categoriaInfo(categoria: CategoriaDocumentoLote | null | undefin
 export interface FormaPagamentoLote {
   codigo: string;
   descricao: string;
+  // Inativa so aparece no filtro da lista (documento antigo); a troca so aceita ativa.
+  ativa?: boolean;
 }
 
 export type SituacaoTrocaFormaPagamento =
@@ -140,6 +142,13 @@ export class NotaFiscalLote {
   vendedorCodigo: number;
   vendedor: string;
   formaPagamento: string;
+  // Nome da forma (Descript da OPYM).
+  formaPagamentoNome: string;
+  // Boleto da BankPlus desta parcela (o mais recente); nulo = sem boleto.
+  nossoNumero: string;
+  boletoStatusId: number;
+  boletoStatus: string;
+  boletoSituacao: string;
   chaveAcesso: string;
   statusSefazId: number;
   statusSefaz: string;
@@ -158,9 +167,9 @@ export class NotaFiscalLote {
   // app-table pendura FormControl na linha (formControlFactory*), que tem referencia circular.
   static paraArmazenar(nota: NotaFiscalLote): object {
     const { tipo, categoria, docEntry, docNum, numero, serie, contrato, data, cardCode, cardName, filialId, filial, total,
-      vencimentoInicial, vencimentoFinal, parcelas, formaPagamento, statusSefazId, statusSefaz, statusSap } = nota;
+      vencimentoInicial, vencimentoFinal, parcelas, formaPagamento, formaPagamentoNome, statusSefazId, statusSefaz, statusSap } = nota;
     return { tipo, categoria, docEntry, docNum, numero, serie, contrato, data, cardCode, cardName, filialId, filial, total,
-      vencimentoInicial, vencimentoFinal, parcelas, formaPagamento, statusSefazId, statusSefaz, statusSap };
+      vencimentoInicial, vencimentoFinal, parcelas, formaPagamento, formaPagamentoNome, statusSefazId, statusSefaz, statusSap };
   }
 
   // Identifica o documento no lote: o mesmo docEntry pode existir como NF e como adiantamento.
@@ -241,6 +250,23 @@ export class NotaFiscalLote {
 
   get totalCurrency(): string {
     return formatCurrency(this.total ?? 0, 'pt', 'R$');
+  }
+
+  // "Confirmado · Normal" (status e situacao na BankPlus); sem boleto, vazio.
+  get boletoFormatado(): string {
+    if (this.boletoStatusId == null && !this.boletoStatus) {
+      return '';
+    }
+    const status = this.boletoStatus || `Status ${this.boletoStatusId}`;
+    return this.boletoSituacao ? `${status} · ${this.boletoSituacao}` : status;
+  }
+
+  // "Nome (codigo)"; sem nome (forma fora da OPYM ou lote guardado antes), so o codigo.
+  get formaPagamentoFormatada(): string {
+    if (!this.formaPagamento) {
+      return '';
+    }
+    return this.formaPagamentoNome ? `${this.formaPagamentoNome} (${this.formaPagamento})` : this.formaPagamento;
   }
 
   get parcelaFormatada(): string {

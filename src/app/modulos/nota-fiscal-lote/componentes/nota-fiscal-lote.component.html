@@ -39,6 +39,14 @@
             </select>
           </div>
           <div class="col-md-2 col-sm-6">
+            <label for="filtroFormaPagamento">Forma de pagamento</label>
+            <select class="form-control" id="filtroFormaPagamento" name="filtroFormaPagamento" [(ngModel)]="filtroFormaPagamento" (ngModelChange)="filtrar()">
+              <option value="">Todas</option>
+              <option value="-">Sem forma de pagamento</option>
+              <option *ngFor="let f of formasFiltro" [value]="f.codigo">{{ f.descricao || f.codigo }} ({{ f.codigo }}){{ f.ativa === false ? ' – inativa' : '' }}</option>
+            </select>
+          </div>
+          <div class="col-md-2 col-sm-6">
             <label for="numeroNf">
               Nº do documento
               <i class="fas fa-info-circle text-muted"
@@ -82,6 +90,18 @@
             <select class="form-control" id="filtroStatusSefaz" name="filtroStatusSefaz" [(ngModel)]="filtroStatusSefaz" (ngModelChange)="filtrar()">
               <option value="">Todos</option>
               <option *ngFor="let s of statusSefazOpcoes" [value]="s.id">{{ s.descricao || ('Status ' + s.id) }}</option>
+            </select>
+          </div>
+          <div class="col-md-2 col-sm-6">
+            <label for="filtroBoletoStatus">
+              Boleto (BankPlus)
+              <i class="fas fa-info-circle text-muted"
+                 title="Status do boleto da parcela na BankPlus (o mais recente, se foi reemitido). Ao adicionar todas do filtro, entra o documento que tem alguma parcela nesse status."></i>
+            </label>
+            <select class="form-control" id="filtroBoletoStatus" name="filtroBoletoStatus" [(ngModel)]="filtroBoletoStatus" (ngModelChange)="filtrar()">
+              <option value="">Todos</option>
+              <option value="-1">Sem boleto</option>
+              <option *ngFor="let s of statusBoletoOpcoes" [value]="s.id">{{ s.descricao || ('Status ' + s.id) }}</option>
             </select>
           </div>
         </div>
@@ -219,7 +239,7 @@
               <td>{{ nota.cardCode }} {{ nota.cardName }}</td>
               <td>{{ nota.dataFormatada }}</td>
               <td><span class="cel-filial" [title]="nota.filialFormatada">{{ nota.filialFormatada }}</span></td>
-              <td class="text-nowrap">{{ nota.formaPagamento || '—' }}</td>
+              <td class="text-nowrap">{{ nota.formaPagamentoFormatada || '—' }}</td>
               <td class="text-right">{{ nota.totalCurrency }}</td>
               <td>{{ nota.statusSefazLabel }}</td>
               <td class="text-right">

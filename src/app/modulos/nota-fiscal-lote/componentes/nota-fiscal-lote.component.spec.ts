@@ -22,6 +22,7 @@ describe('NotaFiscalLoteComponent', () => {
   // pagamento ganha as padrao aqui.
   function novoComponente(service: any, toastr: any, opcoes: { confirma?: boolean; usuario?: string; token?: any } = {}) {
     service.formasPagamento ??= () => of(FORMAS);
+    service.statusBoleto ??= () => of([{ id: 3, descricao: 'Confirmado' }]);
     service.trocarFormaPagamento ??= () => of([]);
     const alert = { confirm: jasmine.createSpy('confirm').and.returnValue(Promise.resolve({ isConfirmed: opcoes.confirma ?? true })) };
     // Token Keycloak por padrao; name igual para todo mundo de proposito: o lote nao separa por nome.
@@ -718,6 +719,32 @@ describe('NotaFiscalLoteComponent', () => {
       componente.alternarSelecaoDaPagina();
       componente.baixar();
       expect(chamadas.baixar.length).toBe(1);
+    });
+
+    it('forma de pagamento com nome e boleto da BankPlus com status e situacao', () => {
+      const n = NotaFiscalLote.from({ docEntry: 1, formaPagamento: 'AVISTA', formaPagamentoNome: 'DEPOSITO',
+        boletoStatusId: 3, boletoStatus: 'Confirmado', boletoSituacao: 'Normal', nossoNumero: '35158540000021002' });
+      expect(n.formaPagamentoFormatada).toBe('DEPOSITO (AVISTA)');
+      expect(n.boletoFormatado).toBe('Confirmado · Normal');
+      expect(NotaFiscalLote.from({ docEntry: 2, formaPagamento: 'X' }).formaPagamentoFormatada).toBe('X');
+      expect(NotaFiscalLote.from({ docEntry: 2 }).formaPagamentoFormatada).toBe('');
+      expect(NotaFiscalLote.from({ docEntry: 2 }).boletoFormatado).toBe('');
+      expect(NotaFiscalLote.from({ docEntry: 2, boletoStatusId: 4, boletoStatus: 'Baixado' }).boletoFormatado).toBe('Baixado');
+    });
+
+    it('filtros de forma de pagamento e de boleto vao para a busca; limpar zera', () => {
+      const { componente, chamadas } = tela({ 0: pagina([nota(1)]) });
+      componente.filtroFormaPagamento = '-';
+      componente.filtroBoletoStatus = '-1';
+      componente.filtrar();
+      const filtro = chamadas.listar[chamadas.listar.length - 1].filtro;
+      expect(filtro.formaPagamento).toBe('-');
+      expect(filtro.boletoStatus).toBe(-1);
+      expect(componente.statusBoletoOpcoes.map((s) => s.id)).toEqual([3]);
+      componente.limparFiltros();
+      const limpo = chamadas.listar[chamadas.listar.length - 1].filtro;
+      expect(limpo.formaPagamento).toBeNull();
+      expect(limpo.boletoStatus).toBeNull();
     });
 
     it('rotulos do adiantamento', () => {

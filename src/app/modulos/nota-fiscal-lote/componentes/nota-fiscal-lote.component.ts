@@ -53,6 +53,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   filtroStatusSap: StatusSapNota | '' = '';
   // ID da "ProcessStatus"; '' = todos. String porque o <select> devolve string.
   filtroStatusSefaz = '';
+  // '' = todos, '-1' = sem boleto, senao o ID do status na BankPlus.
+  filtroBoletoStatus = '';
+  statusBoletoOpcoes: StatusSefaz[] = [];
   // '' = todas: NF-e de saida, NF-e venda futura antiga e adiantamentos.
   filtroCategoria: CategoriaDocumentoLote | '' = '';
 
@@ -93,6 +96,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
 
   // Troca da forma de pagamento dos documentos do lote (grava no SAP).
   formasPagamento: FormaPagamentoLote[] = [];
+  // Filtro da lista: todas as formas de recebimento, inclusive inativas.
+  formasFiltro: FormaPagamentoLote[] = [];
+  filtroFormaPagamento = '';
   formaEscolhida = '';
   trocandoForma = false;
   // Confirmacao da troca aberta: o lote fica travado para o que vai ser gravado ser o que foi confirmado.
@@ -137,7 +143,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.definition = this.service.getDefinition();
     this.service.statusSefaz().subscribe((status) => (this.statusSefazOpcoes = status ?? []));
+    this.service.statusBoleto().subscribe((status) => (this.statusBoletoOpcoes = status ?? []));
     this.service.formasPagamento().subscribe((formas) => (this.formasPagamento = formas ?? []));
+    this.service.formasPagamento(true).subscribe((formas) => (this.formasFiltro = formas ?? []));
     this.carregarLote();
     this.definirPeriodoPadrao();
     this.filtrar();
@@ -171,7 +179,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       vencimentoAte: porNf ? null : this.vencimentoAte || null,
       statusSap: this.filtroStatusSap || null,
       statusSefaz: this.filtroStatusSefaz !== '' ? Number(this.filtroStatusSefaz) : null,
+      boletoStatus: this.filtroBoletoStatus !== '' ? Number(this.filtroBoletoStatus) : null,
       categoria: this.filtroCategoria || null,
+      formaPagamento: this.filtroFormaPagamento || null,
     };
   }
 
@@ -236,7 +246,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.vendedorSelecionado = null;
     this.filtroStatusSap = '';
     this.filtroStatusSefaz = '';
+    this.filtroBoletoStatus = '';
     this.filtroCategoria = '';
+    this.filtroFormaPagamento = '';
     this.versaoFiltros++;
     this.filtrar();
   }
@@ -504,6 +516,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
             const nota = this.selecao.get(`${r.tipo}-${r.docEntry}`);
             if (nota) {
               nota.formaPagamento = forma;
+              nota.formaPagamentoNome = this.formasPagamento.find((f) => f.codigo === forma)?.descricao ?? null;
             }
           });
         this.loteAlterado();

@@ -28,6 +28,10 @@ export interface NotaFiscalLoteFiltro {
   statusSefaz?: number | null;
   // Nulo = todas (NF-e de saida, NF-e venda futura antiga e adiantamentos).
   categoria?: CategoriaDocumentoLote | null;
+  // PeyMethod; '-' = documento sem forma de pagamento.
+  formaPagamento?: string | null;
+  // Status do boleto na BankPlus; -1 = sem boleto. Por parcela na lista.
+  boletoStatus?: number | null;
 }
 
 export interface NotaFiscalLoteDownload {
@@ -82,6 +86,11 @@ export class NotaFiscalLoteService {
     return this.http.get<StatusSefaz[]>(this.url + '/status-sefaz');
   }
 
+  // Status de boleto da BankPlus (Confirmado, Baixado, Cancelado...), para o filtro.
+  statusBoleto(): Observable<StatusSefaz[]> {
+    return this.http.get<StatusSefaz[]>(this.url + '/status-boleto');
+  }
+
   // OINV e ODPI tem DocEntry proprio: o backend recebe NF e adiantamentos em listas separadas.
   static porTipo(documentos: NotaFiscalLote[]): { docEntries: number[]; adiantamentos: number[] } {
     return {
@@ -115,8 +124,9 @@ export class NotaFiscalLoteService {
     );
   }
 
-  formasPagamento(): Observable<FormaPagamentoLote[]> {
-    return this.http.get<FormaPagamentoLote[]>(this.url + '/formas-pagamento');
+  // Ativas (as que a troca aceita); todas = tambem as inativas, para o filtro da lista.
+  formasPagamento(todas = false): Observable<FormaPagamentoLote[]> {
+    return this.http.get<FormaPagamentoLote[]>(this.url + '/formas-pagamento', todas ? { params: { todas: true } } : {});
   }
 
   // Grava no SAP: troca a forma dos documentos e, se o parceiro nao tiver a forma, vincula a ele.
@@ -140,7 +150,9 @@ export class NotaFiscalLoteService {
       new Column('Cliente', 'cardName', '{{value}}'),
       new Column('Vendedor', 'vendedor', '{{value}}'),
       new Column('Valor da parcela', 'valorParcelaCurrency'),
-      new Column('Forma de pagamento', 'formaPagamento', '{{value}}'),
+      new Column('Forma de pagamento', 'formaPagamentoFormatada', '{{value}}'),
+      new Column('Boleto (BankPlus)', 'boletoFormatado', '{{value}}'),
+      new Column('Nosso número', 'nossoNumero', '{{value}}'),
       new Column('Status SAP', 'statusSapLabel'),
       new Column('Status SEFAZ', 'statusSefazLabel', '{{value}}'),
       new Column('Chave de acesso', 'chaveAcesso', '<span class="cel-chave">{{value}}</span>'),
