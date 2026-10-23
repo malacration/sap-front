@@ -25,6 +25,11 @@ export class FormaPagamentoService{
         .pipe(map(value => value?.methods || []))
     return this.hppCliente.get<Array<FormaPagamento>>(this.url+`/filial/${idFilial}/cardcode/${cardCode}`)
   }
+
+  /** Formas liberadas para o portal, sem filtro de cliente nem filial: de onde o cliente novo escolhe. */
+  liberadas() : Observable<Array<FormaPagamento>>{
+    return this.hppCliente.get<Array<FormaPagamento>>(this.url+'/liberadas')
+  }
 }
 
 

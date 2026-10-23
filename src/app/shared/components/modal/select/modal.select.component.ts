@@ -27,6 +27,14 @@ export class ModalSelectComponent implements OnInit {
   uppercaseKeyword = false
 
   @Input()
+  title : string
+
+  /** Sem titulo o app-modal mostrava o padrao dele, "Titulo", em todas as buscas. */
+  get tituloModal() : string {
+    return this.title || (this.name ? `Selecionar ${this.name}` : 'Selecionar')
+  }
+
+  @Input()
   set initialContent(value : any){
     if(value)
       this.content = value
@@ -40,6 +48,10 @@ export class ModalSelectComponent implements OnInit {
 
   @Output() 
   contentSelected = new EventEmitter<any>();
+
+  /** Acao da linha que nao e a de selecionar (ex.: ver lotes do item): quem usa a busca decide o que fazer. */
+  @Output()
+  outraAcao = new EventEmitter<ActionReturn>();
   
   keyWord = ""
   content : any = null
@@ -77,16 +89,8 @@ export class ModalSelectComponent implements OnInit {
       this.closeModal()
       this.contentSelected.emit(this.content)
     }
-  }
-
-  /**
-   * Busca que retornou um resultado so: seleciona sozinho, para o usuario nao ter que abrir o
-   * modal e clicar na unica linha possivel. Mesmo efeito de clicar na linha em action().
-   */
-  selecionaUnico(item : any){
-    this.content = item
-    this.closeModal()
-    this.contentSelected.emit(this.content)
+    else
+      this.outraAcao.emit(action)
   }
 
   clear(){

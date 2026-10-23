@@ -19,6 +19,8 @@ export class Item{
     descontoCondicaoPagamento : number 
     jurosCondicaoPagamento : number 
     OnHand: number 
+    //deposito padrao da filial, o mesmo do OnHand (produto-tabela-v2.sql) - e dele que saem os lotes
+    WarehouseCode : string
     descontoVendedorPorcentagem : number = 0
     PriceUnit
     MeasureUnit
@@ -38,9 +40,13 @@ export class Item{
     }
 
     getActions(): Action[] {
-        return [
+        const acoes = [
             new Action("", new ActionReturn("selected",this), "far fa-check-circle")
         ]
+        //sem deposito (catalogo offline, busca sem filial) nao ha de onde ler os lotes
+        if(this.WarehouseCode)
+            acoes.push(new Action("Lotes", new ActionReturn("ver-lotes",this), "fas fa-boxes", "secondary"))
+        return acoes
     }
 
     toString(){

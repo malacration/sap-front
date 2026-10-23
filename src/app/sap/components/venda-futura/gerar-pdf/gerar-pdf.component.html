@@ -6,15 +6,40 @@
   </div>
 
   <div class="title-container">
-    <h1>CONTROLE DE PEDIDO</h1>
+    <h1>MINUTA DE CONTRATO</h1>
   </div>
 
   <div class="info-section">
     <p><strong>Nome:</strong> {{ vendaFutura?.U_cardName }}</p>
     <p><strong>Data:</strong> {{ vendaFutura?.dataCriacao }}</p>
-    <p>Produtos: {{ vendaFutura?.TotalProdutosCalculadoCurrency | currency }}</p>
-    <p>Valor Frete: {{ vendaFutura?.U_valorFrete | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</p>
-    <p><strong>Total a Pagar:</strong> {{vendaFutura.totalCurrency}} </p>
+  </div>
+
+  <div class="negociacao">
+    <h3>Dados da negociação</h3>
+    <table class="negociacao-table">
+      <tbody>
+        <tr>
+          <th>Valor dos produtos</th>
+          <td>{{ vendaFutura?.TotalProdutosCalculadoCurrency | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+        </tr>
+        <tr>
+          <th>Valor do frete</th>
+          <td>{{ (vendaFutura?.U_valorFrete || 0) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+        </tr>
+        <tr class="negociacao-total">
+          <th>Valor total</th>
+          <td>{{ vendaFutura?.totalCurrency }}</td>
+        </tr>
+        <tr>
+          <th>Forma de pagamento</th>
+          <td>{{ formaPagamentoTexto }}</td>
+        </tr>
+        <tr>
+          <th>Parcelamento</th>
+          <td>{{ parcelamentoTexto }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="table-container">
@@ -42,17 +67,19 @@
     <h3>Cláusulas e condições:</h3>
     <ol>
       <li>
-        Este Pedido tem por objeto a venda de nutrição animal, na modalidade futura,
+        Este Contrato tem por objeto a venda de nutrição animal, na modalidade futura,
         conforme as especificações acima, pelo qual o VENDEDOR (Sustennutri Nutrição
         Animal Ltda CNPJ 09.054.087/0001-54) realiza ao COMPRADOR a venda antecipada
         do Produto, para posterior entrega, que será realizada no seguinte:
         <br><br>
-        Endereço: __________________________________ Nº: ____________<br>
-        Bairro: ______________________, Cidade: _____________________
+        Endereço: <span class="preenchido">{{ logradouroEntrega || '__________________________________' }}</span>
+        Nº: <span class="preenchido">{{ enderecoEntrega?.StreetNo || '____________' }}</span><br>
+        Bairro: <span class="preenchido">{{ enderecoEntrega?.Block || '______________________' }}</span>,
+        Cidade: <span class="preenchido">{{ cidadeEntrega || '_____________________' }}</span>
       </li>
       <li>
         O prazo máximo de entrega do Produto será de 180 (cento e oitenta) dias, a
-        partir da data de assinatura deste Pedido, limitado ao ano vigente da assinatura
+        partir da data de assinatura deste Contrato, limitado ao ano vigente da assinatura
         deste instrumento. 2.O COMPRADOR formalizará o pedido de entrega do Produto, e a entrega será
         realizada no prazo de até 10 (dez) dias da data da solicitação de entrega. 3. Caso o COMPRADOR manifeste interesse de alterar o Produto adquirido, terá
         o prazo de 30 (trinta) dias para informar ao VENDEDOR qual o Produto a ser
@@ -63,14 +90,14 @@
         multa de 2% (dois por cento) sobre o valor inadimplido, correção monetária e
         juros moratórios de 1% (um por cento) ao mês, calculados pro rata die, até o
         efetivo pagamento. 5. Será observada a legislação quanto às retenções e/ou descontos tributários.
-        6.Este Pedido é firmado em caráter irrevogável e irretratável.
+        6.Este Contrato é firmado em caráter irrevogável e irretratável.
       </li>
     </ol>
   </div>
 
   <div class="footer">
     <div class="footer-left">
-      <p>CNPJ/CPF: {{ businessPartner?.CpfCnpjStr() }}</p>
+      <p>CNPJ/CPF: {{ documentoCliente || '______________________' }}</p>
     </div>
     <div class="footer-right">
       <p>ASSINATURA: __________________________</p>

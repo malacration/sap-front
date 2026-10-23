@@ -48,6 +48,13 @@ export class BusinessPartnerService implements SearchService<BusinessPartner> {
     return this.hppCliente.post<BusinessPartner>(this.url+"/key/"+hashCode,pn)
   }
 
+  /** Cliente novo pela tela: o backend barra CPF/CNPJ ja cadastrado e vincula as formas de pagamento. */
+  criarNovo(cliente : any) : Observable<BusinessPartner> {
+    return this.hppCliente
+      .post<BusinessPartner>(this.url+"/novo", cliente)
+      .pipe(map((pn) => Object.assign(new BusinessPartner(),pn)))
+  }
+
   //addressType e obrigatorio: a chave do endereco no SAP e (nome, tipo). Sem ele o back
   //gravava no primeiro endereco de mesmo nome - cliente com "COBRANCA" de cobranca e
   //"COBRANCA" de entrega recebia a localidade sempre no de cobranca.

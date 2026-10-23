@@ -298,8 +298,11 @@ export class VendaFuturaSingleComponent implements OnInit {
   abrirModalPreview(): void { this.previewModal.openModal(); }
 
   gerarPDF(): void {
-    const headContent = document.head.innerHTML;
-    this.gerarPdfComponent.gerarPdf(headContent);
+    if (!this.gerarPdfComponent) {
+      this.alertService.error('A minuta ainda não foi montada na tela. Abra o preview e tente de novo.');
+      return;
+    }
+    this.gerarPdfComponent.baixarPdf();
   }
 
   desfazerConcilicao(docEntry): void {

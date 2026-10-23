@@ -11,7 +11,7 @@
 </button>
 <ng-container *ngIf="service">
   <app-search #busca [service]="service" [definition]="colunas"
-    [name]="parametro.rotulo || parametro.nome" [autoSelectSingleResult]="false"
+    [name]="parametro.rotulo || parametro.nome"
     (contentSelected)="selecionar($event); $event && busca.clear()">
   </app-search>
   <div class="mt-2" aria-live="polite">

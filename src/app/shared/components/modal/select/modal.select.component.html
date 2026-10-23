@@ -2,9 +2,9 @@
 <div *ngIf="!isSelected()">
     <label for="id">Selecionar {{name}}</label>
     <div class="input-group">
-        <input type="text" class="form-control" name="id" (keydown.enter)="disableSearch() ? {} : searchFunction()" [ngModel]="keyWord" (ngModelChange)="atualizaKeyWord($event)" placeholder="Buscar" />
+        <input type="text" class="form-control" name="id" (keydown.enter)="disableSearch() ? {} : searchFunction()" [ngModel]="keyWord" [ngModelOptions]="{standalone: true}" (ngModelChange)="atualizaKeyWord($event)" placeholder="Buscar" />
         <span class="input-group-append">
-            <button class="btn btn-primary" [disabled]="disableSearch()" (click)="searchFunction()">
+            <button type="button" class="btn btn-primary" [disabled]="disableSearch()" (click)="searchFunction()">
                 <i class="fas fa-search"></i> 
             </button>
         </span>
@@ -17,21 +17,21 @@
     <div class="input-group">
         <input type="text" class="form-control" name="id" disabled="true" value="{{content.toString()}}" />
         <span class="input-group-append">
-            <button class="btn btn-danger" (click)="clear()">
+            <button type="button" class="btn btn-danger" (click)="clear()">
                 <i class="far fa-times-circle"></i>
             </button>
         </span>
     </div>
 </div>
 
-<app-modal #busca>
+<app-modal #busca [title]="tituloModal">
     <app-table [content]="resultadoBusca.content" [definition]="definition" (actionOutput)="action($event)"></app-table>
     <div *ngIf="loading" class="text-center">
         <i class="fas fa-2x fa-sync fa-spin"></i>
     </div>
     <div class="row">
         <div *ngIf="!loading && resultadoBusca.nextLink" class="col text-center">
-            <button class="btn btn-primary" (click)="changePageFunction(resultadoBusca.nextLink)">
+            <button type="button" class="btn btn-primary" (click)="changePageFunction(resultadoBusca.nextLink)">
                 Carregar Mais
                 <i class="far fa-plus-square"></i>
             </button>

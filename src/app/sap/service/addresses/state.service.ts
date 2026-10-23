@@ -11,8 +11,9 @@ export class StateService implements OnInit {
 
   url = "http://localhost:8080/state"
   
+  //servico nao roda ngOnInit: sem montar a URL aqui ela ficava presa em localhost:8080
   constructor(private config : ConfigService, private hppCliente : HttpClient) { 
-      
+      this.url = config.getHost()+"/state"
   }
 
   ngOnInit(){

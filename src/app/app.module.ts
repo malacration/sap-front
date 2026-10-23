@@ -38,6 +38,7 @@ import { BusinessPlacesService } from './sap/service/business-places.service';
 import { FilterBusinessPlaceComponent } from './sap/components/filters/business-place/filter-business-place.component';
 import { FilterNumeroNfComponent } from './sap/components/filters/numero-nf/filter-numero-nf.component';
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
+import { NovoParceiroComponent } from './sap/components/parceiro-negocio/novo-parceiro/novo-parceiro.component';
 import { EnderecoComponent } from './sap/components/cadastro/endereco/endereco.component';
 import { ReferenciaComponent } from './sap/components/cadastro/referencia-comercial/referencia.component';
 import { StateService } from './sap/service/addresses/state.service';
@@ -62,6 +63,7 @@ import { DocumentStatementComponent } from './sap/components/document/documento.
 import { ItensComponent } from './sap/components/document/itens/itens.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { ItemSearchComponent } from './sap/components/search/item-search/item.component';
+import { LotesItemComponent } from './sap/components/search/item-search/lotes-item/lotes-item.component';
 import { ItemService } from './sap/service/item.service';
 import { BranchService } from './sap/service/branch.service';
 import { StateSelectComponent } from './sap/components/form/select/state/state-select.component';
@@ -158,6 +160,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     FilterNumeroNfComponent,
     FilterBusinessPlaceComponent,
     CadastroComponent,
+    NovoParceiroComponent,
     EnderecoComponent,
     ReferenciaComponent,
     StateSelectComponent,
@@ -172,6 +175,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     DocumentStatementComponent,
     ItensComponent,
     ItemSearchComponent,
+    LotesItemComponent,
     FormaPagamentoSelectComponent,
     CondicaoPagamentoSelectComponent,
     CurrencyInputComponent,
