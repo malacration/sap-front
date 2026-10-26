@@ -50,6 +50,7 @@ import { CobrancaStatementComponent } from './modulos/cobranca/componentes/cobra
 import { CobrancaDashboardComponent } from './modulos/cobranca/componentes/cobranca-dashboard.component';
 import { OfflineHistoryComponent } from './core/offline/offline-history/offline-history.component';
 import { RelatorioComponent } from './modulos/relatorio/componentes/principal/relatorio.component';
+import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/nota-fiscal-lote.component';
 
  /**
   * Marcacoes do data (array): "icon:", "hidden", "internal", "role:x" (papel exigido), "role-not:x" (papel barrado)
@@ -265,7 +266,7 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
   {
     title: 'Financeiro',
     path: 'financeiro',
-    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "role:contabil_importacao"],
+    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "role:contabil_importacao", "role:nota_fiscal_lote"],
     canActivate: [authGuard],
     children: [
       {
@@ -281,6 +282,13 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "api:get:/invoice"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
+      },
+      {
+        path: 'notas-xml-lote',
+        title: 'Notas e XML em lote',
+        data: ["icon:fas fa-file-archive", "role:nota_fiscal_lote", "api:get:/nota-fiscal-lote"],
+        canActivate: [authGuard, roleGuard],
+        component: NotaFiscalLoteComponent,
       },
       {
         path: 'adiantamentos',

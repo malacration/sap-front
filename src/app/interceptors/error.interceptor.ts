@@ -65,7 +65,18 @@ export class ErrorInterceptor implements HttpInterceptor {
     if(typeof error.error === 'string')
       return firstValueFrom(of(error.error.toString()))
     if(error.error instanceof Blob)
-      return error.error.text()
+      // Download (responseType blob) recebe o erro JSON do backend como Blob: sem isso o alerta
+      // mostrava o JSON cru ({"mensagem":...}) em vez da mensagem.
+      return error.error.text().then(texto => {
+        try {
+          const corpo = JSON.parse(texto)
+          if (corpo && typeof corpo.mensagem === 'string')
+            return corpo.mensagem
+        } catch {
+          // nao era JSON: mostra o texto como veio
+        }
+        return texto
+      })
     if(error.error.mensagem && typeof error.error.mensagem === 'string')
       return firstValueFrom(of(error.error.mensagem))
     if(error.error.mensagem)
