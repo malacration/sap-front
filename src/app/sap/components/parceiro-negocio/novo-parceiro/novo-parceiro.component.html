@@ -1,0 +1,235 @@
+<section class="content pt-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mb-0"><i class="fas fa-user-plus text-primary mr-2"></i>Novo parceiro de negócio</h3>
+      <small class="text-muted">Campos com * são obrigatórios.</small>
+    </div>
+    <button type="button" class="btn btn-outline-secondary btn-sm mt-2 mt-sm-0" (click)="cancelar()" [disabled]="salvando">
+      <i class="fas fa-arrow-left"></i> Voltar para a lista
+    </button>
+  </div>
+
+  <!-- sem ngSubmit/botao submit: Enter na busca de vendedor ou localidade enviaria o cadastro -->
+  <form autocomplete="off">
+
+    <!-- 1. Identificacao -->
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><span class="badge badge-primary mr-2">1</span><b>Identificação</b></h3>
+      </div>
+      <div class="card-body">
+        <div class="btn-group btn-group-toggle mb-3" role="group" aria-label="Tipo de pessoa">
+          <button type="button" class="btn btn-sm" [ngClass]="pessoaFisica ? 'btn-primary' : 'btn-outline-primary'" (click)="mudaTipoPessoa(true)">
+            <i class="fas fa-user"></i> Pessoa física
+          </button>
+          <button type="button" class="btn btn-sm" [ngClass]="!pessoaFisica ? 'btn-primary' : 'btn-outline-primary'" (click)="mudaTipoPessoa(false)">
+            <i class="fas fa-building"></i> Pessoa jurídica
+          </button>
+        </div>
+        <div class="form-row">
+          <div class="col-md-6 form-group">
+            <label for="nome">{{pessoaFisica ? 'Nome completo' : 'Razão social'}} *</label>
+            <input id="nome" name="nome" class="form-control" [(ngModel)]="nome" maxlength="100"
+              [class.is-invalid]="tentouSalvar && !nome.trim()">
+          </div>
+          <div class="col-md-3 form-group">
+            <label for="cpfCnpj">{{pessoaFisica ? 'CPF' : 'CNPJ'}} *</label>
+            <input id="cpfCnpj" name="cpfCnpj" class="form-control" [(ngModel)]="cpfCnpj"
+              [class.is-invalid]="tentouSalvar && !documentoValido"
+              [placeholder]="pessoaFisica ? '000.000.000-00' : '00.000.000/0000-00'">
+            <small class="form-text text-muted">Não pode já estar cadastrado.</small>
+          </div>
+          <div class="col-md-3 form-group">
+            <label for="ierg">{{pessoaFisica ? 'RG' : 'Inscrição estadual'}}</label>
+            <input id="ierg" name="ierg" class="form-control" [(ngModel)]="ierg">
+          </div>
+          <div class="col-md-3 form-group">
+            <label for="dtnasc">{{pessoaFisica ? 'Data de nascimento' : 'Data de abertura'}}</label>
+            <input id="dtnasc" name="dtnasc" class="form-control" type="date" [(ngModel)]="dtnasc">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Contato e vendedor -->
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><span class="badge badge-primary mr-2">2</span><b>Contato e vendedor</b></h3>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="col-md-3 form-group">
+            <label for="telefone">Telefone</label>
+            <input id="telefone" name="telefone" class="form-control" [(ngModel)]="telefone" placeholder="(69) 90000-0000">
+          </div>
+          <div class="col-md-4 form-group">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" class="form-control" type="email" [(ngModel)]="email">
+          </div>
+          <div class="col-md-5 form-group">
+            <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedor($event)"></app-sales-person-search>
+            <small class="form-text text-muted">Em branco: se o seu login é de vendedor, o vendedor será você; se não é, o cliente fica sem vendedor (-1).</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Endereco de entrega -->
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><span class="badge badge-primary mr-2">3</span><b>Endereço de entrega</b></h3>
+        <div class="card-tools"><small class="text-muted">Vai para a nota e para o cálculo do frete</small></div>
+      </div>
+      <div class="card-body">
+        <ng-container *ngTemplateOutlet="blocoEndereco; context: { $implicit: entrega, prefixo: 'entrega' }"></ng-container>
+        <div class="form-row">
+          <div class="col-md-6 form-group mb-0">
+            <app-localidade-search (selected)="selecionaLocalidade($event)"></app-localidade-search>
+            <small class="form-text text-muted">Localidade usada no cálculo do frete.</small>
+            <div *ngIf="avisoLocalidade" class="text-danger small">{{avisoLocalidade}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Endereco de cobranca -->
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><span class="badge badge-primary mr-2">4</span><b>Endereço de cobrança</b></h3>
+      </div>
+      <div class="card-body">
+        <div class="custom-control custom-switch mb-2">
+          <input type="checkbox" class="custom-control-input" id="cobrancaIgual" name="cobrancaIgual" [(ngModel)]="cobrancaIgualEntrega">
+          <label class="custom-control-label" for="cobrancaIgual">Cobrança no mesmo endereço da entrega</label>
+        </div>
+        <p *ngIf="cobrancaIgualEntrega" class="text-muted mb-0">
+          <i class="fas fa-info-circle"></i> O SAP guarda dois endereços: o de cobrança será uma cópia do de entrega.
+        </p>
+        <ng-container *ngIf="!cobrancaIgualEntrega">
+          <ng-container *ngTemplateOutlet="blocoEndereco; context: { $implicit: cobranca, prefixo: 'cobranca' }"></ng-container>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- 5. Formas de pagamento -->
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><span class="badge badge-primary mr-2">5</span><b>Formas de pagamento *</b></h3>
+        <div class="card-tools">
+          <span class="badge" [ngClass]="formasMarcadas.size > 0 ? 'badge-success' : 'badge-secondary'">
+            {{formasMarcadas.size}} selecionada{{formasMarcadas.size == 1 ? '' : 's'}}
+          </span>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">Só as formas marcadas aparecem para este cliente na tela de venda.</p>
+        <div *ngIf="carregandoFormas"><i class="fas fa-spinner fa-spin"></i> Carregando formas de pagamento...</div>
+        <div *ngIf="erroFormas" class="alert alert-danger mb-0">Não foi possível carregar as formas de pagamento.</div>
+        <div class="form-row">
+          <div *ngFor="let forma of formas" class="col-md-4 mb-2">
+            <div class="border rounded px-3 py-2 h-100" [ngClass]="marcada(forma) ? 'border-success bg-light' : ''">
+              <div class="custom-control custom-checkbox">
+                <input class="custom-control-input" type="checkbox" [id]="'forma-' + forma.PayMethCod"
+                  [checked]="marcada(forma)" (change)="alternaForma(forma)">
+                <label class="custom-control-label" [for]="'forma-' + forma.PayMethCod">{{forma.Description}}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="tentouSalvar && formasMarcadas.size == 0" class="text-danger small">Marque ao menos uma forma.</div>
+      </div>
+    </div>
+
+    <!-- 6. Observacao -->
+    <div class="card card-outline card-secondary">
+      <div class="card-header">
+        <h3 class="card-title"><span class="badge badge-secondary mr-2">6</span><b>Observação</b></h3>
+      </div>
+      <div class="card-body">
+        <textarea name="observacao" class="form-control" rows="2" [(ngModel)]="observacao" placeholder="Opcional"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
+        <div class="mb-2 mb-md-0">
+          <span *ngIf="tentouSalvar && pendencias.length > 0" class="text-danger">
+            <i class="fas fa-exclamation-triangle"></i> Falta: {{pendencias.join(', ')}}.
+          </span>
+        </div>
+        <div>
+          <button type="button" class="btn btn-secondary mr-2" (click)="cancelar()" [disabled]="salvando">Cancelar</button>
+          <button type="button" class="btn btn-success" (click)="salvar()" [disabled]="salvando">
+            <i class="fas" [ngClass]="salvando ? 'fa-spinner fa-spin' : 'fa-check'"></i> Cadastrar parceiro
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<ng-template #blocoEndereco let-endereco let-prefixo="prefixo">
+  <div class="form-row">
+    <div class="col-md-2 form-group">
+      <label [for]="prefixo + '-cep'">CEP *</label>
+      <div class="input-group">
+        <input [id]="prefixo + '-cep'" [name]="prefixo + '-cep'" class="form-control" [ngModel]="endereco.cep"
+          (ngModelChange)="cepAlterado(endereco, $event)" placeholder="00000-000" maxlength="9"
+          [class.is-invalid]="tentouSalvar && !endereco.cepValido">
+        <div class="input-group-append">
+          <button type="button" class="btn btn-outline-primary" title="Buscar endereço pelo CEP"
+            (click)="buscaCepManual(endereco)" [disabled]="endereco.buscandoCep">
+            <i class="fas" [ngClass]="endereco.buscandoCep ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+          </button>
+        </div>
+      </div>
+      <small class="form-text text-muted">Ao completar o CEP, preenche rua, bairro e município.</small>
+    </div>
+    <div class="col-md-2 form-group">
+      <label [for]="prefixo + '-tipo'">Tipo de logradouro *</label>
+      <select [id]="prefixo + '-tipo'" [name]="prefixo + '-tipo'" class="form-control" [(ngModel)]="endereco.tipoLogradouro"
+        [class.is-invalid]="tentouSalvar && !endereco.tipoLogradouro">
+        <option [ngValue]="null">Selecione</option>
+        <option *ngFor="let tipo of tiposLogradouro" [ngValue]="tipo">{{tipo}}</option>
+      </select>
+    </div>
+    <div class="col-md-3 form-group">
+      <label [for]="prefixo + '-rua'">Logradouro *</label>
+      <input [id]="prefixo + '-rua'" [name]="prefixo + '-rua'" class="form-control" [(ngModel)]="endereco.rua"
+        [class.is-invalid]="tentouSalvar && !endereco.rua.trim()">
+    </div>
+    <div class="col-md-2 form-group">
+      <label [for]="prefixo + '-numero'">Número *</label>
+      <input [id]="prefixo + '-numero'" [name]="prefixo + '-numero'" class="form-control" [(ngModel)]="endereco.numero"
+        [class.is-invalid]="tentouSalvar && !endereco.numero.trim()">
+    </div>
+    <div class="col-md-3 form-group">
+      <label [for]="prefixo + '-complemento'">Complemento</label>
+      <input [id]="prefixo + '-complemento'" [name]="prefixo + '-complemento'" class="form-control" [(ngModel)]="endereco.complemento">
+    </div>
+    <div class="col-md-4 form-group">
+      <label [for]="prefixo + '-bairro'">Bairro *</label>
+      <input [id]="prefixo + '-bairro'" [name]="prefixo + '-bairro'" class="form-control" [(ngModel)]="endereco.bairro"
+        [class.is-invalid]="tentouSalvar && !endereco.bairro.trim()">
+    </div>
+    <div class="col-md-3 form-group">
+      <label [for]="prefixo + '-estado'">Estado *</label>
+      <select [id]="prefixo + '-estado'" [name]="prefixo + '-estado'" class="form-control" [ngModel]="endereco.estado"
+        (ngModelChange)="mudaEstadoManual(endereco, $event)" [class.is-invalid]="tentouSalvar && !endereco.estado">
+        <option [ngValue]="null">Selecione</option>
+        <option *ngFor="let estado of estados" [ngValue]="estado.Code">{{estado.Code}} - {{estado.Name}}</option>
+      </select>
+    </div>
+    <div class="col-md-5 form-group">
+      <label [for]="prefixo + '-municipio'">Município *</label>
+      <select [id]="prefixo + '-municipio'" [name]="prefixo + '-municipio'" class="form-control" [(ngModel)]="endereco.codigoMunicipio"
+        [disabled]="!endereco.estado || endereco.carregandoCidades" [class.is-invalid]="tentouSalvar && !endereco.municipio">
+        <option [ngValue]="null">{{endereco.carregandoCidades ? 'Carregando...' : (endereco.estado ? 'Selecione' : 'Escolha o estado')}}</option>
+        <option *ngFor="let cidade of endereco.cidades" [ngValue]="cidade.AbsId">{{cidade.Name}}</option>
+      </select>
+    </div>
+  </div>
+  <div *ngIf="endereco.avisoCep" class="alert alert-warning py-2 mb-3">
+    <i class="fas fa-exclamation-circle"></i> {{endereco.avisoCep}}
+  </div>
+</ng-template>

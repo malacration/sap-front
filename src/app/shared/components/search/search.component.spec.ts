@@ -2,11 +2,7 @@ import { Subject, of, throwError } from 'rxjs';
 import { SearchComponent } from './search.component';
 import { Page } from '../../../sap/model/page.model';
 
-/**
- * Por padrao, uma busca que retorna um resultado seleciona sozinha. O comportamento pode ser
- * desativado nas telas em que o usuario ainda precisa consultar os dados desse resultado.
- */
-describe('SearchComponent - selecao automatica de resultado unico', () => {
+describe('SearchComponent - busca', () => {
 
   let component: SearchComponent<any>;
   let selecionados: Array<any>;
@@ -21,26 +17,16 @@ describe('SearchComponent - selecao automatica de resultado unico', () => {
   beforeEach(() => {
     selecionados = [];
     component = new SearchComponent<any>();
-    component.modalSelect = {
-      selecionaUnico: (item) => selecionados.push(item),
-      clear: () => {}
-    } as any;
+    component.contentSelected.subscribe(item => selecionados.push(item));
+    component.modalSelect = { clear: () => {} } as any;
   });
 
   function comResultado(page: Page<any>) {
     component.service = { search: () => of(page) } as any;
   }
 
-  it('seleciona sozinho quando a busca retorna um item', () => {
-    comResultado(pagina([{ ItemCode: 'PAC0000069' }]));
-
-    component.searchService('OX BEEF');
-
-    expect(selecionados).toEqual([{ ItemCode: 'PAC0000069' }]);
-  });
-
-  it('mantem o resultado unico aberto quando a selecao automatica esta desativada', () => {
-    component.autoSelectSingleResult = false;
+  /** Resultado unico fica na lista para o usuario escolher: nada e selecionado sozinho. */
+  it('nao seleciona sozinho quando a busca retorna um item', () => {
     comResultado(pagina([{ ItemCode: 'PAC0000069' }]));
 
     component.searchService('OX BEEF');
@@ -49,39 +35,9 @@ describe('SearchComponent - selecao automatica de resultado unico', () => {
     expect(component.resultadoBusca.content).toEqual([{ ItemCode: 'PAC0000069' }]);
   });
 
-  it('nao seleciona nada quando a busca retorna mais de um item', () => {
-    comResultado(pagina([{ ItemCode: 'A' }, { ItemCode: 'B' }]));
-
-    component.searchService('OX');
-
-    expect(selecionados).toEqual([]);
-  });
-
-  it('nao seleciona nada quando a busca nao retorna resultado', () => {
-    comResultado(pagina([]));
-
-    component.searchService('NAO EXISTE');
-
-    expect(selecionados).toEqual([]);
-  });
-
-  /** Item unico na tela mas com proxima pagina nao e resultado unico da busca. */
-  it('nao seleciona quando ainda ha proxima pagina', () => {
-    comResultado(pagina([{ ItemCode: 'A' }], 'proxima-pagina'));
-
-    component.searchService('OX');
-
-    expect(selecionados).toEqual([]);
-  });
-
-  /**
-   * Paginando, a ultima pagina pode vir com um item so - nao e disso que se trata, e selecionar
-   * ali trocaria a escolha do usuario no meio da navegacao.
-   */
   /**
    * Duas buscas em voo disputavam o mesmo resultadoBusca. A resposta atrasada da PRIMEIRA chegava
-   * depois de a segunda ter limpado a lista, entrava como unico resultado e disparava a selecao
-   * automatica - escolhendo o registro da consulta errada.
+   * depois de a segunda ter limpado a lista e a tela mostrava o resultado da consulta errada.
    */
   it('descarta resposta atrasada de uma busca ja superada', () => {
     const primeira = new Subject<Page<any>>();
@@ -95,7 +51,6 @@ describe('SearchComponent - selecao automatica de resultado unico', () => {
     //a primeira responde DEPOIS da segunda ter comecado
     primeira.next(pagina([{ CardCode: 'CLI-ERRADO' }]));
 
-    expect(selecionados).toEqual([]);
     expect(component.resultadoBusca.content).toEqual([]);
   });
 
@@ -111,7 +66,7 @@ describe('SearchComponent - selecao automatica de resultado unico', () => {
     primeira.next(pagina([{ CardCode: 'CLI-ERRADO' }]));
     segunda.next(pagina([{ CardCode: 'CLI-CERTO' }]));
 
-    expect(selecionados).toEqual([{ CardCode: 'CLI-CERTO' }]);
+    expect(component.resultadoBusca.content).toEqual([{ CardCode: 'CLI-CERTO' }]);
   });
 
   /** Pagina que chega depois de uma busca nova pertence a consulta antiga. */
@@ -135,13 +90,5 @@ describe('SearchComponent - selecao automatica de resultado unico', () => {
     component.searchService('OX');
 
     expect(component.loading).toBeFalse();
-  });
-
-  it('nao seleciona ao trocar de pagina, mesmo com um item na pagina', () => {
-    comResultado(pagina([{ ItemCode: 'ULTIMO' }]));
-
-    component.changePageService('OX');
-
-    expect(selecionados).toEqual([]);
   });
 });

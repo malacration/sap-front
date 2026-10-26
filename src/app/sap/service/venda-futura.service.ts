@@ -9,6 +9,14 @@ import { PedidoTroca } from "../model/venda/pedido-troca";
 import { FutureDeliverySales } from "../model/markting/future-delivery-sales";
 import { EntregaPendenteBaixa } from "../model/venda/entrega-pendente-baixa";
 
+export interface NegociacaoContrato {
+  formaPagamentoCodigo : string | null
+  formaPagamento : string | null
+  condicaoPagamentoCodigo : number | null
+  condicaoPagamento : string | null
+  quantidadeParcelas : number | null
+}
+
 @Injectable({
     providedIn: 'root'
   })
@@ -18,6 +26,11 @@ export class VendaFuturaService{
 
     constructor(private config : ConfigService, private http : HttpClient){
         this.url = config.getHost()+"/contrato-venda-futura"
+    }
+
+    /** Forma de pagamento e parcelamento do pedido de origem, para a minuta do contrato. */
+    negociacao(docEntry : number): Observable<NegociacaoContrato> {
+      return this.http.get<NegociacaoContrato>(`${this.url}/${docEntry}/negociacao`)
     }
 
     get(id : string): Observable<VendaFutura> {

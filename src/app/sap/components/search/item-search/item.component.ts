@@ -5,6 +5,8 @@ import { SearchService } from '../../../service/search.service';
 import { Observable } from 'rxjs';
 import { Page } from '../../../model/page.model';
 import { SearchComponent } from '../../../../shared/components/search/search.component';
+import { ActionReturn } from '../../../../shared/components/action/action.model';
+import { LotesItemComponent } from './lotes-item/lotes-item.component';
 
 
 
@@ -17,6 +19,7 @@ export class ItemSearchComponent implements OnInit {
 
 
   @ViewChild('search', {static: true}) search: SearchComponent<Item>;
+  @ViewChild('lotes', {static: true}) lotes: LotesItemComponent;
 
 
   definition = new Item().getDefinition()  
@@ -44,6 +47,11 @@ export class ItemSearchComponent implements OnInit {
   contentSelectedFun($event){
     this.contentSelected.emit($event)
     if($event) this.search.clear()
+  }
+
+  acao(acao : ActionReturn){
+    if(acao.type == 'ver-lotes')
+      this.lotes.abrir(acao.data)
   }
 }
 

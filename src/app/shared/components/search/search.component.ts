@@ -3,6 +3,7 @@ import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../../sap/model/page.model';
 import { SearchService } from '../../../sap/service/search.service';
 import { ModalSelectComponent } from '../modal/select/modal.select.component';
+import { ActionReturn } from '../action/action.model';
 
 
 
@@ -31,8 +32,9 @@ export class SearchComponent<T> {
   @Input()
   uppercaseKeyword = false
 
+  /** Titulo do modal de resultados; sem ele fica "Selecionar {name}". */
   @Input()
-  autoSelectSingleResult = true
+  title : string
 
   @Input()
   initialContent : T
@@ -40,13 +42,14 @@ export class SearchComponent<T> {
   @Output() 
   contentSelected = new EventEmitter();
 
+  @Output()
+  acaoResultado = new EventEmitter<ActionReturn>();
+
   /**
    * Cada busca nova ganha um numero de sequencia e resposta de sequencia velha e descartada.
    *
    * Sem isso, duas buscas em voo disputam o mesmo resultadoBusca: a resposta atrasada da PRIMEIRA
-   * chegava depois de a segunda ter limpado a lista, entrava como unico resultado e disparava a
-   * selecao automatica - escolhendo o registro da consulta errada. Em busca de cliente isso
-   * significa o pedido sair para outro parceiro sem ninguem perceber.
+   * chegava depois de a segunda ter limpado a lista e a tela mostrava o resultado da consulta errada.
    *
    * A troca de pagina herda a sequencia vigente: se uma busca nova comecou no meio, a pagina que
    * chegar depois pertence a consulta antiga e tambem tem que ser descartada.
@@ -65,8 +68,6 @@ export class SearchComponent<T> {
         this.resultadoBusca.content.push(...it.content)
         this.resultadoBusca.nextLink = it.nextLink
         this.loading = false
-        if(buscaNova)
-          this.selecionaResultadoUnico()
       },
       //sem esse ramo uma busca que falha deixava o loading ligado para sempre
       error : () => {
@@ -80,16 +81,6 @@ export class SearchComponent<T> {
     this.keyword = this.normalizaKeyword($event)
     this.resultadoBusca.content.splice(0, this.resultadoBusca.content.length)
     this.changePageService(this.keyword, true)
-  }
-
-  /**
-   * So vale para busca nova, nunca para troca de pagina: paginando, a ultima pagina pode vir com
-   * um item so e nao e disso que se trata. O nextLink tambem precisa estar vazio - se existe
-   * proxima pagina, o unico item da tela nao e o unico resultado da busca.
-   */
-  private selecionaResultadoUnico(){
-    if(this.autoSelectSingleResult && this.resultadoBusca.content.length == 1 && !this.resultadoBusca.nextLink)
-      this.modalSelect.selecionaUnico(this.resultadoBusca.content[0])
   }
 
   contentSelectedFun($event){

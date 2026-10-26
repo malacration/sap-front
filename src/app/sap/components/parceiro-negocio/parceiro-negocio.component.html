@@ -4,6 +4,11 @@
     <div *ngIf="!selected || selected == null" class="card card-primary">
         <div class="card-header">
             <h3 class="card-title"><b>Parceiro Negócio - {{nomeUsuario}}</b></h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-warning btn-sm font-weight-bold shadow-sm" routerLink="/clientes/parceiro-negocio/novo">
+                    <i class="fas fa-user-plus"></i> Novo parceiro
+                </button>
+            </div>
         </div>
         <div class="card-body">
           <form class="container-fluid" (ngSubmit)="pageChange(0)" autocomplete="off">

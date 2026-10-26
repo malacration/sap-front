@@ -5,6 +5,7 @@ import { HomeComponent } from './home/home.component';
 import { RomaneioComponent } from './sap/components/romaneio/romaneio.component';
 import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
 import { CadastroComponent } from './sap/components/cadastro/cadastro.component';
+import { NovoParceiroComponent } from './sap/components/parceiro-negocio/novo-parceiro/novo-parceiro.component';
 import { FaturasComponent } from './sap/components/faturas/faturas.component';
 import { DocumentStatementComponent } from './sap/components/document/documento.statement.component';
 import { LoginComponent } from './shared/components/login/login.component';
@@ -134,6 +135,14 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/business-partners/cientes"],
         canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
+      },
+      {
+        // Antes de parceiro-negocio/:cardCode, senao "novo" seria lido como CardCode
+        path: 'parceiro-negocio/novo',
+        title: 'Novo parceiro',
+        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:post:/business-partners/novo"],
+        canActivate: [authGuard, roleGuard],
+        component: NovoParceiroComponent
       },
       {
         path: 'parceiro-negocio/:cardCode',
@@ -428,6 +437,31 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
     ]
   },
   {
+    // Telas de correcao de dados em lote (previa -> aplicar). Grupo proprio porque vem mais.
+    title: 'Sanitização',
+    canActivate: [authGuard],
+    data: ["icon:fas fa-broom", "role:admin"],
+    path: 'sanitizacao',
+    children: [
+      {
+        //"role:admin" tira o item do menu de quem nao e admin (MenuSidebarComponent.isRolePermitida);
+        //o adminGuard barra o acesso direto pela URL, e o backend exige o papel de novo
+        path: 'cadastros',
+        title: 'Normalizar cadastros',
+        data: ["icon:fas fa-font", "role:admin"],
+        canActivate: [adminGuard],
+        component: NormalizacaoCadastroComponent
+      },
+      {
+        path: 'contratos',
+        title: 'Contratos de venda futura',
+        data: ["icon:fas fa-file-circle-check", "role:admin"],
+        canActivate: [adminGuard],
+        component: SanitizacaoContratoComponent
+      },
+    ]
+  },
+  {
     title: 'Configurações',
     canActivate: [authGuard],
     // So "role:admin": a Liberacao de Trava (unico item que trazia liberacao_trava pra ca)
@@ -488,20 +522,18 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         component: RegraFilialComponent
       },
       {
-        //"role:admin" tira o item do menu de quem nao e admin (MenuSidebarComponent.isRolePermitida);
-        //o adminGuard barra o acesso direto pela URL, e o backend exige o papel de novo
+        // A tela foi pro grupo Sanitizacao. O redirect segura link/favorito antigo.
         path: 'normalizar-cadastros',
-        title: 'Normalizar cadastros',
-        data: ["icon:fas fa-font", "role:admin"],
-        canActivate: [adminGuard],
-        component: NormalizacaoCadastroComponent
+        data: ["hidden"],
+        redirectTo: '/sanitizacao/cadastros',
+        pathMatch: 'full',
       },
       {
+        // A tela foi pro grupo Sanitizacao. O redirect segura link/favorito antigo.
         path: 'sanitizacao-contratos',
-        title: 'Sanitização de contratos',
-        data: ["icon:fas fa-file-circle-check", "role:admin"],
-        canActivate: [adminGuard],
-        component: SanitizacaoContratoComponent
+        data: ["hidden"],
+        redirectTo: '/sanitizacao/contratos',
+        pathMatch: 'full',
       },
       {
         path: 'liberacao-trava',

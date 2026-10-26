@@ -2,7 +2,8 @@
     [title]="title"
     [definition]="definition"
     [service]="service"
-    [autoSelectSingleResult]="false"
     (contentSelected)="contentSelectedFun($event)"
+    (acaoResultado)="acao($event)"
     [name]="'Item'">
 </app-search>
+<app-lotes-item #lotes></app-lotes-item>

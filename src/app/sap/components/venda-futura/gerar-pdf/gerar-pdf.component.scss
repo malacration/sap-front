@@ -1,59 +1,50 @@
+// Layout compacto para a minuta caber numa pagina A4 (PdfService.baixarPdfPaginado com umaPagina).
 .pdf-container {
   font-family: Arial, sans-serif;
-  width: 794px; 
-  height: auto; 
+  width: 794px;
+  height: auto;
   background-color: #fff;
-  padding: 20px 40px; 
+  padding: 20px 40px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
-  line-height: 1.5; 
-}
-
-.pdf-container .info-section p,
-.pdf-container .table-container th,
-.pdf-container .table-container td,
-.pdf-container .conditions ol li {
-  margin-bottom: 10px; 
+  line-height: 1.45;
+  font-size: 0.95rem;
 }
 
 .pdf-container .table-container th,
 .pdf-container .table-container td {
-  padding: 12px; 
-  font-size: 0.9rem; 
-}
-
-.pdf-container .conditions ol li {
-  margin-bottom: 20px; 
+  padding: 8px 10px;
+  font-size: 0.92rem;
 }
 
   .header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 
     .logo {
-      max-width: 150px;
+      max-width: 130px;
       height: auto;
     }
   }
 
   .title-container {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
       color: #1ba13f;
       margin: 0;
     }
   }
 
   .info-section {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 
     p {
-      margin: 5px 0;
+      margin: 4px 0;
       font-size: 1rem;
     }
   }
@@ -67,7 +58,6 @@
 
       th, td {
         border: 1px solid #ccc;
-        padding: 10px;
         text-align: left;
       }
 
@@ -81,20 +71,24 @@
   .conditions {
     background-color: #f9f9f9;
     border: 1px solid #ccc;
-    padding: 15px;
+    padding: 12px 16px;
     border-radius: 5px;
-    margin-top: 20px;
+    margin-top: 14px;
 
     h3 {
       color: #1ba13f;
-      margin-bottom: 10px;
+      font-size: 1.2rem;
+      margin: 0 0 8px;
     }
 
     ol {
-      padding-left: 20px;
+      padding-left: 18px;
+      margin: 0;
 
       li {
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+        text-align: justify;
       }
     }
   }
@@ -102,7 +96,7 @@
   .footer {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin-top: 30px;
 
     .footer-left, .footer-right {
       flex: 1;
@@ -113,3 +107,38 @@
       height: auto;
     }
   }
+
+.pdf-container .negociacao {
+  margin-bottom: 14px;
+
+  h3 {
+    font-size: 1.15rem;
+    margin: 0 0 8px;
+  }
+}
+
+.pdf-container .negociacao-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    font-size: 0.92rem;
+  }
+
+  th {
+    width: 40%;
+    text-align: left;
+    background-color: #f5f5f5;
+  }
+
+  .negociacao-total th,
+  .negociacao-total td {
+    font-weight: bold;
+  }
+}
+
+.pdf-container .preenchido {
+  font-weight: bold;
+}
