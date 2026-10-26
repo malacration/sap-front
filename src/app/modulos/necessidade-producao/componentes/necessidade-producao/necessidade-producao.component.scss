@@ -1,0 +1,74 @@
+.necessidade-producao {
+  .filtros > div {
+    margin-bottom: 0.5rem;
+  }
+
+  .ajuda {
+    font-size: 0.875rem;
+  }
+
+  .recorte {
+    font-size: 0.875rem;
+  }
+
+  .a-fabricar {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  // Zebra por grupo: recomeca a cada linha de produto, para o cabecalho do grupo nao trocar a cor.
+  tr.zebra td {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  tr.zebra td.a-fabricar {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+
+  // Cabecalho da linha de produto (OX PREMIUM...) com os subtotais, em cor forte para marcar onde
+  // cada linha comeca. O subtotal negativo ganha um vermelho claro, legivel no fundo escuro.
+  tr.grupo-linha th {
+    background-color: #2f4f6f;
+    color: #fff;
+    border-top: 3px solid #1b3047;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+
+    .text-muted {
+      color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    &.text-danger {
+      color: #ffb4b4 !important;
+    }
+  }
+
+  tfoot th {
+    border-top: 2px solid #dee2e6;
+  }
+
+  // Cabecalho e total acompanham a rolagem: o sticky e relativo ao container que rola, e o
+  // .table-responsive ja corta o overflow, por isso a rolagem fica nele.
+  .tabela-rolagem {
+    max-height: 70vh;
+    overflow: auto;
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tfoot th {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      background-color: #f8f9fa;
+    }
+  }
+
+  .celula-detalhe {
+    font-size: inherit;
+    vertical-align: baseline;
+  }
+}

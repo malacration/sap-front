@@ -1,0 +1,30 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title">
+        <b>{{ titulo }}</b>
+        <span *ngIf="filtro"> · {{ nome || filtro.itemCode }}</span>
+      </h3>
+    </div>
+
+    <div class="card-body">
+      <div *ngIf="filtro" class="text-muted small mb-3">
+        {{ filtro.itemCode }}
+        <ng-container *ngIf="detalhe"> · Venda das filiais {{ detalhe.filiais.join(', ') }}</ng-container>
+        <button type="button" class="btn btn-sm btn-outline-secondary ml-2" [disabled]="carregando" (click)="carregar()">
+          <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+      </div>
+
+      <div *ngIf="erro" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle mr-2"></i>{{ erro }}
+      </div>
+
+      <app-necessidade-producao-documentos *ngIf="detalhe" [detalhe]="detalhe"></app-necessidade-producao-documentos>
+    </div>
+
+    <div *ngIf="carregando" class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+    </div>
+  </div>
+</section>

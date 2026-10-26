@@ -38,6 +38,8 @@ import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/co
 import { PainelVendasComponent } from './modulos/painel-vendas/componentes/painel-vendas/painel-vendas.component';
 import { PainelVendasV2Component } from './modulos/painel-vendas/componentes/painel-vendas-v2/painel-vendas-v2.component';
 import { TicketFreteComponent } from './modulos/relatorio-frete/componentes/ticket-frete/ticket-frete.component';
+import { NecessidadeProducaoComponent } from './modulos/necessidade-producao/componentes/necessidade-producao/necessidade-producao.component';
+import { NecessidadeProducaoDetalheComponent } from './modulos/necessidade-producao/componentes/necessidade-producao-detalhe/necessidade-producao-detalhe.component';
 import { OrdemCarregamentoStatementComponent } from './modulos/ordem-carregamento/componentes/statement';
 import { PixPageComponent } from './modulos/financeiro/pix-page/pix-page.component';
 import { ImportacaoLancamentoComponent } from './sap/components/importacao-lancamento/importacao-lancamento.component';
@@ -424,6 +426,22 @@ import { RelatorioComponent } from './modulos/relatorio/componentes/principal/re
         data: ["icon:fas fa-truck-moving", "role:admin", "api:get:/relatorios/frete/ticket-medio-localidade"],
         canActivate: [authGuard, roleGuard],
         component: TicketFreteComponent
+      },
+      {
+        // Documentos de uma celula, aberta pelo modal em nova aba. Fora do menu.
+        path: 'necessidade-producao/detalhe',
+        title: 'Necessidade de Produção - Documentos',
+        data: ["hidden", "role:admin", "api:get:/relatorios/necessidade-producao/detalhe"],
+        canActivate: [authGuard, roleGuard],
+        component: NecessidadeProducaoDetalheComponent
+      },
+      {
+        path: 'necessidade-producao',
+        title: 'Necessidade de Produção',
+        // "role:" vale com o menuPorPermissao desligado; ligado, decide o rules.yml de /relatorios/necessidade-producao.
+        data: ["icon:fas fa-industry", "role:admin", "api:get:/relatorios/necessidade-producao"],
+        canActivate: [authGuard, roleGuard],
+        component: NecessidadeProducaoComponent
       },
       {
         path: 'relatorio',
