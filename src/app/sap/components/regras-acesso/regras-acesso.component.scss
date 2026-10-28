@@ -109,3 +109,12 @@
   background: #f8f9fa;
   border-top: 1px solid rgba(0, 0, 0, .1);
 }
+
+// Prévia do menu: árvore como no menu lateral, com o que falta liberar embaixo de cada tela.
+.previa-menu {
+  list-style: none;
+  padding-left: 1.25rem;
+  margin-bottom: 0;
+
+  > li { padding: .15rem 0; }
+}

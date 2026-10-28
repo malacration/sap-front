@@ -135,7 +135,9 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'parceiro-negocio',
         title: 'Parceiro Negocio',
-        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/business-partners/cientes"],
+        // Permissao so de tela: o GET /business-partners/* da logistica (cliente do carregamento) cobria /cientes.
+        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/tela/clientes/parceiro-negocio",
+              "usa:get:/business-partners/cientes", "usa:post:/sales-person/search"],
         canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
       },
@@ -143,21 +145,28 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         // Antes de parceiro-negocio/:cardCode, senao "novo" seria lido como CardCode
         path: 'parceiro-negocio/novo',
         title: 'Novo parceiro',
-        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:post:/business-partners/novo"],
+        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:post:/business-partners/novo",
+              "usa:get:/state", "usa:get:/city/*", "usa:get:/forma-pagamento/liberadas", "usa:post:/sales-person/search",
+              "usa:post:/locais/search"],
         canActivate: [authGuard, roleGuard],
         component: NovoParceiroComponent
       },
       {
         path: 'parceiro-negocio/:cardCode',
         title: 'Parceiro Negocio',
-        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/business-partners/*"],
+        data: ["hidden", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/business-partners/*",
+              "usa:get:/sales-person/*", "usa:get:/locais/*", "usa:post:/sales-person/search", "usa:get:/business-partners/cotacoes-parceiro",
+              "usa:get:/business-partners/pedido-venda-parceiro", "usa:get:/contrato-venda-futura", "usa:post:/contrato-venda-futura/nextlink", "usa:get:/business-partners/contas-receber",
+              "usa:post:/business-partners/contas-receber/nextlink", "usa:get:/invoice/cardcode/*/payment", "usa:get:/installment/*/paid", "usa:get:/tax/*/pdf",
+              "usa:get:/invoice/*/parcela/*"],
         canActivate: [authGuard, roleGuard],
         component: ParceiroNegocioComponent
       },
       {
         path: 'transferencia',
         title: 'Transferências',
-        data: ["icon:fas fa-exchange-alt", "role:vendedor_admin", "api:get:/sales-person/replace/*/por/*"],
+        data: ["icon:fas fa-exchange-alt", "role:vendedor_admin", "api:get:/sales-person/replace/*/por/*",
+              "usa:post:/sales-person/search", "usa:get:/sales-person/*/business-partners"],
         canActivate: [authGuard, roleGuard],
         component: TransferenciaClientesComponent
       },
@@ -173,7 +182,10 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         path: 'document',
         title: 'Vender',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-shopping-cart", "role:vendedor", "role:vendedor_admin", "api:post:/quotation/angular"],
+        data: ["icon:fas fa-shopping-cart", "role:vendedor", "role:vendedor_admin", "api:post:/quotation/angular",
+              "usa:get:/branch", "usa:post:/business-partners/search", "usa:get:/business-partners/*", "usa:get:/locais/*",
+              "usa:get:/regioes/localidade/*", "usa:get:/prazo/tabela/*", "usa:get:/forma-pagamento/filial/*/cardcode/*", "usa:post:/item/search/branch/*",
+              "usa:get:/batch-stock/item-code/*/stock/*", "usa:get:/comissao/tabela/*"],
         component: DocumentStatementComponent
       },
       {
@@ -187,7 +199,8 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         path: 'cotacao',
         title: 'Cotação',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-file-alt", "role:vendedor", "role:vendedor_admin", "api:get:/quotation"],
+        data: ["icon:fas fa-file-alt", "role:vendedor", "role:vendedor_admin", "api:get:/quotation",
+              "usa:get:/quotation/*", "usa:get:/sales-person/*"],
         component: CotacoesStatementComponent
       },
       {
@@ -195,12 +208,17 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         title: 'Pedidos',
         canActivate: [authGuard, roleGuard],
         component: PedidosVendaStatementComponent,
-        data: ["icon:fas fa-file-signature", "role:vendedor", "role:vendedor_admin", "api:get:/pedido-venda/listar"],
+        data: ["icon:fas fa-file-signature", "role:vendedor", "role:vendedor_admin", "api:get:/pedido-venda/listar",
+              "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/pedido-venda/listar/nextlink", "usa:get:/pedido-venda/raw/*",
+              "usa:get:/pedido-venda/*/linhas", "usa:get:/sales-person/*", "usa:get:/pedido-venda/pix/*", "usa:get:/pix/transaction/*"],
       },
       {
         path: 'venda-futura',
         title: 'Contratos',
-        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/contrato-venda-futura"],
+        data: ["icon:fas fa-file-contract", "role:vendedor", "role:vendedor_admin", "role:cobranca", "api:get:/contrato-venda-futura",
+              "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/contrato-venda-futura/nextlink", "usa:get:/contrato-venda-futura/*",
+              "usa:get:/contrato-venda-futura/*/produtos", "usa:get:/contrato-venda-futura/entregas/*", "usa:get:/future-sales/pedidos/*", "usa:get:/down-payment/contrato-venda-futura/*",
+              "usa:get:/contrato-venda-futura/*/negociacao", "usa:get:/business-partners/*", "usa:get:/pix/transaction/*"],
         canActivate: [authGuard, roleGuard],
         component: VendaFuturaStatementComponent
       },
@@ -257,7 +275,8 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'liberacao-trava',
         title: 'Liberação de Trava',
-        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava", "api:get:/trava/otp"],
+        data: ["icon:fas fa-unlock-alt", "role:liberacao_trava", "api:get:/trava/otp",
+              "usa:get:/trava/regras"],
         canActivate: [authGuard, roleGuard],
         component: LiberacaoTravaComponent
       },
@@ -272,21 +291,27 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'pix',
         title: 'PIX',
-        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin", "api:post:/pix/gerar-chave"],
+        // Permissao so de tela: o POST /pix/gerar-chave tambem gera o PIX do pedido de venda, e liberar ele nao pode
+        // trazer junto a tela de PIX avulso.
+        data: ["icon:fas fa-qrcode", "role:pix", "role:pix_admin", "api:get:/tela/financeiro/pix",
+              "usa:post:/pix/gerar-chave", "usa:get:/branch", "usa:post:/business-partners/search"],
         canActivate: [authGuard, roleGuard],
         component: PixPageComponent,
       },
       {
         path: 'notas-fiscais',
         title: 'Notas Fiscais',
-        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "api:get:/invoice"],
+        data: ["icon:fas fa-file-invoice-dollar", "sapDocumentKind:nota-fiscal", "role:admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "api:get:/invoice",
+              "usa:get:/invoice/*", "usa:get:/branch", "usa:get:/sales-person/*"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
       },
       {
         path: 'notas-xml-lote',
         title: 'Notas e XML em lote',
-        data: ["icon:fas fa-file-archive", "role:nota_fiscal_lote", "api:get:/nota-fiscal-lote"],
+        data: ["icon:fas fa-file-archive", "role:nota_fiscal_lote", "api:get:/nota-fiscal-lote",
+              "usa:get:/nota-fiscal-lote/status-sefaz", "usa:get:/nota-fiscal-lote/status-boleto", "usa:get:/nota-fiscal-lote/formas-pagamento", "usa:post:/nota-fiscal-lote/clientes/search",
+              "usa:get:/branch", "usa:post:/sales-person/search"],
         canActivate: [authGuard, roleGuard],
         component: NotaFiscalLoteComponent,
       },
@@ -314,7 +339,8 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'importacao-lancamentos',
         title: 'Importação de Lançamentos',
-        data: ["icon:fas fa-file-import", "role:contabil_importacao", "api:post:/journal/importacao/validar"],
+        data: ["icon:fas fa-file-import", "role:contabil_importacao", "api:post:/journal/importacao/validar",
+              "usa:get:/journal/importacao/historico"],
         canActivate: [authGuard, roleGuard],
         component: ImportacaoLancamentoComponent,
       },
@@ -335,14 +361,17 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         title: 'Títulos',
         canActivate: [authGuard, roleGuard],
         // /cobranca/dominios e nao /cobranca/titulos: o vendedor tem o GET de titulos (aba do parceiro), nao a tela.
-        data: ["icon:fas fa-list", "role:cobranca", "api:get:/cobranca/dominios"],
+        data: ["icon:fas fa-list", "role:cobranca", "api:get:/cobranca/dominios",
+              "usa:get:/cobranca/titulos", "usa:get:/cobranca/titulos/totais", "usa:get:/cobranca/cobradores", "usa:get:/cobranca/titulos/*/*/*/historico",
+              "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/sales-person/search"],
         component: CobrancaStatementComponent
       },
       {
         path: 'resultado',
         title: 'Resultado',
         canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-chart-line", "role:cobranca", "api:get:/cobranca/dashboard"],
+        data: ["icon:fas fa-chart-line", "role:cobranca", "api:get:/cobranca/dashboard",
+              "usa:get:/cobranca/dashboard/evolucao", "usa:get:/cobranca/cobradores", "usa:get:/branch", "usa:post:/sales-person/search"],
         component: CobrancaDashboardComponent
       },
     ]
@@ -356,7 +385,8 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'ordem-carregamento',
         title: 'Carregamento',
-        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar", "api:get:/carregamento"],
+        data: ["icon:fas fa-truck-ramp-box", "role:logistica", "role:logistica_faturar", "api:get:/carregamento",
+              "usa:get:/carregamento/*", "usa:get:/pedido-venda/findLoadOrders", "usa:post:/pedido-venda/findAllLoadOrders", "usa:get:/carregamento/notas/*"],
         canActivate: [authGuard, roleGuard],
         component: OrdemCarregamentoStatementComponent
       },
@@ -375,7 +405,9 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'localidades',
         title: 'Localidades',
-        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar", "api:post:/locais/search"],
+        // Permissao so de tela: a busca de localidade tambem e filtro de outras telas (novo parceiro, analise de pedidos).
+        data: ["icon:fas fa-map-marker-alt", "role:logistica", "role:logistica_faturar", "api:get:/tela/logistica/localidades",
+              "usa:post:/locais/search"],
         canActivate: [authGuard, roleGuard],
         component: LocalidadeComponent
       },
@@ -401,7 +433,8 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         title: 'Painel de Vendas',
         // Escondido do menu (o v2 ocupou o lugar), mas com a mesma restricao de
         // papel do RBAC: some da navegacao e segue protegido por URL.
-        data: ["hidden", "icon:fas fa-chart-line", "role:vendedor", "role:vendedor_admin", "api:get:/painel-vendas/mensal"],
+        data: ["hidden", "icon:fas fa-chart-line", "role:vendedor", "role:vendedor_admin", "api:get:/painel-vendas/mensal",
+              "usa:get:/painel-vendas/mensal/*/*", "usa:get:/painel-vendas/mensal/*/*/produtos"],
         canActivate: [authGuard, roleGuard],
         component: PainelVendasComponent
       },
@@ -410,14 +443,18 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         title: 'Painel de Vendas',
         // O grupo agora abre para todos os papeis: sem restricao aqui o item apareceria para quem o backend
         // nega (/painel-vendas/** so para vendedor e vendedor_admin), igual ao painel v1 logo acima.
-        data: ["icon:fas fa-chart-area", "role:vendedor", "role:vendedor_admin", "api:get:/painel-vendas/v2/kpis"],
+        data: ["icon:fas fa-chart-area", "role:vendedor", "role:vendedor_admin", "api:get:/painel-vendas/v2/kpis",
+              "usa:get:/painel-vendas/v2/evolucao", "usa:get:/branch", "usa:post:/sales-person/search"],
         canActivate: [authGuard, roleGuard],
         component: PainelVendasV2Component
       },
       {
         path: 'analise-pedidos',
         title: 'Análise Pedidos',
-        data: ["icon:fas fa-clipboard-list", "role:vendedor_admin", "role:logistica", "role:qualidade", "api:get:/painel/pedidos"],
+        // Permissao so de tela: o formulario da ordem de carregamento tambem chama GET /painel/pedidos.
+        data: ["icon:fas fa-clipboard-list", "role:vendedor_admin", "role:logistica", "role:qualidade", "api:get:/tela/relatorios/analise-pedidos",
+              "usa:get:/painel/pedidos", "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/sales-person/search", "usa:post:/locais/search",
+              "usa:post:/item/search"],
         canActivate: [authGuard, roleGuard],
         component: PainelExpedicaoPedidosComponent
       },
