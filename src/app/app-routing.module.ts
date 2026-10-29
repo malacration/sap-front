@@ -23,6 +23,7 @@ import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cad
 import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
 import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
+import { RastreioLoteComponent } from './modulos/producao/componentes/rastreio-lote/rastreio-lote.component';
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
@@ -408,6 +409,13 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         data: ["icon:fas fa-clipboard-list", "role:qualidade", "api:get:/ordens-producao"],
         canActivate: [authGuard, roleGuard],
         component: OrdemProducaoListComponent,
+      },
+      {
+        path: 'rastreio-lote',
+        title: 'Rastreio de Lote',
+        data: ["icon:fas fa-project-diagram", "role:qualidade", "api:get:/ordens-producao/rastreio-lote"],
+        canActivate: [authGuard, roleGuard],
+        component: RastreioLoteComponent,
       },
       {
         path: 'ordens/:id',

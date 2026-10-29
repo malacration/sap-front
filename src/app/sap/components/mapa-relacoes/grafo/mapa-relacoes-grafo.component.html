@@ -1,4 +1,4 @@
-<div *ngIf="mostrarControleZoom" class="d-flex align-items-center mb-2" style="gap: 8px; max-width: 320px;">
+<div *ngIf="mostrarControleZoom && mostrarSensibilidade" class="d-flex align-items-center mb-2" style="gap: 8px; max-width: 320px;">
     <label for="zoomSensibilidade" class="mb-0 text-nowrap"><small>Sensibilidade do zoom</small></label>
     <input id="zoomSensibilidade" type="range" class="form-control-range" min="0.1" max="3" step="0.1"
            [(ngModel)]="zoomSensibilidade" (input)="changeZoomSensibilidade()">
@@ -8,13 +8,21 @@
 <!-- flex column: o grafo ocupa a sobra e o rodape fica colado embaixo. No modo pagina
      (mostrarControleZoom) o grafo mantem altura explicita, porque ali o container pai
      tem altura automatica e um flex:1 puro colapsaria pra zero -->
-<div class="d-flex flex-column" style="height: 100%;">
+<!-- maximizado: cobre a janela toda (position fixed), sem o fullscreen do navegador; Esc ou o botao volta -->
+<div class="d-flex flex-column" style="height: 100%;"
+     [ngStyle]="maximizado ? {position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 'z-index': 1060, background: '#fff', padding: '8px'} : {}">
 
     <!-- position:relative aqui (e nao na coluna inteira) pros paineis flutuantes se
          ancorarem na area do grafo - senao o canto de baixo cairia em cima do rodape -->
-    <div [style.height]="mostrarControleZoom ? 'calc(100vh - 340px)' : 'auto'"
+    <div [style.height]="maximizado ? 'auto' : (mostrarControleZoom ? 'calc(100vh - 340px)' : 'auto')"
          style="position: relative; width: 100%; flex: 1 1 auto; min-height: 400px;">
         <div #grafo style="width: 100%; height: 100%; min-height: 400px; border: 1px solid #dee2e6; border-radius: 4px;"></div>
+
+        <button type="button" class="btn btn-sm btn-light border" (click)="alternarMaximizado()"
+                [title]="maximizado ? 'Voltar ao tamanho normal (Esc)' : 'Ocupar a tela toda'"
+                style="position: absolute; top: 8px; right: 8px; z-index: 20;">
+            <i class="fas" [ngClass]="maximizado ? 'fa-compress' : 'fa-expand'"></i>
+        </button>
 
         <!-- cliente fica fora do cytoscape (nao participa do pan/zoom), fixo nesse canto -->
         <div *ngIf="cliente" style="position: absolute; top: 10px; left: 10px; z-index: 10;

@@ -1,8 +1,11 @@
 export type MapaTipoDocumento =
-  'CLIENTE' | 'CONTRATO' | 'COTACAO' | 'PEDIDO' | 'NOTA_FISCAL' | 'ADIANTAMENTO' | 'DEVOLUCAO' | 'RECEBIMENTO' | 'LANCAMENTO_CONTABIL' | 'OUTRO'
+  'CLIENTE' | 'CONTRATO' | 'COTACAO' | 'PEDIDO' | 'NOTA_FISCAL' | 'ADIANTAMENTO' | 'DEVOLUCAO' | 'RECEBIMENTO' | 'LANCAMENTO_CONTABIL'
+  | 'ORDEM_PRODUCAO' | 'LOTE' | 'ENTREGA' | 'OUTRO'
 
 export type TipoAresta =
   'ORIGEM' | 'PEDIDO_ORIGEM' | 'GERADO_PARA_CONTRATO' | 'COPIA_DOCUMENTO' | 'CONCILIACAO' | 'APROPRIACAO' | 'RECLASSIFICACAO'
+  //rastreio de lote: OP que gerou o lote -> OP que consumiu (rotulo = numero do lote)
+  | 'LOTE'
 
 export interface MapaNode {
   id: string
@@ -18,19 +21,32 @@ export interface MapaNode {
   //porque alguns tipos usam as duas (adiantamento tem DocumentStatus proprio E pode
   //estar pendente de utilizacao)
   situacao?: string | null
+  //linhas extras do card, abaixo do numero (ex.: produto e lote gerado da OP no rastreio de lote)
+  detalhes?: Array<string>
+  //item do no LOTE (rastreio): o numero do lote so e unico junto do item
+  item?: string | null
+  //no LOTE (rastreio): da para abrir o destino dele (quem consumiu, quem comprou)
+  destino?: boolean | null
 }
+
+//lado do card de lote clicado no rastreio: a origem fica a esquerda, o destino a direita
+export type LadoRastreio = 'origem' | 'destino'
 
 export interface MapaEdge {
   id: string
   from: string
   to: string
   tipo: TipoAresta
+  //texto escrito sobre a aresta (o numero do lote no rastreio)
+  rotulo?: string | null
 }
 
 export interface MapaRelacoesResponse {
   root: string
   nodes: Array<MapaNode>
   edges: Array<MapaEdge>
+  //observacao do back exibida acima do grafo (ex.: lote comprado, sem origem para mostrar)
+  aviso?: string | null
 }
 
 //tipos aceitos pelo endpoint /mapa-relacoes/{tipo}/{docEntry} (mesmos labels usados na busca)
@@ -72,6 +88,9 @@ const TIPO_LABEL: { [tipo: string]: string } = {
   DEVOLUCAO: 'Devolução',
   RECEBIMENTO: 'Recebimento',
   LANCAMENTO_CONTABIL: 'Lançamento Contábil',
+  ORDEM_PRODUCAO: 'Ordem de Produção',
+  LOTE: 'Lote',
+  ENTREGA: 'Entrega',
   OUTRO: 'Documento',
 }
 
@@ -85,6 +104,11 @@ export const TIPO_ROTA: { [tipo: string]: string } = {
   ADIANTAMENTO: '/financeiro/adiantamentos',
   DEVOLUCAO: '/financeiro/devolucoes',
   RECEBIMENTO: '/financeiro/recebimentos',
+}
+
+//telas que recebem o docEntry no caminho (/producao/ordens/123) e nao em ?id=
+export const TIPO_ROTA_COM_ID_NO_CAMINHO: { [tipo: string]: string } = {
+  ORDEM_PRODUCAO: '/producao/ordens',
 }
 
 //status crus que o back manda (SAP DocumentStatus.typeName ou Contrato.U_status) -> rotulo em PT-BR
@@ -128,6 +152,32 @@ export const SITUACAO_BADGE: { [code: string]: { label: string, fundo: string, t
   CanC: { label: 'Cancelado',           fundo: '#dc3545', texto: '#ffffff' },
   AROU: { label: 'Ajuste',              fundo: '#6c757d', texto: '#ffffff' },
   PENDENTE_UTILIZACAO: { label: 'Pendente de Utilização', fundo: '#198754', texto: '#ffffff' },
+  //rastreio de lote: lote produzido aqui cuja origem ainda nao foi aberta (abre no clique) / lote comprado
+  ORIGEM_DISPONIVEL: { label: 'Clique para ver a origem', fundo: '#0d6efd', texto: '#ffffff' },
+  SEM_ORDEM_PRODUCAO: { label: 'Sem ordem de produção', fundo: '#6c757d', texto: '#ffffff' },
+}
+
+export const SITUACAO_ORIGEM_DISPONIVEL = 'ORIGEM_DISPONIVEL'
+
+/**
+ * Rastreio de lote, um nivel por clique: junta o nivel que chegou (`nivel`) ao mapa ja aberto. No no
+ * clicado so o lado aberto deixa de pedir clique (a origem ou o destino - o outro continua disponivel);
+ * os demais que ja estavam no mapa ficam como estavam - um lote ja aberto nao volta a pedir clique por
+ * aparecer de novo em outro nivel. Raiz e aviso continuam os da busca original.
+ */
+export function mesclarNivel(atual : MapaRelacoesResponse, nivel : MapaRelacoesResponse, clicadoId : string,
+                             lado : LadoRastreio = 'origem') : MapaRelacoesResponse {
+  const nodes = new Map(atual.nodes.map(n => [n.id, n] as [string, MapaNode]))
+  nivel.nodes.forEach(n => {
+    if(!nodes.has(n.id))
+      nodes.set(n.id, n)
+  })
+  const clicado = nodes.get(clicadoId)
+  if(clicado)
+    nodes.set(clicadoId, lado === 'origem' ? { ...clicado, situacao: null } : { ...clicado, destino: false })
+  const edges = new Map(atual.edges.map(e => [e.id, e] as [string, MapaEdge]))
+  nivel.edges.forEach(e => { if(!edges.has(e.id)) edges.set(e.id, e) })
+  return { ...atual, nodes: [...nodes.values()], edges: [...edges.values()] }
 }
 
 export function etiquetaSituacao(n: { situacao?: string | null }) {
@@ -171,6 +221,7 @@ export function montarCartao(n: MapaNode) : string {
     linhas.push(status)
   if(id)
     linhas.push(id)
+  linhas.push(...(n.detalhes ?? []).filter(it => !!it))
   if((status || id) && (data || valor))
     linhas.push('')
   if(data)

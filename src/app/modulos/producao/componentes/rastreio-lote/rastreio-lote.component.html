@@ -1,0 +1,90 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Rastreio de Lote</b></h3>
+    </div>
+
+    <div class="card-body">
+      <form class="form-row align-items-end mb-3" (ngSubmit)="pesquisar()" autocomplete="off">
+        <div class="col-md-3 col-sm-6">
+          <label for="lote">Lote</label>
+          <input id="lote" name="lote" class="form-control" [(ngModel)]="lote" placeholder="Ex.: S14007558">
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-success" [disabled]="carregando">
+            <i class="fas" [ngClass]="carregando ? 'fa-sync-alt fa-spin' : 'fa-search'"></i> Rastrear
+          </button>
+        </div>
+        <div class="col">
+          <small class="text-muted">
+            Mostra a ordem que gerou o lote e os lotes que ela consumiu. Em cada lote, <b>&#9664; Origem</b>
+            abre de onde ele veio e <b>Destino &#9654;</b> abre para onde ele foi, até as vendas aos clientes.
+          </small>
+        </div>
+      </form>
+
+      <div *ngIf="resultado?.aviso" class="alert alert-info">
+        <i class="fas fa-info-circle"></i> {{ resultado.aviso }}
+      </div>
+      <div *ngIf="abrindo" class="text-muted mb-2">
+        <i class="fas fa-sync-alt fa-spin"></i> Abrindo {{ abrindo }}...
+      </div>
+
+      <app-mapa-relacoes-grafo *ngIf="resultado" [response]="resultado" [buscadoId]="resultado.root"
+        [layoutArvore]="true" [mostrarSensibilidade]="false" [ancoraId]="ancoraId"
+        (noClicado)="abrir($event)"></app-mapa-relacoes-grafo>
+
+      <div *ngIf="vendas.length" class="table-responsive mt-3">
+        <h6 class="mb-2"><b>Vendas do lote</b> (clientes que receberam)</h6>
+        <table class="table table-sm table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Documento</th>
+              <th>Cliente</th>
+              <th>Quantidade</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let venda of vendas">
+              <td>{{ venda.label }}</td>
+              <td>{{ venda.detalhes?.[0] }}</td>
+              <td>{{ venda.detalhes?.[1] }}</td>
+              <td>{{ dataBr(venda.data) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="ordens.length" class="table-responsive mt-3">
+        <table class="table table-sm table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Produto</th>
+              <th>Status</th>
+              <th>Lançamento</th>
+              <th>Lote gerado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ordem of ordens">
+              <td><a [routerLink]="['/producao/ordens', ordem.docEntry]">{{ ordem.docNum }}</a></td>
+              <td>
+                {{ produto(ordem) }}
+                <span *ngIf="desmontagem(ordem)" class="badge badge-secondary ml-1">Desmontagem</span>
+              </td>
+              <td>{{ ordem.status }}</td>
+              <td>{{ dataBr(ordem.data) }}</td>
+              <td>{{ gerou(ordem) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!carregando && !resultado" class="text-center text-muted py-4">
+        Informe o lote para ver as ordens de produção ligadas a ele.
+      </div>
+    </div>
+  </div>
+</section>
