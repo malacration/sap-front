@@ -83,11 +83,25 @@ export class Regiao implements Actiable {
         return elegiveis.length > 0 ? elegiveis[elegiveis.length - 1] : null
     }
 
+    //faixa base: a de menor quantidade minima. A quantidade dela e o minimo para a regiao
+    //entregar (ex.: base 50 = so entrega pedido de 50 unidades para cima) - espelha o back
+    get faixaBase() : RegiaoFaixa {
+        return this.getFaixasOrdenadas().find(f => f.U_QtdeAte != null) ?? null
+    }
+
+    get quantidadeMinimaEntrega() : number {
+        return this.faixaBase?.U_QtdeAte ?? null
+    }
+
     //toda a informacao (distancia e faixas) ja esta carregada na regiao selecionada,
-    //entao a simulacao e um calculo local, sem chamada nenhuma ao backend
-    calcularFrete(codLocal : string, quantidade : number) : SimulacaoFrete {
+    //entao a simulacao e um calculo local, sem chamada nenhuma ao backend.
+    //quantidadePedido: o minimo de entrega vale para o pedido inteiro - um documento do pedido
+    //dividido (por condicao de pagamento) abaixo da base usa a faixa base (mesma regra do back)
+    calcularFrete(codLocal : string, quantidade : number, quantidadePedido : number = quantidade) : SimulacaoFrete {
         const distancia = this.getDistancia(codLocal)
+        const base = this.faixaBase
         const faixa = this.encontraFaixa(quantidade)
+            ?? (base && Math.max(quantidade, quantidadePedido) >= base.U_QtdeAte ? base : null)
         if(distancia == null || !faixa)
             return null
         //U_ValorKm e o valor a cada 100km (evita ter que cadastrar valores
