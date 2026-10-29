@@ -2,7 +2,7 @@ import { Actiable, Action, ActionReturn } from "../../shared/components/action/a
 
 /**
  * Em que filiais uma regra do motor de autorizacao esta ativa (motivo -> filial).
- * Motivo sem nenhuma linha cadastrada vale em TODA filial.
+ * Motivo sem nenhuma linha cadastrada nao vale em filial nenhuma (regra desligada).
  */
 export class RegraFilial implements Actiable {
     //Code do UDO e alfanumerico no service layer, nao numerico - mesma pegadinha do
