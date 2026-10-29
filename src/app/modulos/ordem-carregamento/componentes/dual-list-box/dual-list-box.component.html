@@ -1,24 +1,19 @@
 <div class="dual-list-container" [ngClass]="{'collapsed-right': isSelectedListCollapsed}">
   <div class="list-box left-list">
-    <h5 class="titulo">Disponíveis <span class="order-count">{{ availableOrdersCount }} Pedidos</span></h5>
-    <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermAvailable">
+    <h5 class="titulo">Disponíveis <span class="order-count">{{ availableOrdersCount }} Documentos</span></h5>
+    <input type="text" class="form-control mb-2" placeholder="Documento, cliente, vendedor, localidade ou produto" [(ngModel)]="searchTermAvailable">
     
     <div class="list-container">
       <div *ngIf="isLoadingOrders" class="text-center mt-3">
         <i class="fas fa-spinner fa-spin fa-2x"></i>
-        <p>Carregando pedidos...</p>
+        <p>Carregando pedidos e NFs de venda futura...</p>
       </div>
 
       <ng-container *ngIf="!isLoadingOrders">
         <ng-container *ngFor="let group of groupedAvailableItems; trackBy: trackByDocNum">
           <div class="order-group">
-            <div class="order-header d-flex justify-content-between align-items-center">
-              <span class="order-info" title="{{ group.items[0]?.Name || 'N/A' }}">
-                Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}
-                | Vendedor: {{ group.items[0]?.SlpName || 'N/A' }}
-                | Cliente: {{ group.items[0]?.CardName || 'N/A' }}
-                | <b class="text-success">Total Frete: {{ group.totalFrete | currency:'BRL' }}</b>
-              </span>
+            <div class="order-header d-flex justify-content-between align-items-center" [class.fatura]="group.fatura">
+              <ng-container *ngTemplateOutlet="cabecalho; context: { $implicit: group }"></ng-container>
               <button class="btn btn-sm btn-move-arrow" (click)="selectGroup(group)" title="Adicionar Pedido">
                 <i class="fas fa-chevron-right"></i>
               </button>
@@ -27,48 +22,43 @@
             <ul class="order-list">
               <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
                 <div class="item-details">
-                  {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
+                  {{ item.ItemCode }} - {{ item.Dscription }} - {{ isFaturaReserva(item) ? 'Saldo' : 'Qtd' }}: {{ item.Quantity | number }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{ item.DistribSum | currency:'BRL' }}</b>
                 </div>
                 <div class="stock-info" *ngIf="showStock">
-                    <span class="stock-green">Estoque: {{ item.OnHand }}</span>
-                    <span class="stock-gray">Produção: {{ item.OnOrder || 0 }}</span>
-                    <span class="stock-orange">
-                      Carregamento:
-                      <ng-container *ngIf="isLoading[item.ItemCode]; else loadedCarregamento">
-                        <i class="fas fa-spinner fa-spin"></i>
-                      </ng-container>
-                      <ng-template #loadedCarregamento>
-                        {{ quantidadesEmCarregamento[item.ItemCode] ?? 0 }}
-                      </ng-template>
-                    </span>
-                    <span class="stock-purple">
-                      Balanço:
-                      <ng-container *ngIf="isLoading[item.ItemCode]; else loadedBalanco">
-                        <i class="fas fa-spinner fa-spin"></i>
-                      </ng-container>
-                      <ng-template #loadedBalanco>
-                        {{ item.OnHand - (quantidadesEmCarregamento[item.ItemCode] ?? 0) }}
-                      </ng-template>
-                    </span>
-                  </div>
+                  <span class="estoque-badge estoque" title="Em estoque no depósito"><i class="fas fa-warehouse"></i> Estoque <b>{{ item.OnHand | number:'1.0-2' }}</b></span>
+                  <span class="estoque-badge producao" title="Em ordem de produção"><i class="fas fa-industry"></i> Produção <b>{{ (item.OnOrder || 0) | number:'1.0-2' }}</b></span>
+                  <span class="estoque-badge carregamento" title="Reservado em ordens de carregamento abertas (pedidos e NF de venda futura)">
+                    <i class="fas fa-truck"></i> Em carregamento
+                    <i *ngIf="carregandoEstoque; else carregamento" class="fas fa-spinner fa-spin"></i>
+                    <ng-template #carregamento><b>{{ (quantidadesEmCarregamento[item.ItemCode] ?? 0) | number:'1.0-2' }}</b></ng-template>
+                  </span>
+                  <span class="estoque-badge balanco" [class.negativo]="balanco(item) < 0" title="Estoque menos o que está em carregamento">
+                    <i class="fas fa-balance-scale"></i> Balanço
+                    <i *ngIf="carregandoEstoque; else saldo" class="fas fa-spinner fa-spin"></i>
+                    <ng-template #saldo><b>{{ balanco(item) | number:'1.0-2' }}</b></ng-template>
+                  </span>
+                </div>
               </li>
             </ul>
           </div>
         </ng-container>
-        <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLink">
+        <p class="empty-state" *ngIf="groupedAvailableItems.length === 0">
+          Nenhum pedido ou NF de venda futura disponível. Use os filtros acima para buscar.
+        </p>
+        <div class="text-center mt-3 load-more-wrapper" *ngIf="temMais">
           <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
         </div>
       </ng-container>
-      <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
+      <button class="btn btn-sm btn-primary mt-2" *ngIf="groupedAvailableItems.length" (click)="selectAll()">Selecionar Todos</button>
     </div>
   </div>
 
   <div class="list-box right-list" [ngClass]="{'collapsed': isSelectedListCollapsed}">
     <div class="list-header">
-      <h5>Selecionados <span class="order-count">{{ selectedOrdersCount }} Pedidos</span></h5>
+      <h5>Selecionados <span class="order-count">{{ selectedOrdersCount }} Documentos</span></h5>
       <div class="total-weight-info mb-2">
-        <span class="btn btn-sm btn-success">Peso: {{ totalSelectedWeight | number:'1.2-2' }} KG</span>
-        <span class="btn btn-sm btn-success">Frete: {{ totalSelectedFrete | currency:'BRL' }}</span>
+        <span class="badge badge-success total-badge">Peso: {{ totalSelectedWeight | number:'1.2-2' }} KG</span>
+        <span class="badge badge-success total-badge">Frete: {{ totalSelectedFrete | currency:'BRL' }}</span>
       </div>
       <button class="btn btn-sm btn-outline-secondary collapse-btn" (click)="toggleSelectedList()">
         {{ isSelectedListCollapsed ? 'Maximizar' : 'Minimizar' }}
@@ -77,33 +67,68 @@
 
     <div class="list-content" [ngClass]="{'collapsed': isSelectedListCollapsed}">
       <ng-container *ngIf="!isSelectedListCollapsed">
-        <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermSelected">
+        <div class="capacidade mb-2">
+          <label class="mb-0 mr-2" for="capacidadeCaminhao">Capacidade do caminhão (kg)</label>
+          <input id="capacidadeCaminhao" type="number" min="0" class="form-control form-control-sm d-inline-block"
+            [ngModel]="capacidadeKg" (ngModelChange)="capacidadeKgChange.emit(capacidadeKg = $event)" placeholder="Opcional">
+          <div *ngIf="capacidadeKg > 0" class="progress mt-1" [attr.aria-label]="'Ocupação do caminhão ' + ocupacao + '%'">
+            <div class="progress-bar" role="progressbar"
+              [ngClass]="ocupacao > 100 ? 'bg-danger' : (ocupacao >= 90 ? 'bg-warning' : 'bg-success')"
+              [style.width.%]="ocupacao > 100 ? 100 : ocupacao">
+              {{ ocupacao }}%
+            </div>
+          </div>
+          <small *ngIf="capacidadeKg > 0 && ocupacao > 100" class="text-danger">
+            Passou {{ totalSelectedWeight - capacidadeKg | number:'1.0-0' }} kg da capacidade.
+          </small>
+        </div>
+        <input type="text" class="form-control mb-2" placeholder="Documento, cliente, vendedor, localidade ou produto" [(ngModel)]="searchTermSelected">
         <div class="list-container">
           <ng-container *ngFor="let group of groupedSelectedItems; trackBy: trackByDocNum">
             <div class="order-group">
-              <div class="order-header d-flex align-items-center">
+              <div class="order-header d-flex align-items-center" [class.fatura]="group.fatura">
                 <button class="btn btn-sm btn-move-arrow mr-2" (click)="removeGroup(group)" title="Remover Pedido">
                   <i class="fas fa-chevron-left"></i>
                 </button>
-                <span class="order-info" title="{{ group.items[0]?.Name || 'N/A' }}">
-                  Pedido: {{ group.docNum }} | Localidade: {{ group.items[0]?.Name || 'N/A' }}
-                  | Vendedor: {{ group.items[0]?.SlpName || 'N/A' }}
-                  | Cliente: {{ group.items[0]?.CardName || 'N/A' }}
-                  | <b class="text-success">Total Frete: {{ group.totalFrete | currency:'BRL' }}</b>
-                </span>
+                <ng-container *ngTemplateOutlet="cabecalho; context: { $implicit: group }"></ng-container>
               </div>
               <ul class="order-list">
                 <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
                   <div class="item-details">
-                    {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
+                    {{ item.ItemCode }} - {{ item.Dscription }} -
+                    <ng-container *ngIf="!isFaturaReserva(item); else retirada">Qtd: {{ item.Quantity | number }}</ng-container>
+                    <ng-template #retirada>
+                      <label class="retirada mb-0">
+                        Qtd. a retirar:
+                        <input type="number" class="form-control form-control-sm d-inline-block"
+                          min="0" step="any" [ngModel]="item.Quantity" (ngModelChange)="alterarRetirada(item, $event)"
+                          [attr.aria-label]="'Quantidade a retirar de ' + item.ItemCode">
+                        de {{ (item.SaldoFatura ?? item.Quantity) | number }}
+                      </label>
+                    </ng-template>
+                    - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{ item.DistribSum | currency:'BRL' }}</b>
                   </div>
                 </li>
               </ul>
             </div>
           </ng-container>
+          <p class="empty-state" *ngIf="groupedSelectedItems.length === 0">
+            Nenhum documento selecionado. Use a seta <i class="fas fa-chevron-right"></i> para adicionar.
+          </p>
         </div>
-        <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
+        <button class="btn btn-sm btn-primary mt-2" *ngIf="groupedSelectedItems.length" (click)="removeAll()">Remover Todos</button>
       </ng-container>
       </div>
   </div>
 </div>
+
+<ng-template #cabecalho let-group>
+  <span class="order-info">
+    <span class="badge mr-1" [ngClass]="group.fatura ? 'badge-info' : 'badge-warning'">{{ group.fatura ? 'NF venda futura' : 'Pedido' }}</span>
+    <b>{{ group.docNum }}</b> · {{ group.items[0]?.CardName || 'N/A' }}
+    <small class="d-block">
+      {{ group.items[0]?.Name || 'Sem localidade' }} · {{ group.items[0]?.SlpName || 'Sem vendedor' }}
+      · <b class="text-success">Frete {{ group.totalFrete | currency:'BRL' }}</b>
+    </small>
+  </span>
+</ng-template>

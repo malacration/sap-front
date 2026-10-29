@@ -16,12 +16,20 @@ export class PainelExpedicaoPedidos {
   Name?: string;
   EstoqueMinimo?: number;
   EmOrdemDeCarregamento?: string;
+  // "NF venda futura" na linha de fatura de reserva; pedido vem sem
+  Tipo?: string;
+
+  get tipo(): string {
+    return this.Tipo
+      ? '<span class="badge badge-info">NF venda futura</span>'
+      : '<span class="badge badge-warning">Pedido</span>';
+  }
 
   get orderRouterLink(): RouteLink | string {
     if (!this.DocEntry) return '';
     return new RouteLink(
       this.DocEntry.toString(),
-      '/venda/pedidos-venda',
+      this.Tipo ? '/financeiro/notas-fiscais' : '/venda/pedidos-venda',
       { id: this.DocEntry }
     );
   }

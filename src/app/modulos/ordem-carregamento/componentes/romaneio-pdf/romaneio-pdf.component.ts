@@ -105,7 +105,7 @@ export class RomaneioPdfService {
 
     autoTable(doc, {
       startY: y + 10,
-      head: [['Pedido', 'Cliente', 'Item', 'Descrição', 'Quantidade', 'Peso Total (kg)', 'Lote']],
+      head: [['Documento', 'Cliente', 'Item', 'Descrição', 'Quantidade', 'Peso Total (kg)', 'Lote']],
       body: [
         ...itensPorPedido.map(i => [
           i.docNum,

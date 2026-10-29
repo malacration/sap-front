@@ -8,14 +8,12 @@
         <button class="btn btn-default mr-2" (click)="goBack()">
           <i class="fas fa-arrow-left"></i> Voltar
         </button>
-        <div class="btn-group">
-          <button class="btn btn-success" (click)="abreAnaliseLogistica()">
-            <i class="fas fa-arrow-up"></i> Análise de Logística
-          </button>
-          <button class="btn btn-success" (click)="toggleEstoque()">
-            Carregar Estoque
-          </button>
-        </div>
+        <button class="btn btn-success mr-2" (click)="abreAnaliseLogistica()">
+          <i class="fas fa-arrow-up"></i> Análise de Logística
+        </button>
+        <button class="btn btn-success" [class.active]="showStock" [attr.aria-pressed]="showStock" (click)="toggleEstoque()">
+          <i class="fas fa-boxes"></i> {{ showStock ? 'Ocultar estoque' : 'Mostrar estoque' }}
+        </button>
       </div>
     </div>
     <div class="card-body">
@@ -32,28 +30,18 @@
       </div>
       <card
         [title]="'Filtros'" 
-        #cardFilter [cardClass]="'card-primary card-outline'" [collapsible]="true">
+        [cardClass]="'card-primary card-outline'" [collapsible]="true">
         <div class="row">
           <div class="col-sm-2">
             <div class="form-group">
               <label for="dataInicial">Data Inicial</label>
-              <div class="input-group">
-                <app-campo-data inputId="dataInicial" [(ngModel)]="dtInicial"></app-campo-data>
-                <div class="input-group-append" *ngIf="dtInicial">
-                  <button (click)="clearDataInicial()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
+              <app-campo-data inputId="dataInicial" [(ngModel)]="dtInicial"></app-campo-data>
             </div>
           </div>
           <div class="col-sm-2">
             <div class="form-group">
               <label for="dataFinal">Data Final</label>
-              <div class="input-group">
-                <app-campo-data inputId="dataFinal" [(ngModel)]="dtFinal"></app-campo-data>
-                <div class="input-group-append" *ngIf="dtFinal">
-                  <button (click)="clearDataFinal()" class="btn btn-primary btn-clear"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
+              <app-campo-data inputId="dataFinal" [(ngModel)]="dtFinal"></app-campo-data>
             </div>
           </div>
           <div class="col-sm-2">
@@ -63,12 +51,34 @@
           </div>
           <div class="col-sm-2">
             <div class="form-group">
-              <app-localidade-search (selected)="selectLocalidade($event)"></app-localidade-search>
+              <app-localidade-search #localidadeSearch (selected)="selectLocalidade($event)"></app-localidade-search>
+              <small *ngIf="localidade" class="text-muted">
+                {{ localidade.Name }}
+                <a href="javascript:void(0)" class="ml-1" (click)="limparLocalidade(localidadeSearch)" title="Buscar todas as localidades">
+                  <i class="fas fa-times"></i> limpar
+                </a>
+              </small>
             </div>
           </div>
           <div class="col-sm-2">
             <div class="form-group">
               <app-sales-person-search (selected)="selectOriginSalesPerson($event)" [name]="'Vendedor'"></app-sales-person-search>
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <label for="cidade">Cidade</label>
+              <input id="cidade" type="text" class="form-control" [(ngModel)]="cidade" placeholder="Ex.: Porto Velho">
+            </div>
+          </div>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <label for="tipoDocumento">Tipo de documento</label>
+              <select id="tipoDocumento" class="form-control" [(ngModel)]="tipoDocumento">
+                <option value="">Todos</option>
+                <option value="pedido">Pedidos</option>
+                <option value="nf-venda-futura">NF de venda futura</option>
+              </select>
             </div>
           </div>
           <div class="col-sm-4 d-flex align-items-end">
@@ -78,19 +88,21 @@
                 [disabled]="!canFilter()"
                 (click)="criarAnalise()"
               >
-                Filtrar
+                <i class="fas fa-search"></i> Filtrar
               </button>
             </div>
+            <small class="form-group text-muted" *ngIf="!canFilter()">Escolha a filial para filtrar.</small>
 
           </div>
         </div>
       </card>
       <app-dual-list-box
-        [availableItems]="availableOrders"
+        [(availableItems)]="availableOrders"
         [selectedItems]="selectedOrders"
         [showStock]="showStock"
-        [nextLink]="nextLink"
+        [temMais]="temMaisPedidos || temMaisFaturas"
         [isLoadingOrders]="isLoadingOrders"
+        [(capacidadeKg)]="ordemCarregamento.U_capacidadeCaminhao"
         (selectedItemsChange)="onSelectedOrdersChange($event)"
         (loadMore)="loadMoreOrders()"
       ></app-dual-list-box>

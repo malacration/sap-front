@@ -122,7 +122,7 @@ export class OrdemCarregamentoPdfService {
 
     autoTable(doc, {
       startY: y,
-      head: [['PEDIDO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'PESO TOTAL (KG)', 'UN']],
+      head: [['DOCUMENTO', 'CÓD. CLI', 'CLIENTE', 'LOCALIDADE', 'VENDEDOR', 'CÓD. ITEM', 'PRODUTO', 'QTD', 'PESO TOTAL (KG)', 'UN']],
       body: [
         ...(selected.pedidosVenda || []).map(p => {
           const pesoTotalRow = Number(p.Weight1 || 0);

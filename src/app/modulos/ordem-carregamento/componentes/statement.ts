@@ -8,7 +8,6 @@ import { ParameterService } from '../../../shared/service/parameter.service';
 import { OrdemCarregamentoFilter, OrdemCarregamentoService } from '../service/ordem-carregamento.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { OrdemCarregamento } from '../models/ordem-carregamento';
-import { PedidosVendaService } from '../../../sap/service/document/pedidos-venda.service';
 
 @Component({
   selector: 'ordem-carregamento-statement',
@@ -48,7 +47,6 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     private alertService: AlertService,
     private parameterService: ParameterService,
     private service: OrdemCarregamentoService,
-    private pedidosVendaService: PedidosVendaService,
   ) {
     this.nomeUsuario = this.auth.getUser();
   }
@@ -179,30 +177,10 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
     });
   }
 
+  // As linhas da ordem sao buscadas por quem mostra: selected.ts (detalhe) e formulario (edicao).
   public handleOrdemSelection(ordem: OrdemCarregamento): void {
     this.selected = ordem
     ordem.pedidosVendaCarregados = false;
-    this.pedidosVendaService.search(ordem.DocEntry).subscribe({
-      next : (pedidos) => {
-        ordem.pedidosVenda = this.normalizePedidosResponse(pedidos);
-        ordem.pedidosVendaCarregados = true;
-      },
-    });
-  }
-
-  private normalizePedidosResponse(response: any): any[] {
-    if (!response) {
-      return [];
-    }
-    if (Array.isArray(response?.content)) {
-      return response.content;
-    }
-
-    if (Array.isArray(response)) {
-      return response;
-    }
-
-    return [response];
   }
 
   private removeParams(): void {
@@ -245,5 +223,10 @@ export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
 
   private getTodayDate(): string {
     return new Date().toISOString().split('T')[0];
+  }
+
+  abrirManual(): void {
+    const url = new URL('assets/docs/ordem-carregamento/index.html', document.baseURI).href;
+    window.open(url, '_blank');
   }
 }

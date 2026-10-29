@@ -1,68 +1,61 @@
 <section class="content">
   <div class="card card-primary">
     <div class="card-header">
-      <h3 class="card-title"><b>Detalhes da Ordem de Carregamento</b></h3>
-      <div class="card-tools float-right">
+      <h3 class="card-title"><b>Ordem de Carregamento #{{ selected?.DocEntry }}</b></h3>
+      <div class="card-tools float-right d-flex flex-wrap align-items-start">
+        <button *ngIf="ordemAberta"
 
-        <button
-          (click)="cancelarOrdem()"
-          type="button"
-          class="btn btn-danger mr-2"
-          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
-          Cancelar Ordem
-        </button>
-        
-        <button
-          (click)="iniciarGeracaoNota()"
-          type="button"
-          class="btn btn-warning"
-          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado' || !canGenerateNotaFiscal()"
-          [title]="selected?.U_Status == 'Fechado' ? 'Esta ordem já foi fechada' : (!canGenerateNotaFiscal() ? 'Preencha os dados da aba logística para gerar a nota' : '')">
-          <span *ngIf="!loading">Gerar NF de Saída</span>
-          <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
-        </button>
-
-        <button
           (click)="editarOrdem()"
           type="button"
-          class="btn btn-warning"
+          class="btn btn-light mr-2"
           [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
-          Editar Ordem
+          <i class="fas fa-edit"></i> Editar
         </button>
 
-        <button
-          (click)="abrirModalItinerario()"
-          type="button"
-          class="btn btn-warning"
-          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
-          Gerar Itinerário
-        </button>
-
-        <button
-          (click)="imprimirRomaneioAgrupado()"
-          type="button"
-          class="btn btn-warning"
-          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
-          Exportar Romaneio
-        </button>
-
-        <div class="btn-group export-group">
+        <div class="btn-group export-group mr-2">
           <button
             (click)="toggleExportMenu()"
             type="button"
-            class="btn btn-warning dropdown-toggle"
+            class="btn btn-light dropdown-toggle"
             [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Cancelado'">
-            Exportar Ordem de Carregamento
+            <i class="fas fa-file-export"></i> Exportar
           </button>
           <div class="dropdown-menu dropdown-menu-right" [class.show]="showExportMenu">
+            <button class="dropdown-item" type="button" (click)="showExportMenu = false; abrirModalItinerario()">
+              <i class="fas fa-route"></i> Itinerário
+            </button>
+            <button class="dropdown-item" type="button" (click)="imprimirRomaneioAgrupado()">
+              <i class="fas fa-clipboard-list"></i> Romaneio
+            </button>
+            <div class="dropdown-divider"></div>
             <button class="dropdown-item" type="button" (click)="imprimirOrdemPdf()">
-              PDF
+              <i class="fas fa-file-pdf"></i> Ordem em PDF
             </button>
             <button class="dropdown-item" type="button" (click)="exportarOrdemImagem()">
-              Imagem
+              <i class="fas fa-image"></i> Ordem em imagem
             </button>
           </div>
         </div>
+
+        <button *ngIf="ordemAberta"
+
+          (click)="iniciarGeracaoNota()"
+          type="button"
+          class="btn btn-warning mr-3"
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado' || !canGenerateNotaFiscal()"
+          [title]="selected?.U_Status == 'Fechado' ? 'Esta ordem já foi fechada' : (!canGenerateNotaFiscal() ? 'Preencha os dados da aba logística para gerar a nota' : '')">
+          <span *ngIf="!loading"><i class="fas fa-file-invoice"></i> Gerar NF de Saída</span>
+          <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i> Processando...</span>
+        </button>
+
+        <button *ngIf="ordemAberta"
+
+          (click)="cancelarOrdem()"
+          type="button"
+          class="btn btn-danger"
+          [disabled]="loading || !selected?.pedidosVendaCarregados || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+          <i class="fas fa-ban"></i> Cancelar Ordem
+        </button>
       </div>
     </div>
 
@@ -72,25 +65,51 @@
         Esta ordem de carregamento já foi fechada e não pode mais ser editada.
       </div>
 
-      <dl class="row">
-        <dt class="col-sm-3">Número da Ordem:</dt>
-        <dd class="col-sm-9">{{ selected?.DocEntry }}</dd>
-        <dt class="col-sm-3">Descrição da Ordem:</dt>
-        <dd class="col-sm-9">{{ selected?.U_nameOrdem }}</dd>
-        <dt class="col-sm-3">Status:</dt>
-        <dd class="col-sm-9">
-          <span [ngClass]="{
-            'badge badge-success': selected?.U_Status == 'Fechado',
-            'badge badge-danger': selected?.U_Status == 'Cancelado',
-            'badge badge-primary': selected?.U_Status == 'Aberto',
-            'badge badge-warning': selected?.U_Status == 'Falhou'
-          }">
-            {{ selected?.U_Status }}
-          </span>
-        </dd>
-        <dt class="col-sm-3">Data de Criação:</dt>
-        <dd class="col-sm-9">{{ selected?.dataCriacao }}</dd>
+      <div *ngIf="selected?.U_Status == 'Aberto' && selected?.pedidosVendaCarregados && !canGenerateNotaFiscal()" class="alert alert-light border">
+        <i class="fas fa-info-circle text-info"></i>
+        Para gerar a NF de saída, preencha placa e motorista na aba <b>Logística</b>.
+      </div>
 
+      <h5 class="mb-3">{{ selected?.U_nameOrdem }}</h5>
+
+      <div class="row resumo-ordem mb-2">
+        <div class="col-6 col-md-2">
+          <small class="text-muted d-block">Status</small>
+          <span class="badge" [ngClass]="{
+            'badge-success': selected?.U_Status == 'Fechado',
+            'badge-secondary': selected?.U_Status == 'Cancelado',
+            'badge-primary': selected?.U_Status == 'Aberto',
+            'badge-danger': selected?.U_Status == 'Falhou'
+          }">{{ selected?.U_Status }}</span>
+        </div>
+        <div class="col-6 col-md-2">
+          <small class="text-muted d-block">Criada em</small>
+          <b>{{ selected?.dataCriacao }}</b>
+        </div>
+        <div class="col-6 col-md-2">
+          <small class="text-muted d-block">Documentos</small>
+          <b>{{ totalDocumentos }}</b>
+        </div>
+        <div class="col-6 col-md-2">
+          <small class="text-muted d-block">Peso total</small>
+          <b>{{ formatPesoPedidos() }} kg</b>
+        </div>
+        <div class="col-6 col-md-2">
+          <small class="text-muted d-block">Capacidade do caminhão</small>
+          <b *ngIf="selected?.U_capacidadeCaminhao; else semCapacidade"
+            [class.text-danger]="ocupacaoCaminhao > 100">
+            {{ selected.U_capacidadeCaminhao | number:'1.0-0' }} kg
+            <small class="font-weight-normal">({{ ocupacaoCaminhao }}% ocupado)</small>
+          </b>
+          <ng-template #semCapacidade><span class="text-muted">—</span></ng-template>
+        </div>
+        <div class="col-6 col-md-2">
+          <small class="text-muted d-block">Frete total</small>
+          <b>{{ totalFrete | currency:'BRL' }}</b>
+        </div>
+      </div>
+
+      <dl class="row">
         <dd class="col-sm-12 mt-3">
           <app-tabs>
             <app-tab tabTitle="Produtos" [active]="true">
@@ -118,7 +137,7 @@
                     <input type="text" class="form-control"
                       [ngClass]="{'is-valid': placa?.trim(), 'is-invalid': formTouched && !placa?.trim()}"
                       [(ngModel)]="placa" placeholder="Ex: ABC-1234"
-                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
+                      [disabled]="!ordemAberta" />
                     <div class="invalid-feedback">A placa do veículo é obrigatória.</div>
                   </div>
                 </div>
@@ -128,16 +147,16 @@
                     <input type="text" class="form-control"
                       [ngClass]="{'is-valid': nomeMotorista?.trim(), 'is-invalid': formTouched && !nomeMotorista?.trim()}"
                       [(ngModel)]="nomeMotorista" placeholder="Ex: João Silva"
-                      [disabled]="selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'" />
+                      [disabled]="!ordemAberta" />
                     <div class="invalid-feedback">O nome do motorista é obrigatório.</div>
                   </div>
                 </div>
               </div>
               <div class="row">
                 <div class="col-md-6">
-                  <div class="form-group">
+                  <fieldset class="form-group" [disabled]="!ordemAberta">
                     <app-transportadora-search [(ngModel)]="businessPartner" (selected)="selectBp($event)"></app-transportadora-search>
-                  </div>
+                  </fieldset>
                 </div>
                 <div class="col-md-6">
                   <div class="form-group">
@@ -149,9 +168,16 @@
                     <div class="invalid-feedback">É necessário ter peso nos pedidos para gerar nota fiscal.</div>
                   </div>
                 </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="capacidadeLogistica">Capacidade do caminhão (kg) <small class="text-muted">opcional</small></label>
+                    <input id="capacidadeLogistica" type="number" min="0" class="form-control" [(ngModel)]="capacidade"
+                      [disabled]="!ordemAberta" />
+                  </div>
+                </div>
                 <div class="col-12 text-right">
                   <button class="btn btn-primary" (click)="salvarLogistica()"
-                    [disabled]="loading || selected?.U_Status == 'Fechado' || selected?.U_Status == 'Cancelado'">
+                    [disabled]="loading || !ordemAberta">
                     <i class="fas fa-save"></i> Salvar Logística
                   </button>
                 </div>
@@ -159,10 +185,19 @@
             </app-tab>
 
             <app-tab tabTitle="Notas Emitidas">
-              <app-table [definition]="notasEmitida" [content]="flattened"></app-table>
+              <div class="text-right mb-2" *ngIf="notas?.length">
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="baixarDanfes()" [disabled]="baixandoDanfes">
+                  <i class="fas" [ngClass]="baixandoDanfes ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Baixar DANFEs (zip)
+                </button>
+              </div>
+              <app-table [definition]="notasEmitida" [content]="flattened" (click)="verMotivo($event)"></app-table>
               <ng-container *ngIf="!loading && notas?.length === 0">
                 <p class="text-center">Nenhuma nota encontrada.</p>
               </ng-container>
+            </app-tab>
+            <app-tab tabTitle="Histórico">
+              <app-table [definition]="historicoColunas" [content]="historico"></app-table>
+              <p class="text-center text-muted" *ngIf="!historico.length">Sem histórico registrado.</p>
             </app-tab>
           </app-tabs>
         </dd>
@@ -226,7 +261,7 @@
     <table class="ordem-export-table">
       <thead>
         <tr>
-          <th>PEDIDO</th>
+          <th>DOCUMENTO</th>
           <th>CÓD. CLI</th>
           <th>CLIENTE</th>
           <th>LOCALIDADE</th>

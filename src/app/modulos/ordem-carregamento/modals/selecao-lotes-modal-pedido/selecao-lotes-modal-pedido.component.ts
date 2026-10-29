@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Observable, shareReplay, tap } from 'rxjs';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { BatchStockService } from '../../../../modulos/sap-shared/_services/BatchStockService';
 import { AlertService } from '../../../../shared/service/alert.service';
@@ -6,6 +7,8 @@ import { AlertService } from '../../../../shared/service/alert.service';
 export interface PedidoXItem {
   itemId: string;
   itemCode: string;
+  // linha da NF de venda futura (o mesmo item pode estar em mais de uma linha)
+  baseLine?: number;
   descricao: string;
   quantidade: number;
   deposito: string;
@@ -15,6 +18,8 @@ export interface PedidoXItem {
 export interface PedidoX {
   pedidoId: string;
   docEntry: number;
+  // 13 = fatura de reserva (vira entrega parcial); sem valor = pedido
+  baseType?: number;
   docNum: number;
   cardCode: string;
   cardName: string;
@@ -45,7 +50,8 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
   lotesEmEdicao: LoteEdicao[] = [];
   loadingLotes: boolean = false;
 
-  private lotesOriginaisPorItemDeposito = new Map<string, BatchStock[]>();
+  // Uma busca por item+deposito, compartilhada: comeca em paralelo ao abrir o modal.
+  private lotesPorItemDeposito = new Map<string, Observable<BatchStock[]>>();
   private consumoGlobalPorLote = new Map<string, number>();
 
   constructor(
@@ -63,6 +69,24 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
     this.currentPedido = pedido;
     this.currentItem = null;
     this.lotesEmEdicao = [];
+    const pendente = this.getPrimeiroItemPendente(pedido);
+    if (pendente) {
+      this.selecionarItem(pendente);
+    }
+  }
+
+  // saldoEstoqueComLotes.sql devolve a data como 'yyyyMMdd'; o pipe date leria como milissegundos (1970).
+  validade(lote: BatchStock): string {
+    const data = lote.ExpDate || '';
+    return data.length === 8 ? `${data.slice(6, 8)}/${data.slice(4, 6)}/${data.slice(0, 4)}` : '-';
+  }
+
+  itemCompleto(item: PedidoXItem): boolean {
+    return this.quantidadeSelecionadaItem(item) === (Number(item.quantidade) || 0);
+  }
+
+  documentosCompletos(): number {
+    return this.pedidosAuxiliares.filter(pedido => this.pedidoCompleto(pedido)).length;
   }
 
   selecionarItem(item: PedidoXItem): void {
@@ -164,36 +188,52 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
     }));
 
     this.consumoGlobalPorLote.clear();
+    this.lotesPorItemDeposito.clear();
+    this.pedidosAuxiliares.forEach(pedido =>
+      pedido.itens.forEach(item => this.lotesDoItem(item).subscribe({ error: () => {} }))
+    );
     this.pedidosAuxiliares.forEach(pedido =>
       pedido.itens.forEach(item => this.adicionarConsumoGlobal(item.lotesSelecionados))
     );
 
-    this.currentPedido = this.pedidosAuxiliares[0] || null;
+    this.currentPedido = null;
     this.currentItem = null;
     this.lotesEmEdicao = [];
+    const primeiro = this.pedidosAuxiliares.find(pedido => !this.pedidoCompleto(pedido)) || this.pedidosAuxiliares[0];
+    if (primeiro) {
+      this.selecionarPedido(primeiro);
+    }
   }
 
   private carregarLotesParaItem(item: PedidoXItem): void {
-    const chave = this.getItemDepositoKey(item.itemCode, item.deposito);
-    const lotesCache = this.lotesOriginaisPorItemDeposito.get(chave);
-
-    if (lotesCache) {
-      this.montarLotesEmEdicao(item, lotesCache);
-      return;
-    }
-
     this.loadingLotes = true;
-    this.batchStockService.get(item.itemCode, item.deposito).subscribe({
+    this.lotesDoItem(item).subscribe({
       next: (lotes) => {
-        this.lotesOriginaisPorItemDeposito.set(chave, lotes || []);
+        if (this.currentItem !== item) {
+          return;
+        }
         this.montarLotesEmEdicao(item, lotes || []);
         this.loadingLotes = false;
       },
       error: (error) => {
+        if (this.currentItem !== item) {
+          return;
+        }
         this.alertService.error('Erro ao carregar lotes: ' + (error.error?.message || error.message));
         this.loadingLotes = false;
       }
     });
+  }
+
+  private lotesDoItem(item: PedidoXItem): Observable<BatchStock[]> {
+    const chave = this.getItemDepositoKey(item.itemCode, item.deposito);
+    if (!this.lotesPorItemDeposito.has(chave)) {
+      this.lotesPorItemDeposito.set(chave, this.batchStockService.get(item.itemCode, item.deposito).pipe(
+        tap({ error: () => this.lotesPorItemDeposito.delete(chave) }),
+        shareReplay(1)
+      ));
+    }
+    return this.lotesPorItemDeposito.get(chave)!;
   }
 
   private montarLotesEmEdicao(item: PedidoXItem, lotesOriginais: BatchStock[]): void {
@@ -204,7 +244,7 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
       consumoDoItem.set(chaveLote, atual + (Number(lote.Quantity) || 0));
     });
 
-    this.lotesEmEdicao = lotesOriginais.map(loteOriginal => {
+    this.lotesEmEdicao = [...lotesOriginais].sort(this.vencimentoPrimeiro).map(loteOriginal => {
       const chaveLote = this.getLoteKey(item.itemCode, loteOriginal.WhsCode || item.deposito, loteOriginal.DistNumber);
       const consumoGlobal = this.consumoGlobalPorLote.get(chaveLote) || 0;
       const consumoDoItemAtual = consumoDoItem.get(chaveLote) || 0;
@@ -218,6 +258,11 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
         quantidadeSelecionada: consumoDoItemAtual
       });
     });
+  }
+
+  private vencimentoPrimeiro(a: BatchStock, b: BatchStock): number {
+    const data = (lote: BatchStock) => lote.ExpDate || lote.InDate || '9999';
+    return data(a).localeCompare(data(b));
   }
 
   private recalcularDisponibilidadeEmEdicao(): void {
@@ -242,10 +287,6 @@ export class SelecaoLotesModalPedidoComponent implements OnChanges {
     const proximoPedido = this.getProximoPedidoPendente(this.currentPedido.pedidoId);
     if (proximoPedido) {
       this.selecionarPedido(proximoPedido);
-      const primeiroItemPendente = this.getPrimeiroItemPendente(proximoPedido);
-      if (primeiroItemPendente) {
-        this.selecionarItem(primeiroItemPendente);
-      }
       return;
     }
 

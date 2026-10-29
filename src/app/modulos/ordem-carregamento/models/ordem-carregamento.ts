@@ -25,11 +25,16 @@ export class OrdemCarregamento {
   }
 
   get pesoTotalFormatted(): string {
-    const peso = parseFloat(this.U_pesoTotal) || 0;
+    const peso = parseFloat(this.Weight1) || 0;
     return peso.toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
+  }
+
+  get statusBadge(): string {
+    const cor = { Aberto: 'primary', Fechado: 'success', Cancelado: 'secondary', Falhou: 'danger' }[this.U_Status] ?? 'light';
+    return `<span class="badge badge-${cor}">${escaparHtml(this.U_Status ?? '')}</span>`;
   }
 
   routerLinkOrdem(): RouteLink {
@@ -45,4 +50,9 @@ export class OrdemCarregamento {
       new Action('', new ActionReturn('selected', this), 'far fa-eye')
     ];
   }
+}
+
+// Texto da API que vai para uma coluna com html ({{{value}}}): a tabela confia no HTML.
+export function escaparHtml(texto: string): string {
+  return texto.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
