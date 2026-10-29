@@ -275,7 +275,7 @@
                         <div class="card-body">
                             <div class="form-row align-items-end">
                                 <div class="col-sm-4 form-group">
-                                    <label>Quantidade mínima (1 = faixa base)</label>
+                                    <label>Quantidade mínima (a menor faixa é o mínimo para entrega)</label>
                                     <input type="number" min="1" class="form-control" [(ngModel)]="formFaixa.qtdeAte" placeholder="Ex.: 1, 100, 500...">
                                 </div>
                                 <div class="col-sm-4 form-group">
@@ -303,7 +303,7 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let faixa of faixasOrdenadas">
-                                <td>{{faixa.U_QtdeAte == 1 ? 'A partir de 1 (faixa base)' : 'A partir de ' + faixa.U_QtdeAte + ' itens'}}</td>
+                                <td>A partir de {{faixa.U_QtdeAte}} itens <span *ngIf="faixa === selecionada.faixaBase" class="badge badge-info ml-1">base: mínimo para entrega</span></td>
                                 <td>{{faixa.U_ValorKm | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
                                 <td class="text-right">
                                     <button class="btn btn-sm btn-primary" (click)="editaFaixa(faixa)">
@@ -334,7 +334,10 @@
                         </div>
                     </div>
 
-                    <div *ngIf="calcCodLocalidade && calcQuantidade && !resultadoCalculo" class="alert alert-warning mb-0">
+                    <div *ngIf="calcCodLocalidade && calcQuantidade && !resultadoCalculo && calcQuantidade < selecionada.quantidadeMinimaEntrega" class="alert alert-warning mb-0">
+                        Esta região só entrega a partir de {{selecionada.quantidadeMinimaEntrega}} itens.
+                    </div>
+                    <div *ngIf="calcCodLocalidade && calcQuantidade && !resultadoCalculo && !(calcQuantidade < selecionada.quantidadeMinimaEntrega)" class="alert alert-warning mb-0">
                         Não há distância ou faixa de preço cadastrada suficiente para simular esse frete.
                     </div>
 
@@ -345,7 +348,7 @@
                         </div>
                         <div class="col-sm-3">
                             <dt>Faixa aplicada</dt>
-                            <dd>{{resultadoCalculo.faixa.U_QtdeAte == 1 ? 'A partir de 1 (faixa base)' : 'A partir de ' + resultadoCalculo.faixa.U_QtdeAte + ' itens'}}</dd>
+                            <dd>A partir de {{resultadoCalculo.faixa.U_QtdeAte}} itens</dd>
                         </div>
                         <div class="col-sm-3">
                             <dt>Valor a cada 100Km por unidade</dt>

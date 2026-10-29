@@ -18,7 +18,7 @@ export class RegraFilialComponent implements OnInit {
   lista : Array<RegraFilial> = []
 
   //"lista vazia" so e informacao depois de uma resposta de sucesso: vazia por falha ou por
-  //ainda nao ter carregado NAO significa "todas as regras valem em todas as filiais", e a tela
+  //ainda nao ter carregado NAO significa "nenhuma regra ligada", e a tela
   //afirmaria isso justamente durante uma queda do backend
   carregado = false
   erroCarregamento = false
@@ -131,10 +131,9 @@ export class RegraFilialComponent implements OnInit {
     })
   }
 
-  //motivos que ainda nao tem nenhuma filial cadastrada - a tela precisa dizer isso em voz
-  //alta, porque nesse estado a regra vale em TODAS as filiais, que e o oposto do que quem
-  //olha uma lista vazia costuma concluir
-  motivosSemRestricao() : Array<string> {
+  //motivos que ainda nao tem nenhuma filial cadastrada: a regra so vale nas filiais
+  //cadastradas, entao esses estao desligados em todo lugar
+  motivosDesligados() : Array<string> {
     if(!this.carregado)
       return []
     return this.motivos.filter(motivo => !this.lista.some(it => it.U_motivo === motivo))

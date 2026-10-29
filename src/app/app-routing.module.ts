@@ -23,6 +23,7 @@ import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cad
 import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
 import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
+import { RastreioLoteComponent } from './modulos/producao/componentes/rastreio-lote/rastreio-lote.component';
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
@@ -32,6 +33,8 @@ import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava
 import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
+import { OrdemProducaoListComponent } from './modulos/producao/componentes/ordem-producao/ordem-producao-list.component';
+import { OrdemProducaoDetalheComponent } from './modulos/producao/componentes/ordem-producao/ordem-producao-detalhe.component';
 import { ChangePassowrd } from './shared/components/change-password/change-password.component';
 import { ConfigService } from './core/services/config.service';
 import { PainelExpedicaoPedidosComponent } from './modulos/ordem-carregamento/componentes/painel-expedicao-pedidos/painel-expedicao-pedidos.component';
@@ -289,6 +292,36 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
     canActivate: [authGuard],
     children: [
       {
+        title: 'Cobrança',
+        data: ["icon:fas fa-hand-holding-usd", "role:cobranca"],
+        canActivate: [authGuard],
+        path: 'cobranca',
+        children: [
+          // Sem title de propósito: o menu lateral é gerado do router e filtra por
+          // route.title != undefined, então o redirect não aparece como item. Serve pra
+          // /financeiro/cobranca continuar funcionando depois de a tela virar filha de um grupo.
+          { path: '', redirectTo: 'titulos', pathMatch: 'full' },
+          {
+            path: 'titulos',
+            title: 'Títulos',
+            canActivate: [authGuard, roleGuard],
+            // /cobranca/dominios e nao /cobranca/titulos: o vendedor tem o GET de titulos (aba do parceiro), nao a tela.
+            data: ["icon:fas fa-list", "role:cobranca", "api:get:/cobranca/dominios",
+                  "usa:get:/cobranca/titulos", "usa:get:/cobranca/titulos/totais", "usa:get:/cobranca/cobradores", "usa:get:/cobranca/titulos/*/*/*/historico",
+                  "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/sales-person/search"],
+            component: CobrancaStatementComponent
+          },
+          {
+            path: 'resultado',
+            title: 'Resultado',
+            canActivate: [authGuard, roleGuard],
+            data: ["icon:fas fa-chart-line", "role:cobranca", "api:get:/cobranca/dashboard",
+                  "usa:get:/cobranca/dashboard/evolucao", "usa:get:/cobranca/cobradores", "usa:get:/branch", "usa:post:/sales-person/search"],
+            component: CobrancaDashboardComponent
+          },
+        ]
+      },
+      {
         path: 'pix',
         title: 'PIX',
         // Permissao so de tela: o POST /pix/gerar-chave tambem gera o PIX do pedido de venda, e liberar ele nao pode
@@ -346,36 +379,10 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       },
     ]
   },
-  {
-    title: 'Cobrança',
-    data: ["icon:fas fa-hand-holding-usd", "role:cobranca"],
-    canActivate: [authGuard],
-    path: 'cobranca',
-    children: [
-      // Sem title de propósito: o menu lateral é gerado do router e filtra por
-      // route.title != undefined, então o redirect não aparece como item. Serve pra
-      // /cobranca continuar funcionando depois de a tela virar filha de um grupo.
-      { path: '', redirectTo: 'titulos', pathMatch: 'full' },
-      {
-        path: 'titulos',
-        title: 'Títulos',
-        canActivate: [authGuard, roleGuard],
-        // /cobranca/dominios e nao /cobranca/titulos: o vendedor tem o GET de titulos (aba do parceiro), nao a tela.
-        data: ["icon:fas fa-list", "role:cobranca", "api:get:/cobranca/dominios",
-              "usa:get:/cobranca/titulos", "usa:get:/cobranca/titulos/totais", "usa:get:/cobranca/cobradores", "usa:get:/cobranca/titulos/*/*/*/historico",
-              "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/sales-person/search"],
-        component: CobrancaStatementComponent
-      },
-      {
-        path: 'resultado',
-        title: 'Resultado',
-        canActivate: [authGuard, roleGuard],
-        data: ["icon:fas fa-chart-line", "role:cobranca", "api:get:/cobranca/dashboard",
-              "usa:get:/cobranca/dashboard/evolucao", "usa:get:/cobranca/cobradores", "usa:get:/branch", "usa:post:/sales-person/search"],
-        component: CobrancaDashboardComponent
-      },
-    ]
-  },
+  // Cobranca foi pra dentro de Financeiro. Os redirects seguram link/favorito antigo (a query string vai junto).
+  { path: 'cobranca', data: ["hidden"], redirectTo: '/financeiro/cobranca/titulos', pathMatch: 'full' },
+  { path: 'cobranca/titulos', data: ["hidden"], redirectTo: '/financeiro/cobranca/titulos', pathMatch: 'full' },
+  { path: 'cobranca/resultado', data: ["hidden"], redirectTo: '/financeiro/cobranca/resultado', pathMatch: 'full' },
   {
     title: 'Logística',
     canActivate: [authGuard],
@@ -416,9 +423,58 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
   {
     title: 'Produção',
     path: 'producao',
-    data: ["icon:fa-brands fa-product-hunt", "role:qualidade", "api:post:/reprocessamento"],
-    canActivate: [authGuard, roleGuard],
-    component: ReprocessamentoComponent,
+    canActivate: [authGuard],
+    data: ["icon:fa-brands fa-product-hunt", "role:qualidade"],
+    children: [
+      // /producao era a tela de reprocessamento antes de virar grupo. Sem title, nao vira item do menu.
+      { path: '', redirectTo: 'reprocessamento', pathMatch: 'full' },
+      {
+        path: 'reprocessamento',
+        title: 'Reprocessamento',
+        data: ["icon:fas fa-recycle", "role:qualidade", "api:post:/reprocessamento"],
+        canActivate: [authGuard, roleGuard],
+        component: ReprocessamentoComponent,
+      },
+      {
+        path: 'ordens',
+        title: 'Ordens de Produção',
+        data: ["icon:fas fa-clipboard-list", "role:qualidade", "api:get:/ordens-producao",
+              "usa:get:/ordens-producao/*"],
+        canActivate: [authGuard, roleGuard],
+        component: OrdemProducaoListComponent,
+      },
+      {
+        path: 'rastreio-lote',
+        title: 'Rastreio de Lote',
+        data: ["icon:fas fa-project-diagram", "role:qualidade", "api:get:/ordens-producao/rastreio-lote",
+              "usa:get:/ordens-producao/rastreio-lote/destino"],
+        canActivate: [authGuard, roleGuard],
+        component: RastreioLoteComponent,
+      },
+      {
+        path: 'ordens/:id',
+        title: 'Ordem de Produção',
+        data: ["hidden", "role:qualidade", "api:get:/ordens-producao/*"],
+        canActivate: [authGuard, roleGuard],
+        component: OrdemProducaoDetalheComponent,
+      },
+      {
+        // Documentos de uma celula, aberta pelo modal em nova aba. Fora do menu.
+        path: 'necessidade-producao/detalhe',
+        title: 'Necessidade de Produção - Documentos',
+        data: ["hidden", "role:admin", "api:get:/relatorios/necessidade-producao/detalhe"],
+        canActivate: [authGuard, roleGuard],
+        component: NecessidadeProducaoDetalheComponent
+      },
+      {
+        path: 'necessidade-producao',
+        title: 'Necessidade de Produção',
+        // "role:" vale com o menuPorPermissao desligado; ligado, decide o rules.yml de /relatorios/necessidade-producao.
+        data: ["icon:fas fa-industry", "role:admin", "api:get:/relatorios/necessidade-producao"],
+        canActivate: [authGuard, roleGuard],
+        component: NecessidadeProducaoComponent
+      },
+    ]
   },
   {
     title: 'Relatórios',
@@ -473,20 +529,18 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         component: TicketFreteComponent
       },
       {
-        // Documentos de uma celula, aberta pelo modal em nova aba. Fora do menu.
+        // Necessidade de Producao foi pro menu Producao. Os redirects seguram link/favorito antigo
+        // (a query string do detalhe vai junto).
         path: 'necessidade-producao/detalhe',
-        title: 'Necessidade de Produção - Documentos',
-        data: ["hidden", "role:admin", "api:get:/relatorios/necessidade-producao/detalhe"],
-        canActivate: [authGuard, roleGuard],
-        component: NecessidadeProducaoDetalheComponent
+        data: ["hidden"],
+        redirectTo: '/producao/necessidade-producao/detalhe',
+        pathMatch: 'full',
       },
       {
         path: 'necessidade-producao',
-        title: 'Necessidade de Produção',
-        // "role:" vale com o menuPorPermissao desligado; ligado, decide o rules.yml de /relatorios/necessidade-producao.
-        data: ["icon:fas fa-industry", "role:admin", "api:get:/relatorios/necessidade-producao"],
-        canActivate: [authGuard, roleGuard],
-        component: NecessidadeProducaoComponent
+        data: ["hidden"],
+        redirectTo: '/producao/necessidade-producao',
+        pathMatch: 'full',
       },
       {
         path: 'relatorio',
@@ -499,31 +553,9 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       },
     ]
   },
-  {
-    // Telas de correcao de dados em lote (previa -> aplicar). Grupo proprio porque vem mais.
-    title: 'Sanitização',
-    canActivate: [authGuard],
-    data: ["icon:fas fa-broom", "role:admin"],
-    path: 'sanitizacao',
-    children: [
-      {
-        //"role:admin" tira o item do menu de quem nao e admin (MenuSidebarComponent.isRolePermitida);
-        //o adminGuard barra o acesso direto pela URL, e o backend exige o papel de novo
-        path: 'cadastros',
-        title: 'Normalizar cadastros',
-        data: ["icon:fas fa-font", "role:admin"],
-        canActivate: [adminGuard],
-        component: NormalizacaoCadastroComponent
-      },
-      {
-        path: 'contratos',
-        title: 'Contratos de venda futura',
-        data: ["icon:fas fa-file-circle-check", "role:admin"],
-        canActivate: [adminGuard],
-        component: SanitizacaoContratoComponent
-      },
-    ]
-  },
+  // Sanitizacao foi pra dentro de Configuracoes. Os redirects seguram link/favorito antigo.
+  { path: 'sanitizacao/cadastros', data: ["hidden"], redirectTo: '/configuracoes/sanitizacao/cadastros', pathMatch: 'full' },
+  { path: 'sanitizacao/contratos', data: ["hidden"], redirectTo: '/configuracoes/sanitizacao/contratos', pathMatch: 'full' },
   {
     title: 'Configurações',
     canActivate: [authGuard],
@@ -585,17 +617,42 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         component: RegraFilialComponent
       },
       {
-        // A tela foi pro grupo Sanitizacao. O redirect segura link/favorito antigo.
+        // Telas de correcao de dados em lote (previa -> aplicar). Subgrupo proprio porque vem mais.
+        title: 'Sanitização',
+        canActivate: [authGuard],
+        data: ["icon:fas fa-broom", "role:admin"],
+        path: 'sanitizacao',
+        children: [
+          {
+            //"role:admin" tira o item do menu de quem nao e admin (MenuSidebarComponent.isRolePermitida);
+            //o adminGuard barra o acesso direto pela URL, e o backend exige o papel de novo
+            path: 'cadastros',
+            title: 'Normalizar cadastros',
+            data: ["icon:fas fa-font", "role:admin"],
+            canActivate: [adminGuard],
+            component: NormalizacaoCadastroComponent
+          },
+          {
+            path: 'contratos',
+            title: 'Contratos de venda futura',
+            data: ["icon:fas fa-file-circle-check", "role:admin"],
+            canActivate: [adminGuard],
+            component: SanitizacaoContratoComponent
+          },
+        ]
+      },
+      {
+        // A tela foi pro subgrupo Sanitizacao. O redirect segura link/favorito antigo.
         path: 'normalizar-cadastros',
         data: ["hidden"],
-        redirectTo: '/sanitizacao/cadastros',
+        redirectTo: '/configuracoes/sanitizacao/cadastros',
         pathMatch: 'full',
       },
       {
-        // A tela foi pro grupo Sanitizacao. O redirect segura link/favorito antigo.
+        // A tela foi pro subgrupo Sanitizacao. O redirect segura link/favorito antigo.
         path: 'sanitizacao-contratos',
         data: ["hidden"],
-        redirectTo: '/sanitizacao/contratos',
+        redirectTo: '/configuracoes/sanitizacao/contratos',
         pathMatch: 'full',
       },
       {

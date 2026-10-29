@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import * as cytoscapeLib from 'cytoscape';
-import { elementosCancelados, estaCancelado, etiquetaSituacao, getCliente, MapaEdge, MapaNode, MapaRelacoesResponse, TIPO_ROTA, toCytoscapeElements } from '../../../model/mapa-relacoes';
+import { elementosCancelados, estaCancelado, etiquetaSituacao, getCliente, LadoRastreio, MapaEdge, MapaNode, MapaRelacoesResponse, SITUACAO_ORIGEM_DISPONIVEL, TIPO_ROTA, TIPO_ROTA_COM_ID_NO_CAMINHO, toCytoscapeElements } from '../../../model/mapa-relacoes';
 
 //interop CJS/ESM: dependendo do bundler, o modulo vem como {default: fn} ou como a propria funcao
 const cytoscape : any = (cytoscapeLib as any).default || cytoscapeLib;
@@ -10,9 +10,14 @@ const cytoscape : any = (cytoscapeLib as any).default || cytoscapeLib;
 //globais, conflitando com @types/node e com os tipos do proprio cytoscape) - usa require()
 //pra nao entrar na checagem de tipos desse arquivo
 const nodeHtmlLabel : any = require('cytoscape-node-html-label');
+//layout em camadas do rastreio de lote (ver montarArvore); sem tipos no projeto, mesmo motivo do require acima
+const dagre : any = require('dagre');
 nodeHtmlLabel(cytoscape);
 
 const ESTILO_TRACEJADO: Array<string> = ['CONCILIACAO', 'APROPRIACAO']
+
+//so esses tipos entram nos totais do rodape - um grafo sem nenhum (rastreio de lote) nao tem rodape
+const TIPOS_FINANCEIROS: Array<string> = ['CONTRATO', 'NOTA_FISCAL', 'RECEBIMENTO', 'ADIANTAMENTO']
 
 //zoom fixo (1 = fonte no tamanho real definido no estilo, 16px) - ver layoutstop
 const ZOOM_FIXO = 1
@@ -36,6 +41,11 @@ const ALTURA_LINHA = 150
 
 //ramo unico compartilhado por todos os nos de nivel 0 (ver calcularRamos)
 const RAMO_RAIZ = '__raiz__'
+
+//layout em arvore (rastreio de lote, ver montarArvore): espaco entre colunas - cabe o numero do lote
+//escrito na aresta - e entre cards empilhados na mesma coluna
+const ESPACO_COLUNAS_ARVORE = 220
+const ESPACO_LINHAS_ARVORE = 24
 
 //totais do ciclo do contrato exibidos no rodape (ver calcularTotais). contrato/aFaturar
 //sao null quando o grafo nao tem um Contrato de Venda Futura
@@ -75,6 +85,19 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
   //id (formato "TIPO:docEntry") do documento que o usuario buscou - destacado em azul
   @Input() buscadoId : string = null
   @Input() mostrarControleZoom = true
+  //clique num card de documento, com o lado do card clicado (rastreio de lote: a metade esquerda do
+  //card de lote abre a origem, a direita o destino)
+  @Output() noClicado = new EventEmitter<{ no : MapaNode, lado : LadoRastreio }>()
+  //rastreio de lote: arvore com a raiz a direita e a origem de cada no para tras (a esquerda) dele,
+  //caixa de cada no do tamanho do card - ver disporArvore
+  @Input() layoutArvore = false
+  @Input() mostrarSensibilidade = true
+  //no que deve ficar parado na tela quando o grafo e refeito (o lote clicado no rastreio): a origem
+  //aberta aparece atras dele sem a tela pular
+  @Input() ancoraId : string = null
+
+  //grafo ocupando a area toda da janela (nao e o fullscreen do navegador)
+  maximizado = false
 
   @ViewChild('grafo', { static: true }) grafoRef : ElementRef
 
@@ -103,7 +126,23 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
 
   ngAfterViewInit(): void {
     this.viewReady = true
+    //o card e HTML por cima do canvas (nodeHtmlLabel sem opcoes deixa pointer-events ligado), entao o
+    //clique chega nele e nunca vira 'tap' do cytoscape. Um listener so, no container, acha o card
+    //clicado pelo data-no; o lado vem da metade do card (rastreio: esquerda origem, direita destino)
+    this.grafoRef.nativeElement.addEventListener('click', (ev : MouseEvent) => this.cliqueNoCard(ev))
     this.render()
+  }
+
+  private cliqueNoCard(ev : MouseEvent){
+    const alvo = ev.target as HTMLElement
+    if(alvo.closest('a'))
+      return
+    const card = alvo.closest('[data-no]') as HTMLElement
+    const no = card ? this.cy?.getElementById(card.getAttribute('data-no')) : null
+    if(!no || no.empty())
+      return
+    const caixa = card.getBoundingClientRect()
+    this.noClicado.emit({ no : no.data(), lado : ev.clientX < caixa.left + caixa.width / 2 ? 'origem' : 'destino' })
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -125,7 +164,24 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
     (this.cy as any)._private.options.wheelSensitivity = this.zoomSensibilidade
   }
 
+  alternarMaximizado(){
+    this.maximizado = !this.maximizado
+    //o container muda de tamanho depois que o Angular aplica a classe
+    setTimeout(() => this.cy?.resize())
+  }
+
+  @HostListener('document:keydown.escape')
+  sairDoMaximizado(){
+    if(this.maximizado)
+      this.alternarMaximizado()
+  }
+
   private render(){
+    //onde a ancora estava na tela, para refazer o grafo sem ela sair do lugar
+    const ancora = this.ancoraId ? this.cy?.getElementById(this.ancoraId) : null
+    const vistaAnterior = ancora && ancora.nonempty()
+      ? { pos : ancora.renderedPosition(), zoom : this.cy.zoom(), ids : new Set<string>(this.cy.nodes().map((n : any) => n.id())) }
+      : null
     this.cy?.destroy()
     this.cliente = null
     this.totais = null
@@ -136,7 +192,8 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
       return
 
     this.cliente = getCliente(this.response)
-    this.totais = this.calcularTotais()
+    //rastreio de lote (arvore) nao tem ciclo financeiro: uma nota de venda nele nao e faturamento de contrato
+    this.totais = !this.layoutArvore && this.response.nodes.some(n => TIPOS_FINANCEIROS.includes(n.tipo)) ? this.calcularTotais() : null
     //destaca o documento que o usuario efetivamente buscou; sem essa info (ex.: grafo
     //mock com docEntry -1), cai de volta na raiz da arvore
     const destacadoId = this.buscadoId || this.response.root
@@ -145,9 +202,11 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
     const nodeIds = elementos.filter(el => !el.data.source).map(el => el.data.id as string)
     const edgesGrafo = this.response.edges.filter(e => nodeIds.includes(e.from) && nodeIds.includes(e.to))
     //so os nos de verdade entram na grade - a pilha de cancelados nao pode ocupar slot dela,
-    //e posicionada depois, num canto proprio (ver montarPilhaCancelados)
-    const posicoes = montarGrade(nodeIds, edgesGrafo)
-    elementos.push(...this.montarPilhaCancelados(posicoes))
+    //e posicionada depois, num canto proprio (ver montarPilhaCancelados). Na arvore as posicoes
+    //saem depois de medir os cards (disporArvore)
+    const posicoes = this.layoutArvore ? new Map<string, {x:number,y:number}>() : montarGrade(nodeIds, edgesGrafo)
+    if(!this.layoutArvore)
+      elementos.push(...this.montarPilhaCancelados(posicoes))
 
     //anota coluna/linha de cada no na propria data do elemento - usado pelo estilo do
     //edge abaixo pra decidir se a aresta precisa arquear (pula coluna) ou pode ficar reta
@@ -212,6 +271,22 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
           } as any
         },
         {
+          //rastreio de lote: o numero do lote escrito no meio da aresta, sobre um fundo branco
+          //pra continuar legivel quando cruza outra linha
+          selector: 'edge[rotulo]',
+          style: {
+            'label': 'data(rotulo)',
+            'font-size': 12,
+            'color': '#212529',
+            'text-background-color': '#ffffff',
+            'text-background-opacity': 1,
+            'text-background-padding': '2px',
+            'text-border-color': '#adb5bd',
+            'text-border-width': 1,
+            'text-border-opacity': 1,
+          } as any
+        },
+        {
           //a pilha de cancelados nao pode medir o no pelo texto como os demais ('label'):
           //o passo do empilhamento e fixo, entao a caixa tem que ter o mesmo tamanho do
           //card HTML, senao a tarja visivel de cada card ficaria de um tamanho diferente
@@ -221,7 +296,8 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
         {
           selector: 'node[?grupoCancelados]',
           style: { 'width': LARGURA_CARD_CANCELADO, 'height': ALTURA_CABECALHO_PILHA, 'label': '' } as any
-        }
+        },
+        ...(this.layoutArvore ? ESTILO_ARVORE : [])
       ],
       //sem "layout" aqui de proposito - roda manualmente logo abaixo, com o listener de
       //layoutstop ja registrado ANTES do .run(). Passar layout aqui faria o cytoscape
@@ -231,6 +307,11 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
       maxZoom: 3,
       wheelSensitivity: this.zoomSensibilidade,
     })
+
+    if(this.layoutArvore){
+      //invisivel ate os cards serem medidos e posicionados - sem isso aparece um frame com tudo empilhado
+      this.grafoRef.nativeElement.style.visibility = 'hidden'
+    }
 
     const layout = this.cy.layout({
       //posicionamento manual (grade calculada em montarGrade) em vez de um layout
@@ -250,6 +331,11 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
       this.cy.center()
     })
     layout.run()
+    if(this.layoutArvore){
+      const cy = this.cy
+      //o nodeHtmlLabel so cria os cards no primeiro render; mede logo depois dele
+      cy.one('render', () => setTimeout(() => { if(this.cy === cy) this.disporArvore(vistaAnterior) }))
+    }
 
     ;(this.cy as any).nodeHtmlLabel([
       {
@@ -273,17 +359,28 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
                  <i class="fas fa-external-link-alt"></i>
                </a>`
             : ''
+          //card de lote do rastreio: metade esquerda abre a origem, a direita o destino (ver o tap)
+          const podeOrigem = data.situacao === SITUACAO_ORIGEM_DISPONIVEL
+          const podeDestino = data.destino === true
           //situacao (TransactionCode do lancamento contabil, saldo do adiantamento) vira
           //etiqueta colorida - deixa obvio o que esta pendente, baixado ou cancelado
-          const situacao = etiquetaSituacao(data)
+          //"pode abrir a origem" ja aparece no rodape do card, sem etiqueta
+          const situacao = podeOrigem ? null : etiquetaSituacao(data)
           const etiqueta = situacao
             ? `<div style="background:${situacao.fundo}; color:${situacao.texto}; font-weight:600; font-size:11px;
                            text-transform:uppercase; letter-spacing:.3px; padding:3px 10px; text-align:center;">
                  ${escapeHtml(situacao.label)}
                </div>`
             : ''
+          const clicavel = podeOrigem || podeDestino ? 'cursor:pointer;' : ''
+          const rodape = podeOrigem || podeDestino
+            ? `<div style="display:flex; border-top:1px solid #dee2e6; font-size:12px; font-weight:600;">
+                 <div style="flex:1; padding:4px 8px; text-align:left; color:#0d6efd; ${podeOrigem ? '' : 'visibility:hidden;'}">&#9664; Origem</div>
+                 <div style="flex:1; padding:4px 8px; text-align:right; color:#198754; border-left:1px solid #dee2e6; ${podeDestino ? '' : 'visibility:hidden;'}">Destino &#9654;</div>
+               </div>`
+            : ''
           return `
-            <div style="border:2px solid ${cor}; border-radius:6px; background:#fff; min-width:140px; max-width:230px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.2); font-family:inherit;">
+            <div data-no="${escapeHtml(data.id)}" style="border:2px solid ${cor}; border-radius:6px; background:#fff; min-width:140px; max-width:230px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.2); font-family:inherit; ${clicavel}">
               <div style="background:${cor}; color:#fff; font-weight:600; font-size:13px; padding:5px 10px; display:flex; align-items:center; justify-content:center;">
                 <span>${escapeHtml(titulo)}</span>${botaoAbrir}
               </div>
@@ -291,6 +388,7 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
               <div style="padding:8px 10px; font-size:13px; color:#212529; text-align:right; line-height:1.4;">
                 ${resto.map(l => l === '' ? '<div style="height:8px"></div>' : `<div>${escapeHtml(l)}</div>`).join('')}
               </div>
+              ${rodape}
             </div>
           `
         }
@@ -404,6 +502,66 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
   }
 
   /**
+   * Layout em arvore (rastreio de lote). A caixa de cada no passa a ter o tamanho do card que o
+   * usuario ve: no layout em grade ela e medida pelo texto, maior que o card, e a aresta comecava
+   * longe da borda. Depois posiciona (montarArvore) e acerta a vista: com ancora, ela volta ao mesmo
+   * ponto da tela e a origem aberta aparece atras dela; sem ancora, centraliza.
+   */
+  private disporArvore(vistaAnterior : { pos : {x:number,y:number}, zoom : number, ids : Set<string> }){
+    const tamanhos = new Map<string, {w:number,h:number}>()
+    this.grafoRef.nativeElement.querySelectorAll('[data-no]').forEach((el : HTMLElement) =>
+      tamanhos.set(el.getAttribute('data-no'), { w : el.offsetWidth, h : el.offsetHeight }))
+    this.cy.batch(() => {
+      this.cy.nodes().forEach((n : any) => {
+        const t = tamanhos.get(n.id())
+        if(t)
+          n.style({ 'width' : t.w, 'height' : t.h })
+      })
+    })
+
+    const ids = this.cy.nodes().map((n : any) => n.id() as string)
+    const posicoes = montarArvore(this.response.root, ids, this.response.edges,
+      id => tamanhos.get(id) ?? { w : 220, h : 120 })
+    this.cy.nodes().positions((n : any) => posicoes.get(n.id()) ?? { x : 0, y : 0 })
+
+    const ancora = this.ancoraId ? this.cy.getElementById(this.ancoraId) : null
+    if(vistaAnterior && ancora?.nonempty()){
+      this.cy.zoom(vistaAnterior.zoom)
+      const pos = ancora.position()
+      this.cy.pan({ x : vistaAnterior.pos.x - pos.x * vistaAnterior.zoom, y : vistaAnterior.pos.y - pos.y * vistaAnterior.zoom })
+      this.mostrarNovos(ancora, this.cy.nodes().filter((n : any) => !vistaAnterior.ids.has(n.id())))
+    } else {
+      this.cy.zoom(ZOOM_FIXO)
+      this.cy.center()
+    }
+    this.grafoRef.nativeElement.style.visibility = 'visible'
+  }
+
+  /**
+   * O que acabou de abrir nasce atras do card clicado e pode cair fora da tela. Arrasta a vista o
+   * necessario para mostrar os cards novos, sem tirar o clicado da tela - ele so anda se precisar.
+   */
+  private mostrarNovos(ancora : any, novos : any){
+    if(novos.empty())
+      return
+    const margem = 30
+    const largura = this.cy.width(), altura = this.cy.height()
+    const fixo = ancora.renderedBoundingBox(), alvo = novos.renderedBoundingBox()
+    const deslocar = (inicio : number, fim : number, limite : number, fixoInicio : number, fixoFim : number) => {
+      //quanto os novos passam de cada borda, limitado ao que o card clicado aguenta sem sair da tela
+      if(inicio < margem)
+        return Math.min(margem - inicio, limite - margem - fixoFim)
+      if(fim > limite - margem)
+        return -Math.min(fim - (limite - margem), fixoInicio - margem)
+      return 0
+    }
+    const dx = deslocar(alvo.x1, alvo.x2, largura, fixo.x1, fixo.x2)
+    const dy = deslocar(alvo.y1, alvo.y2, altura, fixo.y1, fixo.y2)
+    if(dx || dy)
+      this.cy.panBy({ x : Math.max(dx, -largura), y : Math.max(dy, -altura) })
+  }
+
+  /**
    * Totais do rodape, seguindo o ciclo do contrato de venda futura. As notas fiscais
    * tem dois papeis opostos e por isso somam separado:
    * - valor positivo = faturamento da entrega de mercadoria;
@@ -458,12 +616,65 @@ export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnD
   //+ serializeUrl) - nao da pra usar o componente de verdade aqui porque o card e HTML puro
   //injetado pelo nodeHtmlLabel, fora do compilador do Angular
   private construirUrlAbrir(n: any) : string | null {
+    if(n.docEntry == null)
+      return null
+    const rotaComId = TIPO_ROTA_COM_ID_NO_CAMINHO[n.tipo]
+    if(rotaComId)
+      return this.router.serializeUrl(this.router.createUrlTree([rotaComId, n.docEntry]))
     const rota = TIPO_ROTA[n.tipo]
-    if(!rota || n.docEntry == null)
+    if(!rota)
       return null
     const tree = this.router.createUrlTree([rota], { queryParams: { id: n.docEntry } })
     return this.router.serializeUrl(tree)
   }
+}
+
+//layout em arvore: caixa sem folga (tamanho vem do card medido) e arestas em cotovelo, da origem
+//(esquerda) para quem a usou (direita), com o numero do lote logo na saida da origem - cada origem
+//esta numa altura propria, entao os rotulos nao se sobrepoem
+const ESTILO_ARVORE : Array<any> = [
+  { selector: 'node', style: { 'padding': 0, 'label': '' } },
+  { selector: 'edge', style: {
+      'curve-style': 'taxi',
+      'taxi-direction': 'rightward',
+      //dobra perto do card de destino: o trecho perto da origem fica livre para o rotulo do lote,
+      //sem a linha vertical de outra aresta passando por cima dele
+      'taxi-turn': ESPACO_COLUNAS_ARVORE - 40,
+      'taxi-turn-min-distance': 10,
+  } },
+  { selector: 'edge[rotulo]', style: {
+      'label': '',
+      'source-label': 'data(rotulo)',
+      'source-text-offset': 50,
+      'font-size': 12,
+      'color': '#212529',
+      'text-background-color': '#ffffff',
+      'text-background-opacity': 1,
+      'text-background-padding': '2px',
+  } },
+]
+
+/**
+ * Rastreio de lote em camadas (dagre), da esquerda para a direita: toda aresta vai de quem gerou para
+ * quem consumiu, entao a origem de qualquer card cai a esquerda dele e o destino a direita - inclusive
+ * o destino de um insumo (as outras OPs que o consumiram), que fica na mesma camada da OP que ja estava
+ * no mapa. Cada no ocupa o tamanho do proprio card; o dagre separa as camadas e os cards de uma camada
+ * sem sobrepor.
+ */
+export function montarArvore(raiz : string, ids : Array<string>, edges : Array<MapaEdge>,
+                             tamanho : (id : string) => {w:number,h:number}) : Map<string, {x:number,y:number}> {
+  const g = new dagre.graphlib.Graph()
+  g.setGraph({ rankdir : 'LR', nodesep : ESPACO_LINHAS_ARVORE, ranksep : ESPACO_COLUNAS_ARVORE, marginx : 0, marginy : 0 })
+  g.setDefaultEdgeLabel(() => ({}))
+  //raiz primeiro: o dagre desempata a ordem dentro da camada pela ordem de insercao
+  const existe = new Set(ids)
+  ;[raiz, ...ids.filter(id => id !== raiz)].filter(id => existe.has(id)).forEach(id => {
+    const t = tamanho(id)
+    g.setNode(id, { width : t.w, height : t.h })
+  })
+  edges.filter(e => existe.has(e.from) && existe.has(e.to) && e.from !== e.to).forEach(e => g.setEdge(e.from, e.to))
+  dagre.layout(g)
+  return new Map(ids.filter(id => existe.has(id)).map(id => [id, { x : g.node(id).x, y : g.node(id).y }] as [string, {x:number,y:number}]))
 }
 
 /**
