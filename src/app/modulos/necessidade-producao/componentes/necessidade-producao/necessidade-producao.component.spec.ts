@@ -77,13 +77,13 @@ describe('NecessidadeProducaoComponent', () => {
     expect(service.getDetalhe).toHaveBeenCalledWith({ itemCode: 'A', detalhe: 'PEDIDO', filiais: [11] });
     expect(component.detalhe?.itemCode).toBe('A');
 
-    router.serializeUrl.and.returnValue('/relatorios/necessidade-producao/detalhe?itemCode=A');
+    router.serializeUrl.and.returnValue('/producao/necessidade-producao/detalhe?itemCode=A');
     spyOn(window, 'open');
     component.abrirDetalheNovaAba();
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/relatorios/necessidade-producao/detalhe'], {
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/producao/necessidade-producao/detalhe'], {
       queryParams: { itemCode: 'A', detalhe: 'PEDIDO', filiais: [11], nome: 'A' },
     });
-    expect(window.open).toHaveBeenCalledWith('/relatorios/necessidade-producao/detalhe?itemCode=A', '_blank', 'noopener');
+    expect(window.open).toHaveBeenCalledWith('/producao/necessidade-producao/detalhe?itemCode=A', '_blank', 'noopener');
   });
 
   it('manda as filiais como numero e ordena pelo menor a fabricar', () => {

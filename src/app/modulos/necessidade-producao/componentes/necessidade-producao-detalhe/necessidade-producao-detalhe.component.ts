@@ -7,7 +7,7 @@ import {
 } from '../../modelos/necessidade-producao.model';
 import { NecessidadeProducaoService } from '../../service/necessidade-producao.service';
 
-export const ROTA_DETALHE = '/relatorios/necessidade-producao/detalhe';
+export const ROTA_DETALHE = '/producao/necessidade-producao/detalhe';
 
 /** Query string da tela de detalhe: tudo que identifica a celula, para a aba nova abrir sozinha. */
 export function queryParamsDetalhe(filtro: NecessidadeProducaoDetalheFiltro, itemName?: string): Record<string, any> {

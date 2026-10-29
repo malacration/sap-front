@@ -333,7 +333,7 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
     if (filtro.cobrador != null && queryParams.cobrador == null) {
       queryParams.cobrador = filtro.cobrador;
     }
-    this.router.navigate(['/cobranca/titulos'], { queryParams });
+    this.router.navigate(['/financeiro/cobranca/titulos'], { queryParams });
   }
 
   private pad(num: number): string {
