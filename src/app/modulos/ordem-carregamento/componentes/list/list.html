@@ -3,7 +3,8 @@
     <div class="card-body">
         <app-table [content]="pageContent?.content"
             [definition]="definition"
-            (actionOutput)="action($event)">
+            (actionOutput)="action($event)"
+            (cellClick)="abrir($event)">
         </app-table>
     </div>
     <div class="card-footer clearfix">

@@ -53,7 +53,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: max(400px, calc(100vh - 360px));
   overflow: hidden;
 
   &.collapsed {
@@ -131,7 +131,8 @@
 }
 
 .order-header {
-  background-color: #ffc107;
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
   color: #333;
   padding: 8px 16px;
   font-weight: 500;
@@ -140,9 +141,31 @@
   font-size: 14px;
 }
 
+.order-header.fatura {
+  background-color: #e3f2fd;
+  border-left-color: #1976d2;
+}
+
 .order-info {
   white-space: normal;
-  max-width: 50%;
+  flex: 1;
+  min-width: 0;
+}
+
+.empty-state {
+  color: #6c757d;
+  text-align: center;
+  padding: 32px 16px;
+  margin: 0;
+}
+
+.total-badge {
+  font-size: 13px;
+  padding: 6px 8px;
+
+  & + & {
+    margin-left: 8px;
+  }
 }
 
 .stock-info {
@@ -153,37 +176,9 @@
   white-space: nowrap;
 }
 
-.stock-green {
-  background-color: #28a745;
-  color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
 
-.stock-gray {
-  background-color: #6c757d;
-  color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
 
-.stock-orange {
-  background-color: #e65100;
-  color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
 
-.stock-purple {
-  background-color: #9c27b0;
-  color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-}
 
 .order-list {
   list-style: none;
@@ -264,7 +259,8 @@
 /* ... (estilos anteriores mantidos) ... */
 
 .order-header {
-  background-color: #ffc107;
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
   color: #333;
   padding: 8px 12px;
   font-weight: 500;
@@ -374,5 +370,70 @@
       font-size: 10px;
       padding: 2px 4px;
     }
+  }
+}
+.retirada {
+  font-weight: 600;
+  background-color: #e3f2fd;
+  border-radius: 4px;
+  padding: 2px 6px;
+
+  input {
+    width: 90px;
+    margin: 0 4px;
+  }
+}
+
+.capacidade {
+  input {
+    width: 120px;
+  }
+
+  .progress {
+    height: 18px;
+  }
+}
+
+.estoque-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 12px;
+
+  b {
+    color: inherit;
+  }
+
+  &.estoque {
+    background-color: #e6f4ea;
+    border-color: #a8d5b5;
+    color: #1e7e34;
+  }
+
+  &.producao {
+    background-color: #f1f3f5;
+    border-color: #ced4da;
+    color: #495057;
+  }
+
+  &.carregamento {
+    background-color: #fff1e6;
+    border-color: #ffc59e;
+    color: #b54708;
+  }
+
+  &.balanco {
+    background-color: #f3e8fd;
+    border-color: #d4b0f5;
+    color: #6f2da8;
+  }
+
+  &.negativo {
+    background-color: #fdecea;
+    border-color: #f5c2c7;
+    color: #b02a37;
   }
 }

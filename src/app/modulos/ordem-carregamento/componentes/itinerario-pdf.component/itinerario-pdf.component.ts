@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 
+import { isFaturaReserva } from '../../models/fatura-reserva';
 @Injectable({ providedIn: 'root' })
 export class ItinerarioPdfService {
   private readonly VERDE_SUSTEN: [number, number, number] = [0, 155, 58];
@@ -106,7 +107,7 @@ export class ItinerarioPdfService {
       doc.setFillColor(245, 245, 245).rect(marginX, cursorY, pageW - (marginX * 2), 6, 'F');
       doc.setFontSize(9).setFont('helvetica', 'bold').setTextColor(...this.VERDE_SUSTEN);
       doc.text(`Parada ${index + 1}`, marginX + 2, cursorY + 4.5);
-      doc.text(`Pedido: ${pedido.DocNum || pedido.DocEntry}`, pageW - marginX - 2, cursorY + 4.5, { align: 'right' });
+      doc.text(`${isFaturaReserva(pedido) ? 'NF venda futura' : 'Pedido'}: ${pedido.DocNum || pedido.DocEntry}`, pageW - marginX - 2, cursorY + 4.5, { align: 'right' });
       
       cursorY += 10;
       doc.setTextColor(...this.PRETO_TEXTO);

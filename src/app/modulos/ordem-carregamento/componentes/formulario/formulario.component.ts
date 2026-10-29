@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Observable, forkJoin, of } from 'rxjs';
+import * as moment from 'moment';
 import { Branch } from '../../../../sap/model/branch';
 import { Localidade } from '../../../../sap/model/localidade/localidade';
 import { PedidoVenda } from '../../../../sap/model/document/pedido-venda.model';
@@ -9,9 +10,8 @@ import { AlertService } from '../../../../shared/service/alert.service';
 import { OrderSalesService } from '../../../sap-shared/_services/documents/order-sales.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
 import { LocalidadeService } from '../../../sap-shared/_services/localidade.service';
-import { NextLink } from '../../../../sap/model/next-link';
 import { OrdemCarregamentoDto } from '../../models/ordem-carregamento-dto';
-import { CardComponent } from '../../../../shared/components/card/card.component';
+import { chaveSelecao, isFaturaReserva } from '../../models/fatura-reserva';
 import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 
 @Component({
@@ -21,7 +21,6 @@ import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 })
 export class FormularioComponent implements OnInit, OnChanges {
 
-  @ViewChild('cardFilter', {static: true}) cardFilterComponent: CardComponent;
   
   dtInicial: string | null = null;
   dtFinal: string | null = null;
@@ -29,10 +28,20 @@ export class FormularioComponent implements OnInit, OnChanges {
   selectedBranch: Branch | null = null;
   localidade: Localidade | null = null;
   showStock: boolean = false;
+  // '' = todos, 'pedido' ou 'nf-venda-futura' (parametro tipo de /carregamento/search)
+  tipoDocumento: string = '';
+  cidade: string = '';
+  paginaPedidos = 0;
+  temMaisPedidos = false;
+  carregandoMais = false;
+  // Filtros da busca em tela (Carregar Mais usa estes, nao os campos atuais) e numero da busca.
+  private filtrosBusca: { dataInicial: string; dataFinal: string; filial: string; localidade?: string; vendedor: any; cidade: string; tipo: string };
+  private buscaAtual = 0;
+  paginaFaturas = 0;
+  temMaisFaturas = false;
   isNameManuallyEdited: boolean = false;
   availableOrders: PedidoVenda[] = [];
   selectedOrders: PedidoVenda[] = [];
-  nextLink: string = '';
   loading = false;
   isLoadingOrders = false;
   vendedor: any;
@@ -58,7 +67,7 @@ export class FormularioComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.applyDefaultDatesForCreation();
+    this.applyDefaultDates();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -108,6 +117,11 @@ export class FormularioComponent implements OnInit, OnChanges {
     this.updateOrderName();
   }
 
+  limparLocalidade(busca: { clear(): void }): void {
+    busca.clear();
+    this.localidade = null;
+  }
+
   selectLocalidade(localidade: Localidade): void {
     this.localidade = localidade;
     this.localidadeService.get(localidade.Code).subscribe({
@@ -143,7 +157,7 @@ updateOrderName(): void {
   }
 
   canFilter(): boolean {
-    return !!this.selectedBranch?.Bplid && !!this.localidade;
+    return !!this.selectedBranch?.Bplid;
   }
 
   modalAnaliseLogistica = false
@@ -152,51 +166,94 @@ updateOrderName(): void {
     this.modalAnaliseLogistica = true
   }
 
+  // Pedidos e NF de venda futura vem paginados por documento; "Carregar Mais" pede a proxima pagina dos
+  // dois com os filtros da busca que gerou a lista (trocar filtro so vale ao clicar em Filtrar).
   criarAnalise(): void {
-    this.cardFilterComponent.collapsed = true
     if (!this.canFilter()) {
       this.alertService.error('Preencha todos os campos obrigatórios.');
       return;
     }
 
+    this.filtrosBusca = {
+      dataInicial: this.dtInicial || '', dataFinal: this.dtFinal || '', filial: this.selectedBranch.Bplid,
+      localidade: this.localidade?.Code, vendedor: this.vendedor, cidade: this.cidade, tipo: this.tipoDocumento,
+    };
+    const busca = ++this.buscaAtual;
     this.isLoadingOrders = true;
-    this.ordemCarregamentoService
-      .search(this.dtInicial || '', this.dtFinal || '', this.selectedBranch.Bplid, this.localidade!.Code, this.vendedor)
-      .subscribe({
-        next: (result: NextLink<PedidoVenda>) => {
-          this.availableOrders = result.content.filter(
-            order => !this.selectedOrders.some(selected => selected.DocEntry == order.DocEntry)
-          );
-          this.nextLink = result.nextLink;
-          this.isLoadingOrders = false;
-        },
-        error: () => {
-          this.alertService.error('Erro ao buscar pedidos.');
-          this.isLoadingOrders = false;
-        }
-      });
+    this.carregandoMais = false;
+    this.paginaPedidos = 0;
+    this.paginaFaturas = 0;
+    forkJoin([this.buscarPedidos(0), this.buscarFaturas(0)]).subscribe({
+      next: ([pedidos, faturas]) => {
+        if (busca !== this.buscaAtual) return;
+        this.availableOrders = this.naoSelecionados([...pedidos.content, ...faturas.content]);
+        this.temMaisPedidos = pedidos.temMais;
+        this.temMaisFaturas = faturas.temMais;
+        this.isLoadingOrders = false;
+      },
+      error: (err) => {
+        if (busca !== this.buscaAtual) return;
+        this.alertService.error(err?.error?.message || 'Erro ao buscar pedidos e NFs de venda futura.');
+        this.isLoadingOrders = false;
+      }
+    });
   }
 
   loadMoreOrders(): void {
-    if (!this.nextLink) {
-      this.alertService.error('Não há mais pedidos para carregar.');
+    if (this.carregandoMais) return;
+    if (!this.temMaisPedidos && !this.temMaisFaturas) {
+      this.alertService.error('Não há mais documentos para carregar.');
       return;
     }
 
-    this.orderSalesService.searchAll(this.nextLink).subscribe({
-      next: (result: NextLink<PedidoVenda>) => {
-        this.availableOrders = [
-          ...this.availableOrders,
-          ...result.content.filter(
-            order => !this.selectedOrders.some(selected => selected.DocEntry == order.DocEntry)
-          )
-        ];
-        this.nextLink = result.nextLink;
+    const busca = this.buscaAtual;
+    const vazio = of({ content: [] as PedidoVenda[], temMais: false });
+    this.carregandoMais = true;
+    forkJoin([
+      this.temMaisPedidos ? this.buscarPedidos(this.paginaPedidos + 1) : vazio,
+      this.temMaisFaturas ? this.buscarFaturas(this.paginaFaturas + 1) : vazio,
+    ]).subscribe({
+      next: ([pedidos, faturas]) => {
+        if (busca !== this.buscaAtual) return;
+        // A lista inteira e refiltrada: o dual-list-box move itens so na copia dele.
+        this.availableOrders = this.naoSelecionados([...this.availableOrders, ...pedidos.content, ...faturas.content]);
+        if (this.temMaisPedidos) {
+          this.paginaPedidos++;
+          this.temMaisPedidos = pedidos.temMais;
+        }
+        if (this.temMaisFaturas) {
+          this.paginaFaturas++;
+          this.temMaisFaturas = faturas.temMais;
+        }
+        this.carregandoMais = false;
       },
       error: () => {
-        this.alertService.error('Erro ao carregar mais pedidos.');
+        if (busca !== this.buscaAtual) return;
+        this.alertService.error('Erro ao carregar mais documentos.');
+        this.carregandoMais = false;
       }
     });
+  }
+
+  private buscarPedidos(pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
+    const f = this.filtrosBusca;
+    if (f.tipo === 'nf-venda-futura') {
+      return of({ content: [], temMais: false });
+    }
+    return this.ordemCarregamentoService.searchPedidos(f.dataInicial, f.dataFinal, f.filial, f.localidade, f.vendedor, f.cidade, pagina);
+  }
+
+  private buscarFaturas(pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
+    const f = this.filtrosBusca;
+    if (f.tipo === 'pedido') {
+      return of({ content: [], temMais: false });
+    }
+    return this.ordemCarregamentoService.searchFaturas(f.dataInicial, f.dataFinal, f.filial, f.localidade, f.vendedor, f.cidade, pagina);
+  }
+
+  private naoSelecionados(documentos: PedidoVenda[]): PedidoVenda[] {
+    const selecionados = new Set(this.selectedOrders.map(chaveSelecao));
+    return documentos.filter(doc => !selecionados.has(chaveSelecao(doc)));
   }
 
   onSelectedOrdersChange(orders: PedidoVenda[]): void {
@@ -208,37 +265,16 @@ updateOrderName(): void {
     this.vendedor = sp?.SalesEmployeeCode ?? null;
   }
 
-  clearDataInicial(): void {
-    this.dtInicial = null;
-  }
-
-  clearDataFinal(): void {
-    this.dtFinal = null;
-  }
-
+  // O dual-list-box busca o estoque em carregamento quando showStock liga.
   toggleEstoque(): void {
     this.showStock = !this.showStock;
-    if (this.showStock && this.availableOrders.length > 0) {
-      this.loadQuantidadesEmCarregamento();
-    }
-  }
-
-  loadQuantidadesEmCarregamento(): void {
-    this.availableOrders.forEach(order => {
-      if (order.ItemCode) {
-        this.ordemCarregamentoService.getEstoqueEmCarregamento(order.ItemCode).subscribe({
-          next: (quantidade) => {
-            order.quantidadeEmCarregamento = quantidade;
-          },
-          error: () => {
-            this.alertService.error(`Erro ao carregar estoque para ${order.ItemCode}.`);
-          }
-        });
-      }
-    });
   }
 
   validateForm(): boolean {
+    if (Number(this.ordemCarregamento.U_capacidadeCaminhao) < 0) {
+      this.alertService.error('A capacidade do caminhão não pode ser negativa.');
+      return false;
+    }
     return true;
   }
 
@@ -254,14 +290,22 @@ updateOrderName(): void {
 
       const isCreation = !this.ordemCarregamento.DocEntry; 
 
+      const pedidos = this.selectedOrders.filter(p => !isFaturaReserva(p));
       const toRemove = this.initialSelectedOrders
-        .filter(initial => !this.selectedOrders.some(current => current.DocEntry == initial.DocEntry))
+        .filter(initial => !isFaturaReserva(initial))
+        .filter(initial => !pedidos.some(current => current.DocEntry == initial.DocEntry))
         .map(p => p.DocEntry);
+
+      // Fatura de reserva sai aos poucos: manda linha e quantidade; o backend confere o saldo.
+      const faturasReserva = this.selectedOrders
+        .filter(p => isFaturaReserva(p) && Number(p.Quantity) > 0)
+        .map(p => ({ docEntry: Number(p.DocEntry), lineNum: Number(p.BaseLine), quantidade: Number(p.Quantity) }));
 
       const dto = new OrdemCarregamentoDto(
         this.ordemCarregamento,
-        this.selectedOrders.map(pedido => pedido.DocEntry),
-        toRemove
+        pedidos.map(pedido => pedido.DocEntry),
+        toRemove,
+        faturasReserva
       )
 
       this.ordemCarregamentoService.save(dto).subscribe({
@@ -273,7 +317,7 @@ updateOrderName(): void {
         },
         error: (err) => {
           console.error(err);
-          this.alertService.error('Erro ao salvar a ordem.');
+          this.alertService.error(err?.error?.message || 'Erro ao salvar a ordem.');
           this.loading = false;
         }
       });
@@ -285,7 +329,7 @@ updateOrderName(): void {
       this.alertService.info(`Ordem de carregamento ${acao} com sucesso.`).then(() => {
         this.loading = false;
         
-        this.router.navigate(['ordem-carregamento'], { 
+        this.router.navigate(['/logistica/ordem-carregamento'], {
           queryParams: { id: this.ordemCarregamento.DocEntry } 
         });
       });
@@ -310,21 +354,15 @@ updateOrderName(): void {
       return;
     }
 
-    this.applyDefaultDatesForCreation();
+    this.applyDefaultDates();
     this.selectedOrders = [];
     this.initialSelectedOrders = [];
   }
 
-  private applyDefaultDatesForCreation(): void {
-    if (this.ordemCarregamento?.DocEntry || this.dtFinal) {
-      return;
-    }
-
-    this.dtFinal = this.getTodayDate();
-  }
-
-  private getTodayDate(): string {
-    return new Date().toISOString().split('T')[0];
+  // Busca padrao: ultimo mes ate hoje, criando ou editando. Data local (toISOString virava o dia a noite).
+  private applyDefaultDates(): void {
+    this.dtInicial ??= moment().subtract(1, 'month').format('YYYY-MM-DD');
+    this.dtFinal ??= moment().format('YYYY-MM-DD');
   }
 
 goBack(): void {

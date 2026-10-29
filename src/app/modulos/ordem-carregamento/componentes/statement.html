@@ -4,6 +4,10 @@
     <div class="card-header">
             <h3 class="card-title"><b>Ordem de Carregamento</b></h3>
             <div class="card-tools float-right">
+                <button type="button" class="btn btn-light mr-2" (click)="abrirManual()"
+                    title="Abrir o manual da Ordem de Carregamento">
+                    <i class="fas fa-question-circle"></i> Manual
+                </button>
                 <button (click)="novo()" type="button" class="btn btn-success">
                     Novo
                 </button>
@@ -23,7 +27,7 @@
               placeholder="Ex.: 123"
             />
           </div>
-          <div class="col-md-3 col-sm-6">
+          <div class="col-md-2 col-sm-6">
             <label for="filtroStatus" class="col-form-label">Status</label>
             <select
               id="filtroStatus"

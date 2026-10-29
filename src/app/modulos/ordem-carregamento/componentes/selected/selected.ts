@@ -1,12 +1,13 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { Column } from '../../../../shared/components/table/column.model';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { BusinessPartner } from '../../../../sap/model/business-partner/business-partner';
 import { DocumentList } from '../../../../sap/model/markting/document-list';
 import { RouteLink } from '../../../../sap/model/route-link';
-import { OrdemCarregamento } from '../../models/ordem-carregamento';
+import { OrdemCarregamento, escaparHtml } from '../../models/ordem-carregamento';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
 import { BusinessPartnerService } from '../../../sap-shared/_services/business-partners.service';
@@ -15,7 +16,9 @@ import { ParameterService } from '../../../../shared/service/parameter.service';
 import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
 import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-modal-pedido.component';
+import { FATURA_RESERVA, chaveEntrada, isFaturaReserva } from '../../models/fatura-reserva';
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
+import { LinhaOrdem } from '../../models/linha-ordem';
 
 @Component({
   selector: 'app-ordem-selected',
@@ -40,9 +43,24 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   showLoteModal: boolean = false;
   showLoteModalPedido: boolean = false;
   showExportMenu: boolean = false;
+  baixandoDanfes = false;
+  // Capacidade do caminhao (opcional), gravada em U_capacidadeCaminhao.
+  capacidade: number | null = null;
 
   notas: DocumentList[] = [];
   flattened: any[] = [];
+  historico: any[] = [];
+  historicoColunas = [
+    new Column('Data', 'Data'),
+    new Column('Usuário', 'Usuario'),
+    new Column('Ação', 'Acao'),
+    new Column('Status', 'Status'),
+    new Column('Placa', 'Placa'),
+    new Column('Motorista', 'Motorista'),
+    new Column('Retiradas de NF', 'RetiradasTexto'),
+  ];
+  // Mensagem da TaxPlus de cada nota nao autorizada, por "tipo-DocEntry".
+  private motivosNfe = new Map<string, string>();
   businessPartner: BusinessPartner | null = null;
   localidadesMap: Map<string, string> = new Map();
 
@@ -55,27 +73,31 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   pedidosXAuxiliares: PedidoX[] = [];
 
   definition: Column[] = [
-    new Column('Núm. do Pedido', 'orderRouterLink'),
+    new Column('Documento', 'orderRouterLink'),
+    new Column('Tipo', 'tipo', '{{{value}}}'),
     new Column('Cód. Cliente', 'routerLink'),
     new Column('Nome Cliente', 'CardName'),
     new Column('Localidade', 'Name'),
     new Column('Vendedor', 'SlpName'),
-    new Column('Frete', 'DistribSum'),
     new Column('Cód. Item', 'ItemCode'),
     new Column('Dsc. Item', 'Dscription'),
     new Column('Quantidade', 'Quantity'),
-    new Column('Un. Medida', 'UomCode')
+    new Column('Un. Medida', 'UomCode'),
+    new Column('Peso (kg)', 'pesoFormatado'),
+    new Column('Frete', 'freteFormatado')
   ];
 
   notasEmitida = [
+    new Column('Tipo', 'Tipo'),
+    new Column('Status NF-e', 'StatusNfe', '{{{value}}}'),
     new Column('Núm. da Nota', 'SequenceSerial'),
-    new Column('Núm. do Documento', 'DocNum'),
+    new Column('Núm. do Documento', 'DocLink'),
     new Column('Cód. Cliente', 'CardLink'),
     new Column('Nome Cliente', 'CardName'),
     new Column('Cód. Item', 'ItemCode'),
     new Column('Dsc. Item', 'ItemDescription'),
     new Column('Quantidade', 'Quantity'),
-    new Column('Valor', 'LineTotal'),
+    new Column('Valor', 'LineTotalCurrency'),
   ];
 
   constructor(
@@ -90,13 +112,14 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     private pdfCarregamentoService: PdfCarregamentoService
   ) {}
 
-  ngOnInit(): void {
-    this.hydrateFromSelected();
-    this.loadNotas();
-  }
+  // A carga inicial vem do primeiro ngOnChanges do @Input selected.
+  ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selected']) {
+      this.notas = [];
+      this.flattened = [];
+      this.historico = [];
       this.hydrateFromSelected();
       this.loadNotas();
     }
@@ -135,33 +158,135 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.showExportMenu = !this.showExportMenu;
   }
 
+  private historicoSeq = 0;
+
+  private loadHistorico(): void {
+    const docEntry = this.selected?.DocEntry;
+    if (!docEntry) return;
+    // Carga inicial e recarga ao salvar logistica podem se cruzar: so vale a ultima pedida.
+    const seq = ++this.historicoSeq;
+    this.ordemCarregamentoService.historico(docEntry).pipe(catchError(() => of([]))).subscribe(versoes => {
+      if (this.selected?.DocEntry !== docEntry || seq !== this.historicoSeq) return;
+      // Mais recente primeiro. Versao gravada antes do historico existir fica sem usuario/acao.
+      // A tabela poe o valor em innerHTML sem sanitizar: placa e motorista sao digitados por usuarios e a acao
+      // traz a mensagem do SAP, entao tudo que e texto livre passa por escaparHtml.
+      this.historico = versoes.slice().reverse().map(v => ({
+        Data: this.dataHoraSap(v.UpdateDate, v.UpdateTime),
+        Usuario: escaparHtml(v.Usuario || '—'),
+        Acao: escaparHtml(v.Acao || '—'),
+        Status: escaparHtml(v.Status || ''),
+        Placa: escaparHtml(v.Placa || ''),
+        Motorista: escaparHtml(v.Motorista || ''),
+        RetiradasTexto: Number(v.Retiradas) ? `${v.Retiradas} linha(s), ${Number(v.QtdRetirada).toLocaleString('pt-BR')}` : '',
+      }));
+    });
+  }
+
+  // UpdateTime do SAP e HHMM num inteiro (ex.: 1355).
+  private dataHoraSap(data?: string, hora?: number): string {
+    if (!data) return '';
+    const [ano, mes, dia] = data.slice(0, 10).split('-');
+    const hhmm = String(hora ?? 0).padStart(4, '0');
+    return `${dia}/${mes}/${ano} ${hhmm.slice(0, 2)}:${hhmm.slice(2)}`;
+  }
+
+  private notasSeq = 0;
+
   private loadNotas() {
     if (!this.selected?.DocEntry) return;
+    this.loadHistorico();
 
     this.loading = true;
-    this.ordemCarregamentoService.getNotasByCarregamentos(this.selected.DocEntry).subscribe({
-      next: (docs) => {
+    // A -> B -> A: a resposta da primeira carga de A nao pode repor notas antigas sobre a segunda.
+    const seq = ++this.notasSeq;
+    // Status da NF-e vem da TaxPlus pelo sap-odbc; se falhar, a lista sai sem status.
+    const status$ = this.ordemCarregamentoService.statusNotas(this.selected.DocEntry).pipe(catchError(() => of([])));
+    const docEntry = this.selected.DocEntry;
+    forkJoin([this.ordemCarregamentoService.getNotasByCarregamentos(docEntry), status$]).subscribe({
+      next: ([docs, status]) => {
+        if (this.selected?.DocEntry !== docEntry || seq !== this.notasSeq) return;
+        const statusPorDoc = new Map(status.map(s => [`${s.DocType}-${s.DocEntry}`, s]));
         this.notas = docs;
+        this.motivosNfe.clear();
         this.flattened = this.notas.flatMap((nota) =>
-          nota.DocumentLines.map((line) => ({
+          nota.DocumentLines.map((line) => {
+            // entrega = retirada de NF de venda futura; nao tem tela no front, fica sem link
+            const entrega = (nota as any).DocObjectCode === 'oDeliveryNotes';
+            const nfe = statusPorDoc.get(`${entrega ? 15 : 13}-${nota.DocEntry}`);
+            // Motivo so para o que nao foi autorizado: a mensagem da TaxPlus (rejeicao da SEFAZ ou erro interno).
+            const chave = `${entrega ? 15 : 13}-${nota.DocEntry}`;
+            if (nfe?.Mensagem && nfe.Status !== 'Autorizado')
+              this.motivosNfe.set(chave, `NF ${nota.SequenceSerial ?? nota.DocNum} (${nfe.Status}): ${nfe.Mensagem}`);
+            return {
+            Tipo: entrega ? 'Entrega' : 'Nota',
+            StatusNfe: this.badgeStatusNfe(nfe?.Status, this.motivosNfe.has(chave) ? chave : undefined),
             SequenceSerial: nota.SequenceSerial,
-            DocNum: nota.DocNum,
+            DocLink: entrega ? String(nota.DocNum) : new RouteLink(String(nota.DocNum), '/financeiro/notas-fiscais', { id: nota.DocEntry }),
             CardCode: nota.CardCode,
             CardLink: new RouteLink(nota.CardCode, '/clientes/parceiro-negocio/' + nota.CardCode),
-            CardName: nota.CardName,
+            CardName: escaparHtml(nota.CardName ?? ''),
             ItemCode: line.ItemCode,
-            ItemDescription: line.ItemDescription,
-            Quantity: line.Quantity,
-            LineTotal: line.LineTotal,
-          }))
+            ItemDescription: escaparHtml(line.ItemDescription ?? ''),
+            Quantity: Number(line.Quantity).toLocaleString('pt-BR'),
+            LineTotalCurrency: Number(line.LineTotal),
+            };
+          })
         );
         this.loading = false;
+        // Faturada numa tentativa que gravou as notas e nao fechou a ordem: fecha agora.
+        if (docs.length && this.selected?.U_Status === 'Aberto') {
+          this.atualizarStatusParaFechado();
+        }
       },
       error: (err) => {
+        if (this.selected?.DocEntry !== docEntry) return;
         console.error('Erro ao carregar notas', err);
         this.loading = false;
       }
     });
+  }
+
+  // O selo e HTML da tabela (sem binding Angular): o clique no icone e pego aqui pelo data-motivo.
+  verMotivo(evento: MouseEvent): void {
+    const icone = (evento.target as HTMLElement).closest('[data-motivo]') as HTMLElement | null;
+    if (!icone) return;
+    evento.preventDefault();
+    const motivo = this.motivosNfe.get(icone.dataset['motivo'] || '');
+    if (motivo) this.alertService.error(motivo);
+  }
+
+  private badgeStatusNfe(status?: string, chaveMotivo?: string): string {
+    const cor = status === 'Autorizado' ? 'success' : status === 'Rejeitado' ? 'danger' : 'secondary';
+    const icone = chaveMotivo
+      ? ` <a href="#" data-motivo="${chaveMotivo}" title="Ver motivo"><i class="fas fa-info-circle"></i></a>`
+      : '';
+    return `<span class="text-nowrap"><span class="badge badge-${cor}">${escaparHtml(status || 'Não enviada')}</span>${icone}</span>`;
+  }
+
+  baixarDanfes(): void {
+    if (!this.selected?.DocEntry) return;
+    const docEntry = this.selected.DocEntry;
+    this.baixandoDanfes = true;
+    this.ordemCarregamentoService.danfes(docEntry).subscribe({
+      next: (zip) => {
+        const url = URL.createObjectURL(zip);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `danfes-ordem-${docEntry}.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.baixandoDanfes = false;
+      },
+      error: () => {
+        this.alertService.error('Erro ao baixar os DANFEs.');
+        this.baixandoDanfes = false;
+      }
+    });
+  }
+
+  get ocupacaoCaminhao(): number {
+    const capacidade = Number(this.selected?.U_capacidadeCaminhao) || 0;
+    return capacidade > 0 ? Math.round(this.totalPesoPedidos / capacidade * 100) : 0;
   }
 
   cancelarOrdem(): void {
@@ -207,6 +332,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     }
 
     this.placa = this.selected.U_placa || '';
+    this.capacidade = this.selected.U_capacidadeCaminhao || null;
     this.nomeMotorista = this.selected.U_motorista || '';
     this.pesoCaminhao = this.totalPesoPedidos || null;
 
@@ -214,9 +340,11 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       this.syncPedidosState(this.selected.pedidosVenda);
     } else if (this.selected.DocEntry) {
       this.selected.pedidosVendaCarregados = false;
-      this.pedidosVendaService.search(this.selected.DocEntry).subscribe({
+      const docEntry = this.selected.DocEntry;
+      this.pedidosVendaService.search(docEntry).subscribe({
         next: (pedidos) => {
-          if (this.selected) {
+          // Trocou de ordem antes da resposta: descarta.
+          if (this.selected?.DocEntry === docEntry) {
             this.syncPedidosState(this.normalizePedidosResponse(pedidos));
           }
         }
@@ -252,6 +380,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   selectBp(event: BusinessPartner): void {
+    if (!this.ordemAberta) return;
     this.businessPartnerService.get(event.CardCode).subscribe({
       next: (bp) => this.businessPartner = bp,
       error: () => this.alertService.error('Erro ao carregar dados do parceiro.')
@@ -290,11 +419,13 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       }))
     }));
 
-    this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
+    const ordem = this.selected;
+    this.ordemCarregamentoService.saveSelectedLotes(ordem.DocEntry, lotesToSave).subscribe({
       next: () => {
         this.alertService.confirm('Nota fiscal confirmada com sucesso!');
-        this.atualizarStatusParaFechado();
-        this.loadNotas();
+        // O backend fecha a ordem ao gerar as notas; se o usuario ja trocou de ordem, so marca a do envio.
+        ordem.U_Status = 'Fechado';
+        if (this.selected === ordem) this.loadNotas();
         this.showLoteModal = false;
       },
       error: (error) => {
@@ -319,11 +450,13 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.ordemCarregamentoService.saveSelectedLotes(this.selected.DocEntry, lotesToSave).subscribe({
+    const ordem = this.selected;
+    this.ordemCarregamentoService.saveSelectedLotes(ordem.DocEntry, lotesToSave).subscribe({
       next: () => {
         this.alertService.confirm('Nota fiscal confirmada com sucesso!');
-        this.atualizarStatusParaFechado();
-        this.loadNotas();
+        // O backend fecha a ordem ao gerar as notas; se o usuario ja trocou de ordem, so marca a do envio.
+        ordem.U_Status = 'Fechado';
+        if (this.selected === ordem) this.loadNotas();
         this.showLoteModalPedido = false;
       },
       error: (error) => {
@@ -351,26 +484,25 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   salvarLogistica(): void {
-    if (!this.validateForm()) return;
+    if (!this.ordemAberta || !this.validateForm()) return;
 
     this.loading = true;
-    const pesoTotalPedidos = this.totalPesoPedidos;
-    const pesoString = pesoTotalPedidos ? String(pesoTotalPedidos) : null;
 
     const dados = {
       U_placa: this.placa,
       U_motorista: this.nomeMotorista,
-      U_capacidadeCaminhao: pesoString,
+      U_capacidadeCaminhao: this.capacidade ? String(this.capacidade) : null,
       U_transportadora: this.businessPartner?.CardCode || null
     };
 
     this.ordemCarregamentoService.atualizarLogistica(this.selected!.DocEntry, dados).subscribe({
       next: () => {
         this.alertService.confirm('Dados de logística salvos com sucesso!');
+        this.loadHistorico();
         if (this.selected) {
           this.selected.U_placa = this.placa;
           this.selected.U_motorista = this.nomeMotorista;
-          this.selected.U_capacidadeCaminhao = pesoTotalPedidos;
+          this.selected.U_capacidadeCaminhao = this.capacidade;
           this.selected.U_transportadora = this.businessPartner?.CardCode;
         }
       },
@@ -407,6 +539,10 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       this.alertService.error('A placa do veículo e o nome do motorista são obrigatórios.');
       return false;
     }
+    if (Number(this.capacidade) < 0) {
+      this.alertService.error('A capacidade do caminhão não pode ser negativa.');
+      return false;
+    }
     return true;
   }
 
@@ -438,11 +574,24 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.selected.pedidosVenda = pedidos;
+    this.selected.pedidosVenda = pedidos.map(pedido => Object.assign(new LinhaOrdem(), pedido));
     this.selected.pedidosVendaCarregados = true;
     this.pesoCaminhao = this.totalPesoPedidos || null;
     this.agruparItensParaLote(pedidos);
     this.pedidosXAuxiliares = this.criarEstruturaPedidoX(pedidos);
+  }
+
+  // Ordem com nota emitida esta faturada, mesmo que o status no SAP nao tenha virado Fechado.
+  get ordemAberta(): boolean {
+    return this.selected?.U_Status === 'Aberto' && !this.notas?.length;
+  }
+
+  get totalDocumentos(): number {
+    return new Set((this.selected?.pedidosVenda || []).map(chaveEntrada)).size;
+  }
+
+  get totalFrete(): number {
+    return (this.selected?.pedidosVenda || []).reduce((acc, pedido) => acc + Number(pedido.DistribSum || 0), 0);
   }
 
   get totalPesoPedidos(): number {
@@ -492,28 +641,33 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   private atualizarStatusParaFechado(): void {
+    // A resposta pode chegar depois de o usuario trocar de ordem: atualiza a ordem da requisicao.
+    const ordem = this.selected!;
     this.loading = true;
-    this.ordemCarregamentoService.atualizarStatus(this.selected!.DocEntry, { U_Status: 'Fechado' }).subscribe({
-      next: () => {
-        if (this.selected) this.selected.U_Status = 'Fechado';
+    this.ordemCarregamentoService.atualizarStatus(ordem.DocEntry, { U_Status: 'Fechado' }).subscribe({
+      next: () => ordem.U_Status = 'Fechado',
+      error: (err) => {
+        this.alertService.error('Erro ao atualizar status: ' + err.message);
+        if (this.selected === ordem) this.loading = false;
       },
-      error: (err) => this.alertService.error('Erro ao atualizar status: ' + err.message),
-      complete: () => this.loading = false
+      complete: () => { if (this.selected === ordem) this.loading = false; }
     });
   }
 
   private criarEstruturaPedidoX(pedidos: any[]): PedidoX[] {
-    const pedidosPorDocEntry = new Map<number, PedidoX>();
+    const pedidosPorDocEntry = new Map<string, PedidoX>();
 
     pedidos.forEach((pedido, index) => {
       const docEntry = Number(pedido.DocEntry) || 0;
-      const chavePedido = docEntry || index + 1;
-      const pedidoId = `${chavePedido}`;
+      // pedido e fatura de reserva podem ter o mesmo DocEntry
+      const chavePedido = docEntry ? chaveEntrada(pedido) : `${index + 1}`;
+      const pedidoId = chavePedido;
 
       if (!pedidosPorDocEntry.has(chavePedido)) {
         pedidosPorDocEntry.set(chavePedido, {
           pedidoId,
           docEntry: docEntry,
+          baseType: isFaturaReserva(pedido) ? FATURA_RESERVA : undefined,
           docNum: Number(pedido.DocNum) || docEntry,
           cardCode: pedido.CardCode || '',
           cardName: pedido.CardName || '',
@@ -526,6 +680,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       pedidosPorDocEntry.get(chavePedido)!.itens.push({
         itemId,
         itemCode: pedido.ItemCode || '',
+        baseLine: pedido.BaseLine,
         descricao: pedido.Dscription || pedido.ItemDescription || '',
         quantidade: Number(pedido.Quantity) || 0,
         deposito: pedido.DflWhs || pedido.WarehouseCode || '',
@@ -545,6 +700,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
 
         resultado.push({
           DocEntry: pedido.docEntry,
+          BaseType: pedido.baseType,
+          BaseLine: pedido.baseType === FATURA_RESERVA ? item.baseLine : undefined,
           ItemCode: item.itemCode,
           Batches: item.lotesSelecionados.map(lote => ({
             BatchNumber: lote.DistNumber,

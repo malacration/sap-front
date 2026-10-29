@@ -22,14 +22,18 @@ export class ListComponent implements OnInit, OnDestroy {
 
     definition: Column[] = [
         new Column('ID', 'routerLinkOrdem'),
-        new Column('Nome', 'U_nameOrdem'),
-        new Column('Peso Total (Kg)', 'Weight1'),
-        new Column('Qtd. Pedidos', 'DocEntryQuantity'),
-        new Column('Status', 'U_Status'),
+        new Column('Nome', 'U_nameOrdem').withClick(),
+        new Column('Peso Total (Kg)', 'pesoTotalFormatted'),
+        new Column('Documentos', 'DocEntryQuantity'),
+        new Column('Status', 'statusBadge', '{{{value}}}'),
         new Column('Criado em', 'dataCriacao')
     ];
 
     constructor(){}
+
+    abrir(event: { item: any }): void {
+        this.actionOutput.emit(new ActionReturn('selected', event.item));
+    }
 
     action(event: ActionReturn): void {
         this.actionOutput.emit(event);

@@ -39,6 +39,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   localidade: Localidade | null = null;
   emOrdemDeCarregamento: string | null = 'Todos';
   incoterms: string = '%';
+  // '' = todos, 'pedido' ou 'nf-venda-futura'
+  tipoDocumento: string = '';
   constructor(
     private PainelExpedicaoPedidosService: PainelExpedicaoPedidosService
   ) {}
@@ -61,6 +63,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     switch (this.groupBy) {
       case 'cliente':
         return [
+          new Column('Tipo', 'tipo', '{{{value}}}'),
           new Column('Código Cliente', 'cardCodeRouterLink'),
           new Column('Nome Cliente', 'cardNameRouterLink'),
           new Column('Produto', 'ItemCode'),
@@ -71,6 +74,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         ];
       case 'vendedor':
         return [
+          new Column('Tipo', 'tipo', '{{{value}}}'),
           new Column('Código Vendedor', 'SlpCode'),
           new Column('Nome Vendedor', 'SlpName'),
           new Column('Produto', 'ItemCode'),
@@ -81,6 +85,7 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         ];
       case 'item':
         return [
+          new Column('Tipo', 'tipo', '{{{value}}}'),
           new Column('Código Item', 'ItemCode'),
           new Column('Descrição', 'Description'),
           new Column('Quantidade', 'Quantity'),
@@ -91,8 +96,9 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         ];
       default:
         return [
+          new Column('Tipo', 'tipo', '{{{value}}}'),
           new Column('Data', 'DocDate'),
-          new Column('Pedido', 'orderRouterLink'),
+          new Column('Documento', 'orderRouterLink'),
           new Column('Cliente', 'cardNameRouterLink'),
           new Column('Vendedor', 'SlpName'),
           new Column('Produto', 'ItemCode'),
@@ -120,7 +126,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         this.vendedor,
         this.groupBy,
         this.localidade,
-        this.incoterms
+        this.incoterms,
+        this.tipoDocumento
       )
       .subscribe({
         next: (data) => {

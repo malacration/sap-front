@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>Ordem de Carregamento — Guia do Usuário</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">OC</span>
+        <span class="brand__text">
+          <strong>Ordem de Carregamento</strong>
+          <small>Guia do Usuário</small>
+        </span>
+      </div>
+      <label for="toc-toggle" class="topbar__menu" aria-label="Abrir índice">
+        <span></span><span></span><span></span>
+      </label>
+    </div>
+  </header>
+
+  <input type="checkbox" id="toc-toggle" class="toc-toggle" hidden>
+
+  <div class="layout">
+
+    <!-- ===== Índice lateral ===== -->
+    <aside class="toc" id="toc">
+      <p class="toc__title">Conteúdo</p>
+      <nav>
+        <ol>
+          <li><a href="#o-que-e">O que é a Ordem de Carregamento</a></li>
+          <li><a href="#visao-geral">Como funciona (visão geral)</a></li>
+          <li><a href="#acesso">Onde acessar</a></li>
+          <li><a href="#passo-a-passo">Passo a passo</a></li>
+          <li><a href="#especiais">Operações especiais</a></li>
+          <li><a href="#status">Status da ordem</a></li>
+          <li><a href="#historico">Histórico: quem fez o quê</a></li>
+          <li><a href="#venda-futura">NF de venda futura</a></li>
+          <li><a href="#automatico">O que o sistema faz sozinho</a></li>
+          <li><a href="#regras">Regras e mensagens</a></li>
+          <li><a href="#faq">Perguntas frequentes</a></li>
+        </ol>
+      </nav>
+      <label for="toc-toggle" class="toc__backdrop" aria-hidden="true"></label>
+    </aside>
+
+    <!-- ===== Conteúdo ===== -->
+    <main class="content">
+
+      <section class="hero">
+        <h1>Ordem de Carregamento</h1>
+        <p class="hero__lead">
+          Como montar uma carga do início ao fim: escolher os pedidos e as NFs de venda
+          futura, conferir peso e estoque, informar caminhão e motorista, selecionar os
+          lotes e gerar as notas de saída.
+        </p>
+      </section>
+
+      <!-- 1. O QUE É -->
+      <section id="o-que-e" class="block">
+        <h2><span class="h2-num">1</span> O que é a Ordem de Carregamento</h2>
+        <p>
+          A <strong>Ordem de Carregamento</strong> é a <strong>carga de um caminhão</strong>.
+          Ela reúne tudo o que vai sair junto numa mesma viagem e, no final,
+          <strong>gera de uma vez as notas fiscais</strong> de tudo o que foi carregado.
+        </p>
+        <p>Uma ordem pode ter dois tipos de documento:</p>
+        <div class="cards-3">
+          <div class="mini-card">
+            <span class="mini-card__icon">🧾</span>
+            <h4>Pedido de venda</h4>
+            <p>A venda normal. O pedido inteiro vai na carga e vira uma
+              <strong>nota fiscal de saída</strong>.</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-card__icon">📦</span>
+            <h4>NF de venda futura</h4>
+            <p>A nota de simples faturamento (CFOP 5922/6922) de quem já comprou e
+              <strong>retira aos poucos</strong>. Você informa quanto sai nesta carga;
+              isso vira uma <strong>nota de entrega</strong> (CFOP 5116/6116).</p>
+          </div>
+          <div class="mini-card">
+            <span class="mini-card__icon">🚚</span>
+            <h4>A carga</h4>
+            <p>Peso, frete, capacidade do caminhão, placa, motorista e os
+              <strong>lotes</strong> de cada item.</p>
+          </div>
+        </div>
+        <p class="mt">
+          Na tela, cada documento aparece com uma etiqueta:
+          <span class="badge badge--entregue">Pedido</span> ou
+          <span class="badge badge--aberto">NF venda futura</span>.
+        </p>
+      </section>
+
+      <!-- 2. VISÃO GERAL -->
+      <section id="visao-geral" class="block">
+        <h2><span class="h2-num">2</span> Como funciona (visão geral)</h2>
+        <p>O caminho normal de uma ordem é:</p>
+
+        <ol class="flow">
+          <li class="flow__step">
+            <span class="flow__dot">1</span>
+            <div class="flow__body">
+              <h4>Montar a ordem</h4>
+              <p>Filtrar e escolher os pedidos e as NFs de venda futura da carga.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">2</span>
+            <div class="flow__body">
+              <h4>Conferir e criar</h4>
+              <p>Peso, frete, estoque e capacidade do caminhão. A ordem nasce com status <strong>Aberto</strong>.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">3</span>
+            <div class="flow__body">
+              <h4>Logística</h4>
+              <p>Placa, motorista e transportadora.</p>
+            </div>
+          </li>
+          <li class="flow__step">
+            <span class="flow__dot">4</span>
+            <div class="flow__body">
+              <h4>Gerar NF de Saída</h4>
+              <p>Escolher os lotes de cada item e confirmar.</p>
+            </div>
+          </li>
+          <li class="flow__step flow__step--auto">
+            <span class="flow__dot">5</span>
+            <div class="flow__body">
+              <h4>Notas, entregas e fechamento <span class="tag tag--auto">automático</span></h4>
+              <p>O sistema gera tudo junto, fecha os pedidos e a ordem vira <strong>Fechado</strong>.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="callout callout--info">
+          <div class="callout__title">A geração das notas é tudo ou nada</div>
+          <p>
+            Se o SAP recusar qualquer documento da carga, <strong>nenhuma</strong> nota é
+            gravada e a ordem continua <strong>Aberta</strong> para você corrigir e tentar
+            de novo. (Veja a seção <a href="#automatico">9</a>.)
+          </p>
+        </div>
+      </section>
+
+      <!-- 3. ACESSO -->
+      <section id="acesso" class="block">
+        <h2><span class="h2-num">3</span> Onde acessar</h2>
+        <p>
+          No menu lateral, abra o grupo <strong>Logística</strong> e clique em
+          <strong>“Carregamento”</strong>. Você verá a tela
+          <strong>Ordem de Carregamento</strong>, com a lista das ordens.
+        </p>
+        <figure class="shot">
+          <img class="shot__img" src="img/menu.png" alt="Menu lateral com o grupo Logística aberto e o item Carregamento destacado">
+          <figcaption class="shot__cap">No menu lateral, abra o grupo <strong>Logística</strong> e clique em <strong>Carregamento</strong>.</figcaption>
+        </figure>
+        <p>Use os filtros no topo da lista:</p>
+        <table class="tbl">
+          <thead><tr><th>Filtro</th><th>Para que serve</th></tr></thead>
+          <tbody>
+            <tr><td><strong>ID</strong></td><td>Busca uma ordem pelo número (ex.: 123).</td></tr>
+            <tr><td><strong>Status</strong></td><td><em>Todos</em>, <em>Aberto</em>, <em>Fechado</em> ou <em>Cancelado</em> (padrão: Aberto).</td></tr>
+            <tr><td><strong>Criado de / Criado até</strong></td><td>Período de criação da ordem (padrão: hoje).</td></tr>
+          </tbody>
+        </table>
+        <p>
+          Clique em <span class="btnex btnex--success">Filtrar</span> para aplicar ou em
+          <span class="btnex btnex--ghost">Limpar</span> para voltar ao padrão. A lista mostra
+          <strong>ID</strong>, <strong>Nome</strong>, <strong>Peso Total (Kg)</strong>,
+          <strong>Documentos</strong>, <strong>Status</strong> e <strong>Criado em</strong>.
+          Clique no <strong>nome</strong> ou no botão do <strong>olho</strong> para abrir a ordem e em
+          <span class="btnex btnex--success">Novo</span> para montar uma ordem nova.
+        </p>
+        <figure class="shot">
+          <img class="shot__img" src="img/listagem.png" alt="Lista de ordens de carregamento com os filtros ID, Status e período">
+          <figcaption class="shot__cap">Lista de ordens: filtros no topo, botões <strong>Manual</strong> e <strong>Novo</strong>, e a tabela.</figcaption>
+        </figure>
+      </section>
+
+      <!-- 4. PASSO A PASSO -->
+      <section id="passo-a-passo" class="block">
+        <h2><span class="h2-num">4</span> Passo a passo</h2>
+
+        <!-- Passo 1 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">1</span>
+            <h3>Dar um nome e buscar os documentos</h3>
+          </header>
+          <div class="step__body">
+            <p>Ao clicar em <span class="btnex btnex--success">Novo</span>, abre a tela de
+              montagem. Em <strong>“Nome da Ordem de Carregamento”</strong>, dê um nome que
+              identifique a carga (ex.: destino ou rota). No quadro <strong>Filtros</strong>:</p>
+            <table class="tbl">
+              <thead><tr><th>Filtro</th><th>Observação</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Data Inicial / Data Final</strong></td><td>Data do documento. Já vem preenchido com <strong>o último mês</strong>.</td></tr>
+                <tr><td><strong>Filial</strong></td><td><strong>Obrigatório.</strong> Sem filial o botão “Filtrar” fica desabilitado (<em>“Escolha a filial para filtrar.”</em>).</td></tr>
+                <tr><td><strong>Selecionar Localidade</strong></td><td>Opcional. Para tirar o filtro, clique em <strong>“limpar”</strong> abaixo do campo. Sem localidade, aparecem também os documentos que não têm localidade cadastrada.</td></tr>
+                <tr><td><strong>Selecionar Vendedor</strong></td><td>Opcional.</td></tr>
+                <tr><td><strong>Cidade</strong></td><td>Opcional. Busca pela cidade de entrega, <strong>com ou sem acento</strong> (ex.: “Porto Velho”).</td></tr>
+                <tr><td><strong>Tipo de documento</strong></td><td><em>Todos</em>, <em>Pedidos</em> ou <em>NF de venda futura</em>.</td></tr>
+              </tbody>
+            </table>
+            <p>Clique em <span class="btnex btnex--primary">Filtrar</span>.</p>
+            <figure class="shot">
+              <img class="shot__img" src="img/filtros.png" alt="Quadro de filtros da montagem da ordem">
+          <figcaption class="shot__cap">Filtros da montagem: período, filial (obrigatória), localidade, vendedor, cidade e tipo de documento.</figcaption>
+            </figure>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação</div>
+              <p>O resultado vem em páginas de <strong>30 documentos</strong>. Se houver mais,
+                use <strong>“Carregar Mais”</strong> no fim da lista. Trocar um filtro só vale
+                depois de clicar em “Filtrar” de novo.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 2 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">2</span>
+            <h3>Escolher os documentos da carga</h3>
+          </header>
+          <div class="step__body">
+            <p>A tela tem duas colunas:</p>
+            <div class="tabs-demo">
+              <div class="tabs-demo__item"><strong>Disponíveis</strong><span>O que a busca encontrou.</span></div>
+              <div class="tabs-demo__item"><strong>Selecionados</strong><span>O que vai na carga.</span></div>
+            </div>
+            <p>Cada documento aparece com a etiqueta, o número, o cliente, a localidade, o
+              vendedor e o frete; abaixo, os seus itens (código, descrição, quantidade, peso e
+              frete). Nas NFs de venda futura o frete mostrado é a <strong>parte proporcional do frete
+              da NF</strong> para a quantidade a retirar, e muda quando você muda essa
+              quantidade (seção <a href="#venda-futura">8</a>).</p>
+            <ul>
+              <li>Para incluir um documento, clique na <strong>seta →</strong> ao lado dele.</li>
+              <li>Para tirar, clique na <strong>seta ←</strong> na coluna Selecionados.</li>
+              <li><strong>“Selecionar Todos”</strong> e <strong>“Remover Todos”</strong> movem a lista inteira.</li>
+              <li>O campo de pesquisa de cada coluna procura por <strong>documento, cliente,
+                vendedor, localidade ou produto</strong> (sem diferenciar acento).</li>
+            </ul>
+            <figure class="shot">
+              <img class="shot__img" src="img/colunas.png" alt="Colunas Disponíveis e Selecionados com pedidos e NFs de venda futura">
+          <figcaption class="shot__cap">À esquerda o que a busca trouxe; à direita a carga. Ao baixar a “Qtd. a retirar” da NF, peso e frete acompanham.</figcaption>
+            </figure>
+            <div class="callout callout--info">
+              <div class="callout__title">NF de venda futura: quanto retirar</div>
+              <p>Na coluna Selecionados, cada item de NF de venda futura tem o campo
+                <strong>“Qtd. a retirar: [quantidade] de [saldo]”</strong>. Ele já vem com o
+                saldo inteiro; diminua se o cliente vai levar só uma parte agora.</p>
+              <ul>
+                <li>O <strong>saldo</strong> é o que ainda falta entregar da NF,
+                  <strong>descontado o que já está reservado em outras ordens abertas</strong>.</li>
+                <li>Não é possível retirar mais que o saldo (<em>“Saldo da NF de venda futura
+                  para [item] é [saldo].”</em>).</li>
+                <li>Item com quantidade <strong>zero</strong> não entra na carga.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 3 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">3</span>
+            <h3>Conferir peso, frete, capacidade e estoque</h3>
+          </header>
+          <div class="step__body">
+            <p>No topo da coluna <strong>Selecionados</strong> aparecem o <strong>Peso</strong>
+              e o <strong>Frete</strong> totais da carga.</p>
+            <p><strong>Capacidade do caminhão (opcional):</strong> informe a capacidade em kg e a
+              barra mostra a ocupação — <strong>verde</strong> até 90%, <strong>amarela</strong>
+              de 90% a 100% e <strong>vermelha</strong> acima de 100%, com o aviso
+              <em>“Passou X kg da capacidade.”</em>. A capacidade fica gravada na ordem.</p>
+            <p><strong>Estoque:</strong> clique em
+              <span class="btnex btnex--success">Mostrar estoque</span> (no topo da tela) para ver,
+              em cada item:</p>
+            <table class="tbl">
+              <thead><tr><th>Indicador</th><th>O que significa</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Estoque</strong></td><td>Quantidade no depósito.</td></tr>
+                <tr><td><strong>Produção</strong></td><td>Quantidade em ordem de produção.</td></tr>
+                <tr><td><strong>Em carregamento</strong></td><td>Quantidade já reservada em <strong>ordens de carregamento abertas</strong> (pedidos e NFs de venda futura).</td></tr>
+                <tr><td><strong>Balanço</strong></td><td>Estoque menos o que está em carregamento. <strong>Fica vermelho quando negativo</strong> — sinal de que não vai ter mercadoria para todas as cargas.</td></tr>
+              </tbody>
+            </table>
+            <figure class="shot">
+              <img class="shot__img" src="img/estoque.png" alt="Itens com os indicadores Estoque, Produção, Em carregamento e Balanço">
+          <figcaption class="shot__cap">Com “Mostrar estoque”, cada item mostra Estoque, Produção, Em carregamento e Balanço.</figcaption>
+            </figure>
+            <p>O botão <span class="btnex btnex--success">Análise de Logística</span> abre o
+              painel de análise de pedidos (o mesmo de <strong>Relatórios → Análise
+              Pedidos</strong>), com filtro de período e de tipo de documento.</p>
+          </div>
+        </article>
+
+        <!-- Passo 4 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">4</span>
+            <h3>Criar a ordem</h3>
+          </header>
+          <div class="step__body">
+            <p>Clique em <span class="btnex btnex--success">Criar Ordem</span>. Mensagem:
+              <em>“Ordem de carregamento criada com sucesso.”</em> Em seguida o sistema abre a
+              ordem criada, com o status <span class="badge badge--ok">Aberto</span>.</p>
+            <ul>
+              <li>Os <strong>pedidos</strong> ficam <strong>vinculados</strong> à ordem e deixam
+                de aparecer na busca de outras ordens.</li>
+              <li>As <strong>retiradas de NF de venda futura</strong> ficam
+                <strong>reservadas</strong> e saem do saldo disponível para outras ordens.</li>
+            </ul>
+            <div class="callout callout--warn">
+              <div class="callout__title">Saldo mudou no meio-tempo</div>
+              <p>Se outra ordem reservou a mesma NF enquanto você montava a sua, a ordem não é
+                criada: <em>“NF de venda futura DocEntry X linha Y (item): retirada de A maior
+                que o saldo disponivel B”</em>. Nenhum pedido fica preso; ajuste a quantidade e
+                crie de novo.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 5 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">5</span>
+            <h3>Conferir a ordem</h3>
+          </header>
+          <div class="step__body">
+            <p>Ao abrir a ordem, você vê o <strong>resumo</strong> (status, data de criação,
+              documentos, peso total, capacidade do caminhão com a ocupação e frete total) e
+              <strong>quatro abas</strong>:</p>
+            <div class="tabs-demo">
+              <div class="tabs-demo__item"><strong>Produtos</strong><span>Todos os itens da carga, com etiqueta Pedido / NF venda futura, cliente, localidade, vendedor, quantidade, peso e frete. O número do documento abre o pedido ou a NF.</span></div>
+              <div class="tabs-demo__item"><strong>Logística</strong><span>Placa, motorista, transportadora e capacidade (passo 6).</span></div>
+              <div class="tabs-demo__item"><strong>Notas Emitidas</strong><span>As notas e entregas geradas, com o status da NF-e (passo 8).</span></div>
+              <div class="tabs-demo__item"><strong>Histórico</strong><span>Quem fez cada ação na ordem, e quando (seção <a href="#historico">7</a>).</span></div>
+            </div>
+            <figure class="shot">
+              <img class="shot__img" src="img/detalhe.png" alt="Detalhe da ordem com botões, resumo e aba Produtos">
+          <figcaption class="shot__cap">Detalhe da ordem: botões no topo, resumo e a aba <strong>Produtos</strong>.</figcaption>
+            </figure>
+            <p>No cabeçalho ficam os botões:</p>
+            <table class="tbl">
+              <thead><tr><th>Botão</th><th>Para que serve</th></tr></thead>
+              <tbody>
+                <tr><td><span class="btnex btnex--warning">Editar</span></td><td>Volta à montagem para incluir/tirar documentos ou mudar quantidades.</td></tr>
+                <tr><td><span class="btnex btnex--info">Exportar</span></td><td><strong>Itinerário</strong>, <strong>Romaneio</strong>, <strong>Ordem em PDF</strong> e <strong>Ordem em imagem</strong> (seção <a href="#especiais">5</a>).</td></tr>
+                <tr><td><span class="btnex btnex--success">Gerar NF de Saída</span></td><td>Gera as notas da carga (passo 7).</td></tr>
+                <tr><td><span class="btnex btnex--danger">Cancelar Ordem</span></td><td>Cancela a ordem (seção <a href="#especiais">5</a>).</td></tr>
+              </tbody>
+            </table>
+            <div class="callout callout--note">
+              <div class="callout__title">Observação</div>
+              <p><strong>Editar</strong>, <strong>Gerar NF de Saída</strong> e <strong>Cancelar
+                Ordem</strong> só aparecem em ordem <strong>Aberta e sem notas emitidas</strong>.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 6 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">6</span>
+            <h3>Preencher a Logística</h3>
+          </header>
+          <div class="step__body">
+            <p>Na aba <strong>Logística</strong>, informe:</p>
+            <ul>
+              <li><strong>Placa do Veículo</strong> — obrigatória;</li>
+              <li><strong>Nome do Motorista</strong> — obrigatório;</li>
+              <li><strong>Selecionar Transportadora</strong> — opcional;</li>
+              <li><strong>Capacidade do caminhão (kg)</strong> — opcional; não pode ser negativa.</li>
+            </ul>
+            <p>O campo <strong>Peso Total dos Pedidos (kg)</strong> é calculado pela carga e
+              precisa ser maior que zero (a aba lembra: <em>“Para gerar a nota fiscal, preencha
+              placa, nome do motorista e peso do caminhão.”</em>). Clique em
+              <span class="btnex btnex--primary">Salvar Logística</span>:
+              <em>“Dados de logística salvos com sucesso!”</em>.</p>
+            <figure class="shot">
+              <img class="shot__img" src="img/logistica.png" alt="Aba Logística com placa, motorista, transportadora e capacidade">
+          <figcaption class="shot__cap">Aba <strong>Logística</strong> preenchida.</figcaption>
+            </figure>
+            <p>Placa e transportadora vão para as notas; motorista e número da ordem vão para
+              as <strong>Observações de encerramento</strong>.</p>
+            <div class="callout callout--warn">
+              <div class="callout__title">Sem logística não há nota</div>
+              <p>Enquanto placa e motorista não estiverem preenchidos aparece o aviso
+                <em>“Para gerar a NF de saída, preencha placa e motorista na aba Logística.”</em>
+                e o botão <strong>Gerar NF de Saída</strong> fica desabilitado.</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Passo 7 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">7</span>
+            <h3>Gerar as notas (seleção de lotes)</h3>
+          </header>
+          <div class="step__body">
+            <ol class="steps-inline">
+              <li>Clique em <span class="btnex btnex--success">Gerar NF de Saída</span>. Abre a
+                tela <strong>Seleção de Lotes</strong>, já no primeiro documento.</li>
+              <li>À esquerda ficam os <strong>Documentos</strong> da carga, com a etiqueta e um
+                contador de itens prontos (ex.: <em>0/2</em>). Clique num documento para ver os
+                seus itens.</li>
+              <li>Em cada item, clique em <span class="btnex btnex--success">Selecionar lotes</span>.
+                Aparecem os lotes com saldo no depósito, <strong>ordenados pela validade (o que
+                vence primeiro vem primeiro)</strong>, com <strong>Lote</strong>,
+                <strong>Validade</strong> e <strong>Disponível</strong>.</li>
+              <li>Na coluna <strong>Selecionar</strong>, informe quanto tirar de cada lote. O
+                aviso <em>“Falta selecionar: N”</em> mostra quanto ainda falta para completar o
+                item. Depois clique em <span class="btnex btnex--primary">Confirmar lotes do
+                item</span>.</li>
+              <li>Repita para todos os itens. O rodapé mostra quantos documentos já estão
+                completos (ex.: <em>“1 de 5 documentos com lotes completos”</em>). Com todos
+                completos, clique em <span class="btnex btnex--primary">Confirmar Nota</span>.</li>
+            </ol>
+            <figure class="shot">
+              <img class="shot__img" src="img/lotes.png" alt="Seleção de lotes com os documentos à esquerda e os lotes do item à direita">
+          <figcaption class="shot__cap">Seleção de lotes: documentos à esquerda (com o contador de itens prontos) e os lotes do item, do que vence primeiro para o último.</figcaption>
+            </figure>
+            <p>Mensagem de sucesso: <em>“Nota fiscal confirmada com sucesso!”</em>. A ordem passa
+              para <span class="badge badge--aberto">Fechado</span> e as notas aparecem na aba
+              <strong>Notas Emitidas</strong>.</p>
+            <table class="tbl">
+              <thead><tr><th>Documento da carga</th><th>O que é gerado</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge badge--entregue">Pedido</span></td><td>Uma <strong>nota fiscal de saída</strong> com os itens do pedido, o <strong>frete do pedido</strong> e os lotes escolhidos. O pedido é <strong>fechado</strong>.</td></tr>
+                <tr><td><span class="badge badge--aberto">NF venda futura</span></td><td>Uma <strong>nota de entrega</strong> com as quantidades retiradas (CFOP 5116/6116), a <strong>chave de acesso da NF de origem</strong> e uma <strong>parte proporcional do frete</strong> da NF (seção <a href="#venda-futura">8</a>). O saldo da NF diminui.</td></tr>
+              </tbody>
+            </table>
+            <p class="mt">Todas as notas e entregas levam na <strong>Observação</strong> o texto
+              <em>“Ordem de carregamento N.”</em> na frente da observação do documento de origem.</p>
+          </div>
+        </article>
+
+        <!-- Passo 8 -->
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge">8</span>
+            <h3>Notas Emitidas, status da NF-e e DANFEs</h3>
+          </header>
+          <div class="step__body">
+            <p>A aba <strong>Notas Emitidas</strong> lista as notas e entregas da ordem, uma linha
+              por item: <strong>Tipo</strong>, <strong>Status NF-e</strong>, <strong>Núm. da
+              Nota</strong>, <strong>Núm. do Documento</strong>, cliente, item, quantidade e valor.
+              O <strong>Status NF-e</strong> vem da TaxPlus:</p>
+            <table class="tbl">
+              <thead><tr><th>Status</th><th>O que significa</th></tr></thead>
+              <tbody>
+                <tr><td><span class="badge badge--aberto">Autorizado</span></td><td>NF-e autorizada pela SEFAZ.</td></tr>
+                <tr><td><span class="badge badge--cancelado">Rejeitado</span></td><td>A SEFAZ rejeitou; trate na TaxPlus.</td></tr>
+                <tr><td><span class="badge">Em Processamento</span> / <span class="badge">Erro Interno</span> / <span class="badge">Não enviada</span></td><td>Ainda não voltou da SEFAZ, deu erro na TaxPlus ou não foi transmitida. Acompanhe na TaxPlus.</td></tr>
+              </tbody>
+            </table>
+            <p class="mt"><strong>Por que não foi autorizada?</strong> Nas notas que não estão
+              autorizadas e para as quais a TaxPlus devolveu uma mensagem aparece o ícone
+              <strong>ⓘ</strong> ao lado do status. Ele abre a última mensagem da TaxPlus para aquela nota: o
+              motivo da rejeição da SEFAZ ou do erro interno (ex.: <em>“[Incoterms inválido []]”</em>,
+              quando o pedido de origem está sem a modalidade do frete).</p>
+            <figure class="shot">
+              <img class="shot__img" src="img/motivo.png" alt="Modal com o motivo do erro da NF-e">
+              <figcaption class="shot__cap">Clique no ⓘ ao lado do status: a mensagem da TaxPlus para a nota.</figcaption>
+            </figure>
+            <p class="mt">Para baixar os DANFEs de todas as notas da ordem num arquivo só, clique
+              em <span class="btnex btnex--ghost">Baixar DANFEs (zip)</span>. Nota que ainda não foi
+              para a SEFAZ não entra no zip e é listada num arquivo de erros dentro dele.</p>
+            <figure class="shot">
+              <img class="shot__img" src="img/notas.png" alt="Aba Notas Emitidas com o status da NF-e e o botão Baixar DANFEs">
+          <figcaption class="shot__cap">Aba <strong>Notas Emitidas</strong>: notas dos pedidos e entregas das NFs de venda futura, com o status da NF-e.</figcaption>
+            </figure>
+          </div>
+        </article>
+      </section>
+
+      <!-- 5. ESPECIAIS -->
+      <section id="especiais" class="block">
+        <h2><span class="h2-num">5</span> Operações especiais</h2>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">✎</span>
+            <h3>Editar a ordem</h3>
+          </header>
+          <div class="step__body">
+            <p>Em ordem <strong>Aberta e sem notas</strong>, clique em
+              <span class="btnex btnex--warning">Editar</span>. A montagem abre com os documentos
+              já selecionados. Inclua ou tire documentos, ajuste as quantidades das NFs de venda
+              futura e clique em <span class="btnex btnex--success">Atualizar Ordem</span>.</p>
+            <ul>
+              <li>Pedido retirado da ordem volta a ficar <strong>disponível</strong> para outras ordens.</li>
+              <li>As retiradas de NF de venda futura passam a ser <strong>exatamente</strong> as da tela.</li>
+              <li>Se o SAP recusar um pedido incluído (por exemplo, cliente com título vencido),
+                nada muda: a ordem continua como estava antes da edição.</li>
+            </ul>
+            <div class="callout callout--warn">
+              <div class="callout__title">Ordem com notas não muda</div>
+              <p><em>“A ordem N ja tem notas geradas e nao pode ser alterada.”</em></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">✕</span>
+            <h3>Cancelar a ordem</h3>
+          </header>
+          <div class="step__body">
+            <ol class="steps-inline">
+              <li>Clique em <span class="btnex btnex--danger">Cancelar Ordem</span>.</li>
+              <li>Confirme: <em>“Tem certeza que deseja cancelar esta Ordem de Carregamento? Isso
+                irá desvincular todos os pedidos.”</em></li>
+              <li>Sucesso: <em>“Ordem de Carregamento cancelada com sucesso!”</em></li>
+            </ol>
+            <ul>
+              <li>Os pedidos são <strong>desvinculados</strong> e voltam para a busca.</li>
+              <li>As retiradas de NF de venda futura <strong>deixam de reservar saldo</strong>.</li>
+              <li>A ordem fica <span class="badge">Cancelado</span>, só para consulta.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">🗺️</span>
+            <h3>Itinerário</h3>
+          </header>
+          <div class="step__body">
+            <p>Em <span class="btnex btnex--info">Exportar</span> → <strong>Itinerário</strong>,
+              abre <strong>“Organizar Itinerário (Paradas)”</strong> com um documento por linha
+              (parada, pedido, cliente, localidade e quantidade de itens).
+              <strong>Arraste as linhas</strong> para definir a ordem das entregas e clique em
+              <span class="btnex btnex--primary">Gerar PDF do Itinerário</span>.</p>
+            <figure class="shot">
+              <img class="shot__img" src="img/itinerario.png" alt="Organizar Itinerário com as paradas da carga">
+          <figcaption class="shot__cap">Arraste as linhas para definir a ordem das paradas e gere o PDF.</figcaption>
+            </figure>
+          </div>
+        </article>
+
+        <article class="step">
+          <header class="step__head">
+            <span class="step__badge step__badge--alt">📄</span>
+            <h3>Romaneio, Ordem em PDF e Ordem em imagem</h3>
+          </header>
+          <div class="step__body">
+            <p>Também no menu <span class="btnex btnex--info">Exportar</span>:</p>
+            <ul>
+              <li><strong>Romaneio</strong> — romaneio da carga agrupado (exige placa e motorista preenchidos);</li>
+              <li><strong>Ordem em PDF</strong> — a ordem com placa, motorista, transportadora e a tabela de itens;</li>
+              <li><strong>Ordem em imagem</strong> — a mesma ordem como imagem, para mandar por mensagem.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- 6. STATUS -->
+      <section id="status" class="block">
+        <h2><span class="h2-num">6</span> Entendendo os status da ordem</h2>
+        <table class="tbl">
+          <thead><tr><th>Status</th><th>O que significa</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge--ok">Aberto</span></td>
+              <td>Ordem montada, ainda sem notas. Pode editar, cancelar e gerar as notas.</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--aberto">Fechado</span></td>
+              <td><strong>Notas geradas.</strong> A ordem vira somente consulta e mostra o aviso
+                <em>“Esta ordem de carregamento já foi fechada e não pode mais ser editada.”</em>
+                <span class="tag tag--auto">automático</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge">Cancelado</span></td>
+              <td>Ordem cancelada; pedidos desvinculados e saldo das NFs liberado.
+                <span class="tag">manual</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--cancelado">Falhou</span></td>
+              <td>A criação foi interrompida por um erro (por exemplo, saldo insuficiente). Não
+                reserva nada e pode ser ignorada; monte uma nova.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 7. HISTORICO -->
+      <section id="historico" class="block">
+        <h2><span class="h2-num">7</span> Histórico: quem fez o quê</h2>
+        <p>Toda ação sobre a ordem fica registrada: <strong>quem fez</strong> (o usuário logado na
+          tela), <strong>o que fez</strong> e <strong>quando</strong>. Veja na aba
+          <strong>Histórico</strong> do detalhe da ordem, com a ação mais recente no topo.</p>
+        <figure class="shot">
+          <img class="shot__img" src="img/historico.png" alt="Aba Histórico da ordem com data, usuário, ação, status e retiradas">
+          <figcaption class="shot__cap">Aba <strong>Histórico</strong>: uma linha por ação, da mais recente para a mais antiga.</figcaption>
+        </figure>
+        <table class="tbl">
+          <thead><tr><th>Ação registrada</th><th>Quando acontece</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Criada</strong></td><td>Ao clicar em <em>Criar Ordem</em>.</td></tr>
+            <tr><td><strong>Alterada</strong></td><td>Ao clicar em <em>Atualizar Ordem</em> (documentos ou quantidades mudaram).</td></tr>
+            <tr><td><strong>Logística alterada</strong></td><td>Ao salvar placa, motorista, transportadora ou capacidade.</td></tr>
+            <tr><td><strong>Notas geradas: N nota(s) e N entrega(s)</strong></td><td>Ao confirmar a geração das notas; a ordem passa para Fechado.</td></tr>
+            <tr><td><strong>Cancelada</strong></td><td>Ao cancelar a ordem.</td></tr>
+            <tr><td><strong>Falhou</strong> / <strong>Alteração recusada</strong> / <strong>Geração de notas recusada</strong></td><td>Quando o SAP recusou a operação. A linha traz o motivo e nada foi gravado no documento.</td></tr>
+          </tbody>
+        </table>
+        <p class="mt">Cada linha mostra também o <strong>estado da ordem naquele momento</strong>: status, placa,
+          motorista e quantas linhas de NF de venda futura estavam reservadas (com a quantidade).
+          Assim dá para ver, por exemplo, que a retirada foi de 3 para 5 sacos e quem mudou.</p>
+        <div class="callout callout--note">
+          <div class="callout__title">Para consultar direto no banco</div>
+          <p>O histórico fica no log da própria ordem no SAP (<code>@AORD_CARREGAMENTO</code>, uma
+            versão por gravação). A equipe de TI tem as consultas prontas em
+            <code>docs/ordem-carregamento-consultas.sql</code>, inclusive para ver as notas e entregas
+            geradas por cada ordem.</p>
+        </div>
+        <div class="callout callout--info">
+          <div class="callout__title">Ordens antigas</div>
+          <p>Ordens gravadas antes deste registro existir mostram “—” em <strong>Usuário</strong> e
+            <strong>Ação</strong> nas linhas antigas.</p>
+        </div>
+      </section>
+
+      <!-- 8. VENDA FUTURA -->
+      <section id="venda-futura" class="block">
+        <h2><span class="h2-num">8</span> NF de venda futura: saldo, entrega e frete</h2>
+        <ul>
+          <li><strong>Saldo disponível</strong> = quanto ainda falta entregar da NF
+            <strong>menos</strong> o que já está reservado em outras ordens
+            <strong>abertas</strong>. Ordens canceladas ou que falharam não reservam nada.</li>
+          <li>A NF <strong>paga</strong> continua aparecendo enquanto tiver mercadoria a
+            entregar; a NF <strong>totalmente entregue</strong> sai da busca, mesmo que ainda não
+            esteja paga. Entrega e pagamento são controlados separadamente no SAP.</li>
+          <li><strong>Uma NF pode ser retirada em várias cargas.</strong> Cada carga gera a sua
+            nota de entrega.</li>
+          <li>A entrega leva a <strong>chave de acesso da NF de origem</strong>, CFOP
+            <strong>5116/6116</strong> e o desconto do <strong>ICMS desonerado</strong>
+            proporcional ao que foi entregue.</li>
+        </ul>
+        <div class="callout callout--info">
+          <div class="callout__title">Frete da entrega: “Frete Simples Fatura” (código 5)</div>
+          <p>A entrega leva a despesa <strong>Frete Simples Fatura (código 5)</strong> da própria
+            NF de venda futura — <strong>não</strong> o “Frete” (código 1), que é o dos pedidos. O
+            valor é proporcional ao entregue:</p>
+          <p><code>frete da entrega = frete da NF × quantidade entregue ÷ quantidade total da NF</code></p>
+          <p>A tela já mostra esse valor na montagem e no detalhe da ordem.</p>
+          <p>Exemplo: NF de 400 sacos com frete de R$ 3.800,00; retirada de 40 sacos →
+            <strong>R$ 380,00</strong> de frete na entrega. O frete nunca passa do que ainda resta
+            na NF: se entregas ou devoluções anteriores já consumiram todo o frete, a entrega sai
+            sem frete.</p>
+        </div>
+      </section>
+
+      <!-- 8. AUTOMÁTICO -->
+      <section id="automatico" class="block">
+        <h2><span class="h2-num">9</span> O que o sistema faz sozinho</h2>
+        <div class="split">
+          <div class="split__col split__col--auto">
+            <h4><span class="dot dot--green"></span> Automático</h4>
+            <ul>
+              <li>Reservar os pedidos e o saldo das NFs de venda futura ao criar a ordem.</li>
+              <li>Calcular o saldo das NFs considerando as outras ordens abertas.</li>
+              <li>Gerar todas as notas e entregas juntas — se o SAP recusar uma, nenhuma é gravada.</li>
+              <li>Copiar o frete: do pedido para a nota; da NF de venda futura (proporcional) para a entrega.</li>
+              <li>Calcular o desconto do ICMS desonerado de cada entrega.</li>
+              <li>Fechar a ordem e os pedidos depois de gerar as notas.</li>
+              <li>Impedir geração em dobro (nova tentativa ou dois cliques ao mesmo tempo).</li>
+              <li>Mostrar o status da NF-e de cada nota.</li>
+            </ul>
+          </div>
+          <div class="split__col split__col--manual">
+            <h4><span class="dot dot--blue"></span> Sua responsabilidade</h4>
+            <ul>
+              <li>Escolher os documentos e as quantidades a retirar das NFs de venda futura.</li>
+              <li>Preencher placa e motorista.</li>
+              <li>Escolher os lotes de cada item.</li>
+              <li>Acompanhar o status da NF-e e tratar as rejeitadas na TaxPlus.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. REGRAS -->
+      <section id="regras" class="block">
+        <h2><span class="h2-num">10</span> Resumo das regras e mensagens</h2>
+        <table class="tbl">
+          <thead><tr><th>Situação</th><th>Regra / Mensagem</th></tr></thead>
+          <tbody>
+            <tr><td>Filtrar sem filial</td><td><em>“Escolha a filial para filtrar.”</em></td></tr>
+            <tr><td>Retirada maior que o saldo (na tela)</td><td><em>“Saldo da NF de venda futura para [item] é [saldo].”</em></td></tr>
+            <tr><td>Retirada maior que o saldo (ao salvar)</td><td><em>“…retirada de A maior que o saldo disponivel B”</em> — a ordem não é criada.</td></tr>
+            <tr><td>Remover todos os selecionados</td><td><em>“Deseja realmente remover todos os itens selecionados?”</em></td></tr>
+            <tr><td>Gerar nota sem logística</td><td><em>“Para gerar a nota fiscal, preencha placa, nome do motorista e peso do caminhão.”</em></td></tr>
+            <tr><td>Salvar logística sem placa/motorista</td><td><em>“A placa do veículo e o nome do motorista são obrigatórios.”</em></td></tr>
+            <tr><td>Capacidade negativa</td><td><em>“A capacidade do caminhão não pode ser negativa.”</em></td></tr>
+            <tr><td>Item sem lote completo</td><td>O botão <strong>“Confirmar Nota”</strong> fica desabilitado até todos os itens estarem completos.</td></tr>
+            <tr><td>Gerar de novo uma ordem que já tem notas</td><td><em>“A ordem N ja tem notas geradas (…). Ela foi marcada como Fechada; confira na aba Notas Emitidas.”</em></td></tr>
+            <tr><td>Duas ações ao mesmo tempo na mesma ordem</td><td><em>“A ordem N esta gerando notas ou sendo salva; aguarde terminar.”</em></td></tr>
+            <tr><td>Editar ordem com notas</td><td><em>“A ordem N ja tem notas geradas e nao pode ser alterada.”</em></td></tr>
+            <tr><td>NF de venda futura sem NF-e transmitida</td><td><em>“NF de venda futura DocEntry X sem chave de acesso: a NF-e dela foi transmitida?”</em></td></tr>
+            <tr><td>Recusa do SAP ao gerar (regra de pedido, lote etc.)</td><td><em>“Erro ao confirmar nota: …”</em> com o motivo do SAP. Nada é gravado; corrija e gere de novo.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 10. FAQ -->
+      <section id="faq" class="block">
+        <h2><span class="h2-num">11</span> Perguntas frequentes</h2>
+
+        <details class="faq">
+          <summary>Como sei quem criou, alterou ou cancelou uma ordem?</summary>
+          <p>Abra a ordem e vá na aba <strong>Histórico</strong>: cada ação aparece com o usuário, a data e
+            a hora (seção <a href="#historico">7</a>).</p>
+        </details>
+
+        <details class="faq">
+          <summary>O pedido não aparece na busca. Por quê?</summary>
+          <p>Confira a <strong>filial</strong> e o <strong>período</strong> (o padrão é o último
+            mês). Pedido que já está em outra ordem <strong>aberta</strong> não aparece. Tire o
+            filtro de localidade, cidade ou vendedor para ampliar a busca.</p>
+        </details>
+
+        <details class="faq">
+          <summary>A NF de venda futura não aparece ou mostra saldo menor do que eu esperava.</summary>
+          <p>O saldo desconta o que já foi entregue e o que está <strong>reservado em outras
+            ordens abertas</strong>. Cancele a ordem que reservou, se ela não for mais sair, ou
+            use o saldo que sobrou.</p>
+        </details>
+
+        <details class="faq">
+          <summary>O cliente vai levar só parte da NF de venda futura. Como faço?</summary>
+          <p>Selecione a NF e diminua o campo <strong>“Qtd. a retirar”</strong>. O restante fica
+            disponível para outra carga.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Gerei as notas e deu erro. Ficou alguma coisa pela metade?</summary>
+          <p>Não. A geração é <strong>tudo ou nada</strong>: se o SAP recusou algum documento,
+            nenhuma nota foi gravada e a ordem continua <strong>Aberta</strong>. Leia o motivo
+            na mensagem, corrija (por exemplo, tire o pedido com problema pelo
+            <strong>Editar</strong>) e gere de novo.</p>
+        </details>
+
+        <details class="faq">
+          <summary>A nota foi gerada, mas a NF-e está “Rejeitado”.</summary>
+          <p>A rejeição acontece depois, na SEFAZ. A nota já existe no SAP. Se aparecer o ícone
+            <strong>ⓘ</strong> ao lado do status, na aba Notas Emitidas, clique nele para ler o erro; sem o
+            ícone, a TaxPlus ainda não devolveu mensagem, e vale olhar a nota direto na TaxPlus. Depois
+            corrija e reenvie, ou cancele.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Por que não consigo editar ou cancelar a ordem?</summary>
+          <p>Porque ela já tem notas emitidas (ou está Fechada/Cancelada). Ordem com notas é só
+            consulta.</p>
+        </details>
+
+        <details class="faq">
+          <summary>Qual frete vai na entrega da venda futura?</summary>
+          <p>O <strong>Frete Simples Fatura (código 5)</strong> da própria NF de venda futura,
+            proporcional à quantidade entregue. O frete normal (código 1) é só dos pedidos.</p>
+        </details>
+      </section>
+
+      <footer class="docfoot">
+        <p>Documento elaborado para o usuário final. Para dúvidas sobre configuração
+          (filiais, permissões, séries de nota etc.), consulte a equipe de TI.</p>
+      </footer>
+
+    </main>
+  </div>
+
+</body>
+</html>

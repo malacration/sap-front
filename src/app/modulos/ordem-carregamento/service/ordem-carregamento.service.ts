@@ -8,7 +8,6 @@ import { OrdemCarregamento } from '../models/ordem-carregamento';
 import { OrdemCarregamentoDto } from '../models/ordem-carregamento-dto';
 import { DocumentList } from '../../../sap/model/markting/document-list';
 import { PedidoVenda } from '../../../sap/model/document/pedido-venda.model';
-import { NextLink } from '../../../sap/model/next-link';
 
 export interface CarregamentoDetalhes {
   DocEntry: number;
@@ -83,8 +82,9 @@ export class OrdemCarregamentoService {
     return this.http.post(`${this.url}/${id}/finalizar`, {});
   }
 
-  getEstoqueEmCarregamento(itemCode: string): Observable<number> {
-    return this.http.get<number>(`${this.url}/estoque-em-carregamento?ItemCode=${itemCode}`);
+  // Quantidade em ordens Abertas de todos os itens: { ItemCode: quantidade }.
+  getEstoqueEmCarregamentoItens(): Observable<{ [itemCode: string]: number }> {
+    return this.http.get<{ [itemCode: string]: number }>(`${this.url}/estoque-em-carregamento-itens`);
   }
 
   cancelar(id: number): Observable<any> {
@@ -135,10 +135,50 @@ export class OrdemCarregamentoService {
     );
   }
 
-    search(dataInicial: string, dataFinal: string, filial: string, localidade: string, vendedor : number): Observable<NextLink<PedidoVenda>> {
+    // Pedidos da ordem de carregamento (sap-odbc), paginados por pedido.
+    searchPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: string | undefined, vendedor: number, cidade: string, pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
+      const params = this.filtrosBusca(dataInicial, dataFinal, filial, localidade, vendedor, cidade).set('pagina', String(pagina));
+      return this.http
+        .get<{ content: PedidoVenda[]; temMais: boolean }>(`${this.url}/search-pedidos`, { params })
+        .pipe(
+          map((response) => ({ ...response, content: response.content.map((item) => Object.assign(new PedidoVenda(), item)) }))
+        );
+    }
+
+    // NF de venda futura com saldo, paginada por documento.
+    searchFaturas(dataInicial: string, dataFinal: string, filial: string, localidade: string | undefined, vendedor: number, cidade: string, pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
+      const params = this.filtrosBusca(dataInicial, dataFinal, filial, localidade, vendedor, cidade).set('pagina', String(pagina));
+      return this.http
+        .get<{ content: PedidoVenda[]; temMais: boolean }>(`${this.url}/search-faturas`, { params })
+        .pipe(
+          map((response) => ({ ...response, content: response.content.map((item) => Object.assign(new PedidoVenda(), item)) }))
+        );
+    }
+
+    // Quem fez o que na ordem: uma linha por gravacao (log do SAP).
+    historico(idCarregamento: number): Observable<any[]> {
+      return this.http.get<any[]>(`${this.url}/${idCarregamento}/historico`);
+    }
+
+    statusNotas(idCarregamento: number): Observable<any[]> {
+      return this.http.get<any[]>(`${this.url}/notas-status/${idCarregamento}`);
+    }
+
+    danfes(idCarregamento: number): Observable<Blob> {
+      return this.http.get(`${this.url}/danfes/${idCarregamento}`, { responseType: 'blob' });
+    }
+
+    private filtrosBusca(dataInicial: string, dataFinal: string, filial: string, localidade: string | undefined, vendedor: number, cidade: string): HttpParams {
       let params = new HttpParams()
         .set('filial', filial.toString())
-        .set('localidade', localidade.toString())
+
+      if (cidade) {
+        params = params.set('cidade', cidade);
+      }
+
+      if (localidade) {
+        params = params.set('localidade', localidade);
+      }
 
       if (vendedor != null) {
         params = params.set('vendedor', vendedor.toString());
@@ -152,13 +192,6 @@ export class OrdemCarregamentoService {
         params = params.set('dataFinal', dataFinal);
       }
   
-      return this.http
-        .get<NextLink<PedidoVenda>>(`${this.url}/search`, { params })
-        .pipe(
-          map((response) => {
-            response.content = response.content.map((item) => Object.assign(new PedidoVenda(), item));
-            return response;
-          })
-        );
+      return params;
     }
 }
