@@ -146,6 +146,18 @@
           </div>
 
           <button class="btn btn-sm btn-outline-primary" (click)="adicionarLinha()"><i class="fas fa-plus"></i> Adicionar regra</button>
+          <button class="btn btn-sm btn-outline-secondary ml-2" (click)="conferirTelasDoPerfil()"
+                  title="Quais telas este perfil abre e o que mais cada uma precisa (inclui o que ainda não foi salvo)">
+            <i class="fas fa-desktop"></i> Conferir telas
+          </button>
+
+          <div *ngIf="previaPerfil && previaPerfilAtual" class="mt-3">
+            <h6 class="mb-1">Telas que <strong>{{ nomeEmEdicao() }}</strong> abre sozinho</h6>
+            <p class="small text-muted mb-2">
+              Considera só este perfil: quem também tiver outro perfil pode já ter o que falta.
+            </p>
+            <ng-container *ngTemplateOutlet="previaTpl; context: { $implicit: previaPerfil }"></ng-container>
+          </div>
         </div>
 
         <div class="card-footer d-flex rodape-perfil">
@@ -153,6 +165,10 @@
             <i class="fas fa-save"></i> Salvar
           </button>
           <button class="btn btn-default ml-2" (click)="descartar()" [disabled]="!sujo && !conflitoPendente">Descartar alterações</button>
+          <button *ngIf="!criandoPerfil && perfilSelecionado" class="btn btn-default ml-2" (click)="copiarPerfil()"
+                  title="Cria um perfil novo com as regras salvas deste">
+            <i class="fas fa-copy"></i> Copiar perfil
+          </button>
           <button *ngIf="!criandoPerfil && perfilSelecionado && !protegido(perfilSelecionado)"
                   class="btn btn-outline-danger ml-auto" (click)="excluirPerfil()">
             <i class="fas fa-trash"></i> Excluir perfil
@@ -214,6 +230,15 @@
       </div>
 
       <button class="btn btn-primary" (click)="simular()"><i class="fas fa-vial"></i> Testar</button>
+      <button class="btn btn-outline-primary ml-2" (click)="verMenu()"
+              title="Mostra o menu que um usuário com os perfis marcados veria e o que falta liberar em cada tela">
+        <i class="fas fa-bars"></i> Ver o menu destes perfis
+      </button>
+
+      <div *ngIf="previaTeste" class="mt-3">
+        <h6 class="mb-1">Menu de quem tem {{ teste.perfis.join(' + ') }}</h6>
+        <ng-container *ngTemplateOutlet="previaTpl; context: { $implicit: previaTeste }"></ng-container>
+      </div>
 
       <div *ngIf="resultado" class="mt-3">
         <div class="alert" [ngClass]="resultado.autorizado ? 'alert-success' : 'alert-danger'">
@@ -382,6 +407,38 @@
           title="Chamada principal desta tela: liberar esta URL permite abri-la e, se ela tiver item de menu, mostra o item">
       <i class="fas fa-desktop"></i> Tela: {{ t }}
     </span>
+  </ng-template>
+
+  <!-- Prévia do menu (aba de teste e "Conferir telas" do perfil) -->
+  <ng-template #previaTpl let-previa>
+    <p class="small text-muted mb-2">
+      <ng-container *ngIf="menuPorPermissao; else peloNomeTxt">
+        Neste ambiente o menu segue as permissões: a tela aparece se a chamada principal dela está liberada.
+      </ng-container>
+      <ng-template #peloNomeTxt>
+        Neste ambiente o menu segue o <strong>nome do perfil</strong> (flag <code>menuPorPermissao</code> desligada):
+        um perfil novo só vê as telas sem restrição de perfil, mesmo com as URLs liberadas.
+      </ng-template>
+    </p>
+    <p class="small text-muted mb-2">{{ previa.rodape }}</p>
+    <div *ngIf="!previa.itens.length" class="text-muted">Nenhuma tela no menu.</div>
+    <ng-container *ngTemplateOutlet="arvorePreviaTpl; context: { $implicit: previa.itens }"></ng-container>
+  </ng-template>
+
+  <ng-template #arvorePreviaTpl let-itens>
+    <ul class="previa-menu">
+      <li *ngFor="let i of itens">
+        <i [ngClass]="i.icone" class="mr-1"></i>{{ i.titulo }}
+        <span *ngIf="i.peloNome" class="badge badge-light ml-1" title="Aparece pelo nome do perfil (role: da rota), não pela URL liberada">pelo nome do perfil</span>
+        <div *ngIf="i.faltando.length" class="small text-danger">
+          <i class="fas fa-exclamation-triangle"></i> abre, mas dá 403 em:
+          <code *ngFor="let f of i.faltando" class="ml-1">{{ f }}</code>
+        </div>
+        <ng-container *ngIf="i.filhos.length">
+          <ng-container *ngTemplateOutlet="arvorePreviaTpl; context: { $implicit: i.filhos }"></ng-container>
+        </ng-container>
+      </li>
+    </ul>
   </ng-template>
 
   <!-- Lista de mudanças de um diff (histórico e prévia de importação) -->

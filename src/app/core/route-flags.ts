@@ -1,6 +1,10 @@
 /**
  * Marcacoes do `data` das rotas deste app. Aqui o `data` e um array de strings, fora do padrao do
  * Angular: ["icon:fas fa-x", "role:vendedor", "role-not:business_partner", "api:get:/carregamento", "hidden"].
+ * "usa:get:/branch" lista as outras chamadas de leitura que a tela faz para ser usada (filtros, detalhe, paginacao):
+ * nao decide nada no menu, so alimenta o aviso da tela de Regras de Acesso ("abre, mas falta liberar ...").
+ * "api:get:/tela/<caminho da rota>" e uma permissao so de tela: nenhum endpoint atende essa URL, ela existe para a
+ * regra decidir o item do menu sem liberar junto uma chamada que outras telas tambem usam.
  *
  * Menu e guards leem por aqui para os dois entenderem a rota do mesmo jeito.
  */
@@ -8,7 +12,7 @@
 /** Rota do router.config (tem `data`) ou snapshot da rota ativa (tem `routeConfig` e `data`). */
 type ComData = { data?: unknown; routeConfig?: { data?: unknown } | null };
 
-export type Marcacao = 'role' | 'role-not' | 'api';
+export type Marcacao = 'role' | 'role-not' | 'api' | 'usa';
 
 /** Uma chamada ao backend que a tela declara como principal: "api:get:/carregamento". */
 export interface ApiDaRota {
@@ -52,6 +56,13 @@ export function lerApi(valor: string): ApiDaRota | null {
 
 export function apisDaRota(route: ComData | null | undefined): ApiDaRota[] {
   return flagsDaRota(route, 'api')
+    .map(lerApi)
+    .filter((it): it is ApiDaRota => it !== null);
+}
+
+/** As "usa:" da rota: chamadas de que a tela depende alem da principal. */
+export function dependenciasDaRota(route: ComData | null | undefined): ApiDaRota[] {
+  return flagsDaRota(route, 'usa')
     .map(lerApi)
     .filter((it): it is ApiDaRota => it !== null);
 }
