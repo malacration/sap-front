@@ -15,8 +15,15 @@ import {
   VersaoCompleta,
   VersaoResumo,
 } from '../../service/regras-acesso.service';
+import { ItemPrevia, consultasDasRotas, previaDoMenu } from './previa-menu';
 
 type Aba = 'perfis' | 'testar' | 'historico' | 'importar';
+
+/** Prévia do menu e o rodapé com a versão do cadastro usada (e se ela já está valendo). */
+interface Previa {
+  itens: ItemPrevia[];
+  rodape: string;
+}
 
 /** Um endpoint real do sistema, com os métodos que ele aceita, para o autocomplete da URL. */
 interface SugestaoUrl {
@@ -72,6 +79,15 @@ export class RegrasAcessoComponent implements OnInit {
   /** Método usado na consulta que gerou `resultado` (o campo do formulário pode ter mudado depois). */
   resultadoMetodo = 'get';
   private seqSimulacao = 0;
+  /** Menu que os perfis marcados no teste veriam. */
+  previaTeste?: Previa;
+  /** Separada da simulação de um caminho: os dois botões mostram resultados em áreas diferentes. */
+  private seqMenu = 0;
+
+  // ---- telas do perfil em edição
+  /** `de`: perfil e regras para os quais a prévia foi calculada; editou depois, ela fica desatualizada. */
+  previaPerfil?: Previa & { de: string };
+  private seqPreviaPerfil = 0;
 
   // ---- histórico
   versoes: VersaoResumo[] = [];
@@ -256,6 +272,17 @@ export class RegrasAcessoComponent implements OnInit {
     this.linhas = [this.linhaVazia()];
   }
 
+  /** Novo perfil já com as regras SALVAS do selecionado: o rascunho dele, se houver, é descartado antes. */
+  async copiarPerfil(): Promise<void> {
+    const origem = this.perfilSelecionado;
+    if (!origem || this.criandoPerfil || !(await this.podeDescartar())) { return; }
+    this.carregarLinhas();
+    const linhas = this.linhas.map(l => ({ ...l, actions: [...l.actions] }));
+    await this.novoPerfil();
+    this.nomeNovoPerfil = `${origem}_copia`;
+    this.linhas = linhas;
+  }
+
   async descartar(): Promise<void> {
     if (!this.sujo || await this.podeDescartar()) {
       this.conflitoPendente = false;
@@ -335,7 +362,7 @@ export class RegrasAcessoComponent implements OnInit {
     return this.linhas.map(l => ({ url: l.url.trim(), actions: l.actions, comentario: l.comentario.trim() || null }));
   }
 
-  private nomeEmEdicao(): string {
+  nomeEmEdicao(): string {
     return (this.criandoPerfil ? this.nomeNovoPerfil : this.perfilSelecionado ?? '').trim();
   }
 
@@ -399,6 +426,49 @@ export class RegrasAcessoComponent implements OnInit {
       () => { this.perfilSelecionado = null; });
   }
 
+  /** Perfil e regras como estão na tela: muda a cada edição, e a prévia calculada antes deixa de valer. */
+  private get assinaturaDoRascunho(): string {
+    return this.nomeEmEdicao() + JSON.stringify(this.linhasParaComparar());
+  }
+
+  get previaPerfilAtual(): boolean {
+    return !!this.previaPerfil && this.previaPerfil.de === this.assinaturaDoRascunho;
+  }
+
+  /** Telas que este perfil sozinho abre (com o rascunho, se houver) e o que cada uma ainda precisa. */
+  async conferirTelasDoPerfil(): Promise<void> {
+    const nome = this.nomeEmEdicao();
+    if (!this.estado || !nome) {
+      this.alert.error('Informe o nome do perfil.');
+      return;
+    }
+    const de = this.assinaturaDoRascunho;
+    const rascunho = this.sujo ? { perfis: { ...this.estado.documento.perfis, [nome]: this.regrasDoRascunho() } } : undefined;
+    // Respostas fora de ordem: só vale a da última conferência.
+    const seq = ++this.seqPreviaPerfil;
+    try {
+      const previa = await this.calcularPrevia([nome], rascunho);
+      if (seq === this.seqPreviaPerfil) { this.previaPerfil = { ...previa, de }; }
+    } catch { /* erro (ex.: regra sem URL no rascunho) já mostrado pelo interceptor */ }
+  }
+
+  private async calcularPrevia(perfis: string[], rascunho?: DocumentoRegras): Promise<Previa> {
+    const consultas = consultasDasRotas(this.router.config);
+    const r = await lastValueFrom(this.service.simularLote(
+      perfis, consultas.map(c => ({ metodo: c.metodo, caminho: c.caminho })), rascunho));
+    const respostas: Record<string, boolean> = {};
+    consultas.forEach((c, i) => respostas[c.chave] = r[i]?.autorizado === true);
+    const itens = previaDoMenu(this.router.config, {
+      perfis, respostas, menuPorPermissao: this.config.isMenuPorPermissao(), modoOperacao: this.config.getModoOperacao(),
+    });
+    // Todas as respostas do lote vêm da mesma versão: a primeira diz qual foi e se já está valendo.
+    return { itens, rodape: r[0] ? this.textoDaVersao(r[0]) : '' };
+  }
+
+  get menuPorPermissao(): boolean {
+    return this.config.isMenuPorPermissao();
+  }
+
   // ------------------------------------------------------------------ testar acesso
 
   alternarPerfilNoTeste(perfil: string): void {
@@ -453,8 +523,10 @@ export class RegrasAcessoComponent implements OnInit {
 
   /** Texto do rodapé do resultado: qual versão do cadastro foi simulada e se ela já está valendo. */
   get rodapeDoResultado(): string {
-    const r = this.resultado;
-    if (!r) { return ''; }
+    return this.resultado ? this.textoDaVersao(this.resultado) : '';
+  }
+
+  private textoDaVersao(r: ResultadoSimulacao): string {
     if (r.versaoSimulada == null) { return 'Simulado com o rascunho que está na tela (não salvo).'; }
     return r.valendo
       ? `Simulado com a versão ${r.versaoSimulada} do cadastro, que já está valendo neste backend.`
@@ -466,6 +538,21 @@ export class RegrasAcessoComponent implements OnInit {
   limparResultado(): void {
     this.seqSimulacao++;
     this.resultado = undefined;
+    this.seqMenu++;
+    this.previaTeste = undefined;
+  }
+
+  async verMenu(): Promise<void> {
+    this.teste.perfis = this.teste.perfis.filter(p => this.perfisParaTeste.includes(p));
+    if (!this.teste.perfis.length) {
+      this.alert.error('Escolha pelo menos um perfil.');
+      return;
+    }
+    const seq = ++this.seqMenu;
+    try {
+      const previa = await this.calcularPrevia(this.teste.perfis, this.documentoComRascunho());
+      if (seq === this.seqMenu) { this.previaTeste = previa; }
+    } catch { /* erro já mostrado pelo interceptor */ }
   }
 
   // ------------------------------------------------------------------ histórico
