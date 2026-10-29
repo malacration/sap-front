@@ -1,0 +1,46 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header">
+      <h3 class="card-title"><b>Ordens de Produção</b></h3>
+    </div>
+
+    <div class="card-body">
+      <div class="form-row align-items-end mb-3">
+        <div class="col-md-3 col-sm-6">
+          <app-select
+            label="Status"
+            [multiple]="true"
+            [options]="opcoesStatus"
+            [initialSelectMany]="statusSelecionados"
+            rotuloSemSelecao="Todos"
+            nomeNoPlural="status"
+            (selectedOut)="aoSelecionarStatus($event)"
+          ></app-select>
+        </div>
+        <div class="col-md-2 col-sm-6" *ngIf="carregando">
+          <i class="fas fa-sync-alt fa-spin"></i> Carregando...
+        </div>
+        <div class="col-md-4 col-sm-6 ml-auto text-right">
+          <button type="button" class="btn btn-outline-secondary" [disabled]="carregando || gerandoEmbalagem || !pagina?.content?.length"
+            (click)="embalagemDaPagina()" title="Um bloco de embalagem por ordem listada nesta página">
+            <i class="fas" [ngClass]="gerandoEmbalagem ? 'fa-sync-alt fa-spin' : 'fa-box'"></i> Ordem de embalagem desta página
+          </button>
+        </div>
+      </div>
+
+      <app-table [content]="pagina?.content" [definition]="definition" (cellClick)="abrir($event)"></app-table>
+      <div *ngIf="!carregando && !pagina?.content?.length" class="text-center text-muted py-4">
+        Nenhuma ordem de produção encontrada.
+      </div>
+    </div>
+
+    <div class="card-footer clearfix">
+      <app-paginacao
+        [paginaAtual]="paginaAtual"
+        [totalItens]="pagina?.totalElements"
+        [pageSize]="pagina?.size"
+        (pageChange)="carregar($event)"
+      ></app-paginacao>
+    </div>
+  </div>
+</section>

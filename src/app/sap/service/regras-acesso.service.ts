@@ -163,6 +163,11 @@ export class RegrasAcessoService {
     return this.http.post<ResultadoSimulacao>(this.url + '/simular', { perfis, metodo, caminho, rascunho });
   }
 
+  /** Uma resposta por consulta, na mesma ordem (a prévia do menu pergunta por todas as telas de uma vez). */
+  simularLote(perfis: string[], consultas: { metodo: string; caminho: string }[], rascunho?: DocumentoRegras): Observable<ResultadoSimulacao[]> {
+    return this.http.post<ResultadoSimulacao[]>(this.url + '/simular-lote', { perfis, consultas, rascunho });
+  }
+
   endpoints(): Observable<EndpointConhecido[]> {
     return this.http.get<EndpointConhecido[]>(this.url + '/endpoints');
   }

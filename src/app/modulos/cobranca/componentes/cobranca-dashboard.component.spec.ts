@@ -34,7 +34,7 @@ describe('CobrancaDashboardComponent', () => {
 
       tela.verMesRecuperado(mes({ Mes: '2026-03', Recuperado: 1234.5 }));
 
-      expect(navegouPara?.rota).toEqual(['/cobranca/titulos']);
+      expect(navegouPara?.rota).toEqual(['/financeiro/cobranca/titulos']);
       expect(navegouPara?.extras.queryParams.dataPagamentoDe).toBe('2026-03-01');
       expect(navegouPara?.extras.queryParams.dataPagamentoAte).toBe('2026-03-31');
     });

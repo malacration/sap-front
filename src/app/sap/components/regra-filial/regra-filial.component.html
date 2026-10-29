@@ -7,7 +7,7 @@
         <div class="card-body">
             <p class="text-muted">
                 Em quais filiais cada regra de autorização está ativa. Aqui se decide
-                <b>onde a regra vale</b> — quem aprova o documento retido se cadastra em
+                <b>onde a regra vale</b> (só nas filiais cadastradas) — quem aprova o documento retido se cadastra em
                 <i>Autorizadores</i>, e os documentos retidos ficam em <i>Autorizar Vendas</i>.
             </p>
             <div class="form-row align-items-end mb-3">
@@ -36,22 +36,21 @@
                 </div>
             </div>
 
-            <!-- O default silencioso desta tela: sem nenhuma linha, a regra vale em todo
-                 lugar. Quem olha uma lista vazia conclui o contrario, entao a tela avisa. -->
-            <div *ngIf="motivosSemRestricao().length > 0" class="alert alert-info">
+            <!-- Regra so vale nas filiais cadastradas: sem nenhuma linha ela esta desligada. -->
+            <div *ngIf="motivosDesligados().length > 0" class="alert alert-info">
                 <i class="fas fa-info-circle"></i>
-                Sem nenhuma filial cadastrada, a regra vale em <b>todas</b> as filiais. Hoje
-                estão assim:
-                <b>{{motivosSemRestricao().join(', ')}}</b>
+                Sem nenhuma filial cadastrada, a regra fica <b>desligada</b> (não vale em filial nenhuma).
+                Hoje estão assim:
+                <b>{{motivosDesligados().join(', ')}}</b>
             </div>
 
             <hr>
             <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
             <div *ngIf="carregado && !loading && lista?.length == 0" class="text-center text-muted p-3">
-                Nenhuma restrição por filial cadastrada — todas as regras valem em todas as filiais.
+                Nenhuma regra ligada em filial nenhuma — nenhum documento fica retido para autorização.
             </div>
             <!-- Falha no carregamento nao diz nada sobre o cadastro: sem isto a tela afirmava
-                 "todas as regras valem em todas as filiais" durante uma queda do backend. -->
+                 "nenhuma regra ligada" durante uma queda do backend. -->
             <div *ngIf="erroCarregamento && !loading" class="text-center text-danger p-3" role="alert">
                 Não foi possível carregar as regras por filial. Nada pode ser concluído sobre onde cada regra vale.
                 <button type="button" class="btn btn-sm btn-outline-danger ml-2" (click)="carregar()">Tentar novamente</button>

@@ -644,7 +644,7 @@ export class RegiaoComponent implements OnInit, OnDestroy {
 
   salvarFaixa(){
     if(this.formFaixa.qtdeAte == null || this.formFaixa.qtdeAte === ''){
-      this.alert.info('Informe a quantidade mínima dessa faixa (use 1 para a faixa base)')
+      this.alert.info('Informe a quantidade mínima dessa faixa')
       return
     }
     if(!this.formFaixa.valorKm){

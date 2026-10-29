@@ -95,6 +95,7 @@ import { LocalidadeComponent } from './sap/components/localidade/localidade.comp
 import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
 import { MapaRelacoesGrafoComponent } from './sap/components/mapa-relacoes/grafo/mapa-relacoes-grafo.component';
 import { MapaRelacoesModalButtonComponent } from './sap/components/mapa-relacoes/modal-button/mapa-relacoes-modal-button.component';
+import { RastreioLoteComponent } from './modulos/producao/componentes/rastreio-lote/rastreio-lote.component';
 import { ComissaoComponent } from './sap/components/comissao/comissao.component';
 import { AutorizacaoComponent } from './sap/components/autorizacao/autorizacao.component';
 import { AutorizadorComponent } from './sap/components/autorizador/autorizador.component';
@@ -199,6 +200,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     MapaRelacoesComponent,
     MapaRelacoesGrafoComponent,
     MapaRelacoesModalButtonComponent,
+    // Tela de Producao, mas declarada aqui porque usa o grafo do mapa de relacoes (declarado neste modulo).
+    RastreioLoteComponent,
     ComissaoComponent,
     AutorizacaoComponent,
     AutorizadorComponent,

@@ -18,6 +18,9 @@ export class PedidoVenda {
   PaymentGroupCode : string
   Comments : string
   Frete : number
+  //quantidade do pedido inteiro quando ele se divide em documentos: o minimo de entrega da regiao
+  //vale para o pedido (o back nao grava no SAP, so usa para validar o frete)
+  QuantidadePedido : number
   VehicleState: string
   DistribSum: number
   Telephone : string

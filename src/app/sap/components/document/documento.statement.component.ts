@@ -123,6 +123,14 @@ export class DocumentStatementComponent implements OnInit {
         return
       }
       const regiao = regioes.find(it => it.ativa && it.U_Filial == params.filial)
+      //a regiao so entrega a partir da faixa base, contando o pedido inteiro (mesma regra do back)
+      const minima = regiao?.quantidadeMinimaEntrega
+      if(minima != null && params.quantidade < minima && regiao.getDistancia(params.codLocalidade) != null){
+        this.regiaoFrete = null
+        this.defineFrete(0)
+        this.freteErro = `A quantidade mínima para entrega nesta região é ${minima} unidades (o pedido tem ${params.quantidade}). Para menos, use Retirada.`
+        return
+      }
       const resultado = regiao?.calcularFrete(params.codLocalidade, params.quantidade)
       if(!resultado){
         this.regiaoFrete = null
@@ -475,6 +483,7 @@ export class DocumentStatementComponent implements OnInit {
       //frete da quantidade DESTE grupo, nao um rateio do combinado - e o unico valor que o
       //backend consegue reproduzir ao revalidar o documento sozinho
       order.Frete = fretesManuais ? fretesManuais[indice++] : this.freteDoGrupo(itens)
+      order.QuantidadePedido = this.quantidadePedido()
       order.TaxExtension = {
         VehicleState: this.setVehicleState(),
         Incoterms: this.tipoEnvio == 'ret' ? 9 : 0
@@ -497,7 +506,12 @@ export class DocumentStatementComponent implements OnInit {
     if(!this.regiaoFrete || !this.localidadeFrete)
       return 0
     const quantidade = itens.reduce((acc,it) => acc + (Number(it.quantidade) || 0), 0)
-    return this.regiaoFrete.calcularFrete(this.localidadeFrete, quantidade)?.total ?? 0
+    //a faixa e a do grupo, mas o minimo de entrega conta o pedido inteiro
+    return this.regiaoFrete.calcularFrete(this.localidadeFrete, quantidade, this.quantidadePedido())?.total ?? 0
+  }
+
+  private quantidadePedido() : number {
+    return (this.itens ?? []).reduce((acc,it) => acc + (Number(it.quantidade) || 0), 0)
   }
 
   /**

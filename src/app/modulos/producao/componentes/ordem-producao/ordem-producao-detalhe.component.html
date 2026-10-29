@@ -1,0 +1,64 @@
+<section class="content">
+  <div class="card card-primary">
+    <div class="card-header d-flex align-items-center">
+      <h3 class="card-title">
+        <a href="" (click)="voltar($event)" class="text-white mr-2" title="Voltar"><i class="fas fa-arrow-left"></i></a>
+        <b>Ordem de Produção {{ ordem?.DocumentNumber }}</b>
+      </h3>
+      <div class="ml-auto" *ngIf="ordem">
+        <button type="button" class="btn btn-sm btn-light mr-2" (click)="pdfOrdemProducao()">
+          <i class="fas fa-file-pdf"></i> Ordem de produção
+        </button>
+        <button type="button" class="btn btn-sm btn-light" (click)="pdfOrdemEmbalagem()">
+          <i class="fas fa-box"></i> Ordem de embalagem
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div *ngIf="carregando" class="text-center py-4"><i class="fas fa-sync-alt fa-spin"></i> Carregando...</div>
+
+      <ng-container *ngIf="ordem && !carregando">
+        <div class="row">
+          <div class="col-md-6 mb-2"><small class="text-muted d-block">Produto</small><b>{{ ordem.produto }}</b></div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Status</small>{{ ordem.status }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Depósito</small>{{ ordem.Warehouse }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Nº interno</small>{{ ordem.AbsoluteEntry }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Planejado (kg)</small>{{ numeroBr(ordem.PlannedQuantity, 3) }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Concluído (kg)</small>{{ numeroBr(ordem.CompletedQuantity, 3) }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Rejeitado (kg)</small>{{ numeroBr(ordem.RejectedQuantity, 3) }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Nº bateladas</small>{{ ordem.bateladas ? numeroBr(ordem.bateladas) : '—' }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Peso da batida (kg)</small>{{ ordem.pesoBatida ? numeroBr(ordem.pesoBatida, 3) : '—' }}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Lançamento</small>{{ ordem.lancamento }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Início</small>{{ ordem.inicio }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Vencimento</small>{{ ordem.vencimento }}</div>
+          <div class="col-md-6 mb-2" *ngIf="ordem.Remarks"><small class="text-muted d-block">Observação</small>{{ ordem.Remarks }}</div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Lote</small>
+            <b *ngIf="ordem.U_lote_producao">{{ ordem.U_lote_producao }}</b>
+            <span *ngIf="!ordem.U_lote_producao" class="text-muted" title="Campo de usuário Lote de Produção (U_lote_producao) da ordem">não informado</span>
+          </div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Validade</small>{{ ordem.validade || '—' }}
+            <small class="text-muted" *ngIf="ordem.Produto?.ValidadeDias">({{ ordem.Produto.ValidadeDias }} dias)</small></div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Nº SysFeed</small>{{ ordem.U_sysfeed_numero || '—' }}</div>
+          <div class="col-md-2 col-6 mb-2"><small class="text-muted d-block">Fórmula SysFeed</small>{{ ordem.Produto?.Formula || '—' }}</div>
+          <div class="col-md-4 mb-2" *ngIf="ordem.ensacado"><small class="text-muted d-block">Sacaria</small>
+            {{ ordem.sacaria?.ItemName || '—' }}<span *ngIf="ordem.pesoSaco"> · saco de {{ numeroBr(ordem.pesoSaco) }} kg</span></div>
+        </div>
+
+        <div class="alert alert-warning py-2 mt-2" *ngIf="!ordem.bateladas && !ordem.ensacado">
+          A ordem não tem o número de bateladas (campo do SysFeed). O PDF sai sem peso da batida e sem kg por batida.
+        </div>
+
+        <h5 class="mt-3">Matérias-primas</h5>
+        <app-table [content]="linhas" [definition]="definition"></app-table>
+      </ng-container>
+    </div>
+  </div>
+</section>
