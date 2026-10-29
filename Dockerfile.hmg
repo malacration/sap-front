@@ -1,0 +1,19 @@
+FROM node:18-bookworm-slim AS dependencies
+WORKDIR /app
+ENV NG_CLI_ANALYTICS=false
+
+# O summernote e uma dependencia local do package.json.
+COPY package.json package-lock.json ./
+COPY summernote ./summernote
+# Build web: nao precisa baixar Electron nem executar seus scripts de instalacao.
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts --no-audit --no-fund && \
+    npm rebuild admin-lte --no-audit --no-fund
+FROM dependencies AS build
+COPY . .
+# O arquivo local nao entra na imagem; o Nginx fornece /config em runtime.
+RUN cp src/config.example src/config && \
+    npx ng build --configuration web-production --base-href /
+
+FROM nginx:stable-alpine AS runtime
+COPY --from=build /app/dist/ /usr/share/nginx/html/
+EXPOSE 80
