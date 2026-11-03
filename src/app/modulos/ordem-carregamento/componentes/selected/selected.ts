@@ -15,6 +15,7 @@ import { PedidosVendaService } from '../../../../sap/service/document/pedidos-ve
 import { ParameterService } from '../../../../shared/service/parameter.service';
 import { OrdemCarregamentoPdfService } from '../../ordem-carregamento-pdf/ordem-carregamento-pdf.component';
 import { RomaneioPdfService } from '../romaneio-pdf/romaneio-pdf.component';
+import { ControleExpedicaoPdfService } from '../controle-expedicao-pdf/controle-expedicao-pdf.service';
 import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-modal-pedido.component';
 import { FATURA_RESERVA, chaveEntrada, isFaturaReserva } from '../../models/fatura-reserva';
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
@@ -109,6 +110,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     private route: ActivatedRoute,
     private pdfService: OrdemCarregamentoPdfService,
     private romaneioPdfService: RomaneioPdfService,
+    private controleExpedicaoPdfService: ControleExpedicaoPdfService,
     private pdfCarregamentoService: PdfCarregamentoService
   ) {}
 
@@ -191,6 +193,11 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   }
 
   private notasSeq = 0;
+
+  // Botao "Atualizar" da aba Notas Emitidas: o status da NF-e muda na TaxPlus depois que a nota e gerada.
+  atualizarNotas(): void {
+    if (!this.loading) this.loadNotas();
+  }
 
   private loadNotas() {
     if (!this.selected?.DocEntry) return;
@@ -309,6 +316,15 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
         }
       });
     }
+  }
+
+  // Modelo da logistica (BPF): confere o veiculo e deixa as lacunas de lote para preencher a mao.
+  imprimirControleExpedicao(): void {
+    this.showExportMenu = false;
+    if (!this.selected) return;
+    this.selected.U_placa = this.placa;
+    this.selected.U_motorista = this.nomeMotorista;
+    this.controleExpedicaoPdfService.gerarPdf(this.selected);
   }
 
   imprimirRomaneioAgrupado(): void {

@@ -27,6 +27,10 @@
             <button class="dropdown-item" type="button" (click)="imprimirRomaneioAgrupado()">
               <i class="fas fa-clipboard-list"></i> Romaneio
             </button>
+            <button class="dropdown-item" type="button" (click)="imprimirControleExpedicao()"
+                    title="Ordem de carregamento e controle de expedição (BPF), com lacunas para lote e condições do veículo">
+              <i class="fas fa-clipboard-check"></i> Controle de expedição (BPF)
+            </button>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item" type="button" (click)="imprimirOrdemPdf()">
               <i class="fas fa-file-pdf"></i> Ordem em PDF
@@ -185,8 +189,12 @@
             </app-tab>
 
             <app-tab tabTitle="Notas Emitidas">
-              <div class="text-right mb-2" *ngIf="notas?.length">
-                <button type="button" class="btn btn-sm btn-outline-primary" (click)="baixarDanfes()" [disabled]="baixandoDanfes">
+              <div class="text-right mb-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="atualizarNotas()" [disabled]="loading"
+                        title="Recarrega as notas, o status da NF-e e o histórico">
+                  <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Atualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary ml-2" *ngIf="notas?.length" (click)="baixarDanfes()" [disabled]="baixandoDanfes">
                   <i class="fas" [ngClass]="baixandoDanfes ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Baixar DANFEs (zip)
                 </button>
               </div>
