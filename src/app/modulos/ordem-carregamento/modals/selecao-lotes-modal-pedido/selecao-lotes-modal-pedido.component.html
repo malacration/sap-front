@@ -1,8 +1,8 @@
-<app-modal [show]="show" (showChange)="close()" [title]="'Seleção de Lotes por Pedido'">
+<app-modal [show]="show" (showChange)="close()" [title]="'Seleção de Lotes'">
   <div class="modal-body">
     <div class="row">
       <div class="col-md-4 border-right">
-        <h5>Pedidos</h5>
+        <h5>Documentos</h5>
         <div class="list-group pedidos-list">
           @for (pedido of pedidosAuxiliares; track pedido) {
             <a
@@ -12,7 +12,10 @@
               [class.pedido-completo]="pedidoCompleto(pedido)"
               (click)="selecionarPedido(pedido)">
               <div class="d-flex justify-content-between">
-                <strong>#{{ pedido.docNum || pedido.docEntry }}</strong>
+                <strong>
+                  <span class="badge mr-1" [ngClass]="pedido.baseType === 13 ? 'badge-info' : 'badge-warning'">{{ pedido.baseType === 13 ? 'NF venda futura' : 'Pedido' }}</span>
+                  #{{ pedido.docNum || pedido.docEntry }}
+                </strong>
                 <span class="badge badge-light">
                   {{ itensCompletosDoPedido(pedido) }}/{{ pedido.itens.length }}
                 </span>
@@ -25,7 +28,7 @@
 
       <div class="col-md-8">
         @if (currentPedido) {
-          <h5 class="mb-3">Itens do Pedido #{{ currentPedido.docNum || currentPedido.docEntry }}</h5>
+          <h5 class="mb-3">Itens {{ currentPedido.baseType === 13 ? 'da NF de venda futura' : 'do Pedido' }} #{{ currentPedido.docNum || currentPedido.docEntry }}</h5>
           <div class="table-responsive mb-3">
             <table class="table table-sm table-striped table-bordered">
               <thead>
@@ -39,19 +42,23 @@
               </thead>
               <tbody>
                 @for (item of currentPedido.itens; track item) {
-                  <tr>
+                  <tr [class.table-active]="currentItem?.itemId === item.itemId">
                     <td>{{ item.itemCode }}</td>
                     <td>{{ item.descricao }}</td>
-                    <td class="text-right">{{ item.quantidade }}</td>
-                    <td class="text-right">{{ quantidadeSelecionadaItem(item) }}</td>
+                    <td class="text-right">{{ item.quantidade | number }}</td>
+                    <td class="text-right" [class.text-success]="itemCompleto(item)">
+                      @if (itemCompleto(item)) {
+                        <i class="fas fa-check-circle"></i>
+                      }
+                      {{ quantidadeSelecionadaItem(item) | number }}
+                    </td>
                     <td class="text-center">
                       <button
                         type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        [class.btn-primary]="currentItem?.itemId === item.itemId"
-                        [class.text-white]="currentItem?.itemId === item.itemId"
+                        class="btn btn-sm"
+                        [ngClass]="currentItem?.itemId === item.itemId ? 'btn-primary' : 'btn-outline-primary'"
                         (click)="selecionarItem(item)">
-                        Selecionar lotes
+                        {{ itemCompleto(item) ? 'Alterar lotes' : 'Selecionar lotes' }}
                       </button>
                     </td>
                   </tr>
@@ -61,20 +68,11 @@
           </div>
           @if (currentItem) {
             <div class="card card-outline card-success">
-              <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="card-header">
                 <h6 class="mb-0">
-                  Lotes de {{ currentItem.itemCode }} (Depósito: {{ currentItem.deposito }}) - Selecione {{ currentItem.quantidade }} itens
+                  Lotes de <b>{{ currentItem.itemCode }}</b> · {{ currentItem.descricao }}
+                  <small class="text-muted ml-1">depósito {{ currentItem.deposito }} · precisa de {{ currentItem.quantidade | number }}</small>
                 </h6>
-                <span
-                  class="badge"
-                [ngClass]="{
-                  'bg-warning text-dark': quantidadeRestanteItem() > 0,
-                  'bg-primary text-white': quantidadeRestanteItem() === 0,
-                  'bg-danger text-white': quantidadeRestanteItem() < 0
-                }">
-                  <i class="fas fa-info-circle me-1"></i>
-                  Falta selecionar {{ quantidadeRestanteItem() }} itens
-                </span>
               </div>
               <div class="card-body">
                 @if (loadingLotes) {
@@ -88,6 +86,7 @@
                       <thead>
                         <tr>
                           <th>Lote</th>
+                          <th>Validade</th>
                           <th class="text-right">Disponível</th>
                           <th class="text-right">Selecionar</th>
                         </tr>
@@ -96,7 +95,8 @@
                         @for (lote of lotesEmEdicao; track lote) {
                           <tr>
                             <td>{{ lote.DistNumber }}</td>
-                            <td class="text-right">{{ lote.quantidadeDisponivel }}</td>
+                            <td>{{ validade(lote) }}</td>
+                            <td class="text-right">{{ lote.quantidadeDisponivel | number }}</td>
                             <td class="text-right">
                               <input
                                 type="number"
@@ -106,6 +106,11 @@
                                 [(ngModel)]="lote.quantidadeSelecionada"
                                 (ngModelChange)="onQuantidadeLoteChange(lote)">
                             </td>
+                          </tr>
+                        }
+                        @if (lotesEmEdicao.length === 0) {
+                          <tr>
+                            <td colspan="4" class="text-center text-muted">Nenhum lote com saldo no depósito {{ currentItem.deposito }}.</td>
                           </tr>
                         }
                       </tbody>
@@ -120,14 +125,14 @@
                     'badge-success': quantidadeRestanteItem() === 0,
                     'badge-danger': quantidadeRestanteItem() < 0
                   }">
-                    Falta selecionar: {{ quantidadeRestanteItem() }}
+                    {{ quantidadeRestanteItem() === 0 ? 'Quantidade completa' : (quantidadeRestanteItem() > 0 ? 'Falta selecionar: ' + quantidadeRestanteItem() : 'Passou ' + (-quantidadeRestanteItem())) }}
                   </span>
                   <button
                     type="button"
                     class="btn btn-success btn-sm"
                     [disabled]="loadingLotes || quantidadeRestanteItem() !== 0"
                     (click)="confirmarItem()">
-                    Confirmar lotes do item
+                    <i class="fas fa-check"></i> Confirmar lotes do item
                   </button>
                 </div>
               </div>
@@ -136,7 +141,7 @@
         } @else {
           <div class="text-center text-muted p-4">
             <i class="fas fa-box-open fa-3x mb-3"></i>
-            <p>Selecione um pedido para iniciar.</p>
+            <p>Selecione um documento para iniciar.</p>
           </div>
         }
 
@@ -145,6 +150,7 @@
   </div>
 
   <div class="modal-footer">
+    <small class="text-muted mr-auto">{{ documentosCompletos() }} de {{ pedidosAuxiliares.length }} documentos com lotes completos</small>
     <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
     <button
       type="button"

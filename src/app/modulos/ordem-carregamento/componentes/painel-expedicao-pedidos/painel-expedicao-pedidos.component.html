@@ -53,6 +53,14 @@
         ></app-incoterms-select>
       </div>
       <div class="col-sm-4">
+        <label for="painelTipoDocumento">Tipo de documento</label>
+        <select id="painelTipoDocumento" class="form-control" [(ngModel)]="tipoDocumento" (ngModelChange)="getPedidos()">
+          <option value="">Todos</option>
+          <option value="pedido">Pedidos</option>
+          <option value="nf-venda-futura">NF de venda futura</option>
+        </select>
+      </div>
+      <div class="col-sm-4">
         <app-em-ordem-de-carregamento-select
           [selected]="emOrdemDeCarregamento"
           (selectedOut)="onEmOrdemDeCarregamentoChange($event)"

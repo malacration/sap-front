@@ -47,7 +47,15 @@ export class PedidoVenda {
   BaseType : number
   BaseEntry : number
   BaseLine : number
-  quantidadeEmCarregamento?: number
+  // so fatura de reserva no carregamento: saldo que veio da busca e peso por unidade
+  SaldoFatura?: number
+  CityS?: string
+  pesoUnitario?: number
+  freteUnitario?: number
+  // so NF de venda futura: frete por unidade sem arredondar, vindo do backend
+  FreteUnitario?: number
+  // so NF de venda futura: o que resta do frete da NF (teto do frete da retirada)
+  FreteRestante?: number
   UomCode : string
   ClosingRemarks : string
   AttachmentEntry : number

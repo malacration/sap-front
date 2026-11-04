@@ -37,8 +37,4 @@ export class OrderSalesService  implements DocumentAngularSave{
         })
       );
   }
-
-  searchAll(nextLink: string): Observable<any> {
-    return this.hppCliente.post(`${this.url}/findAllLoadOrders`, nextLink);
-  }
 }

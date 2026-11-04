@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, Chang
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 import { ItinerarioPdfService } from '../../componentes/itinerario-pdf.component/itinerario-pdf.component';
 
+import { chaveDocumento, chaveEntrada } from '../../models/fatura-reserva';
 @Component({
     selector: 'app-itinerario-modal',
     templateUrl: './itinerario-modal.component.html',
@@ -35,7 +36,7 @@ export class ItinerarioModalComponent implements OnChanges {
     const agrupado = new Map<string, any>();
 
     this.pedidos.forEach(item => {
-      const chave = item.DocNum || item.DocEntry;
+      const chave = item.DocNum ? chaveDocumento(item) : chaveEntrada(item);
       if (!agrupado.has(chave)) {
         agrupado.set(chave, { ...item, itens: [] });
       }

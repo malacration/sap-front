@@ -25,7 +25,8 @@ export class PainelExpedicaoPedidosService {
     vendedor?: string,
     agrupador?: string,
     localidade?: Localidade,
-    incoterms?: string
+    incoterms?: string,
+    tipo?: string
   ): Observable<Page<PainelExpedicaoPedidos>> {
     let params = new HttpParams()
       .set('dataInicial', dataInicial)
@@ -38,6 +39,7 @@ export class PainelExpedicaoPedidosService {
     if (cliente) params = params.set('cliente', cliente);
     if (item) params = params.set('item', item);
     if (vendedor) params = params.set('vendedor', vendedor);
+    if (tipo) params = params.set('tipo', tipo);
 
     return this.http.get<Page<PainelExpedicaoPedidos>>(this.baseUrl + '/pedidos', {
       params,
