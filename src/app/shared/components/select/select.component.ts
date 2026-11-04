@@ -1,12 +1,14 @@
-import { Component, ElementRef, EventEmitter, HostListener, OnChanges, SimpleChanges, Input, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, OnChanges, SimpleChanges, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Option, OptionGroup } from '../../../sap/model/form/option';
 
 
 
 @Component({
-  selector: 'app-select',
-  templateUrl: './select.component.html',
-  styleUrls: ['./select.component.scss']
+    selector: 'app-select',
+    templateUrl: './select.component.html',
+    styleUrls: ['./select.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SelectComponent implements OnInit, OnChanges {
   constructor(private elementRef : ElementRef){

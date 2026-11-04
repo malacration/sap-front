@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import * as Handlebars from 'handlebars';
 import { Column } from './column.model';
 import { RouteLink } from '../../../sap/model/route-link';
@@ -8,9 +8,11 @@ import { AlertService } from '../../service/alert.service';
 
 
 @Component({
-  selector: 'app-table',
-  templateUrl: './table.component.html',
-  styleUrls: ['./table.component.scss']
+    selector: 'app-table',
+    templateUrl: './table.component.html',
+    styleUrls: ['./table.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TableComponent implements OnInit {
 

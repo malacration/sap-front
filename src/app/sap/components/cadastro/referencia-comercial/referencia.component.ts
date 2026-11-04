@@ -1,9 +1,11 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Referencia } from '../../../model/business-partner/business-partner';
 
 @Component({
-  selector: 'app-referencia-comercial',
-  templateUrl: './referencia.component.html',
+    selector: 'app-referencia-comercial',
+    templateUrl: './referencia.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ReferenciaComponent {
 

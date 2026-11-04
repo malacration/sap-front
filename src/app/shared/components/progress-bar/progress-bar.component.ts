@@ -5,10 +5,11 @@ type LteColor =
   | 'warning' | 'danger' | 'light' | 'dark';
 
 @Component({
-  selector: 'app-progress-bar',
-  templateUrl: './progress-bar.component.html',
-  styleUrls: ['./progress-bar.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-progress-bar',
+    templateUrl: './progress-bar.component.html',
+    styleUrls: ['./progress-bar.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ProgressBarComponent {
   // faz o componente ocupar toda a largura do container

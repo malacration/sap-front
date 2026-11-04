@@ -1,10 +1,12 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 
 @Component({
-  selector: 'app-paginacao',
-  templateUrl: './paginacao.component.html',
-  styleUrls: ['./paginacao.component.scss']
+    selector: 'app-paginacao',
+    templateUrl: './paginacao.component.html',
+    styleUrls: ['./paginacao.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PaginacaoComponent implements OnInit {
   
@@ -26,7 +28,7 @@ export class PaginacaoComponent implements OnInit {
   totalVisiblePages = 10;
 
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize() {
     if(this.hardCodeWidth)
       this.totalMaxPage(this.hardCodeWidth)

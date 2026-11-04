@@ -1,7 +1,8 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { ConfigService } from '../../core/services/config.service';
 import { ImportacaoLancamentoService } from './importacao-lancamento.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('ImportacaoLancamentoService', () => {
   let http: HttpTestingController;
@@ -10,12 +11,14 @@ describe('ImportacaoLancamentoService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+    imports: [],
+    providers: [
         ImportacaoLancamentoService,
         { provide: ConfigService, useValue: { getHost: () => '/api' } },
-      ],
-    });
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+    ]
+});
     http = TestBed.inject(HttpTestingController);
     service = TestBed.inject(ImportacaoLancamentoService);
   });

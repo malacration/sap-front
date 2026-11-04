@@ -1,160 +1,166 @@
 <section class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1>Romaneios de {{tipo}} de Insumo</h1> 
-            </div>
-        </div>
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Romaneios de {{tipo}} de Insumo</h1>
+      </div>
     </div>
+  </div>
 </section>
 <section class="content">
-    <!-- Default box -->
-    <div class="container-fluid">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><b>Romaneios de pesagem</b> &nbsp;{{romaneioPesagem?.DocNum}}</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-4">
-                        <b>DocNum</b>&nbsp;{{romaneioPesagem?.DocNum}} 
-                    </div>
-                    <div class="col-sm-4">
-                        <b>Cod. PN</b>&nbsp;{{romaneioPesagem?.U_CodParceiro}}
-                    </div>
-                    <div class="col-sm-4">
-                        <b>Nome PN</b>&nbsp;{{romaneioPesagem?.U_NomeParceiro}}
-                    </div>
-                </div>
-                <div class="row">
-                    <b>Observação:</b>&nbsp;{{romaneioPesagem?.U_ObsRomaneio}}
-                </div>
-            </div>
+  <!-- Default box -->
+  <div class="container-fluid">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><b>Romaneios de pesagem</b> &nbsp;{{romaneioPesagem?.DocNum}}</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-4">
+            <b>DocNum</b>&nbsp;{{romaneioPesagem?.DocNum}}
+          </div>
+          <div class="col-sm-4">
+            <b>Cod. PN</b>&nbsp;{{romaneioPesagem?.U_CodParceiro}}
+          </div>
+          <div class="col-sm-4">
+            <b>Nome PN</b>&nbsp;{{romaneioPesagem?.U_NomeParceiro}}
+          </div>
         </div>
-        <div class="card">
-            <div class="card-header">
-                <h3  class="card-title"><b>Romaneios de {{tipo}} de insumo (RASCUNHO)</b></h3>
-                <div class="card-tools">
-                    <button (click)="criarRomaneio()" type="button" class="btn btn-primary btn-sm">
-                        Confirmar
-                    </button>
-                </div>
+        <div class="row">
+          <b>Observação:</b>&nbsp;{{romaneioPesagem?.U_ObsRomaneio}}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h3  class="card-title"><b>Romaneios de {{tipo}} de insumo (RASCUNHO)</b></h3>
+        <div class="card-tools">
+          <button (click)="criarRomaneio()" type="button" class="btn btn-primary btn-sm">
+            Confirmar
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <dl class="col-sm-2">
+            <dt>Ticket</dt>
+            <dd>{{draft?.U_NumeroTicket}}</dd>
+          </dl>
+          <dl class="col-sm-2">
+            <dt>B. Colheita</dt>
+            <dd>{{draft?.U_NumeroBoletim}}</dd>
+          </dl>
+          <dl class="col-sm-4">
+            <dt>Fazenda</dt>
+            <dd>{{draft?.U_CodFazenda}}&nbsp;-&nbsp;{{draft?.U_DscFazenda}}</dd>
+          </dl>
+        </div>
+        <hr>
+          <div class="row">
+            <dl class="col-sm-4">
+              <dt>Safra</dt>
+              <dd>{{draft?.U_CodSafra}}&nbsp;-&nbsp;{{draft?.U_DscSafra}}</dd>
+            </dl>
+            @if (tipo === 'entrada') {
+              <dl class="col-sm-2">
+                <dt>Reg. Compra</dt>
+                <dd>{{draft?.U_CodRegistroCompra}}</dd>
+              </dl>
+            }
+            @if (tipo === 'saida') {
+              <dl class="col-sm-2">
+                <dt>Contrato Venda</dt>
+                <dd>{{draft?.U_CodContratoVenda}}</dd>
+              </dl>
+            }
+            <dl class="col-sm-2">
+              <dt>Cod. Parceiro Negocio </dt>
+              <dd>{{draft?.U_CodParceiroNegocios}}</dd>
+            </dl>
+          </div>
+          <hr>
+            <div class="row">
+              <dl class="col-sm-4">
+                <dt>Transportador </dt>
+                <dd>{{draft?.U_CodTransportador}}&nbsp;-&nbsp;{{draft?.U_NomeTransportador}}</dd>
+              </dl>
+              <dl class="col-sm-4">
+                <dt>Motorista </dt>
+                <dd>{{draft?.U_CodMotorista}}&nbsp;-&nbsp;{{draft?.U_Motorista}}</dd>
+              </dl>
+              <dl class="col-sm-2">
+                <dt>Placa </dt>
+                <dd>{{draft?.U_PlacaCaminhao}}</dd>
+              </dl>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <dl class="col-sm-2">
-                        <dt>Ticket</dt>
-                        <dd>{{draft?.U_NumeroTicket}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>B. Colheita</dt>
-                        <dd>{{draft?.U_NumeroBoletim}}</dd>
-                    </dl>
-                    <dl class="col-sm-4">
-                        <dt>Fazenda</dt>
-                        <dd>{{draft?.U_CodFazenda}}&nbsp;-&nbsp;{{draft?.U_DscFazenda}}</dd>
-                    </dl>
-                </div>
-                <hr>
-                <div class="row">
-                    <dl class="col-sm-4">
-                        <dt>Safra</dt>
-                        <dd>{{draft?.U_CodSafra}}&nbsp;-&nbsp;{{draft?.U_DscSafra}}</dd>
-                    </dl>
-                    <dl *ngIf="tipo === 'entrada'" class="col-sm-2">
-                        <dt>Reg. Compra</dt>
-                        <dd>{{draft?.U_CodRegistroCompra}}</dd>
-                    </dl>
-                    <dl *ngIf="tipo === 'saida'" class="col-sm-2">
-                        <dt>Contrato Venda</dt>
-                        <dd>{{draft?.U_CodContratoVenda}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Cod. Parceiro Negocio </dt>
-                        <dd>{{draft?.U_CodParceiroNegocios}}</dd>
-                    </dl>
-                </div>
-                <hr>
-                <div class="row">
-                    <dl class="col-sm-4">
-                        <dt>Transportador </dt>
-                        <dd>{{draft?.U_CodTransportador}}&nbsp;-&nbsp;{{draft?.U_NomeTransportador}}</dd>
-                    </dl>
-                    <dl class="col-sm-4">
-                        <dt>Motorista </dt>
-                        <dd>{{draft?.U_CodMotorista}}&nbsp;-&nbsp;{{draft?.U_Motorista}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Placa </dt>
-                        <dd>{{draft?.U_PlacaCaminhao}}</dd>
-                    </dl>
-                </div>
-                <hr>
-                <div class="row">
-                    <dl class="col-sm-4">
-                        <dt>Deposito </dt>
-                        <dd>{{draft?.U_CodDeposito}}</dd>
-                    </dl>
-                    <dl class="col-sm-4">
-                        <dt>Tipo </dt>
-                        <dd>{{draft?.U_TipoRomaneio}} &nbsp; <small>(G = Grãos)</small></dd>
-                    </dl>
-                </div>
-                <hr>
+            <hr>
+              <div class="row">
+                <dl class="col-sm-4">
+                  <dt>Deposito </dt>
+                  <dd>{{draft?.U_CodDeposito}}</dd>
+                </dl>
+                <dl class="col-sm-4">
+                  <dt>Tipo </dt>
+                  <dd>{{draft?.U_TipoRomaneio}} &nbsp; <small>(G = Grãos)</small></dd>
+                </dl>
+              </div>
+              <hr>
                 <h3 class="text-center"><b>Pesos</b></h3>
                 <div class="row">
-                    <dl class="col-sm-2">
-                        <dt>Peso Bruto </dt>
-                        <dd>{{draft?.U_PesoBruto}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Tara </dt>
-                        <dd>{{draft?.U_PesoTara}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Líquido </dt>
-                        <dd>{{draft?.U_PesoLiquido}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Líquido c/ Desc. </dt>
-                        <dd>{{draft?.U_PesoLiquidoDesc}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Na Nota. </dt>
-                        <dd>{{draft?.U_PesoNota}}</dd>
-                    </dl>
-                    <dl class="col-sm-2">
-                        <dt>Diferença </dt>
-                        <dd>{{draft?.U_Diferenca}}</dd>
-                    </dl>
+                  <dl class="col-sm-2">
+                    <dt>Peso Bruto </dt>
+                    <dd>{{draft?.U_PesoBruto}}</dd>
+                  </dl>
+                  <dl class="col-sm-2">
+                    <dt>Tara </dt>
+                    <dd>{{draft?.U_PesoTara}}</dd>
+                  </dl>
+                  <dl class="col-sm-2">
+                    <dt>Líquido </dt>
+                    <dd>{{draft?.U_PesoLiquido}}</dd>
+                  </dl>
+                  <dl class="col-sm-2">
+                    <dt>Líquido c/ Desc. </dt>
+                    <dd>{{draft?.U_PesoLiquidoDesc}}</dd>
+                  </dl>
+                  <dl class="col-sm-2">
+                    <dt>Na Nota. </dt>
+                    <dd>{{draft?.U_PesoNota}}</dd>
+                  </dl>
+                  <dl class="col-sm-2">
+                    <dt>Diferença </dt>
+                    <dd>{{draft?.U_Diferenca}}</dd>
+                  </dl>
                 </div>
                 <hr>
-                <div class="text-center"><b>Tipo Análises</b></div>
-                <div class="row">
-                <div class="col-12 table-responsive">
-                    <table class="table table-striped">
+                  <div class="text-center"><b>Tipo Análises</b></div>
+                  <div class="row">
+                    <div class="col-12 table-responsive">
+                      <table class="table table-striped">
                         <thead>
-                            <tr>
-                                <th>Cod</th>
-                                <th>Descrição</th>
-                                <th>Valor Encontrado</th>
-                                <th>Unidade Medida</th>
-                                <th>Desconto Peso</th>
-                            </tr>
-                            </thead>
+                          <tr>
+                            <th>Cod</th>
+                            <th>Descrição</th>
+                            <th>Valor Encontrado</th>
+                            <th>Unidade Medida</th>
+                            <th>Desconto Peso</th>
+                          </tr>
+                        </thead>
                         <tbody>
-                            <tr *ngFor="let item of draft?.PECU_REGACollection">
-                                <td>{{item.U_CodTipoAnalise}}</td>
-                                <td>{{item.U_DscTipoAnalise}}</td>
-                                <td>{{item.U_ValorEncontrado}}</td>
-                                <td>{{item.U_DscUnidadeMedida}}</td>
-                                <td>{{item.U_DescontoPeso}}</td>
+                          @for (item of draft?.PECU_REGACollection; track item) {
+                            <tr>
+                              <td>{{item.U_CodTipoAnalise}}</td>
+                              <td>{{item.U_DscTipoAnalise}}</td>
+                              <td>{{item.U_ValorEncontrado}}</td>
+                              <td>{{item.U_DscUnidadeMedida}}</td>
+                              <td>{{item.U_DescontoPeso}}</td>
                             </tr>
+                          }
                         </tbody>
-                    </table>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-                </div>
+              </div>
             </div>
-        </div>
-    </div>
-</section>
+          </section>

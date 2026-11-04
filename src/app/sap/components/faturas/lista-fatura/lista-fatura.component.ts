@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Fatura, FaturaDefinition } from '../../../model/fatura/fatura.model';
 import { FaturasService } from '../../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../../shared/components/action/action.model';
@@ -11,8 +11,10 @@ import { SalesPerson } from '../../../model/sales-person/sales-person';
 
 
 @Component({
-  selector: 'app-lista-fatura',
-  templateUrl: './lista-fatura.component.html',
+    selector: 'app-lista-fatura',
+    templateUrl: './lista-fatura.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ListaFaturaComponent implements OnInit {
   

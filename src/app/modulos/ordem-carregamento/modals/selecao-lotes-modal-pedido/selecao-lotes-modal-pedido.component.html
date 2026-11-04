@@ -4,31 +4,31 @@
       <div class="col-md-4 border-right">
         <h5>Documentos</h5>
         <div class="list-group pedidos-list">
-          <a
-            *ngFor="let pedido of pedidosAuxiliares"
-            href="javascript:void(0)"
-            class="list-group-item list-group-item-action"
-            [class.active]="currentPedido?.pedidoId === pedido.pedidoId"
-            [class.pedido-completo]="pedidoCompleto(pedido)"
-            (click)="selecionarPedido(pedido)">
-            <div class="d-flex justify-content-between">
-              <strong>
-                <span class="badge mr-1" [ngClass]="pedido.baseType === 13 ? 'badge-info' : 'badge-warning'">{{ pedido.baseType === 13 ? 'NF venda futura' : 'Pedido' }}</span>
-                #{{ pedido.docNum || pedido.docEntry }}
-              </strong>
-              <span class="badge badge-light">
-                {{ itensCompletosDoPedido(pedido) }}/{{ pedido.itens.length }}
-              </span>
-            </div>
-            <small>{{ pedido.cardCode }} - {{ pedido.cardName }}</small>
-          </a>
+          @for (pedido of pedidosAuxiliares; track pedido) {
+            <a
+              href="javascript:void(0)"
+              class="list-group-item list-group-item-action"
+              [class.active]="currentPedido?.pedidoId === pedido.pedidoId"
+              [class.pedido-completo]="pedidoCompleto(pedido)"
+              (click)="selecionarPedido(pedido)">
+              <div class="d-flex justify-content-between">
+                <strong>
+                  <span class="badge mr-1" [ngClass]="pedido.baseType === 13 ? 'badge-info' : 'badge-warning'">{{ pedido.baseType === 13 ? 'NF venda futura' : 'Pedido' }}</span>
+                  #{{ pedido.docNum || pedido.docEntry }}
+                </strong>
+                <span class="badge badge-light">
+                  {{ itensCompletosDoPedido(pedido) }}/{{ pedido.itens.length }}
+                </span>
+              </div>
+              <small>{{ pedido.cardCode }} - {{ pedido.cardName }}</small>
+            </a>
+          }
         </div>
       </div>
 
       <div class="col-md-8">
-        <ng-container *ngIf="currentPedido; else semPedidoSelecionado">
+        @if (currentPedido) {
           <h5 class="mb-3">Itens {{ currentPedido.baseType === 13 ? 'da NF de venda futura' : 'do Pedido' }} #{{ currentPedido.docNum || currentPedido.docEntry }}</h5>
-
           <div class="table-responsive mb-3">
             <table class="table table-sm table-striped table-bordered">
               <thead>
@@ -41,102 +41,110 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of currentPedido.itens" [class.table-active]="currentItem?.itemId === item.itemId">
-                  <td>{{ item.itemCode }}</td>
-                  <td>{{ item.descricao }}</td>
-                  <td class="text-right">{{ item.quantidade | number }}</td>
-                  <td class="text-right" [class.text-success]="itemCompleto(item)">
-                    <i *ngIf="itemCompleto(item)" class="fas fa-check-circle"></i>
-                    {{ quantidadeSelecionadaItem(item) | number }}
-                  </td>
-                  <td class="text-center">
-                    <button
-                      type="button"
-                      class="btn btn-sm"
-                      [ngClass]="currentItem?.itemId === item.itemId ? 'btn-primary' : 'btn-outline-primary'"
-                      (click)="selecionarItem(item)">
-                      {{ itemCompleto(item) ? 'Alterar lotes' : 'Selecionar lotes' }}
-                    </button>
-                  </td>
-                </tr>
+                @for (item of currentPedido.itens; track item) {
+                  <tr [class.table-active]="currentItem?.itemId === item.itemId">
+                    <td>{{ item.itemCode }}</td>
+                    <td>{{ item.descricao }}</td>
+                    <td class="text-right">{{ item.quantidade | number }}</td>
+                    <td class="text-right" [class.text-success]="itemCompleto(item)">
+                      @if (itemCompleto(item)) {
+                        <i class="fas fa-check-circle"></i>
+                      }
+                      {{ quantidadeSelecionadaItem(item) | number }}
+                    </td>
+                    <td class="text-center">
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [ngClass]="currentItem?.itemId === item.itemId ? 'btn-primary' : 'btn-outline-primary'"
+                        (click)="selecionarItem(item)">
+                        {{ itemCompleto(item) ? 'Alterar lotes' : 'Selecionar lotes' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
-
-          <div *ngIf="currentItem" class="card card-outline card-success">
-            <div class="card-header">
-              <h6 class="mb-0">
-                Lotes de <b>{{ currentItem.itemCode }}</b> · {{ currentItem.descricao }}
-                <small class="text-muted ml-1">depósito {{ currentItem.deposito }} · precisa de {{ currentItem.quantidade | number }}</small>
-              </h6>
-            </div>
-
-            <div class="card-body">
-              <div *ngIf="loadingLotes" class="text-center p-3">
-                <i class="fas fa-spinner fa-spin"></i> Carregando lotes...
+          @if (currentItem) {
+            <div class="card card-outline card-success">
+              <div class="card-header">
+                <h6 class="mb-0">
+                  Lotes de <b>{{ currentItem.itemCode }}</b> · {{ currentItem.descricao }}
+                  <small class="text-muted ml-1">depósito {{ currentItem.deposito }} · precisa de {{ currentItem.quantidade | number }}</small>
+                </h6>
               </div>
-
-              <div *ngIf="!loadingLotes" class="table-responsive">
-                <table class="table table-sm table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Lote</th>
-                      <th>Validade</th>
-                      <th class="text-right">Disponível</th>
-                      <th class="text-right">Selecionar</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let lote of lotesEmEdicao">
-                      <td>{{ lote.DistNumber }}</td>
-                      <td>{{ validade(lote) }}</td>
-                      <td class="text-right">{{ lote.quantidadeDisponivel | number }}</td>
-                      <td class="text-right">
-                        <input
-                          type="number"
-                          class="form-control form-control-sm text-right"
-                          min="0"
-                          [max]="lote.quantidadeDisponivel"
-                          [(ngModel)]="lote.quantidadeSelecionada"
-                          (ngModelChange)="onQuantidadeLoteChange(lote)">
-                      </td>
-                    </tr>
-                    <tr *ngIf="lotesEmEdicao.length === 0">
-                      <td colspan="4" class="text-center text-muted">Nenhum lote com saldo no depósito {{ currentItem.deposito }}.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <span
-                  class="badge"
+              <div class="card-body">
+                @if (loadingLotes) {
+                  <div class="text-center p-3">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando lotes...
+                  </div>
+                }
+                @if (!loadingLotes) {
+                  <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Lote</th>
+                          <th>Validade</th>
+                          <th class="text-right">Disponível</th>
+                          <th class="text-right">Selecionar</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (lote of lotesEmEdicao; track lote) {
+                          <tr>
+                            <td>{{ lote.DistNumber }}</td>
+                            <td>{{ validade(lote) }}</td>
+                            <td class="text-right">{{ lote.quantidadeDisponivel | number }}</td>
+                            <td class="text-right">
+                              <input
+                                type="number"
+                                class="form-control form-control-sm text-right"
+                                min="0"
+                                [max]="lote.quantidadeDisponivel"
+                                [(ngModel)]="lote.quantidadeSelecionada"
+                                (ngModelChange)="onQuantidadeLoteChange(lote)">
+                            </td>
+                          </tr>
+                        }
+                        @if (lotesEmEdicao.length === 0) {
+                          <tr>
+                            <td colspan="4" class="text-center text-muted">Nenhum lote com saldo no depósito {{ currentItem.deposito }}.</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span
+                    class="badge"
                   [ngClass]="{
                     'badge-warning': quantidadeRestanteItem() > 0,
                     'badge-success': quantidadeRestanteItem() === 0,
                     'badge-danger': quantidadeRestanteItem() < 0
                   }">
-                  {{ quantidadeRestanteItem() === 0 ? 'Quantidade completa' : (quantidadeRestanteItem() > 0 ? 'Falta selecionar: ' + quantidadeRestanteItem() : 'Passou ' + (-quantidadeRestanteItem())) }}
-                </span>
-
-                <button
-                  type="button"
-                  class="btn btn-success btn-sm"
-                  [disabled]="loadingLotes || quantidadeRestanteItem() !== 0"
-                  (click)="confirmarItem()">
-                  <i class="fas fa-check"></i> Confirmar lotes do item
-                </button>
+                    {{ quantidadeRestanteItem() === 0 ? 'Quantidade completa' : (quantidadeRestanteItem() > 0 ? 'Falta selecionar: ' + quantidadeRestanteItem() : 'Passou ' + (-quantidadeRestanteItem())) }}
+                  </span>
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    [disabled]="loadingLotes || quantidadeRestanteItem() !== 0"
+                    (click)="confirmarItem()">
+                    <i class="fas fa-check"></i> Confirmar lotes do item
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </ng-container>
-
-        <ng-template #semPedidoSelecionado>
+          }
+        } @else {
           <div class="text-center text-muted p-4">
             <i class="fas fa-box-open fa-3x mb-3"></i>
             <p>Selecione um documento para iniciar.</p>
           </div>
-        </ng-template>
+        }
+
       </div>
     </div>
   </div>
@@ -149,8 +157,12 @@
       class="btn btn-success"
       [disabled]="loading || !todosPedidosCompletos()"
       (click)="confirmar()">
-      <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></span>
-      <span *ngIf="!loading"><i class="fas fa-file-invoice"></i> Confirmar Nota</span>
+      @if (loading) {
+        <span><i class="fas fa-spinner fa-spin"></i></span>
+      }
+      @if (!loading) {
+        <span><i class="fas fa-file-invoice"></i> Confirmar Nota</span>
+      }
     </button>
   </div>
 </app-modal>

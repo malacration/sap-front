@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { PedidoVenda } from '../../../../sap/model/document/pedido-venda.model';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
@@ -7,9 +7,11 @@ import { chaveDocumento, isFaturaReserva } from '../../models/fatura-reserva';
 type Grupo = { key: string; docNum: number; fatura: boolean; items: PedidoVenda[]; totalFrete: number };
 
 @Component({
-  selector: 'app-dual-list-box',
-  templateUrl: './dual-list-box.component.html',
-  styleUrls: ['./dual-list-box.component.scss']
+    selector: 'app-dual-list-box',
+    templateUrl: './dual-list-box.component.html',
+    styleUrls: ['./dual-list-box.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DualListBoxComponent {
   @Input() availableItems: PedidoVenda[] = [];

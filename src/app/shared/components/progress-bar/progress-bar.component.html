@@ -6,11 +6,15 @@
     [attr.aria-valuenow]="percent"
     aria-valuemin="0"
     aria-valuemax="100"
-  >
-    <ng-container *ngIf="showText">{{ percent | number: '1.0-0' }}%</ng-container>
+    >
+    @if (showText) {
+      {{ percent | number: '1.0-0' }}%
+    }
   </div>
 </div>
 
-<div class="small text-muted mt-1" *ngIf="showCounter">
-  {{ current }} / {{ total }}
-</div>
+@if (showCounter) {
+  <div class="small text-muted mt-1">
+    {{ current }} / {{ total }}
+  </div>
+}

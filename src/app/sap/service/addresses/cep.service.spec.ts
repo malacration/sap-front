@@ -1,5 +1,5 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HTTP_INTERCEPTORS, HttpInterceptor } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HTTP_INTERCEPTORS, HttpInterceptor, provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { CepService } from './cep.service';
 
@@ -15,9 +15,9 @@ describe('CepService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [{ provide: HTTP_INTERCEPTORS, useClass: MarcaInterceptor, multi: true }],
-    });
+    imports: [],
+    providers: [{ provide: HTTP_INTERCEPTORS, useClass: MarcaInterceptor, multi: true }, provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
+});
     service = TestBed.inject(CepService);
     http = TestBed.inject(HttpTestingController);
   });

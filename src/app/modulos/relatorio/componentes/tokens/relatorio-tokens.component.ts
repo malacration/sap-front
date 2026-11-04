@@ -1,6 +1,6 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component, TemplateRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from '../../../../core/services/toastr.service';
 import { ConfigService } from '../../../../core/services/config.service';
 import { RelatorioService } from '../../../../sap/service/relatorio.service';
 import { TokenCriado, TokenResumo } from '../../modelos/token.model';
@@ -18,9 +18,11 @@ type AlvoCopia = 'token' | 'json' | 'mcp';
  * dono, e ninguém revoga o token de outra pessoa.
  */
 @Component({
-  selector: 'app-relatorio-tokens',
-  templateUrl: './relatorio-tokens.component.html',
-  styleUrls: ['./relatorio-tokens.component.scss'],
+    selector: 'app-relatorio-tokens',
+    templateUrl: './relatorio-tokens.component.html',
+    styleUrls: ['./relatorio-tokens.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RelatorioTokensComponent {
   @ViewChild('modalTokens', { static: true }) modalTokens!: TemplateRef<unknown>;

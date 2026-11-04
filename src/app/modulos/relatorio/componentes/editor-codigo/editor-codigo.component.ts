@@ -9,6 +9,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 export interface MarcadorEditor {
@@ -17,9 +18,11 @@ export interface MarcadorEditor {
 }
 
 @Component({
-  selector: 'app-editor-codigo',
-  template: '<div #editorHost class="editor-host"></div>',
-  styleUrls: ['./editor-codigo.component.scss'],
+    selector: 'app-editor-codigo',
+    template: '<div #editorHost class="editor-host"></div>',
+    styleUrls: ['./editor-codigo.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EditorCodigoComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('editorHost', { static: true }) editorHost!: ElementRef<HTMLDivElement>;

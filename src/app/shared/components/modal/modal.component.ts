@@ -1,11 +1,13 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-modal',
-  templateUrl: './modal.component.html',
-  encapsulation: ViewEncapsulation.None
+    selector: 'app-modal',
+    templateUrl: './modal.component.html',
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ModalComponent implements OnChanges, OnDestroy {
   

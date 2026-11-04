@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RomaneioPesagem } from '../../model/romaneio-pesagem.model';
 import { RomaneioPesagemService } from '../../service/romaneio-pesagem.service';
-import * as moment from 'moment';
+import moment from 'moment';
 import { BusinessPlace } from '../../model/business-place';
 import { Filter } from '../../model/filter.model';
 import { TipoRomaneio } from '../../model/tipo-romaneio';
@@ -9,9 +9,11 @@ import { TipoRomaneio } from '../../model/tipo-romaneio';
 
 
 @Component({
-  selector: 'app-romaneio',
-  templateUrl: './romaneio.component.html',
-  styleUrls: ['./romaneio.component.scss']
+    selector: 'app-romaneio',
+    templateUrl: './romaneio.component.html',
+    styleUrls: ['./romaneio.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RomaneioComponent implements OnInit {
   

@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import * as moment from 'moment';
-import { ToastrService } from 'ngx-toastr';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import moment from 'moment';
+import { ToastrService } from '../../../core/services/toastr.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription, from, of, switchMap } from 'rxjs';
 import { ActionReturn } from '../../../shared/components/action/action.model';
@@ -21,9 +21,11 @@ import { AuthService } from '../../../shared/service/auth.service';
 import { LogoService } from '../../../core/services/logo.service';
 
 @Component({
-  selector: 'app-nota-fiscal-lote',
-  templateUrl: './nota-fiscal-lote.component.html',
-  styleUrls: ['./nota-fiscal-lote.component.scss'],
+    selector: 'app-nota-fiscal-lote',
+    templateUrl: './nota-fiscal-lote.component.html',
+    styleUrls: ['./nota-fiscal-lote.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
 

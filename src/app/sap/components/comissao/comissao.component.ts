@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ComissaoService } from '../../../modulos/sap-shared/_services/comissao.service';
 import { AlertService } from '../../../shared/service/alert.service';
@@ -11,8 +11,10 @@ import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 
 @Component({
-  selector: 'app-comissao',
-  templateUrl: './comissao.component.html',
+    selector: 'app-comissao',
+    templateUrl: './comissao.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ComissaoComponent implements OnInit {
 

@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { LinhaItem, VendaFutura } from '../../../model/venda/venda-futura';
 
 import { AlertService } from '../../../../shared/service/alert.service';
@@ -14,9 +14,11 @@ import { Observable, forkJoin } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-venda-futura-troca',
-  templateUrl: './troca.component.html',
-  styleUrls: ['./troca.component.scss']
+    selector: 'app-venda-futura-troca',
+    templateUrl: './troca.component.html',
+    styleUrls: ['./troca.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TrocaComponent implements OnInit {
   

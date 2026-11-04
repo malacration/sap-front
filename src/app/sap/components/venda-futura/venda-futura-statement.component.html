@@ -1,137 +1,138 @@
 
 <section class="content">
-    <div *ngIf="!selected || selected == null" class="card card-primary">
-        <div class="card-header">
-            <h5 class="card-title">
-                <b>Venda Futura - {{nomeUsuario}}</b>
-            </h5>
-            <div class="card-tools">
-                <button type="button" class="btn btn-light btn-sm" (click)="abrirManual()"
-                    title="Abrir o manual da Venda Futura">
-                    <i class="fas fa-question-circle"></i> Manual
-                </button>
-            </div>
+  @if (!selected || selected == null) {
+    <div class="card card-primary">
+      <div class="card-header">
+        <h5 class="card-title">
+          <b>Venda Futura - {{nomeUsuario}}</b>
+        </h5>
+        <div class="card-tools">
+          <button type="button" class="btn btn-light btn-sm" (click)="abrirManual()"
+            title="Abrir o manual da Venda Futura">
+            <i class="fas fa-question-circle"></i> Manual
+          </button>
         </div>
-        <div class="card-body">
-            <div class="container-fluid">
-                <div class="form-row align-items-end mb-2">
-                  <!-- FILIAL -->
-                  <div class="col-auto">
-                    <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
-                  </div>
-
-                  <!-- PARCEIRO -->
-                  <div class="col-auto">
-                    <app-busines-partner-search (selected)="selectParceiro($event)"></app-busines-partner-search>
-                  </div>
-                </div>
+      </div>
+      <div class="card-body">
+        <div class="container-fluid">
+          <div class="form-row align-items-end mb-2">
+            <!-- FILIAL -->
+            <div class="col-auto">
+              <app-branch-select (selectedOut)="selectBranch($event)"></app-branch-select>
             </div>
-            <form class="container-fluid" (ngSubmit)="loadInicial()" autocomplete="off">
-                <div class="form-row align-items-end">
-                  <!-- ID CONTRATO -->
-                  <div class="col-auto">
-                    <label for="idContrato" class="col-form-label">ID Contrato</label>
-                    <input
-                      id="idContrato"
-                      name="idContrato"
-                      class="form-control"
-                      type="number"
-                      [(ngModel)]="idContrato"
-                      min="0"
-                      placeholder="Ex.: 12345"
-                    />
-                  </div>
-              
-                  <!-- STATUS (RADIO) -->
-                  <div class="col-auto">
-                    <label class="col-form-label d-block">Status</label>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusAberto"
-                        [(ngModel)]="status"
-                        [value]="'aberto'"
-                      />
-                      <label class="form-check-label" for="statusAberto">Aberto</label>
-                    </div>
-
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusEntregue"
-                        [(ngModel)]="status"
-                        [value]="'entregue'"
-                      />
-                      <label class="form-check-label" for="statusEntregue">Entregue</label>
-                    </div>
-
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusConcluido"
-                        [(ngModel)]="status"
-                        [value]="'concluido'"
-                      />
-                      <label class="form-check-label" for="statusConcluido">Concluído</label>
-                    </div>
-              
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusCancelado"
-                        [(ngModel)]="status"
-                        [value]="'cancelado'"
-                      />
-                      <label class="form-check-label" for="statusCancelado">Cancelado</label>
-                    </div>
-                  </div>
-              
-                  <!-- AÇÕES -->
-                  <div class="col-auto">
-                    <div class="btn-group">
-                      <button type="submit" [disabled]="loading" class="btn btn-success">
-                        {{ loading ? 'Filtrando...' : 'Filtrar' }}
-                      </button>
-                      <button type="button" (click)="limpar()" [disabled]="loading" class="btn btn-outline-secondary">
-                        Limpar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-            </form>
-            <hr>
-            <app-table
-                [content]="pageContent?.content" 
-                [definition]="definition" 
-                (actionOutput)="action($event)">
-            </app-table>
+            <!-- PARCEIRO -->
+            <div class="col-auto">
+              <app-busines-partner-search (selected)="selectParceiro($event)"></app-busines-partner-search>
+            </div>
+          </div>
+        </div>
+        <form class="container-fluid" (ngSubmit)="loadInicial()" autocomplete="off">
+          <div class="form-row align-items-end">
+            <!-- ID CONTRATO -->
+            <div class="col-auto">
+              <label for="idContrato" class="col-form-label">ID Contrato</label>
+              <input
+                id="idContrato"
+                name="idContrato"
+                class="form-control"
+                type="number"
+                [(ngModel)]="idContrato"
+                min="0"
+                placeholder="Ex.: 12345"
+                />
+            </div>
+            <!-- STATUS (RADIO) -->
+            <div class="col-auto">
+              <label class="col-form-label d-block">Status</label>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="status"
+                  id="statusAberto"
+                  [(ngModel)]="status"
+                  [value]="'aberto'"
+                  />
+                <label class="form-check-label" for="statusAberto">Aberto</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="status"
+                  id="statusEntregue"
+                  [(ngModel)]="status"
+                  [value]="'entregue'"
+                  />
+                <label class="form-check-label" for="statusEntregue">Entregue</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="status"
+                  id="statusConcluido"
+                  [(ngModel)]="status"
+                  [value]="'concluido'"
+                  />
+                <label class="form-check-label" for="statusConcluido">Concluído</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="status"
+                  id="statusCancelado"
+                  [(ngModel)]="status"
+                  [value]="'cancelado'"
+                  />
+                <label class="form-check-label" for="statusCancelado">Cancelado</label>
+              </div>
+            </div>
+            <!-- AÇÕES -->
+            <div class="col-auto">
+              <div class="btn-group">
+                <button type="submit" [disabled]="loading" class="btn btn-success">
+                  {{ loading ? 'Filtrando...' : 'Filtrar' }}
+                </button>
+                <button type="button" (click)="limpar()" [disabled]="loading" class="btn btn-outline-secondary">
+                  Limpar
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+        <hr>
+          <app-table
+            [content]="$safeNavigationMigration(pageContent?.content)"
+            [definition]="definition"
+            (actionOutput)="action($event)">
+          </app-table>
         </div>
         <div class="card-footer clearfix">
-            <div *ngIf="!loading && pageContent.nextLink" class="col text-center">
-                <button class="btn btn-primary" (click)="changePageFunction(pageContent.nextLink)">
-                    Carregar Mais
-                    <i class="far fa-plus-square"></i>
-                </button>
-            </div> 
+          @if (!loading && pageContent.nextLink) {
+            <div class="col text-center">
+              <button class="btn btn-primary" (click)="changePageFunction(pageContent.nextLink)">
+                Carregar Mais
+                <i class="far fa-plus-square"></i>
+              </button>
+            </div>
+          }
         </div>
-        <div *ngIf="loading" class="overlay">
+        @if (loading) {
+          <div class="overlay">
             <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-        </div>
-    </div>
-    <div *ngIf="selected">
-        <app-venda-futura-single 
-            [selected]="selected"
-            (close)="close()"
-            >
-            
+          </div>
+        }
+      </div>
+    }
+    @if (selected) {
+      <div>
+        <app-venda-futura-single
+          [selected]="selected"
+          (close)="close()"
+          >
         </app-venda-futura-single>
-    </div>
-</section>
+      </div>
+    }
+  </section>

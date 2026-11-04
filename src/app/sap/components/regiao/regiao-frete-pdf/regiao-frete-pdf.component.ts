@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
 import { Regiao } from '../../../model/regiao/regiao';
@@ -11,8 +11,10 @@ export class RegiaoDadosImpressao {
 }
 
 @Component({
-  selector: 'app-regiao-frete-pdf',
-  template: ''
+    selector: 'app-regiao-frete-pdf',
+    template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegiaoFretePdfComponent {
 

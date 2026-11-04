@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { BatchStockService } from '../../_services/BatchStockService';
 import { BatchStock } from '../../_models/BatchStock.model';
 import { Column } from '../../../../shared/components/table/column.model';
@@ -6,6 +6,7 @@ import { Column } from '../../../../shared/components/table/column.model';
 @Component({
   selector: 'selecao-lote',
   templateUrl: './selecao-lote.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
 })
 export class SelecaoLoteComponent implements OnChanges, OnInit {

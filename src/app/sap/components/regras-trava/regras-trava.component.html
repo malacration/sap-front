@@ -21,12 +21,12 @@
             <div class="form-group col-md-3">
               <label>Código</label>
               <input class="form-control" [(ngModel)]="form.codigo" [readonly]="editando"
-                     placeholder="ex.: FRETE">
+                placeholder="ex.: FRETE">
             </div>
             <div class="form-group col-md-6">
               <label>Descrição</label>
               <input class="form-control" [(ngModel)]="form.descricao"
-                     placeholder="ex.: Frete acima do limite">
+                placeholder="ex.: Frete acima do limite">
             </div>
             <div class="form-group col-md-3">
               <label>Ordem</label>
@@ -36,7 +36,9 @@
           <button class="btn btn-primary" (click)="salvar()">
             <i class="fas fa-save"></i> {{ editando ? 'Salvar' : 'Adicionar' }}
           </button>
-          <button *ngIf="editando" class="btn btn-default ml-2" (click)="novo()">Cancelar</button>
+          @if (editando) {
+            <button class="btn btn-default ml-2" (click)="novo()">Cancelar</button>
+          }
         </div>
       </div>
 
@@ -53,31 +55,35 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let r of regras" [class.text-muted]="!r.ativo">
-                <td><strong>{{ r.codigo }}</strong></td>
-                <td>{{ r.descricao }}</td>
-                <td class="text-center">{{ r.ordem }}</td>
-                <td class="text-center">
-                  <div class="custom-control custom-switch" title="{{ r.ativo ? 'Ativa - clique para desativar' : 'Inativa - clique para ativar' }}">
-                    <input type="checkbox" class="custom-control-input"
-                           [id]="'sw-' + r.codigo" [checked]="r.ativo" (change)="alternarAtivo(r)">
-                    <label class="custom-control-label" [for]="'sw-' + r.codigo">
-                      {{ r.ativo ? 'Ativa' : 'Inativa' }}
-                    </label>
-                  </div>
-                </td>
-                <td class="text-right">
-                  <button class="btn btn-sm btn-outline-primary" (click)="editar(r)" title="Editar">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger ml-1" (click)="apagar(r)" title="Apagar">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr *ngIf="!regras.length && !carregando">
-                <td colspan="5" class="text-center text-muted">Nenhuma regra cadastrada.</td>
-              </tr>
+              @for (r of regras; track r) {
+                <tr [class.text-muted]="!r.ativo">
+                  <td><strong>{{ r.codigo }}</strong></td>
+                  <td>{{ r.descricao }}</td>
+                  <td class="text-center">{{ r.ordem }}</td>
+                  <td class="text-center">
+                    <div class="custom-control custom-switch" title="{{ r.ativo ? 'Ativa - clique para desativar' : 'Inativa - clique para ativar' }}">
+                      <input type="checkbox" class="custom-control-input"
+                        [id]="'sw-' + r.codigo" [checked]="r.ativo" (change)="alternarAtivo(r)">
+                      <label class="custom-control-label" [for]="'sw-' + r.codigo">
+                        {{ r.ativo ? 'Ativa' : 'Inativa' }}
+                      </label>
+                    </div>
+                  </td>
+                  <td class="text-right">
+                    <button class="btn btn-sm btn-outline-primary" (click)="editar(r)" title="Editar">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger ml-1" (click)="apagar(r)" title="Apagar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @if (!regras.length && !carregando) {
+                <tr>
+                  <td colspan="5" class="text-center text-muted">Nenhuma regra cadastrada.</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

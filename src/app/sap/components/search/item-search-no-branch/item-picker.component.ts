@@ -7,6 +7,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { ItemService } from '../../../service/item.service';
 import { Item } from '../../../model/item';
@@ -17,8 +18,10 @@ import { SearchComponent } from '../../../../shared/components/search/search.com
 import { Column } from '../../../../shared/components/table/column.model';
 
 @Component({
-  selector: 'app-item-search-withoutbranch',
-  templateUrl: './item-picker.component.html',
+    selector: 'app-item-search-withoutbranch',
+    templateUrl: './item-picker.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ItemPickerComponent implements OnInit {
   @ViewChild('search', { static: true }) search: SearchComponent<Item>;

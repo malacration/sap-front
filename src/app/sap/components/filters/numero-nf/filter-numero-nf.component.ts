@@ -1,11 +1,13 @@
-import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { debounceTime, distinctUntilChanged, filter, fromEvent, tap } from 'rxjs';
 
 
 
 @Component({
-  selector: 'filter-numero-nf',
-  templateUrl: './numero-nf.component.html'
+    selector: 'filter-numero-nf',
+    templateUrl: './numero-nf.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FilterNumeroNfComponent implements OnInit {
   

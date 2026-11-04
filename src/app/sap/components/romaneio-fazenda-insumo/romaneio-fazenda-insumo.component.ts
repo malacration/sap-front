@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { RomaneioFazendaInsumo } from '../../model/romaneio-fazenda-insumo.model';
 import { RomaneioPesagem } from '../../model/romaneio-pesagem.model';
@@ -8,9 +8,11 @@ import { AlertService } from '../../../shared/service/alert.service';
 import { CowntDown } from '../../../core/cowntdown.module';
 
 @Component({
-  selector: 'app-romaneio-fazenda-insumo',
-  templateUrl: './romaneio-fazenda-insumo.component.html',
-  styleUrls: ['./romaneio-fazenda-insumo.component.scss']
+    selector: 'app-romaneio-fazenda-insumo',
+    templateUrl: './romaneio-fazenda-insumo.component.html',
+    styleUrls: ['./romaneio-fazenda-insumo.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RomaneioFazendaInsumoComponent {
   

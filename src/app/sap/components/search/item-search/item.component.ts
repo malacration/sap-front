@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ItemService } from '../../../service/item.service';
 import { Item } from '../../../model/item';
 import { SearchService } from '../../../service/search.service';
@@ -12,8 +12,10 @@ import { LotesItemComponent } from './lotes-item/lotes-item.component';
 
 
 @Component({
-  selector: 'app-item-search',
-  templateUrl: './item-search.component.html',
+    selector: 'app-item-search',
+    templateUrl: './item-search.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ItemSearchComponent implements OnInit {
 

@@ -6,12 +6,15 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Option } from '../../../../model/form/option';
 
 @Component({
-  selector: 'app-group-by-select',
-  templateUrl: './agrupador.select.component.html',
+    selector: 'app-group-by-select',
+    templateUrl: './agrupador.select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GroupBySelectComponent implements OnInit {
   @Input()

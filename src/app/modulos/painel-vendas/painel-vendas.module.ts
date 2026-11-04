@@ -11,7 +11,7 @@ import { PainelVendasV2Service } from './service/painel-vendas-v2.service';
 
 @NgModule({
   declarations: [PainelVendasComponent, PainelVendasV2Component],
-  imports: [CommonModule, SharedModule, SapSharedModule, NgxChartsModule, TooltipModule.forRoot()],
+  imports: [CommonModule, SharedModule, SapSharedModule, NgxChartsModule, TooltipModule],
   providers: [PainelVendasService, PainelVendasV2Service],
   exports: [PainelVendasComponent, PainelVendasV2Component],
 })

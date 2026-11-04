@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { DocumentInstallment, DocumentLines, DocumentList } from '../../../../model/markting/document-list';
 import { Column } from '../../../../../shared/components/table/column.model';
 import { DocumentService } from '../documento.service';
@@ -16,9 +16,11 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-document-list-single',
-  templateUrl: './single-document-list.component.html',
-  styleUrls: ['./single-document-list.component.scss']
+    selector: 'app-document-list-single',
+    templateUrl: './single-document-list.component.html',
+    styleUrls: ['./single-document-list.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DocumentListSingleComponent implements OnInit {
 

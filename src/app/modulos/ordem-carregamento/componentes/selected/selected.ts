@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 
@@ -22,9 +22,11 @@ import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
 import { LinhaOrdem } from '../../models/linha-ordem';
 
 @Component({
-  selector: 'app-ordem-selected',
-  templateUrl: './selected.html',
-  styleUrls: ['./selected.scss']
+    selector: 'app-ordem-selected',
+    templateUrl: './selected.html',
+    styleUrls: ['./selected.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   @Input() selected: OrdemCarregamento | null = null;

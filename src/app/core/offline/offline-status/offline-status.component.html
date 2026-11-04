@@ -1,34 +1,55 @@
-<ng-container *ngIf="state$ | async as state">
-  <div class="offline-status"
-       *ngIf="state.catalog || !state.backendOnline"
-       [class.offline]="(!state.backendOnline || !auth.isLoggedIn()) && !state.catalogExpired"
-       [class.expired]="state.catalogExpired"
-       [class.online]="state.backendOnline && auth.isLoggedIn() && !state.catalogExpired">
-    <div class="mode">
-      <i class="fas" [ngClass]="icon(state)"></i>
-      <strong *ngIf="state.backendOnline && auth.isLoggedIn() && !state.catalogExpired">ONLINE</strong>
-      <strong *ngIf="state.backendOnline && !auth.isLoggedIn() && !state.catalogExpired">AUTENTICAÇÃO NECESSÁRIA - DIGITAÇÃO OFFLINE</strong>
-      <strong *ngIf="!state.backendOnline && !state.catalogExpired">OFFLINE - LANÇAMENTOS SERÃO COTAÇÕES</strong>
-      <strong *ngIf="state.catalogExpired">DADOS OFFLINE VENCIDOS</strong>
+@if (state$ | async; as state) {
+  @if (state.catalog || !state.backendOnline) {
+    <div class="offline-status"
+      [class.offline]="(!state.backendOnline || !auth.isLoggedIn()) && !state.catalogExpired"
+      [class.expired]="state.catalogExpired"
+      [class.online]="state.backendOnline && auth.isLoggedIn() && !state.catalogExpired">
+      <div class="mode">
+        <i class="fas" [ngClass]="icon(state)"></i>
+        @if (state.backendOnline && auth.isLoggedIn() && !state.catalogExpired) {
+          <strong>ONLINE</strong>
+        }
+        @if (state.backendOnline && !auth.isLoggedIn() && !state.catalogExpired) {
+          <strong>AUTENTICAÇÃO NECESSÁRIA - DIGITAÇÃO OFFLINE</strong>
+        }
+        @if (!state.backendOnline && !state.catalogExpired) {
+          <strong>OFFLINE - LANÇAMENTOS SERÃO COTAÇÕES</strong>
+        }
+        @if (state.catalogExpired) {
+          <strong>DADOS OFFLINE VENCIDOS</strong>
+        }
+      </div>
+      @if (state.catalog) {
+        <div class="catalog">
+          Atualizado em {{state.catalog.generatedAt | date:'dd/MM/yyyy HH:mm'}} · {{remaining(state.remainingMs)}}
+        </div>
+      }
+      @if (state.backendOnline && auth.isLoggedIn()) {
+        <button type="button" class="btn btn-sm btn-light" (click)="refresh()" title="Atualizar dados offline">
+          <i class="fas fa-sync-alt"></i> Atualizar agora
+        </button>
+      }
+      @if (state.backendOnline && !auth.isLoggedIn() && auth.isKeycloak()) {
+        <button type="button" class="btn btn-sm btn-light" (click)="reauthenticate()">
+          <i class="fas fa-sign-in-alt"></i> Entrar para transmitir
+        </button>
+      }
     </div>
-    <div class="catalog" *ngIf="state.catalog">
-      Atualizado em {{state.catalog.generatedAt | date:'dd/MM/yyyy HH:mm'}} · {{remaining(state.remainingMs)}}
+  }
+  @if (progress$ | async; as progress) {
+    <div class="offline-progress">
+      @if (progress.active) {
+        <div class="progress rounded-0">
+          <div class="progress-bar" role="progressbar" [style.width.%]="progress.progress"
+          [attr.aria-valuenow]="progress.progress" aria-valuemin="0" aria-valuemax="100"></div>
+          <span class="progress-label">{{progress.message}} {{progress.progress}}%</span>
+        </div>
+      }
+      @if (progress.error) {
+        <div class="alert alert-warning rounded-0 mb-0 py-1 px-3">
+          {{progress.error}}
+        </div>
+      }
     </div>
-    <button type="button" class="btn btn-sm btn-light" *ngIf="state.backendOnline && auth.isLoggedIn()" (click)="refresh()" title="Atualizar dados offline">
-      <i class="fas fa-sync-alt"></i> Atualizar agora
-    </button>
-    <button type="button" class="btn btn-sm btn-light" *ngIf="state.backendOnline && !auth.isLoggedIn() && auth.isKeycloak()" (click)="reauthenticate()">
-      <i class="fas fa-sign-in-alt"></i> Entrar para transmitir
-    </button>
-  </div>
-  <div class="offline-progress" *ngIf="progress$ | async as progress">
-    <div *ngIf="progress.active" class="progress rounded-0">
-      <div class="progress-bar" role="progressbar" [style.width.%]="progress.progress"
-           [attr.aria-valuenow]="progress.progress" aria-valuemin="0" aria-valuemax="100"></div>
-      <span class="progress-label">{{progress.message}} {{progress.progress}}%</span>
-    </div>
-    <div *ngIf="progress.error" class="alert alert-warning rounded-0 mb-0 py-1 px-3">
-      {{progress.error}}
-    </div>
-  </div>
-</ng-container>
+  }
+}

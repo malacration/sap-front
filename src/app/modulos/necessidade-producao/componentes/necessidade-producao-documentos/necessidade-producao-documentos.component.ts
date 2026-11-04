@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import {
   DocumentoNecessidade,
   NecessidadeProducaoDetalhe,
@@ -16,9 +16,11 @@ const ROTULOS: Record<TipoDocumentoNecessidade, string> = {
  * (compacto) e na tela de detalhe aberta em nova aba (todas as colunas).
  */
 @Component({
-  selector: 'app-necessidade-producao-documentos',
-  templateUrl: './necessidade-producao-documentos.component.html',
-  styleUrls: ['./necessidade-producao-documentos.component.scss'],
+    selector: 'app-necessidade-producao-documentos',
+    templateUrl: './necessidade-producao-documentos.component.html',
+    styleUrls: ['./necessidade-producao-documentos.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NecessidadeProducaoDocumentosComponent {
   @Input() detalhe: NecessidadeProducaoDetalhe | null = null;

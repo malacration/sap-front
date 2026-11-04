@@ -1,27 +1,13 @@
 #!/bin/sh
-
-isUrl() {
-    if curl --head --silent --fail $1 2> /dev/null;
-    then
-        return 0
-    else
-        return 1
+# Optional runtime branding/configuration; keep the supplied JSON and SVG intact.
+if [ -n "${config:-}" ]; then
+    printf '%s\n' "$config" > /usr/share/nginx/html/config
+fi
+if [ -n "${favicon:-}" ]; then
+    printf '%s\n' "$favicon" > /usr/share/nginx/html/favicon.svg
+fi
+if [ -n "${logo:-}" ]; then
+    if ! curl --fail --silent --show-error --location --max-time 30 --output /usr/share/nginx/html/logo.png "$logo"; then
+        printf '%s\n' 'Não foi possível atualizar o logo; mantendo os demais arquivos da aplicação.' >&2
     fi
-}
-
-download(){
-    curl -o $1 $2 -L
-}
-
-
-if [ "$config" != "" ] 
-    then echo $config > /usr/share/nginx/html/config; 
-fi
-
-if [ "$favicon" != "" ] 
-    then echo $favicon > /usr/share/nginx/html/favicon.svg; 
-fi
-
-if isUrl $logo -eq 0;
-    then download "/usr/share/nginx/html/logo.png" $logo;
 fi

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Page } from '../../../sap/model/page.model';
 import { AuthService } from '../../../shared/service/auth.service';
@@ -10,9 +10,11 @@ import { ActionReturn } from '../../../shared/components/action/action.model';
 import { OrdemCarregamento } from '../models/ordem-carregamento';
 
 @Component({
-  selector: 'ordem-carregamento-statement',
-  templateUrl: './statement.html',
-  styleUrls: ['./statement.scss']
+    selector: 'ordem-carregamento-statement',
+    templateUrl: './statement.html',
+    styleUrls: ['./statement.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class OrdemCarregamentoStatementComponent implements OnInit, OnDestroy {
   nomeUsuario: string;

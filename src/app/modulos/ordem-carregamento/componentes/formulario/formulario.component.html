@@ -26,10 +26,10 @@
           [(ngModel)]="ordemCarregamento.U_nameOrdem"
           (ngModelChange)="onNameInputChange()"
           placeholder="Digite o nome da ordem"
-        >
+          >
       </div>
       <card
-        [title]="'Filtros'" 
+        [title]="'Filtros'"
         [cardClass]="'card-primary card-outline'" [collapsible]="true">
         <div class="row">
           <div class="col-sm-2">
@@ -52,12 +52,14 @@
           <div class="col-sm-2">
             <div class="form-group">
               <app-localidade-search #localidadeSearch (selected)="selectLocalidade($event)"></app-localidade-search>
-              <small *ngIf="localidade" class="text-muted">
-                {{ localidade.Name }}
-                <a href="javascript:void(0)" class="ml-1" (click)="limparLocalidade(localidadeSearch)" title="Buscar todas as localidades">
-                  <i class="fas fa-times"></i> limpar
-                </a>
-              </small>
+              @if (localidade) {
+                <small class="text-muted">
+                  {{ localidade.Name }}
+                  <a href="javascript:void(0)" class="ml-1" (click)="limparLocalidade(localidadeSearch)" title="Buscar todas as localidades">
+                    <i class="fas fa-times"></i> limpar
+                  </a>
+                </small>
+              }
             </div>
           </div>
           <div class="col-sm-2">
@@ -87,11 +89,13 @@
                 class="btn btn-primary"
                 [disabled]="!canFilter()"
                 (click)="criarAnalise()"
-              >
+                >
                 <i class="fas fa-search"></i> Filtrar
               </button>
             </div>
-            <small class="form-group text-muted" *ngIf="!canFilter()">Escolha a filial para filtrar.</small>
+            @if (!canFilter()) {
+              <small class="form-group text-muted">Escolha a filial para filtrar.</small>
+            }
 
           </div>
         </div>
@@ -108,24 +112,28 @@
       ></app-dual-list-box>
     </div>
     <div class="card-footer">
-      <button
-        *ngIf="!loading"
-        class="btn btn-success btn-block"
-        (click)="sendOrder()"
-      >
-        {{ ordemCarregamento.DocEntry ? 'Atualizar Ordem' : 'Criar Ordem' }}
-      </button>
-      <button
-        *ngIf="loading"
-        class="btn btn-success btn-block"
-        disabled
-      >
-        <i class="fas fa-spinner fa-spin"></i> Processando...
-      </button>
+      @if (!loading) {
+        <button
+          class="btn btn-success btn-block"
+          (click)="sendOrder()"
+          >
+          {{ ordemCarregamento.DocEntry ? 'Atualizar Ordem' : 'Criar Ordem' }}
+        </button>
+      }
+      @if (loading) {
+        <button
+          class="btn btn-success btn-block"
+          disabled
+          >
+          <i class="fas fa-spinner fa-spin"></i> Processando...
+        </button>
+      }
     </div>
-    <div *ngIf="loading" class="overlay">
-      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-    </div>
+    @if (loading) {
+      <div class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+      </div>
+    }
   </div>
 </section>
 

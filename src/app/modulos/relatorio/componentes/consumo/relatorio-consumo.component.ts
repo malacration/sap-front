@@ -1,11 +1,11 @@
 import { FormularioParametrosComponent } from '../formulario-parametros/formulario-parametros.component';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from '../../../../core/services/toastr.service';
 import {
   FormatoRelatorio,
   Parametro,
@@ -42,9 +42,11 @@ type RelatorioListado = {
 };
 
 @Component({
-  selector: 'app-relatorio-consumo',
-  templateUrl: './relatorio-consumo.component.html',
-  styleUrls: ['./relatorio-consumo.component.scss'],
+    selector: 'app-relatorio-consumo',
+    templateUrl: './relatorio-consumo.component.html',
+    styleUrls: ['./relatorio-consumo.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RelatorioConsumoComponent implements OnInit, OnDestroy {
   @Input() isAdmin = false;

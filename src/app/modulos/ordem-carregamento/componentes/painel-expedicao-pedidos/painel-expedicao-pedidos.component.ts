@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import * as moment from 'moment';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import moment from 'moment';
 
 import { Branch } from '../../../../sap/model/branch';
 import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
@@ -13,8 +13,10 @@ import { Localidade } from '../../../../sap/model/localidade/localidade';
 import { PainelExpedicaoPedidosService } from '../../service/pedidos-carregamento.service';
 
 @Component({
-  selector: 'painel-expedicao-pedidos',
-  templateUrl: './painel-expedicao-pedidos.component.html',
+    selector: 'painel-expedicao-pedidos',
+    templateUrl: './painel-expedicao-pedidos.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PainelExpedicaoPedidosComponent implements OnInit {
   startDate = '';

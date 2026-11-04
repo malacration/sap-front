@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
@@ -14,9 +14,11 @@ import { RegistrarAcaoModalComponent, CobrancaDominios } from './registrar-acao-
 import { Option, OptionGroup } from '../../../sap/model/form/option';
 
 @Component({
-  selector: 'app-cobranca-statement',
-  templateUrl: './cobranca-statement.component.html',
-  styleUrls: ['./cobranca-statement.component.scss']
+    selector: 'app-cobranca-statement',
+    templateUrl: './cobranca-statement.component.html',
+    styleUrls: ['./cobranca-statement.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CobrancaStatementComponent implements OnInit {
 

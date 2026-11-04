@@ -1,22 +1,29 @@
 <div class="card" [ngClass]="cardClass">
-  <div class="card-header" *ngIf="hasHeader()" >
-    <div class="card-title" *ngIf="title">
-      <ng-container>
-        {{ title }}
-      </ng-container>
+  @if (hasHeader()) {
+    <div class="card-header" >
+      @if (title) {
+        <div class="card-title">
+          <ng-container>
+            {{ title }}
+          </ng-container>
+        </div>
+      }
+      @if (hasTools()) {
+        <div class="card-tools float-right">
+          @if (collapsible) {
+            <button
+              type="button"
+              class="btn btn-tool"
+              (click)="toggleCollapse()"
+              [attr.aria-expanded]="!collapsed"
+              [attr.aria-label]="collapsed ? 'Expandir card' : 'Recolher card'">
+              <i class="fas" [ngClass]="collapsed ? 'fa-plus' : 'fa-minus'"></i>
+            </button>
+          }
+        </div>
+      }
     </div>
-    <div class="card-tools float-right" *ngIf="hasTools()">
-      <button
-        *ngIf="collapsible"
-        type="button"
-        class="btn btn-tool"
-        (click)="toggleCollapse()"
-        [attr.aria-expanded]="!collapsed"
-        [attr.aria-label]="collapsed ? 'Expandir card' : 'Recolher card'">
-        <i class="fas" [ngClass]="collapsed ? 'fa-plus' : 'fa-minus'"></i>
-      </button>
-    </div>
-  </div>
+  }
   <div class="card-body" [hidden]="collapsed">
     <ng-content></ng-content>
   </div>

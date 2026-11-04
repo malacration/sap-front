@@ -1,4 +1,4 @@
-import {Component, HostBinding, OnInit} from '@angular/core';
+import {Component, HostBinding, OnInit, ChangeDetectionStrategy} from '@angular/core';
 import {UntypedFormGroup, UntypedFormControl} from '@angular/forms';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
@@ -14,7 +14,9 @@ const BASE_CLASSES = 'main-header navbar navbar-expand';
 @Component({
     selector: 'app-header',
     templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss']
+    styleUrls: ['./header.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class HeaderComponent implements OnInit {
     @HostBinding('class') classes: string = BASE_CLASSES;

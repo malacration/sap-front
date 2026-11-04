@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, forkJoin, of } from 'rxjs';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Branch } from '../../../../sap/model/branch';
 import { Localidade } from '../../../../sap/model/localidade/localidade';
 import { PedidoVenda } from '../../../../sap/model/document/pedido-venda.model';
@@ -15,9 +15,11 @@ import { chaveSelecao, isFaturaReserva } from '../../models/fatura-reserva';
 import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 
 @Component({
-  selector: 'app-ordem-formulario',
-  templateUrl: './formulario.component.html',
-  styleUrls: ['./formulario.component.scss']
+    selector: 'app-ordem-formulario',
+    templateUrl: './formulario.component.html',
+    styleUrls: ['./formulario.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FormularioComponent implements OnInit, OnChanges {
 

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Icons } from '../../icons';
 
@@ -10,9 +10,11 @@ interface PixLinkData {
 }
 
 @Component({
-  selector: 'app-pix-link',
-  templateUrl: './pix-link.component.html',
-  styleUrls: ['./pix-link.component.scss'],
+    selector: 'app-pix-link',
+    templateUrl: './pix-link.component.html',
+    styleUrls: ['./pix-link.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PixLinkComponent implements OnInit, OnDestroy {
   readonly icons = Icons;

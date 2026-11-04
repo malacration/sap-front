@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { formatCurrency } from '@angular/common';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -33,9 +33,11 @@ const TEMA = {
 };
 
 @Component({
-  selector: 'app-cobranca-dashboard',
-  templateUrl: './cobranca-dashboard.component.html',
-  styleUrls: ['./cobranca-dashboard.component.scss']
+    selector: 'app-cobranca-dashboard',
+    templateUrl: './cobranca-dashboard.component.html',
+    styleUrls: ['./cobranca-dashboard.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
@@ -455,7 +457,6 @@ export class CobrancaDashboardComponent implements OnInit, AfterViewInit, OnDest
           padding: opcoes.horizontal ? { right: 40 } : { top: 20 },
         },
         onClick: (_evento: any, elementos: any[]) => {
-          // eslint-disable-next-line no-underscore-dangle -- _index é a API pública do Chart.js 2.x
           const indice = elementos?.[0]?._index;
           if (opcoes.aoClicar && indice != null) {
             opcoes.aoClicar(indice);

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { PixGeradoItem, PixPedidoRequest, PixService } from '../../../sap/service/pix.service';
 import { ModalComponent } from '../modal/modal.component';
 import { DocumentList } from '../../../sap/model/markting/document-list';
@@ -9,8 +9,10 @@ type Etapa = 'selecao' | 'loading' | 'resultado' | 'erro';
 type TipoPagamento = 'total' | 'parcial';
 
 @Component({
-  selector: 'app-gerar-pix',
-  templateUrl: './gerar-pix.component.html',
+    selector: 'app-gerar-pix',
+    templateUrl: './gerar-pix.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GerarPixComponent {
   readonly icons = Icons;

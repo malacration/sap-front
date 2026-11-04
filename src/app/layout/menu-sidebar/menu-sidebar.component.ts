@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, HostBinding, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {ChangeDetectorRef, Component, HostBinding, OnChanges, OnInit, SimpleChanges, ChangeDetectionStrategy} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable, debounce, debounceTime} from 'rxjs';
 import { AppState } from '../../store/state';
@@ -15,7 +15,9 @@ const BASE_CLASSES = 'main-sidebar elevation-4';
 @Component({
     selector: 'app-menu-sidebar',
     templateUrl: './menu-sidebar.component.html',
-    styleUrls: ['./menu-sidebar.component.scss']
+    styleUrls: ['./menu-sidebar.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MenuSidebarComponent implements OnInit {
     @HostBinding('class') classes: string = BASE_CLASSES;

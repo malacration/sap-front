@@ -8,8 +8,9 @@ import {
   Output,
   ViewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
-import { Dropzone } from 'dropzone';
+import Dropzone from 'dropzone';
 
 /**
  * Adaptador Angular 15 para a engine Dropzone instalada por
@@ -17,10 +18,12 @@ import { Dropzone } from 'dropzone';
  * publicada com declarations Angular 16, incompativeis com o TypeScript 4.8.
  */
 @Component({
-  selector: 'app-ngx-dropzone-compat',
-  template: '<div #dropzoneHost class="dropzone relatorio-dropzone"></div>',
-  styleUrls: ['./ngx-dropzone-compat.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+    selector: 'app-ngx-dropzone-compat',
+    template: '<div #dropzoneHost class="dropzone relatorio-dropzone"></div>',
+    styleUrls: ['./ngx-dropzone-compat.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NgxDropzoneCompatComponent implements AfterViewInit, OnDestroy {
   @ViewChild('dropzoneHost', { static: true }) dropzoneHost!: ElementRef<HTMLDivElement>;

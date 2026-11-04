@@ -1,13 +1,15 @@
 <app-select
-    [options]="opcoes"
-    [label]="'Filial'"
-    [multiple]="multiple"
-    [initialSelect]="selectedBranch"
-    [initialSelectMany]="filiaisIniciais"
-    (selectedOut)="onChange($event)"
-    [loading]="loading">
+  [options]="opcoes"
+  [label]="'Filial'"
+  [multiple]="multiple"
+  [initialSelect]="selectedBranch"
+  [initialSelectMany]="filiaisIniciais"
+  (selectedOut)="onChange($event)"
+  [loading]="loading">
 </app-select>
-<div *ngIf="erro" class="text-danger" role="alert">
+@if (erro) {
+  <div class="text-danger" role="alert">
     {{ erro }}
     <button type="button" class="btn btn-sm btn-outline-danger" (click)="carregar()">Tentar novamente</button>
-</div>
+  </div>
+}

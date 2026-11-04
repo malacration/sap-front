@@ -1,87 +1,107 @@
-<section class="content offline-history" *ngIf="queue$ | async as records">
-  <section class="content-header">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
-      <h1>Cotações offline</h1>
-      <button class="btn btn-outline-primary" type="button" (click)="queue.synchronize()">
-        <i class="fas fa-cloud-upload-alt"></i> Transmitir pendentes
-      </button>
+@if (queue$ | async; as records) {
+  <section class="content offline-history">
+    <section class="content-header">
+      <div class="container-fluid d-flex align-items-center justify-content-between">
+        <h1>Cotações offline</h1>
+        <button class="btn btn-outline-primary" type="button" (click)="queue.synchronize()">
+          <i class="fas fa-cloud-upload-alt"></i> Transmitir pendentes
+        </button>
+      </div>
+    </section>
+    <div class="container-fluid">
+      <div class="summary">
+        <button type="button" [class.active]="filter === 'ALL'" (click)="filter = 'ALL'">
+          <span>{{records.length}}</span> Todas
+        </button>
+        <button type="button" [class.active]="filter === 'PENDING'" (click)="filter = 'PENDING'">
+          <span>{{count(records, ['PENDING', 'SYNCING'])}}</span> A transmitir
+        </button>
+        <button type="button" [class.active]="filter === 'ERROR'" (click)="filter = 'ERROR'">
+          <span>{{count(records, ['ERROR', 'REJECTED'])}}</span> Com erro
+        </button>
+        <button type="button" [class.active]="filter === 'TRANSMITTED'" (click)="filter = 'TRANSMITTED'">
+          <span>{{count(records, ['TRANSMITTED'])}}</span> Transmitidas
+        </button>
+        <button type="button" [class.active]="filter === 'PENDING_AUTHORIZATION'" (click)="filter = 'PENDING_AUTHORIZATION'">
+          <span>{{count(records, ['PENDING_AUTHORIZATION'])}}</span> Em autorização
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover bg-white">
+          <thead>
+            <tr>
+              <th>Protocolo offline</th>
+              <th>Digitada em</th>
+              <th>Cliente</th>
+              <th class="text-right">Valor</th>
+              <th>Status</th>
+              <th>Recibo da transmissão</th>
+              <th class="actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (record of visible(records); track record) {
+              <tr (click)="selected = selected?.localId === record.localId ? undefined : record">
+                <td>
+                  <code>{{record.transmissionId}}</code>
+                  <small class="d-block text-muted">Local: {{record.localId}}</small>
+                </td>
+                <td>{{record.createdAt | date:'dd/MM/yyyy HH:mm'}}</td>
+                <td>{{record.customerName}}</td>
+                <td class="text-right">{{record.total | currency}}</td>
+                <td><span class="status" [attr.data-status]="record.status">{{label(record.status)}}</span></td>
+                <td>
+                  @if (record.docEntry) {
+                    <span><strong>ID da gravação:</strong> {{record.docEntry}}</span>
+                  }
+                  @if (record.docNum) {
+                    <span> · <strong>Cotação:</strong> {{record.docNum}}</span>
+                  }
+                  @if (record.authorizationId) {
+                    <span><strong>Autorização:</strong> {{record.authorizationId}}</span>
+                  }
+                  @if (!record.docEntry && !record.authorizationId) {
+                    <span>-</span>
+                  }
+                </td>
+                <td class="actions" (click)="$event.stopPropagation()">
+                  @if (record.status === 'PENDING' || record.status === 'ERROR') {
+                    <button
+                      type="button" class="btn btn-sm btn-outline-secondary" title="Editar" (click)="edit(record)">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                  }
+                  @if (record.status === 'ERROR') {
+                    <button
+                      type="button" class="btn btn-sm btn-outline-primary" title="Reenviar" (click)="retry(record)">
+                      <i class="fas fa-redo"></i>
+                    </button>
+                  }
+                  @if (record.status === 'PENDING' || record.status === 'ERROR') {
+                    <button
+                      type="button" class="btn btn-sm btn-outline-danger" title="Excluir" (click)="remove(record)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+              @if (selected?.localId === record.localId && (record.lastError || record.traceId)) {
+                <tr class="error-row">
+                  <td colspan="7">
+                    <strong>Erro da última transmissão:</strong> {{record.lastError}}
+                    @if (record.traceId) {
+                      <span> · Trace ID: <code>{{record.traceId}}</code></span>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+            @if (visible(records).length === 0) {
+              <tr><td colspan="7" class="text-center text-muted py-4">Nenhuma cotação neste estado.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
-
-  <div class="container-fluid">
-    <div class="summary">
-      <button type="button" [class.active]="filter === 'ALL'" (click)="filter = 'ALL'">
-        <span>{{records.length}}</span> Todas
-      </button>
-      <button type="button" [class.active]="filter === 'PENDING'" (click)="filter = 'PENDING'">
-        <span>{{count(records, ['PENDING', 'SYNCING'])}}</span> A transmitir
-      </button>
-      <button type="button" [class.active]="filter === 'ERROR'" (click)="filter = 'ERROR'">
-        <span>{{count(records, ['ERROR', 'REJECTED'])}}</span> Com erro
-      </button>
-      <button type="button" [class.active]="filter === 'TRANSMITTED'" (click)="filter = 'TRANSMITTED'">
-        <span>{{count(records, ['TRANSMITTED'])}}</span> Transmitidas
-      </button>
-      <button type="button" [class.active]="filter === 'PENDING_AUTHORIZATION'" (click)="filter = 'PENDING_AUTHORIZATION'">
-        <span>{{count(records, ['PENDING_AUTHORIZATION'])}}</span> Em autorização
-      </button>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-hover bg-white">
-        <thead>
-          <tr>
-            <th>Protocolo offline</th>
-            <th>Digitada em</th>
-            <th>Cliente</th>
-            <th class="text-right">Valor</th>
-            <th>Status</th>
-            <th>Recibo da transmissão</th>
-            <th class="actions">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let record of visible(records)">
-            <tr (click)="selected = selected?.localId === record.localId ? undefined : record">
-              <td>
-                <code>{{record.transmissionId}}</code>
-                <small class="d-block text-muted">Local: {{record.localId}}</small>
-              </td>
-              <td>{{record.createdAt | date:'dd/MM/yyyy HH:mm'}}</td>
-              <td>{{record.customerName}}</td>
-              <td class="text-right">{{record.total | currency}}</td>
-              <td><span class="status" [attr.data-status]="record.status">{{label(record.status)}}</span></td>
-              <td>
-                <span *ngIf="record.docEntry"><strong>ID da gravação:</strong> {{record.docEntry}}</span>
-                <span *ngIf="record.docNum"> · <strong>Cotação:</strong> {{record.docNum}}</span>
-                <span *ngIf="record.authorizationId"><strong>Autorização:</strong> {{record.authorizationId}}</span>
-                <span *ngIf="!record.docEntry && !record.authorizationId">-</span>
-              </td>
-              <td class="actions" (click)="$event.stopPropagation()">
-                <button *ngIf="record.status === 'PENDING' || record.status === 'ERROR'"
-                        type="button" class="btn btn-sm btn-outline-secondary" title="Editar" (click)="edit(record)">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button *ngIf="record.status === 'ERROR'"
-                        type="button" class="btn btn-sm btn-outline-primary" title="Reenviar" (click)="retry(record)">
-                  <i class="fas fa-redo"></i>
-                </button>
-                <button *ngIf="record.status === 'PENDING' || record.status === 'ERROR'"
-                        type="button" class="btn btn-sm btn-outline-danger" title="Excluir" (click)="remove(record)">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-            <tr class="error-row" *ngIf="selected?.localId === record.localId && (record.lastError || record.traceId)">
-              <td colspan="7">
-                <strong>Erro da última transmissão:</strong> {{record.lastError}}
-                <span *ngIf="record.traceId"> · Trace ID: <code>{{record.traceId}}</code></span>
-              </td>
-            </tr>
-          </ng-container>
-          <tr *ngIf="visible(records).length === 0"><td colspan="7" class="text-center text-muted py-4">Nenhuma cotação neste estado.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+}

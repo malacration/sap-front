@@ -24,9 +24,11 @@
                 <span class="contador"> Clientes: {{ getTotalOriginCount() }}</span>
               </div>
               <ul class="list-group list-container mb-2">
-                <li *ngFor="let item of getOriginList()" class="list-group-item" (click)="moveToDestination(item)">
-                   {{item.CardCode}} - {{ item.CardName }}
-                </li>
+                @for (item of getOriginList(); track item) {
+                  <li class="list-group-item" (click)="moveToDestination(item)">
+                    {{item.CardCode}} - {{ item.CardName }}
+                  </li>
+                }
               </ul>
               <app-paginacao (pageChange)="loadClientesVendedor($event)" [totalItens]="totalOriginItems" [pageSize]="size" [hardCodeWidth]="250"></app-paginacao>
               <div class="mt-2 text-center">
@@ -46,28 +48,36 @@
                 <span class="contador">Clientes: {{ getTotalDestinationCount() }}</span>
               </div>
               <ul class="list-group list-container">
-                <li *ngFor="let item of getDestinationList()" class="list-group-item" (click)="moveToOrigin(item)">
-                  {{item.CardCode}} - {{ item.CardName }}
-                </li>
+                @for (item of getDestinationList(); track item) {
+                  <li class="list-group-item" (click)="moveToOrigin(item)">
+                    {{item.CardCode}} - {{ item.CardName }}
+                  </li>
+                }
               </ul>
               <div class="text-center mt-2">
                 <br>
-                <br>
-                <button class="btn btn-primary btn-sm btn-custom" (click)="unselectALL()" [disabled]="isButtonDisabled">Voltar Todos</button>
+                  <br>
+                    <button class="btn btn-primary btn-sm btn-custom" (click)="unselectALL()" [disabled]="isButtonDisabled">Voltar Todos</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                @if (!loading) {
+                  <button [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Realizar Transferência</button>
+                }
+                @if (loading) {
+                  <button [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Transferindo...</button>
+                }
               </div>
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success custom-btn btn-block" type="submit">Realizar Transferência</button>
-            <button *ngIf="loading" [disabled]="true" class="btn btn-success custom-btn btn-block" type="submit">Transferindo...</button>
-          </div>
+          @if (loading) {
+            <div class="overlay">
+              <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+          }
         </div>
       </div>
-      <div *ngIf="loading" class="overlay">
-        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-      </div>
-    </div>
-  </div>
-</section>
+    </section>

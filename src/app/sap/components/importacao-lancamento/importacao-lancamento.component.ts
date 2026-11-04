@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AlertService } from '../../../shared/service/alert.service';
 import {
@@ -14,8 +14,10 @@ export const MODELO_CSV = [
 ].join('\r\n');
 
 @Component({
-  selector: 'app-importacao-lancamento',
-  templateUrl: './importacao-lancamento.component.html',
+    selector: 'app-importacao-lancamento',
+    templateUrl: './importacao-lancamento.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ImportacaoLancamentoComponent implements OnDestroy {
   aba: 'importar' | 'historico' = 'importar';

@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ModalComponent } from '../../modal/modal.component';
 import { ActionReturn } from '../../action/action.model';
 import { Column } from '../../table/column.model';
@@ -9,8 +9,10 @@ import { Page } from '../../../../sap/model/page.model';
 
 
 @Component({
-  selector: 'app-modal-select',
-  templateUrl: './modal.select.component.html',
+    selector: 'app-modal-select',
+    templateUrl: './modal.select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ModalSelectComponent implements OnInit {
 

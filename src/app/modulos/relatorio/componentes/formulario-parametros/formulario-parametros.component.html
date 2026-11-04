@@ -1,15 +1,18 @@
 <!-- Campos gerados a partir de parametros[] do relatorio. Usado na aba
-     Executar e na pre-visualizacao da autoria: uma implementacao so, para
-     as duas telas nunca montarem o formulario de jeitos diferentes. -->
+Executar e na pre-visualizacao da autoria: uma implementacao so, para
+as duas telas nunca montarem o formulario de jeitos diferentes. -->
 <form [formGroup]="formulario" (ngSubmit)="$event.preventDefault()" autocomplete="off">
   <div class="form-row">
-    <div class="form-group col-md-6" *ngFor="let parametro of parametros; trackBy: identificarParametro">
-      <ng-container [ngSwitch]="parametro.tipo">
-        <!-- Mesma estrutura dos demais (rotulo em cima, controle embaixo, com a
-             altura de um input): sem isso o checkbox subia e desalinhava a coluna. -->
-        <ng-container *ngSwitchCase="'booleano'">
-          <label [for]="'param-' + parametro.nome">
-            {{ rotulo(parametro) }} <span *ngIf="parametro.obrigatorio" class="text-danger">*</span>
+    @for (parametro of parametros; track identificarParametro($index, parametro)) {
+      <div class="form-group col-md-6">
+        @switch (parametro.tipo) {
+          <!-- Mesma estrutura dos demais (rotulo em cima, controle embaixo, com a
+          altura de um input): sem isso o checkbox subia e desalinhava a coluna. -->
+          @case ('booleano') {
+            <label [for]="'param-' + parametro.nome">
+              {{ rotulo(parametro) }} @if (parametro.obrigatorio) {
+              <span class="text-danger">*</span>
+            }
           </label>
           <div class="controle-booleano">
             <div class="custom-control custom-checkbox">
@@ -23,70 +26,82 @@
               </label>
             </div>
           </div>
-        </ng-container>
-
-        <ng-container *ngSwitchDefault>
+        }
+        @default {
           <label [for]="'param-' + parametro.nome">
-            {{ rotulo(parametro) }} <span *ngIf="parametro.obrigatorio" class="text-danger">*</span>
-          </label>
-
+            {{ rotulo(parametro) }} @if (parametro.obrigatorio) {
+            <span class="text-danger">*</span>
+          }
+        </label>
+        @if (parametro.tipo === 'texto') {
           <input
-            *ngIf="parametro.tipo === 'texto'"
             type="text"
             class="form-control"
             [class.is-invalid]="campoInvalido(parametro)"
             [id]="'param-' + parametro.nome"
             [formControlName]="parametro.nome">
-
+        }
+        @if (parametro.tipo === 'numero') {
           <input
-            *ngIf="parametro.tipo === 'numero'"
             type="number"
             step="any"
             class="form-control"
             [class.is-invalid]="campoInvalido(parametro)"
             [id]="'param-' + parametro.nome"
             [formControlName]="parametro.nome">
-
-          <app-campo-data *ngIf="parametro.tipo === 'date' || parametro.tipo === 'datetime'"
+        }
+        @if (parametro.tipo === 'date' || parametro.tipo === 'datetime') {
+          <app-campo-data
             [inputId]="'param-' + parametro.nome"
             [hora]="parametro.tipo === 'datetime'"
             [invalido]="campoInvalido(parametro)"
-            [formControlName]="parametro.nome"></app-campo-data>
-
+          [formControlName]="parametro.nome"></app-campo-data>
+        }
+        @if (parametro.tipo === 'lista' && !parametro.multiplo) {
           <select
-            *ngIf="parametro.tipo === 'lista' && !parametro.multiplo"
             class="form-control"
             [class.is-invalid]="campoInvalido(parametro)"
             [id]="'param-' + parametro.nome"
             [formControlName]="parametro.nome">
             <option [ngValue]="null">Selecione</option>
-            <option *ngFor="let opcao of parametro.opcoes || []" [value]="opcao.valor">
-              {{ opcao.rotulo || opcao.valor }}
-            </option>
+            @for (opcao of parametro.opcoes || []; track opcao) {
+              <option [value]="opcao.valor">
+                {{ opcao.rotulo || opcao.valor }}
+              </option>
+            }
           </select>
-
-          <select *ngIf="parametro.tipo === 'lista' && parametro.multiplo" multiple
+        }
+        @if (parametro.tipo === 'lista' && parametro.multiplo) {
+          <select multiple
             class="form-control" [class.is-invalid]="campoInvalido(parametro)"
             [id]="'param-' + parametro.nome" [formControlName]="parametro.nome">
-            <option *ngFor="let opcao of parametro.opcoes || []" [value]="opcao.valor">
-              {{ opcao.rotulo || opcao.valor }}
-            </option>
+            @for (opcao of parametro.opcoes || []; track opcao) {
+              <option [value]="opcao.valor">
+                {{ opcao.rotulo || opcao.valor }}
+              </option>
+            }
           </select>
-
-          <app-parametro-cadastro *ngIf="cadastro(parametro)"
-            [parametro]="parametro" [valor]="formulario.get(parametro.nome)?.value"
+        }
+        @if (cadastro(parametro)) {
+          <app-parametro-cadastro
+            [parametro]="parametro" [valor]="$safeNavigationMigration(formulario.get(parametro.nome)?.value)"
             (valorChange)="atualizarCadastro(parametro, $event)">
           </app-parametro-cadastro>
-
-          <div *ngIf="campoInvalido(parametro)" class="invalid-feedback d-block">
+        }
+        @if (campoInvalido(parametro)) {
+          <div class="invalid-feedback d-block">
             {{ rotulo(parametro) }} é obrigatório.
           </div>
-        </ng-container>
-      </ng-container>
-    </div>
+        }
+      }
+    }
   </div>
+}
+</div>
 
-  <div *ngIf="parametros.length === 0" class="alert alert-light border">
+@if (parametros.length === 0) {
+  <div class="alert alert-light border">
     Este relatório não exige parâmetros.
   </div>
+}
 </form>

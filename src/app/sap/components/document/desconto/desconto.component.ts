@@ -1,12 +1,14 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { formatCurrency } from '@angular/common';
 import Big from 'big.js';
 
 @Component({
-  selector: 'desconto',
-  templateUrl: './desconto.component.html',
-  styleUrls: ['./desconto.component.scss'],
+    selector: 'desconto',
+    templateUrl: './desconto.component.html',
+    styleUrls: ['./desconto.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DescontoComponent {
 

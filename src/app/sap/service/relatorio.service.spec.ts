@@ -1,5 +1,5 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpErrorResponse, HttpResponse, provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { TestBed, fakeAsync, tick as avancar } from '@angular/core/testing';
 import { ConfigService } from '../../core/services/config.service';
 import { LogoService } from '../../core/services/logo.service';
@@ -21,13 +21,15 @@ describe('RelatorioService', () => {
 
   function preparar(logo: string | null = LOGO) {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+    imports: [],
+    providers: [
         RelatorioService,
         { provide: ConfigService, useValue: { getHostRelatorios: () => '/api/v1' } },
         { provide: LogoService, useValue: { dataUri: () => Promise.resolve(logo) } },
-      ],
-    });
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+    ]
+});
     http = TestBed.inject(HttpTestingController);
     service = TestBed.inject(RelatorioService);
     localStorage.removeItem('relatorio-execucoes-entregues');

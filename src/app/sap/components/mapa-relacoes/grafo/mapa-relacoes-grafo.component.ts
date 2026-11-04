@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as cytoscapeLib from 'cytoscape';
 import { elementosCancelados, estaCancelado, etiquetaSituacao, getCliente, LadoRastreio, MapaEdge, MapaNode, MapaRelacoesResponse, SITUACAO_ORIGEM_DISPONIVEL, TIPO_ROTA, TIPO_ROTA_COM_ID_NO_CAMINHO, toCytoscapeElements } from '../../../model/mapa-relacoes';
@@ -76,8 +76,10 @@ const ESPACO_CARD_ABERTO = 8
 const ID_CABECALHO_PILHA = '__cancelados__'
 
 @Component({
-  selector: 'app-mapa-relacoes-grafo',
-  templateUrl: './mapa-relacoes-grafo.component.html',
+    selector: 'app-mapa-relacoes-grafo',
+    templateUrl: './mapa-relacoes-grafo.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MapaRelacoesGrafoComponent implements AfterViewInit, OnChanges, OnDestroy {
 

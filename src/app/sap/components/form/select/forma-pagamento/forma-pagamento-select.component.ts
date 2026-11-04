@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Option } from '../../../../model/form/option';
 import { FormaPagamentoService } from '../../../../service/forma-pagamento.service';
 
 
 @Component({
-  selector: 'app-forma-pagamento-select',
-  templateUrl: './forma-pagamento-select.component.html'
+    selector: 'app-forma-pagamento-select',
+    templateUrl: './forma-pagamento-select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FormaPagamentoSelectComponent implements OnChanges {
 

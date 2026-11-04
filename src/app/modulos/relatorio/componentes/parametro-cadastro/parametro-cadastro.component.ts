@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Subject, throwError } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { Parametro } from '../../modelos/relatorio.model';
@@ -11,8 +11,10 @@ import { Column } from '../../../../shared/components/table/column.model';
 
 /** Registro fechado de cadastros: o YAML nunca fornece URL, SQL ou nome de propriedade. */
 @Component({
-  selector: 'app-parametro-cadastro',
-  templateUrl: './parametro-cadastro.component.html',
+    selector: 'app-parametro-cadastro',
+    templateUrl: './parametro-cadastro.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ParametroCadastroComponent implements OnChanges, OnDestroy {
   @Input() parametro!: Parametro;

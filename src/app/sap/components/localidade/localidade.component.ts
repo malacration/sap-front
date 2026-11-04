@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { LocalidadeService } from '../../../modulos/sap-shared/_services/localidade.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import { Localidade } from '../../model/localidade/localidade';
 import { Page } from '../../model/page.model';
 
 @Component({
-  selector: 'app-localidade',
-  templateUrl: './localidade.component.html',
+    selector: 'app-localidade',
+    templateUrl: './localidade.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class LocalidadeComponent implements OnInit {
 

@@ -1,10 +1,12 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { DocumentService } from './documento.service';
 
 @Component({
-  selector: 'app-document-core',
-  templateUrl: './document-core.component.html',
-  styleUrls: ['./document-core.component.scss']
+    selector: 'app-document-core',
+    templateUrl: './document-core.component.html',
+    styleUrls: ['./document-core.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 }) export class DocumentCoreComponent implements OnInit, OnChanges{
 
   loading = false

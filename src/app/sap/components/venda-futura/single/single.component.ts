@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BoletoVf, DownPaymentService } from '../../../service/DownPaymentService';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { Column } from '../../../../shared/components/table/column.model';
@@ -17,9 +17,11 @@ import { AuthService } from '../../../../shared/service/auth.service';
 
 
 @Component({
-  selector: 'app-venda-futura-single',
-  templateUrl: './single.component.html',
-  styleUrls: ['./single.component.scss']
+    selector: 'app-venda-futura-single',
+    templateUrl: './single.component.html',
+    styleUrls: ['./single.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class VendaFuturaSingleComponent implements OnInit {
 

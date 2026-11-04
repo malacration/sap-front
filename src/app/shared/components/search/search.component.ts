@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../../sap/model/page.model';
 import { SearchService } from '../../../sap/service/search.service';
@@ -8,8 +8,10 @@ import { ActionReturn } from '../action/action.model';
 
 
 @Component({
-  selector: 'app-search',
-  templateUrl: './search.component.html',
+    selector: 'app-search',
+    templateUrl: './search.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SearchComponent<T> {
 

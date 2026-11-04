@@ -1,8 +1,10 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-  selector: 'selecao-produto-calc',
-  templateUrl: './selecao-produto.component.html',
+    selector: 'selecao-produto-calc',
+    templateUrl: './selecao-produto.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SelecaoProdutoComponent implements OnInit {
   

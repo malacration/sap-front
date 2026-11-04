@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { formatCurrency } from '@angular/common';
 import { Produto } from '../../models/produto';
 import { Column } from '../../../../shared/components/table/column.model';
 
 @Component({
-  selector: 'custo-mercadoria',
-  templateUrl: './custo-mercadoria.component.html',
+    selector: 'custo-mercadoria',
+    templateUrl: './custo-mercadoria.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CustoMecadoriaStatementComponent implements OnInit {
   

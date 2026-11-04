@@ -1,10 +1,12 @@
-import { Component, ContentChildren, QueryList, AfterContentInit, EventEmitter, Output } from '@angular/core';
+import { Component, ContentChildren, QueryList, AfterContentInit, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 import { TabComponent } from './tab/tab.component';
 
 @Component({
-  selector: 'app-tabs',
-  templateUrl: './tabs.component.html',
-  styleUrls: ['./tabs.component.scss']
+    selector: 'app-tabs',
+    templateUrl: './tabs.component.html',
+    styleUrls: ['./tabs.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TabsComponent implements AfterContentInit {
   @ContentChildren(TabComponent) tabs: QueryList<TabComponent> = new QueryList<null>();

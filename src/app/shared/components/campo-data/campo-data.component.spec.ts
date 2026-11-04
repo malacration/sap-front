@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
@@ -7,8 +7,10 @@ import { BsDatepickerDirective, BsDatepickerModule } from 'ngx-bootstrap/datepic
 import { CampoDataComponent } from './campo-data.component';
 
 @Component({
-  template: `<app-campo-data inputId="campo" [hora]="hora" [(ngModel)]="valor"
+    template: `<app-campo-data inputId="campo" [hora]="hora" [(ngModel)]="valor"
                (ngModelChange)="mudancas = mudancas + 1" [disabled]="desabilitado"></app-campo-data>`,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 class HostComponent {
   valor: string | null = null;
@@ -21,7 +23,7 @@ describe('CampoDataComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [HostComponent, CampoDataComponent],
-      imports: [FormsModule, NoopAnimationsModule, BsDatepickerModule.forRoot()],
+      imports: [FormsModule, NoopAnimationsModule, BsDatepickerModule],
     }).compileComponents();
   });
 

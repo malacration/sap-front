@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, lastValueFrom } from 'rxjs';
 import { TravaRegraService, Regra } from '../../service/trava-regra.service';
 import { AlertService } from '../../../shared/service/alert.service';
@@ -9,8 +9,10 @@ import { AlertService } from '../../../shared/service/alert.service';
  * regra numa trava — isso continua sendo feito na TransactionNotification.
  */
 @Component({
-  selector: 'app-regras-trava',
-  templateUrl: './regras-trava.component.html',
+    selector: 'app-regras-trava',
+    templateUrl: './regras-trava.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegrasTravaComponent implements OnInit {
 

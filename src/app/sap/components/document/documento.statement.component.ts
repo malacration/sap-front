@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BusinessPartnerService } from '../../../modulos/sap-shared/_services/business-partners.service';
 import { Option } from '../../model/form/option';
 import { RadioItem } from '../form/radio/radio.model';
@@ -9,7 +9,7 @@ import { Observable, Subject, forkJoin, of} from 'rxjs';
 import { catchError, debounceTime, map, switchMap } from 'rxjs/operators';
 import { ConfigService } from '../../../core/services/config.service';
 import { BPAddress, BusinessPartner } from '../../model/business-partner/business-partner';
-import * as moment from 'moment';
+import moment from 'moment';
 import { OrderSalesService } from '../../../modulos/sap-shared/_services/documents/order-sales.service';
 import { DocumentAngularSave } from '../../service/document/document-angular-save';
 import { QuotationService } from '../../service/document/quotation.service';
@@ -26,9 +26,11 @@ import { OfflineCatalogRepository } from '../../../core/offline/offline-catalog.
 import { AuthService } from '../../../shared/service/auth.service';
 
 @Component({
-  selector: 'app-document-statement',
-  templateUrl: './document.statement.component.html',
-  styleUrls: ['./document.statement.component.scss'],
+    selector: 'app-document-statement',
+    templateUrl: './document.statement.component.html',
+    styleUrls: ['./document.statement.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DocumentStatementComponent implements OnInit {
 
