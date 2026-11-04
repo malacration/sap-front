@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 
 import { isFaturaReserva } from '../../models/fatura-reserva';
+import { formatarTelefone } from '../../models/telefone';
 @Injectable({ providedIn: 'root' })
 export class ItinerarioPdfService {
   private readonly VERDE_SUSTEN: [number, number, number] = [0, 155, 58];
@@ -115,6 +116,7 @@ export class ItinerarioPdfService {
       this.escreverCampo(doc, 'Cliente:', `${pedido.CardName} (${pedido.CardCode})`, marginX + 3, cursorY);
       cursorY += 4.5;
       this.escreverCampo(doc, 'Localidade:', localidadesMap.get(pedido.CardCode) || 'N/I', marginX + 3, cursorY);
+      this.escreverCampo(doc, 'Contato Cliente:', formatarTelefone(pedido.ClienteCelular || pedido.ClienteTelefone) || 'N/I', col2, cursorY);
       cursorY += 4.5;
       
       doc.setFont('helvetica', 'bold').text('Endereço:', marginX + 3, cursorY);
