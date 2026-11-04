@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FaturasService } from '../../service/fatura/faturas.service';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 import { Fatura, FaturaDefinition } from '../../model/fatura/fatura.model';
@@ -14,10 +14,11 @@ import { AuthService } from '../../../shared/service/auth.service';
 
 
 @Component({
-  selector: 'app-faturas',
-  templateUrl: './faturas.component.html',
-  styleUrls: ['./faturas.component.scss']
-  
+    selector: 'app-faturas',
+    templateUrl: './faturas.component.html',
+    styleUrls: ['./faturas.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FaturasComponent implements OnInit {
   

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnDestroy, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BranchService } from '../../../../sap/service/branch.service';
@@ -8,8 +8,10 @@ import { ReplaceFilial } from '../../../../utils/replaceFilial';
 
 
 @Component({
-  selector: 'app-branch-select',
-  templateUrl: './branch-select.component.html'
+    selector: 'app-branch-select',
+    templateUrl: './branch-select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class BranchSelectComponent implements OnInit, OnDestroy {
 

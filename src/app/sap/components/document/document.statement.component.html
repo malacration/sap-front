@@ -1,198 +1,244 @@
 <section class="content" [class.offline-entry]="offlineMode">
-    <!-- 
-        # TODO
-        # Fazer directiva para colapsed
-        # Fazer componente generico par busca
-        # Fazer componente de busca de cliente
-     -->  
-     <div *ngIf="offlineMode" class="alert alert-warning border-warning mb-3">
-        <i class="fas fa-cloud-download-alt mr-2"></i>
-        <strong>Digitação offline:</strong> este lançamento será salvo como cotação no dispositivo e transmitido quando a conexão voltar.
-     </div>
-     <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Pedido de Venda</h1>
-                </div>
-            </div>
-        </div>
-    </section>
-    <div class="container-fluid"> 
-        <div class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title"><b>Identificação</b></h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                        <app-branch-select #branch [selected]="selectedBranch" (selectedOut)="selectBranch($event)"></app-branch-select>
-                        </div>
-                    </div>
-                    <div class="col-sm-2" *ngIf="branchId">
-                        <div class="form-group">
-                            <app-busines-partner-search [initial]="businesPartner" (selected)="selectBp($event)" ></app-busines-partner-search>
-                        </div>
-                    </div>
-                    <div class="col-sm-2" *ngIf="branchId">
-                        <div class="form-group">
-                            <app-select 
-                            [options]="tipoOperacaoOptions" 
-                            [initialSelect]="tipoOperacao"
-                            (selectedOut)="changeTipoOperacao($event)" 
-                            [label]="'Operação'"></app-select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div *ngIf="loading" class="overlay">
-                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-            </div>
-        </div>
-
-        <card-itens
-            (changeItens)="changeItens($event)"
-            [initialItems]="itens"
-            *ngIf="branchId" 
-            [geralLoading]="loading"
-            [branchId]="branchId">
-        </card-itens>
-        
-        <div *ngIf="branchId && businesPartner && itens?.length > 0" class="card card-primary">
-            <div class="card-header">
-                <h3 class="card-title"><b>Entrega</b></h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-3">
-                        <div class="form-group">
-                            <label for="dataEntrega">Tipo Envio</label>
-                            <app-radio [opcoes]="tipoEnvioRadio" [selected]="tipoEnvio" (change)="tipoEnvioChange($event)"></app-radio>
-                            <app-select *ngIf="tipoEnvio == 'ent'" 
-                                [label]="'Seleciona Endereço'" 
-                                [initialSelect]="enderecoEntrega"
-                                (selectedOut)="selectEnderecoEntrega($event)"
-                                [options]="businesPartner.getAddressOptions('bo_ShipTo')">
-                            </app-select>
-                            <div *ngIf="tipoEnvio == 'ent'" class="mt-3">
-                                <ng-container *ngIf="freteManual">
-                                    <label for="frete">Valor do Frete</label>
-                                    <input type="number" min="0" step="0.01" id="frete" name="frete"
-                                           class="form-control text-center" [(ngModel)]="frete">
-                                </ng-container>
-                                <ng-container *ngIf="!freteManual">
-                                <small class="d-block mb-2">
-                                    Localidade:
-                                    <strong *ngIf="localidadeEntrega">{{localidadeEntrega}}</strong>
-                                    <span *ngIf="!localidadeEntrega" class="text-danger">nao vinculada no endereco</span>
-                                </small>
-                                <label for="frete">Valor do Frete (calculado automaticamente)</label>
-                                <!-- Enquanto recalcula, o campo NAO mostra o valor anterior: ele nao
-                                     corresponde mais ao pedido, e se a chamada falhar ou nao voltar o
-                                     numero errado ficaria travado na tela parecendo confirmado. -->
-                                <input type="text" class="form-control text-center" disabled
-                                       *ngIf="freteCalculado"
-                                       [value]="frete | currency:'BRL':'symbol':'1.2-2':'pt-BR'">
-                                <div *ngIf="!freteCalculado"
-                                     class="form-control text-center text-muted d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-sync fa-spin mr-2"></i> Calculando...
-                                </div>
-                                <!-- Bloco de falha: so aparece quando a localidade nao fecha na tabela
-                                     de frete. No caminho feliz o calculo e silencioso - o spinner
-                                     piscava a cada tecla digitada na quantidade.
-                                     retentandoFrete segura o bloco durante a retentativa, senao ele
-                                     sumiria no meio da propria acao do usuario. -->
-                                <div *ngIf="freteErro || retentandoFrete">
-                                    <div *ngIf="freteErro" class="alert alert-danger mt-2 mb-2 py-2">
-                                        {{freteErro}}
-                                        <small class="d-block mt-1">
-                                            Corrija o cadastro no SAP e use "Recalcular frete" - o pedido digitado nao se perde.
-                                        </small>
-                                    </div>
-                                    <small *ngIf="calculandoFrete || recarregandoFrete" class="text-muted d-block mb-1">
-                                        <i class="fas fa-sync fa-spin"></i>
-                                        {{recarregandoFrete ? 'Recarregando cadastro do cliente...' : 'Calculando frete...'}}
-                                    </small>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                                            [disabled]="calculandoFrete || recarregandoFrete"
-                                            (click)="recarregarFrete()">
-                                        <i class="fas fa-sync"></i> Recalcular frete
-                                    </button>
-                                </div>
-                                </ng-container>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <label for="dataEntrega">Data Entrega</label>
-                            <app-campo-data name="dataEntrega" [(ngModel)]="dtEntrega"></app-campo-data>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <app-forma-pagamento-select 
-                                (selectedOut)="changeFormaPagamento($event)" 
-                                [selected]="formaPagamento"
-                                [idFilial]="branchId"
-                                [cardCode]="businesPartner.CardCode">
-                            </app-forma-pagamento-select>
-                        </div>
-                    </div>
-                    <div *ngIf="!isMutiplasTabelas()" class="col-sm-2">
-                        <div class="form-group">
-                        <app-condicao-pagamento-select [tabela]="getTabela()" [selected]="selectedPaymentTerms[getTabela()]" (selectedOut)="changeCondicaoPagamento($event)">
-                            </app-condicao-pagamento-select>
-                        </div>
-                    </div>
-                    <div class="col-sm-2">
-                        <div class="form-group">
-                            <div class="form-group">
-                                <label for="obs">Observacao</label>
-                                <textarea class="form-control" id="obs" rows="2" [(ngModel)]="observacao"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-footer">
-                <b>Total com produtos:</b> {{total() | currency}}
-            </div>
-            <div *ngIf="loading" class="overlay">
-                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-            </div>
-        </div>
-
-        <div *ngIf="isMutiplasTabelas()" class="card card-primary">
-            <div class="card-header">
-                Este pedido contém múltiplas tabelas de venda; condições de pagamento distintas serão necessárias
-            </div>
-            <div *ngFor="let tabela of tabelas()" class="card-body">
-                <div *ngFor="let item of itensBy(tabela); index as i" class="border-left border-primary pl-2">
-                    <div *ngIf="i == 0">
-                        <h5>{{item.ListName}} - Para os Itens </h5>
-                        <app-condicao-pagamento-select [tabela]="item.PriceList" [selected]="selectedPaymentTerms[item.PriceList]" (selectedOut)="changeCondicaoPagamento($event)">
-                        </app-condicao-pagamento-select>
-                    </div>
-                    <ul class="mt-2">
-                        <li>
-                            {{item.ItemDescription}}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div *ngIf="loading" class="overlay">
-                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-            </div>
-        </div>
-
-        <div class="card">
-            <button *ngIf="!loading" [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit">
-              <i class="fas" [class.fa-save]="offlineMode" [class.fa-paper-plane]="!offlineMode"></i>
-              {{offlineMode ? (offlineEditId ? 'Atualizar cotação offline' : 'Salvar cotação offline') : 'Enviar Pedido'}}
-            </button>
-            <button *ngIf="loading" [disabled]="true" class="btn btn-success" type="submit" >Enviando...</button>
-        </div>
+  <!--
+  # TODO
+  # Fazer directiva para colapsed
+  # Fazer componente generico par busca
+  # Fazer componente de busca de cliente
+  -->
+  @if (offlineMode) {
+    <div class="alert alert-warning border-warning mb-3">
+      <i class="fas fa-cloud-download-alt mr-2"></i>
+      <strong>Digitação offline:</strong> este lançamento será salvo como cotação no dispositivo e transmitido quando a conexão voltar.
     </div>
+  }
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Pedido de Venda</h1>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="container-fluid">
+    <div class="card card-primary">
+      <div class="card-header">
+        <h3 class="card-title"><b>Identificação</b></h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-2">
+            <div class="form-group">
+              <app-branch-select #branch [selected]="selectedBranch" (selectedOut)="selectBranch($event)"></app-branch-select>
+            </div>
+          </div>
+          @if (branchId) {
+            <div class="col-sm-2">
+              <div class="form-group">
+                <app-busines-partner-search [initial]="businesPartner" (selected)="selectBp($event)" ></app-busines-partner-search>
+              </div>
+            </div>
+          }
+          @if (branchId) {
+            <div class="col-sm-2">
+              <div class="form-group">
+                <app-select
+                  [options]="tipoOperacaoOptions"
+                  [initialSelect]="tipoOperacao"
+                  (selectedOut)="changeTipoOperacao($event)"
+                [label]="'Operação'"></app-select>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+      @if (loading) {
+        <div class="overlay">
+          <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+        </div>
+      }
+    </div>
+
+    @if (branchId) {
+      <card-itens
+        (changeItens)="changeItens($event)"
+        [initialItems]="itens"
+        [geralLoading]="loading"
+        [branchId]="branchId">
+      </card-itens>
+    }
+
+    @if (branchId && businesPartner && itens?.length > 0) {
+      <div class="card card-primary">
+        <div class="card-header">
+          <h3 class="card-title"><b>Entrega</b></h3>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="form-group">
+                <label for="dataEntrega">Tipo Envio</label>
+                <app-radio [opcoes]="tipoEnvioRadio" [selected]="tipoEnvio" (change)="tipoEnvioChange($event)"></app-radio>
+                @if (tipoEnvio == 'ent') {
+                  <app-select
+                    [label]="'Seleciona Endereço'"
+                    [initialSelect]="enderecoEntrega"
+                    (selectedOut)="selectEnderecoEntrega($event)"
+                    [options]="businesPartner.getAddressOptions('bo_ShipTo')">
+                  </app-select>
+                }
+                @if (tipoEnvio == 'ent') {
+                  <div class="mt-3">
+                    @if (freteManual) {
+                      <label for="frete">Valor do Frete</label>
+                      <input type="number" min="0" step="0.01" id="frete" name="frete"
+                        class="form-control text-center" [(ngModel)]="frete">
+                    }
+                    @if (!freteManual) {
+                      <small class="d-block mb-2">
+                        Localidade:
+                        @if (localidadeEntrega) {
+                          <strong>{{localidadeEntrega}}</strong>
+                        }
+                        @if (!localidadeEntrega) {
+                          <span class="text-danger">nao vinculada no endereco</span>
+                        }
+                      </small>
+                      <label for="frete">Valor do Frete (calculado automaticamente)</label>
+                      <!-- Enquanto recalcula, o campo NAO mostra o valor anterior: ele nao
+                      corresponde mais ao pedido, e se a chamada falhar ou nao voltar o
+                      numero errado ficaria travado na tela parecendo confirmado. -->
+                      @if (freteCalculado) {
+                        <input type="text" class="form-control text-center" disabled
+                          [value]="frete | currency:'BRL':'symbol':'1.2-2':'pt-BR'">
+                      }
+                      @if (!freteCalculado) {
+                        <div
+                          class="form-control text-center text-muted d-flex align-items-center justify-content-center">
+                          <i class="fas fa-sync fa-spin mr-2"></i> Calculando...
+                        </div>
+                      }
+                      <!-- Bloco de falha: so aparece quando a localidade nao fecha na tabela
+                      de frete. No caminho feliz o calculo e silencioso - o spinner
+                      piscava a cada tecla digitada na quantidade.
+                      retentandoFrete segura o bloco durante a retentativa, senao ele
+                      sumiria no meio da propria acao do usuario. -->
+                      @if (freteErro || retentandoFrete) {
+                        <div>
+                          @if (freteErro) {
+                            <div class="alert alert-danger mt-2 mb-2 py-2">
+                              {{freteErro}}
+                              <small class="d-block mt-1">
+                                Corrija o cadastro no SAP e use "Recalcular frete" - o pedido digitado nao se perde.
+                              </small>
+                            </div>
+                          }
+                          @if (calculandoFrete || recarregandoFrete) {
+                            <small class="text-muted d-block mb-1">
+                              <i class="fas fa-sync fa-spin"></i>
+                              {{recarregandoFrete ? 'Recarregando cadastro do cliente...' : 'Calculando frete...'}}
+                            </small>
+                          }
+                          <button type="button" class="btn btn-sm btn-outline-secondary"
+                            [disabled]="calculandoFrete || recarregandoFrete"
+                            (click)="recarregarFrete()">
+                            <i class="fas fa-sync"></i> Recalcular frete
+                          </button>
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="form-group">
+                <label for="dataEntrega">Data Entrega</label>
+                <app-campo-data name="dataEntrega" [(ngModel)]="dtEntrega"></app-campo-data>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="form-group">
+                <app-forma-pagamento-select
+                  (selectedOut)="changeFormaPagamento($event)"
+                  [selected]="formaPagamento"
+                  [idFilial]="branchId"
+                  [cardCode]="businesPartner.CardCode">
+                </app-forma-pagamento-select>
+              </div>
+            </div>
+            @if (!isMutiplasTabelas()) {
+              <div class="col-sm-2">
+                <div class="form-group">
+                  <app-condicao-pagamento-select [tabela]="getTabela()" [selected]="selectedPaymentTerms[getTabela()]" (selectedOut)="changeCondicaoPagamento($event)">
+                  </app-condicao-pagamento-select>
+                </div>
+              </div>
+            }
+            <div class="col-sm-2">
+              <div class="form-group">
+                <div class="form-group">
+                  <label for="obs">Observacao</label>
+                  <textarea class="form-control" id="obs" rows="2" [(ngModel)]="observacao"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <b>Total com produtos:</b> {{total() | currency}}
+        </div>
+        @if (loading) {
+          <div class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+          </div>
+        }
+      </div>
+    }
+
+    @if (isMutiplasTabelas()) {
+      <div class="card card-primary">
+        <div class="card-header">
+          Este pedido contém múltiplas tabelas de venda; condições de pagamento distintas serão necessárias
+        </div>
+        @for (tabela of tabelas(); track tabela) {
+          <div class="card-body">
+            @for (item of itensBy(tabela); track item; let i = $index) {
+              <div class="border-left border-primary pl-2">
+                @if (i == 0) {
+                  <div>
+                    <h5>{{item.ListName}} - Para os Itens </h5>
+                    <app-condicao-pagamento-select [tabela]="item.PriceList" [selected]="selectedPaymentTerms[item.PriceList]" (selectedOut)="changeCondicaoPagamento($event)">
+                    </app-condicao-pagamento-select>
+                  </div>
+                }
+                <ul class="mt-2">
+                  <li>
+                    {{item.ItemDescription}}
+                  </li>
+                </ul>
+              </div>
+            }
+          </div>
+        }
+        @if (loading) {
+          <div class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="card">
+      @if (!loading) {
+        <button [disabled]="!isFormValid()" (click)="sendOrder()" class="btn btn-success" type="submit">
+          <i class="fas" [class.fa-save]="offlineMode" [class.fa-paper-plane]="!offlineMode"></i>
+          {{offlineMode ? (offlineEditId ? 'Atualizar cotação offline' : 'Salvar cotação offline') : 'Enviar Pedido'}}
+        </button>
+      }
+      @if (loading) {
+        <button [disabled]="true" class="btn btn-success" type="submit" >Enviando...</button>
+      }
+    </div>
+  </div>
 </section>

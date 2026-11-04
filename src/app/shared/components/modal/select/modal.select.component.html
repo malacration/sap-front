@@ -1,41 +1,51 @@
 
-<div *ngIf="!isSelected()">
+@if (!isSelected()) {
+  <div>
     <label for="id">Selecionar {{name}}</label>
     <div class="input-group">
-        <input type="text" class="form-control" name="id" (keydown.enter)="disableSearch() ? {} : searchFunction()" [ngModel]="keyWord" [ngModelOptions]="{standalone: true}" (ngModelChange)="atualizaKeyWord($event)" placeholder="Buscar" />
-        <span class="input-group-append">
-            <button type="button" class="btn btn-primary" [disabled]="disableSearch()" (click)="searchFunction()">
-                <i class="fas fa-search"></i> 
-            </button>
-        </span>
+      <input type="text" class="form-control" name="id" (keydown.enter)="disableSearch() ? {} : searchFunction()" [ngModel]="keyWord" [ngModelOptions]="{standalone: true}" (ngModelChange)="atualizaKeyWord($event)" placeholder="Buscar" />
+      <span class="input-group-append">
+        <button type="button" class="btn btn-primary" [disabled]="disableSearch()" (click)="searchFunction()">
+          <i class="fas fa-search"></i>
+        </button>
+      </span>
     </div>
-</div>
+  </div>
+}
 
 
-<div *ngIf="isSelected()">
+@if (isSelected()) {
+  <div>
     <label for="id">{{name}} Selecionado</label>
     <div class="input-group">
-        <input type="text" class="form-control" name="id" disabled="true" value="{{content.toString()}}" />
-        <span class="input-group-append">
-            <button type="button" class="btn btn-danger" (click)="clear()">
-                <i class="far fa-times-circle"></i>
-            </button>
-        </span>
+      <input type="text" class="form-control" name="id" disabled="true" value="{{content.toString()}}" />
+      <span class="input-group-append">
+        <button type="button" class="btn btn-danger" (click)="clear()">
+          <i class="far fa-times-circle"></i>
+        </button>
+      </span>
     </div>
-</div>
+  </div>
+}
 
 <app-modal #busca [title]="tituloModal">
-    <app-table [content]="resultadoBusca.content" [definition]="definition" (actionOutput)="action($event)"></app-table>
-    <div *ngIf="loading" class="text-center">
-        <i class="fas fa-2x fa-sync fa-spin"></i>
+  <app-table [content]="resultadoBusca.content" [definition]="definition" (actionOutput)="action($event)"></app-table>
+  @if (loading) {
+    <div class="text-center">
+      <i class="fas fa-2x fa-sync fa-spin"></i>
     </div>
-    <div class="row">
-        <div *ngIf="!loading && resultadoBusca.nextLink" class="col text-center">
-            <button type="button" class="btn btn-primary" (click)="changePageFunction(resultadoBusca.nextLink)">
-                Carregar Mais
-                <i class="far fa-plus-square"></i>
-            </button>
-            <app-paginacao *ngIf="!loading && !resultadoBusca.nextLink" #paginacao (pageChange)="changePageFunction($event)" [totalItens]="50" [pageSize]="2" [hardCodeWidth]="350"></app-paginacao>
-        </div>        
-    </div>
+  }
+  <div class="row">
+    @if (!loading && resultadoBusca.nextLink) {
+      <div class="col text-center">
+        <button type="button" class="btn btn-primary" (click)="changePageFunction(resultadoBusca.nextLink)">
+          Carregar Mais
+          <i class="far fa-plus-square"></i>
+        </button>
+        @if (!loading && !resultadoBusca.nextLink) {
+          <app-paginacao #paginacao (pageChange)="changePageFunction($event)" [totalItens]="50" [pageSize]="2" [hardCodeWidth]="350"></app-paginacao>
+        }
+      </div>
+    }
+  </div>
 </app-modal>

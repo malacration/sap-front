@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Parametro } from '../../modelos/relatorio.model';
@@ -12,9 +12,11 @@ import { Parametro } from '../../modelos/relatorio.model';
  * pre-visualizado receberia parametros diferentes do executado.
  */
 @Component({
-  selector: 'app-formulario-parametros',
-  templateUrl: './formulario-parametros.component.html',
-  styleUrls: ['./formulario-parametros.component.scss'],
+    selector: 'app-formulario-parametros',
+    templateUrl: './formulario-parametros.component.html',
+    styleUrls: ['./formulario-parametros.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FormularioParametrosComponent implements OnDestroy {
   /** Valores prontos para envio, emitidos a cada alteracao do formulario. */

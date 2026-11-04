@@ -1,22 +1,30 @@
-<ng-container *ngIf="!isPublicRoute">
+@if (!isPublicRoute) {
   <app-header></app-header>
   <app-menu-sidebar class="sidebar-dark-primary"></app-menu-sidebar>
-</ng-container>
+}
 
 <div [class]="isPublicRoute ? '' : 'content-wrapper'">
-    <app-offline-status *ngIf="!isPublicRoute && offlineContext.offlineEnabled"></app-offline-status>
-    <div *ngIf="homologacao && !isPublicRoute" class="row content hmg">
-        <div class="rb-mp ribbon-wrapper ribbon-xl">
-            <div class="ribbon bg-danger">
-                Homologacao
-            </div>
+  @if (!isPublicRoute && offlineContext.offlineEnabled) {
+    <app-offline-status></app-offline-status>
+  }
+  @if (homologacao && !isPublicRoute) {
+    <div class="row content hmg">
+      <div class="rb-mp ribbon-wrapper ribbon-xl">
+        <div class="ribbon bg-danger">
+          Homologacao
         </div>
+      </div>
     </div>
-    <section [class]="isPublicRoute ? '' : 'content content-mr pt-2'">
-        <router-outlet></router-outlet>
-    </section>
-    <br *ngIf="!isPublicRoute">
-</div>
-<!-- <app-footer></app-footer> -->
-<!-- <app-control-sidebar></app-control-sidebar> -->
-<div *ngIf="!isPublicRoute" id="sidebar-overlay" (click)="onToggleMenuSidebar()"></div>
+  }
+  <section [class]="isPublicRoute ? '' : 'content content-mr pt-2'">
+    <router-outlet></router-outlet>
+  </section>
+  @if (!isPublicRoute) {
+    <br>
+    }
+  </div>
+  <!-- <app-footer></app-footer> -->
+  <!-- <app-control-sidebar></app-control-sidebar> -->
+  @if (!isPublicRoute) {
+    <div id="sidebar-overlay" (click)="onToggleMenuSidebar()"></div>
+  }

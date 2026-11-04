@@ -3,82 +3,116 @@
     <table class="table table-striped table-bordered">
       <thead class="thead-light">
         <tr>
-          <th *ngIf="hasAction() && actionsFirst">{{ actionsLabel }}</th>
-          <th *ngFor="let def of definition" scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
-
-            {{def.label}}
-            <button *ngIf="isEditable(def)" class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="atualizaColuna(def)">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </button>
-          </th>
-          <th *ngIf="hasAction() && !actionsFirst">{{ actionsLabel }}</th>
+          @if (hasAction() && actionsFirst) {
+            <th>{{ actionsLabel }}</th>
+          }
+          @for (def of definition; track def) {
+            <th scope="col" [ngClass]="{ 'sticky-column': def.sticky }">
+              {{def.label}}
+              @if (isEditable(def)) {
+                <button class="btn btn-link p-0 m-0 border-0 text-decoration-none" (click)="atualizaColuna(def)">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+              }
+            </th>
+          }
+          @if (hasAction() && !actionsFirst) {
+            <th>{{ actionsLabel }}</th>
+          }
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of content">
-          <ng-container *ngIf="actionsFirst"
-            [ngTemplateOutlet]="celulaDeAcoes" [ngTemplateOutletContext]="{ $implicit: item }">
-          </ng-container>
-          <td *ngFor="let def of definition" scope="col"
-              [ngClass]="getCellClass(item, def)"
-              [class.table-cell-wrap]="def.wrap">
-            <div *ngIf="renderContent(item, def)" [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
-            <div *ngIf="def.clickable">
-              <a href="#" (click)="clicarCelula($event, item, def)">{{getValue(item, def)}}</a>
-            </div>
-            <div *ngIf="isLinkNaPagina(item,def)">
-              <a [routerLink]="[]" [queryParams]="getValue(item, def)?.params">{{getValue(item, def)?.label}}</a>
-            </div>
-            <div *ngIf="isRouterLink(item,def) && !isLinkNaPagina(item,def)">
-              <app-sap-link-button
-                [label]="getValue(item, def)?.label"
-                [sapRouterLink]="getValue(item, def)?.path"
-                [queryParams]="getValue(item, def)?.params">
-              </app-sap-link-button>
-            </div>
-            <div *ngIf="isEditable(def)">
-              <input *ngIf="isPercent(def)"
-                [attr.size]="getInputSize(item, def)"
-                class="table-input"
-                app-percentage
-                type="text"
-                [formControl]="formControlFactory(item,def)"/>
-
-              <input *ngIf="isCurrency(def)"
-                [attr.size]="getInputSize(item, def)"
-                class="table-input"
-                app-currency
-                type="text"
-                [formControl]="formControlFactory(item,def)"/>
-
-              <input *ngIf="isNormalEditable(def)"
-                [attr.size]="getInputSize(item, def)"
-                class="table-input"
-                type="text"
-                normalText
-                [formControl]="formControlFactory(item,def)" />
-            </div>
-          </td>
-          <ng-container *ngIf="!actionsFirst"
-            [ngTemplateOutlet]="celulaDeAcoes" [ngTemplateOutletContext]="{ $implicit: item }">
-          </ng-container>
-        </tr>
+        @for (item of content; track item) {
+          <tr>
+            @if (actionsFirst) {
+              <ng-container
+                [ngTemplateOutlet]="celulaDeAcoes" [ngTemplateOutletContext]="{ $implicit: item }">
+              </ng-container>
+            }
+            @for (def of definition; track def) {
+              <td scope="col"
+                [ngClass]="getCellClass(item, def)"
+                [class.table-cell-wrap]="def.wrap">
+                @if (renderContent(item, def)) {
+                  <div [innerHTML]="renderContent(item, def)  | appSafeHtml"></div>
+                }
+                @if (def.clickable) {
+                  <div>
+                    <a href="#" (click)="clicarCelula($event, item, def)">{{getValue(item, def)}}</a>
+                  </div>
+                }
+                @if (isLinkNaPagina(item,def)) {
+                  <div>
+                    <a [routerLink]="[]" [queryParams]="$safeNavigationMigration(getValue(item, def)?.params)">{{getValue(item, def)?.label}}</a>
+                  </div>
+                }
+                @if (isRouterLink(item,def) && !isLinkNaPagina(item,def)) {
+                  <div>
+                    <app-sap-link-button
+                      [label]="$safeNavigationMigration(getValue(item, def)?.label)"
+                      [sapRouterLink]="$safeNavigationMigration(getValue(item, def)?.path)"
+                      [queryParams]="$safeNavigationMigration(getValue(item, def)?.params)">
+                    </app-sap-link-button>
+                  </div>
+                }
+                @if (isEditable(def)) {
+                  <div>
+                    @if (isPercent(def)) {
+                      <input
+                        [attr.size]="getInputSize(item, def)"
+                        class="table-input"
+                        app-percentage
+                        type="text"
+                        [formControl]="formControlFactory(item,def)"/>
+                    }
+                    @if (isCurrency(def)) {
+                      <input
+                        [attr.size]="getInputSize(item, def)"
+                        class="table-input"
+                        app-currency
+                        type="text"
+                        [formControl]="formControlFactory(item,def)"/>
+                    }
+                    @if (isNormalEditable(def)) {
+                      <input
+                        [attr.size]="getInputSize(item, def)"
+                        class="table-input"
+                        type="text"
+                        normalText
+                        [formControl]="formControlFactory(item,def)" />
+                    }
+                  </div>
+                }
+              </td>
+            }
+            @if (!actionsFirst) {
+              <ng-container
+                [ngTemplateOutlet]="celulaDeAcoes" [ngTemplateOutletContext]="{ $implicit: item }">
+              </ng-container>
+            }
+          </tr>
+        }
       </tbody>
     </table>
   </div>
 </div>
 
 <!-- A celula existe sempre que o cabecalho existe (hasAction() olha a lista inteira): linha sem
-     getActions rende <td> vazio em vez de nenhum. Sem isso, com actionsFirst, a linha inteira
-     escorregava uma coluna pra esquerda e todo valor aparecia sob o cabecalho errado. -->
+getActions rende <td> vazio em vez de nenhum. Sem isso, com actionsFirst, a linha inteira
+escorregava uma coluna pra esquerda e todo valor aparecia sob o cabecalho errado. -->
 <ng-template #celulaDeAcoes let-item>
-  <td *ngIf="hasAction()">
-    <div *ngIf="item.getActions">
-      <app-action class="app-action"
-        *ngFor="let action of item.getActions(); trackBy: trackByFn"
-        [action]="action"
-        (actionOutput)="evento($event)">
-      </app-action>
-    </div>
-  </td>
+  @if (hasAction()) {
+    <td>
+      @if (item.getActions) {
+        <div>
+          @for (action of item.getActions(); track trackByFn($index, action)) {
+            <app-action class="app-action"
+              [action]="action"
+              (actionOutput)="evento($event)">
+            </app-action>
+          }
+        </div>
+      }
+    </td>
+  }
 </ng-template>

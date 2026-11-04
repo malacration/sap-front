@@ -1,4 +1,4 @@
-import { Component, HostBinding, Renderer2 } from '@angular/core';
+import { Component, HostBinding, Renderer2, ChangeDetectionStrategy } from '@angular/core';
 import { ToggleSidebarMenu } from './store/ui/actions';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/state';
@@ -14,9 +14,11 @@ import { OfflineQueueService } from './core/offline/offline-queue.service';
 import { AuthService } from './shared/service/auth.service';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AppComponent {
 

@@ -4,57 +4,66 @@
       <div class="col-md-4">
         <h5>Pedidos Disponíveis</h5>
         <div class="list-group" style="max-height: 400px; overflow-y: auto;">
-          <a *ngFor="let pedido of pedidos"
-            href="javascript:void(0)"
-            class="list-group-item list-group-item-action"
-            [class.active]="currentPedido?.ItemCode == pedido.ItemCode"
-            [style.background-color]="currentPedido?.ItemCode == pedido.ItemCode ? '#25A246' : ''"
-            [style.border-color]="currentPedido?.ItemCode == pedido.ItemCode ? '#25A246' : ''"
-            (click)="selecionarPedido(pedido)">
-            <div class="d-flex w-100 justify-content-between">
-              <h6 class="mb-1" [class.text-white]="currentPedido?.ItemCode == pedido.ItemCode">
-                {{ pedido.ItemCode }}
-              </h6>
-              <small [class.text-white]="currentPedido?.ItemCode == pedido.ItemCode">
-                Qtd: {{ pedido.Quantity }}
-              </small>
-            </div>
-            <div *ngIf="lotesSelecionadosPorItem.has(pedido.ItemCode)" class="mt-1">
-              <small [style.color]="currentPedido?.ItemCode == pedido.ItemCode ? 'white' : '#25A246'">
-                {{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)
-              </small>
-            </div>
-          </a>
+          @for (pedido of pedidos; track pedido) {
+            <a
+              href="javascript:void(0)"
+              class="list-group-item list-group-item-action"
+              [class.active]="currentPedido?.ItemCode == pedido.ItemCode"
+              [style.background-color]="currentPedido?.ItemCode == pedido.ItemCode ? '#25A246' : ''"
+              [style.border-color]="currentPedido?.ItemCode == pedido.ItemCode ? '#25A246' : ''"
+              (click)="selecionarPedido(pedido)">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1" [class.text-white]="currentPedido?.ItemCode == pedido.ItemCode">
+                  {{ pedido.ItemCode }}
+                </h6>
+                <small [class.text-white]="currentPedido?.ItemCode == pedido.ItemCode">
+                  Qtd: {{ pedido.Quantity }}
+                </small>
+              </div>
+              @if (lotesSelecionadosPorItem.has(pedido.ItemCode)) {
+                <div class="mt-1">
+                  <small [style.color]="currentPedido?.ItemCode == pedido.ItemCode ? 'white' : '#25A246'">
+                    {{ lotesSelecionadosPorItem.get(pedido.ItemCode).length }} lote(s)
+                  </small>
+                </div>
+              }
+            </a>
+          }
         </div>
       </div>
 
       <div class="col-md-8">
-        <div *ngIf="currentPedido; else noSelection">
-          <h5>Lotes para {{ currentPedido.ItemCode }}</h5>
-          <selecao-lote
-            [itemCode]="currentPedido?.ItemCode"
-            [codDeposito]="currentPedido?.DflWhs"
-            [quantidade]="currentPedido?.Quantity"
-            (lotesSelecionados)="onLotesSelecionados($event)">
-          </selecao-lote>
-        </div>
-        <ng-template #noSelection>
+        @if (currentPedido) {
+          <div>
+            <h5>Lotes para {{ currentPedido.ItemCode }}</h5>
+            <selecao-lote
+              [itemCode]="$safeNavigationMigration(currentPedido?.ItemCode)"
+              [codDeposito]="$safeNavigationMigration(currentPedido?.DflWhs)"
+              [quantidade]="$safeNavigationMigration(currentPedido?.Quantity)"
+              (lotesSelecionados)="onLotesSelecionados($event)">
+            </selecao-lote>
+          </div>
+        } @else {
           <div class="text-center text-muted p-4">
             <i class="fas fa-box-open fa-3x mb-3"></i>
             <p>Selecione um pedido.</p>
           </div>
-        </ng-template>
+        }
       </div>
     </div>
   </div>
 
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
-    <button type="button" class="btn btn-success" 
-            (click)="confirmar()" 
-            [disabled]="loading || lotesSelecionadosPorItem.size === 0">
-      <span *ngIf="loading"><i class="fas fa-spinner fa-spin"></i></span>
-      <span *ngIf="!loading"><i class="fas fa-file-invoice"></i> Confirmar Nota</span>
+    <button type="button" class="btn btn-success"
+      (click)="confirmar()"
+      [disabled]="loading || lotesSelecionadosPorItem.size === 0">
+      @if (loading) {
+        <span><i class="fas fa-spinner fa-spin"></i></span>
+      }
+      @if (!loading) {
+        <span><i class="fas fa-file-invoice"></i> Confirmar Nota</span>
+      }
     </button>
   </div>
 </app-modal>

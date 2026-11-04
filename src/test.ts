@@ -7,6 +7,7 @@ import {
   platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
 import { registerLocaleData } from '@angular/common';
+import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import localeBr from '@angular/common/locales/pt';
 
 // AppModule registra isso em produção, mas specs que nao importam AppModule (ex.: testes
@@ -14,9 +15,13 @@ import localeBr from '@angular/common/locales/pt';
 // formatCurrency('pt', ...) lanca NG0701 (locale 'pt' ausente) so no ambiente de teste.
 registerLocaleData(localeBr);
 
+// Match the production bootstrap's Zone.js scheduling (Angular 22 defaults to zoneless).
+@NgModule({ providers: [provideZoneChangeDetection()] })
+class ZoneTestingModule {}
+
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(
-  BrowserDynamicTestingModule,
+  [BrowserDynamicTestingModule, ZoneTestingModule],
   platformBrowserDynamicTesting(), {
     teardown: { destroyAfterEach: false }
   }

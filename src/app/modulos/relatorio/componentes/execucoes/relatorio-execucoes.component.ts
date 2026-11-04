@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, Subscription, timer } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from '../../../../core/services/toastr.service';
 import { RelatorioService, INTERVALO_EXECUCAO_MS } from '../../../../sap/service/relatorio.service';
 import { EXECUCAO_ATIVA, Execucao } from '../../modelos/execucao.model';
 import { abrirAbaPendente, mostrarHtmlEmAba, salvarArquivo } from '../../html-em-aba';
@@ -20,9 +20,11 @@ import { abrirAbaPendente, mostrarHtmlEmAba, salvarArquivo } from '../../html-em
  * abrir fica marcado como "novo", sem baixar sozinho.
  */
 @Component({
-  selector: 'app-relatorio-execucoes',
-  templateUrl: './relatorio-execucoes.component.html',
-  styleUrls: ['./relatorio-execucoes.component.scss'],
+    selector: 'app-relatorio-execucoes',
+    templateUrl: './relatorio-execucoes.component.html',
+    styleUrls: ['./relatorio-execucoes.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RelatorioExecucoesComponent implements OnInit, OnDestroy {
   execucoes: Execucao[] = [];

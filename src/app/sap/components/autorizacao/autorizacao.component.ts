@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AutorizacaoService } from '../../../modulos/sap-shared/_services/autorizacao.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import { Autorizacao } from '../../model/autorizacao';
@@ -6,8 +6,10 @@ import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 
 @Component({
-  selector: 'app-autorizacao',
-  templateUrl: './autorizacao.component.html',
+    selector: 'app-autorizacao',
+    templateUrl: './autorizacao.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AutorizacaoComponent implements OnInit {
 

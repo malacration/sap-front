@@ -1,11 +1,13 @@
-import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BatchStock } from '../../../sap-shared/_models/BatchStock.model';
 import { ReprocessamentoService } from '../../_services/reprocessamento.service';
 import { Reprocessamento } from '../../_model/reprocessamento';
 
 @Component({
-  selector: 'selecao-produto-calc',
-  templateUrl: './repreocessamento.component.html',
+    selector: 'selecao-produto-calc',
+    templateUrl: './repreocessamento.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ReprocessamentoComponent {
   

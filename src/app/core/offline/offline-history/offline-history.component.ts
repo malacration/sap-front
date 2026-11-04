@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { OfflineQueueService } from '../offline-queue.service';
 import { OfflineQueueRecord, OfflineQueueStatus } from '../offline.models';
 
 @Component({
-  selector: 'app-offline-history',
-  templateUrl: './offline-history.component.html',
-  styleUrls: ['./offline-history.component.scss'],
+    selector: 'app-offline-history',
+    templateUrl: './offline-history.component.html',
+    styleUrls: ['./offline-history.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class OfflineHistoryComponent {
   readonly queue$: Observable<OfflineQueueRecord[]> = this.queue.queue$;

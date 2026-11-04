@@ -35,8 +35,8 @@ import { NgxDropzoneCompatComponent } from './componentes/upload/ngx-dropzone-co
     FormsModule,
     ReactiveFormsModule,
     NgxPaginationModule,
-    TabsModule.forRoot(),
-    ModalModule.forRoot(),
+    TabsModule,
+    ModalModule,
   ],
   exports: [RelatorioComponent],
 })

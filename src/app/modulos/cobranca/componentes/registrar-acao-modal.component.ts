@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { AlertService } from '../../../shared/service/alert.service';
 import { CobrancaTitulo } from '../../../sap/model/cobranca/cobranca-titulo';
@@ -14,8 +14,10 @@ export interface CobrancaDominios {
 }
 
 @Component({
-  selector: 'app-registrar-acao-modal',
-  templateUrl: './registrar-acao-modal.component.html'
+    selector: 'app-registrar-acao-modal',
+    templateUrl: './registrar-acao-modal.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegistrarAcaoModalComponent {
 

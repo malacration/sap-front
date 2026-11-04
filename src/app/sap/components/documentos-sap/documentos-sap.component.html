@@ -1,9 +1,10 @@
 <section class="content">
-  <app-marketing-document-list
-    #lista
-    *ngIf="service"
-    [service]="service"
-    [mapaRelacoesTipo]="mapaRelacoesTipo"
-    [title]="title">
-  </app-marketing-document-list>
+  @if (service) {
+    <app-marketing-document-list
+      #lista
+      [service]="service"
+      [mapaRelacoesTipo]="mapaRelacoesTipo"
+      [title]="title">
+    </app-marketing-document-list>
+  }
 </section>

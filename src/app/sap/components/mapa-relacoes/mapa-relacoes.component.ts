@@ -1,12 +1,14 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MapaRelacoesService } from '../../../modulos/sap-shared/_services/mapa-relacoes.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import { idDocumentoBuscado, mockMapaRelacoesResponse, MapaRelacoesResponse, TIPOS_BUSCA } from '../../model/mapa-relacoes';
 
 @Component({
-  selector: 'app-mapa-relacoes',
-  templateUrl: './mapa-relacoes.component.html',
+    selector: 'app-mapa-relacoes',
+    templateUrl: './mapa-relacoes.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MapaRelacoesComponent implements OnInit, OnChanges {
 

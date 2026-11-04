@@ -1,49 +1,50 @@
 <br>
-<section class="content">
-    
-    <div *ngIf="!selected || selected == null" class="card card-primary">
+  <section class="content">
+
+    @if (!selected || selected == null) {
+      <div class="card card-primary">
         <div class="card-header">
-            <h3 class="card-title"><b>Parceiro Negócio - {{nomeUsuario}}</b></h3>
-            <div class="card-tools">
-                <button type="button" class="btn btn-warning btn-sm font-weight-bold shadow-sm" routerLink="/clientes/parceiro-negocio/novo">
-                    <i class="fas fa-user-plus"></i> Novo parceiro
-                </button>
-            </div>
+          <h3 class="card-title"><b>Parceiro Negócio - {{nomeUsuario}}</b></h3>
+          <div class="card-tools">
+            <button type="button" class="btn btn-warning btn-sm font-weight-bold shadow-sm" routerLink="/clientes/parceiro-negocio/novo">
+              <i class="fas fa-user-plus"></i> Novo parceiro
+            </button>
+          </div>
         </div>
         <div class="card-body">
           <form class="container-fluid" (ngSubmit)="pageChange(0)" autocomplete="off">
             <div class="form-row align-items-end">
               <div class="col-sm-2">
-                  <label for="cardCode" class="col-form-label">Código do Parceiro</label>
-                  <input
-                    id="cardCode"
-                    name="cardCode"
-                    class="form-control"
-                    type="text"
-                    [(ngModel)]="cardCodeFilter"
-                    placeholder="Ex.: CLI0000000"
+                <label for="cardCode" class="col-form-label">Código do Parceiro</label>
+                <input
+                  id="cardCode"
+                  name="cardCode"
+                  class="form-control"
+                  type="text"
+                  [(ngModel)]="cardCodeFilter"
+                  placeholder="Ex.: CLI0000000"
                   />
               </div>
               <div class="col-sm-3">
-                  <label for="cardName" class="col-form-label">Nome do Parceiro</label>
-                  <input
-                    id="cardName"
-                    name="cardName"
-                    class="form-control"
-                    type="text"
-                    [(ngModel)]="cardNameFilter"
-                    placeholder="Ex.: ACME LTDA"
+                <label for="cardName" class="col-form-label">Nome do Parceiro</label>
+                <input
+                  id="cardName"
+                  name="cardName"
+                  class="form-control"
+                  type="text"
+                  [(ngModel)]="cardNameFilter"
+                  placeholder="Ex.: ACME LTDA"
                   />
               </div>
               <div class="col-sm-2">
-                  <label for="cpfCnpj" class="col-form-label">CPF/CNPJ</label>
-                  <input
-                    id="cpfCnpj"
-                    name="cpfCnpj"
-                    class="form-control"
-                    type="text"
-                    [(ngModel)]="cpfCnpjFilter"
-                    placeholder="Ex.: 000.000.000-00"
+                <label for="cpfCnpj" class="col-form-label">CPF/CNPJ</label>
+                <input
+                  id="cpfCnpj"
+                  name="cpfCnpj"
+                  class="form-control"
+                  type="text"
+                  [(ngModel)]="cpfCnpjFilter"
+                  placeholder="Ex.: 000.000.000-00"
                   />
               </div>
               <div class="col-sm-3">
@@ -52,7 +53,6 @@
                   (selected)="selecionaVendedor($event)">
                 </app-sales-person-search>
               </div>
-            
               <div class="col-sm-2">
                 <div class="btn-group">
                   <button type="submit" [disabled]="loading" class="btn btn-success">
@@ -63,9 +63,9 @@
                   </button>
                 </div>
               </div>
-              </div>
-            </form>
-            <hr>
+            </div>
+          </form>
+          <hr>
             <div class="table-responsive">
               <table class="table table-hover table-striped">
                 <thead>
@@ -80,43 +80,52 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let parceiro of pageContent?.content">
-                    <td class="font-weight-bold">{{parceiro.CardCode}}</td>
-                    <td>{{parceiro.CardName}}</td>
-                    <td>{{cpfCnpj(parceiro)}}</td>
-                    <td>{{vendedor(parceiro)}}</td>
-                    <td>{{parceiro.Phone1 || parceiro.Phone2 || '-'}}</td>
-                    <td class="text-right">{{parceiro.limiteAutorizadoCurrency()}}</td>
-                    <td class="text-right">
-                      <button type="button" class="btn btn-sm btn-primary" (click)="selecionar(parceiro)">
-                        <i class="far fa-edit"></i> Detalhes
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="!loading && pageContent?.content?.length == 0">
-                    <td colspan="7" class="text-center text-muted">Nenhum parceiro encontrado.</td>
-                  </tr>
+                  @for (parceiro of pageContent?.content; track parceiro) {
+                    <tr>
+                      <td class="font-weight-bold">{{parceiro.CardCode}}</td>
+                      <td>{{parceiro.CardName}}</td>
+                      <td>{{cpfCnpj(parceiro)}}</td>
+                      <td>{{vendedor(parceiro)}}</td>
+                      <td>{{parceiro.Phone1 || parceiro.Phone2 || '-'}}</td>
+                      <td class="text-right">{{parceiro.limiteAutorizadoCurrency()}}</td>
+                      <td class="text-right">
+                        <button type="button" class="btn btn-sm btn-primary" (click)="selecionar(parceiro)">
+                          <i class="far fa-edit"></i> Detalhes
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                  @if (!loading && pageContent?.content?.length == 0) {
+                    <tr>
+                      <td colspan="7" class="text-center text-muted">Nenhum parceiro encontrado.</td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </div>
-        </div>
-        <div class="card-footer clearfix">
+          </div>
+          <div class="card-footer clearfix">
             <app-paginacao
-                (pageChange)="pageChange($event)" 
-                [totalItens]="pageContent?.totalElements" 
-                [pageSize]="pageContent?.size"
-                [paginaAtual]="paginaAtual">
+              (pageChange)="pageChange($event)"
+              [totalItens]="$safeNavigationMigration(pageContent?.totalElements)"
+              [pageSize]="$safeNavigationMigration(pageContent?.size)"
+              [paginaAtual]="paginaAtual">
             </app-paginacao>
+          </div>
+          @if (loading) {
+            <div class="overlay">
+              <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+            </div>
+          }
         </div>
-        <div *ngIf="loading" class="overlay">
-            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-        </div>
-    </div>
-    <div *ngIf="selected">
-        <app-parceiro-negocio-single 
+      }
+      @if (selected) {
+        <div>
+          <app-parceiro-negocio-single
             [selected]="selected"
             (close)="close()"
-        >
-        </app-parceiro-negocio-single>
-    </div>
-</section>
+            >
+          </app-parceiro-negocio-single>
+        </div>
+      }
+    </section>

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Branch } from '../../../../sap/model/branch';
@@ -15,9 +15,11 @@ import { CardComponent } from '../../../../shared/components/card/card.component
 import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 
 @Component({
-  selector: 'app-ordem-formulario',
-  templateUrl: './formulario.component.html',
-  styleUrls: ['./formulario.component.scss']
+    selector: 'app-ordem-formulario',
+    templateUrl: './formulario.component.html',
+    styleUrls: ['./formulario.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FormularioComponent implements OnInit, OnChanges {
 

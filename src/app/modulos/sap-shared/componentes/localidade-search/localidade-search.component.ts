@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { LocalidadeDefinition } from '../../../../sap/model/localidade/localidade-definition';
 import { LocalidadeService } from '../../_services/localidade.service';
 import { SearchComponent } from '../../../../shared/components/search/search.component';
@@ -8,8 +8,10 @@ import { Localidade } from '../../../../sap/model/localidade/localidade';
 
 
 @Component({
-  selector: 'app-localidade-search',
-  templateUrl: './localidade-search.component.html',
+    selector: 'app-localidade-search',
+    templateUrl: './localidade-search.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class LocalidadeSearchComponent {
 

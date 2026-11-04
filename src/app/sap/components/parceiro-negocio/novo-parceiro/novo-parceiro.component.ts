@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { BusinessPartnerService } from '../../../../modulos/sap-shared/_services/business-partners.service';
 import { FormaPagamento, FormaPagamentoService } from '../../../service/forma-pagamento.service';
@@ -90,8 +90,10 @@ export class EnderecoForm {
  * endereco" marcado, o backend copia a entrega para a cobranca; desmarcado, vai o segundo bloco.
  */
 @Component({
-  selector: 'app-novo-parceiro',
-  templateUrl: './novo-parceiro.component.html',
+    selector: 'app-novo-parceiro',
+    templateUrl: './novo-parceiro.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NovoParceiroComponent implements OnInit {
 

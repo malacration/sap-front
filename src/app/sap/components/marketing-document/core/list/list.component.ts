@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { DocumentList } from '../../../../model/markting/document-list';
 import { ActionReturn } from '../../../../../shared/components/action/action.model';
 import { Page } from '../../../../model/page.model';
@@ -8,9 +8,11 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-marketing-document-list',
-  templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss']
+    selector: 'app-marketing-document-list',
+    templateUrl: './list.component.html',
+    styleUrls: ['./list.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 }) export class ListComponent implements OnInit, OnChanges, OnDestroy{
 
   loading : boolean = false

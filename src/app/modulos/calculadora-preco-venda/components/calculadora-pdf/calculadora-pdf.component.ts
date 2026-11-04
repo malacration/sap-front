@@ -1,11 +1,13 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
 import { Analise } from '../../models/analise';
 
 @Component({
-  selector: 'app-calculadora-pdf',
-  template: ''
+    selector: 'app-calculadora-pdf',
+    template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CalculadoraPdfComponent {
   @Input() analise!: Analise;

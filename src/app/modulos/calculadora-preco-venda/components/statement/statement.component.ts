@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Analise } from '../../models/analise';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription, map } from 'rxjs';
@@ -9,8 +9,10 @@ import { WsService } from '../../../../shared/WsService';
 import { SelecaoProdutoComponent } from '../selecao-produto/selecao-produto.component';
 
 @Component({
-  selector: 'statement-calc',
-  templateUrl: './statement.component.html',
+    selector: 'statement-calc',
+    templateUrl: './statement.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CalculadoraStatementComponent implements OnInit, OnDestroy {
   

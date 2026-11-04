@@ -87,7 +87,7 @@ export class AlertService {
             return value as any; // value vai para result.value
           },
           ...rest,
-        });
+        } as SweetAlertOptions);
       }
       
 

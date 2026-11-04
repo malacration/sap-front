@@ -1,13 +1,15 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { PedidosVendaService } from '../../../service/document/pedidos-venda.service';
 import { Branch } from '../../../model/branch';
 import { ListComponent } from '../core/list/list.component';
 
 
 @Component({
-  selector: 'app-marketing-document-pedidos-venda',
-  templateUrl: './pedidos-venda-statement.component.html',
-  styleUrls: ['./pedidos-venda-statement.component.scss']
+    selector: 'app-marketing-document-pedidos-venda',
+    templateUrl: './pedidos-venda-statement.component.html',
+    styleUrls: ['./pedidos-venda-statement.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PedidosVendaStatementComponent {
 

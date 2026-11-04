@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { RadioItem } from '../../form/radio/radio.model';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { CowntDown } from '../../../../core/cowntdown.module';
@@ -7,8 +7,10 @@ import { OneTimePasswordService } from '../../../service/one-time-password.servi
 
 
 @Component({
-  selector: 'app-auth-fatura',
-  templateUrl: './autenticacao-fatura.component.html',
+    selector: 'app-auth-fatura',
+    templateUrl: './autenticacao-fatura.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AutenticacaoFaturaComponent {
 

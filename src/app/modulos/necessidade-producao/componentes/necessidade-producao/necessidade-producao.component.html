@@ -77,23 +77,26 @@
         </p>
       </div>
 
-      <div *ngIf="erro" class="alert alert-danger" role="alert">
-        <i class="fas fa-exclamation-circle mr-2"></i>{{ erro }}
-      </div>
+      @if (erro) {
+        <div class="alert alert-danger" role="alert">
+          <i class="fas fa-exclamation-circle mr-2"></i>{{ erro }}
+        </div>
+      }
 
-      <ng-container *ngIf="resultado">
+      @if (resultado) {
         <div class="alert alert-light border recorte">
           <div><span class="text-muted">Estoque somado nos depósitos:</span> {{ resumoDepositos }}</div>
           <div><span class="text-muted">Venda somada nas filiais:</span> {{ resumoFiliais }}</div>
-          <div *ngIf="resultado.depositosExcluidos.length">
-            <span class="text-muted">Fora da conta por configuração:</span> {{ resultado.depositosExcluidos.join(', ') }}
-          </div>
+          @if (resultado.depositosExcluidos.length) {
+            <div>
+              <span class="text-muted">Fora da conta por configuração:</span> {{ resultado.depositosExcluidos.join(', ') }}
+            </div>
+          }
           <div>
             <span class="text-muted">Utilização de simples faturamento:</span>
             {{ resultado.utilizacoesSimplesFaturamento.join(', ') }} — fora do pedido; o que falta entregar entra em sem previsão
           </div>
         </div>
-
         <div class="table-responsive tabela-rolagem">
           <table class="table table-sm table-hover mb-0">
             <thead class="thead-light">
@@ -108,90 +111,114 @@
                 </th>
               </tr>
             </thead>
-            <tbody *ngFor="let grupo of grupos; trackBy: trackByGrupo">
-              <tr class="grupo-linha">
-                <th colspan="2">
-                  {{ grupo.nome }}
-                  <span class="text-muted font-weight-normal small ml-1">{{ grupo.linhas.length }} produtos</span>
-                </th>
-                <th class="text-right">{{ numero(grupo.estoque) }}</th>
-                <th class="text-right">{{ numero(grupo.pedido) }}</th>
-                <th class="text-right" [class.text-danger]="grupo.aFabricar < 0">{{ numero(grupo.aFabricar) }}</th>
-                <th class="text-right">{{ numero(grupo.semPrevisao) }}</th>
-              </tr>
-              <tr *ngFor="let linha of grupo.linhas; let impar = odd" [class.zebra]="impar">
-                <td>
-                  <b>{{ linha.itemName }}</b>
-                  <div class="text-muted small">{{ linha.itemCode }} · {{ linha.unidade }}</div>
-                </td>
-                <td class="small">{{ linha.grupo }}</td>
-                <td class="text-right">{{ numero(linha.estoque) }}</td>
-                <td class="text-right">
-                  <button
-                    *ngIf="linha.pedido != 0; else zeroPedido"
-                    type="button"
-                    class="btn btn-link btn-sm p-0 celula-detalhe"
-                    title="Ver os pedidos"
-                    (click)="abrirDetalhe(linha, 'PEDIDO')"
-                  >{{ numero(linha.pedido) }}</button>
-                  <ng-template #zeroPedido>{{ numero(linha.pedido) }}</ng-template>
-                </td>
-                <td class="text-right a-fabricar" [class.text-danger]="linha.aFabricar < 0">
-                  <b>{{ numero(linha.aFabricar) }}</b>
-                </td>
-                <td class="text-right">
-                  <button
-                    *ngIf="linha.semPrevisao != 0; else zeroSemPrevisao"
-                    type="button"
-                    class="btn btn-link btn-sm p-0 celula-detalhe"
-                    [title]="descricaoSemPrevisao(linha) + '\nClique para ver os contratos e notas'"
-                    (click)="abrirDetalhe(linha, 'SEM_PREVISAO')"
-                  >{{ numero(linha.semPrevisao) }}</button>
-                  <ng-template #zeroSemPrevisao>{{ numero(linha.semPrevisao) }}</ng-template>
-                </td>
-              </tr>
-            </tbody>
-            <tbody *ngIf="linhas.length == 0">
-              <tr>
-                <td colspan="6" class="text-center text-muted">Nenhum produto na faixa e nos depósitos escolhidos.</td>
-              </tr>
-            </tbody>
-            <tfoot *ngIf="linhas.length > 0">
-              <tr>
-                <th colspan="2">Total ({{ linhas.length }} produtos)</th>
-                <th class="text-right">{{ numero(total('estoque')) }}</th>
-                <th class="text-right">{{ numero(total('pedido')) }}</th>
-                <th class="text-right" [class.text-danger]="total('aFabricar') < 0">{{ numero(total('aFabricar')) }}</th>
-                <th class="text-right">{{ numero(total('semPrevisao')) }}</th>
-              </tr>
-            </tfoot>
+            @for (grupo of grupos; track trackByGrupo($index, grupo)) {
+              <tbody>
+                <tr class="grupo-linha">
+                  <th colspan="2">
+                    {{ grupo.nome }}
+                    <span class="text-muted font-weight-normal small ml-1">{{ grupo.linhas.length }} produtos</span>
+                  </th>
+                  <th class="text-right">{{ numero(grupo.estoque) }}</th>
+                  <th class="text-right">{{ numero(grupo.pedido) }}</th>
+                  <th class="text-right" [class.text-danger]="grupo.aFabricar < 0">{{ numero(grupo.aFabricar) }}</th>
+                  <th class="text-right">{{ numero(grupo.semPrevisao) }}</th>
+                </tr>
+                @for (linha of grupo.linhas; track linha; let impar = $odd) {
+                  <tr [class.zebra]="impar">
+                    <td>
+                      <b>{{ linha.itemName }}</b>
+                      <div class="text-muted small">{{ linha.itemCode }} · {{ linha.unidade }}</div>
+                    </td>
+                    <td class="small">{{ linha.grupo }}</td>
+                    <td class="text-right">{{ numero(linha.estoque) }}</td>
+                    <td class="text-right">
+                      @if (linha.pedido != 0) {
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0 celula-detalhe"
+                          title="Ver os pedidos"
+                          (click)="abrirDetalhe(linha, 'PEDIDO')"
+                        >{{ numero(linha.pedido) }}</button>
+                      } @else {
+                        {{ numero(linha.pedido) }}
+                      }
+                    </td>
+                    <td class="text-right a-fabricar" [class.text-danger]="linha.aFabricar < 0">
+                      <b>{{ numero(linha.aFabricar) }}</b>
+                    </td>
+                    <td class="text-right">
+                      @if (linha.semPrevisao != 0) {
+                        <button
+                          type="button"
+                          class="btn btn-link btn-sm p-0 celula-detalhe"
+                          [title]="descricaoSemPrevisao(linha) + '\nClique para ver os contratos e notas'"
+                          (click)="abrirDetalhe(linha, 'SEM_PREVISAO')"
+                        >{{ numero(linha.semPrevisao) }}</button>
+                      } @else {
+                        {{ numero(linha.semPrevisao) }}
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            }
+            @if (linhas.length == 0) {
+              <tbody>
+                <tr>
+                  <td colspan="6" class="text-center text-muted">Nenhum produto na faixa e nos depósitos escolhidos.</td>
+                </tr>
+              </tbody>
+            }
+            @if (linhas.length > 0) {
+              <tfoot>
+                <tr>
+                  <th colspan="2">Total ({{ linhas.length }} produtos)</th>
+                  <th class="text-right">{{ numero(total('estoque')) }}</th>
+                  <th class="text-right">{{ numero(total('pedido')) }}</th>
+                  <th class="text-right" [class.text-danger]="total('aFabricar') < 0">{{ numero(total('aFabricar')) }}</th>
+                  <th class="text-right">{{ numero(total('semPrevisao')) }}</th>
+                </tr>
+              </tfoot>
+            }
           </table>
         </div>
-      </ng-container>
+      }
     </div>
 
-    <div *ngIf="carregando" class="overlay">
-      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-    </div>
+    @if (carregando) {
+      <div class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+      </div>
+    }
   </div>
 
   <app-modal #modalDetalhe [title]="tituloModal" modalSize="xl">
     <div class="d-flex flex-wrap align-items-center mb-2">
-      <span *ngIf="celula" class="text-muted small mr-auto">
-        {{ celula.linha.itemCode }} · {{ celula.linha.unidade }}
-        <ng-container *ngIf="detalhe"> · Total {{ numero(detalhe.total) }}</ng-container>
-      </span>
+      @if (celula) {
+        <span class="text-muted small mr-auto">
+          {{ celula.linha.itemCode }} · {{ celula.linha.unidade }}
+          @if (detalhe) {
+            · Total {{ numero(detalhe.total) }}
+          }
+        </span>
+      }
       <button type="button" class="btn btn-sm btn-outline-primary" [disabled]="!celula" (click)="abrirDetalheNovaAba()">
         <i class="fas fa-external-link-alt mr-1"></i>Abrir em nova aba
       </button>
     </div>
 
-    <div *ngIf="carregandoDetalhe" class="text-center p-4">
-      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-    </div>
-    <div *ngIf="erroDetalhe" class="alert alert-danger" role="alert">
-      <i class="fas fa-exclamation-circle mr-2"></i>{{ erroDetalhe }}
-    </div>
-    <app-necessidade-producao-documentos *ngIf="detalhe" [detalhe]="detalhe" [compacto]="true"></app-necessidade-producao-documentos>
+    @if (carregandoDetalhe) {
+      <div class="text-center p-4">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+      </div>
+    }
+    @if (erroDetalhe) {
+      <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle mr-2"></i>{{ erroDetalhe }}
+      </div>
+    }
+    @if (detalhe) {
+      <app-necessidade-producao-documentos [detalhe]="detalhe" [compacto]="true"></app-necessidade-producao-documentos>
+    }
   </app-modal>
 </section>

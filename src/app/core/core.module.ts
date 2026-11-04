@@ -1,23 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConfigService } from './services/config.service';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
-@NgModule({
-  declarations: [],
-  imports: [
-    CommonModule,
-    HttpClientModule
-  ],
-  providers: [
-    {
-      provide: ConfigService, useFactory: () => {
-        // @ts-ignore
-        return Object.assign(new ConfigService(), window['app-config']);
-      },
-    }
-  ]
-})
+@NgModule({ declarations: [], imports: [CommonModule], providers: [
+        {
+            provide: ConfigService, useFactory: () => {
+                // @ts-ignore
+                return Object.assign(new ConfigService(), window['app-config']);
+            },
+        },
+        provideHttpClient(withXhr(), withInterceptorsFromDi())
+    ] })
 export class CoreModule {
 
 }

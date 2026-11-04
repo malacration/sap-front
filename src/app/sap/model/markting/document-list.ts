@@ -1,6 +1,6 @@
 import { formatCurrency } from "@angular/common";
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
-import * as moment from "moment";
+import moment from 'moment';
 import { RouteLink } from "../route-link";
 import { ReplaceFilial } from "../../../utils/replaceFilial";
 

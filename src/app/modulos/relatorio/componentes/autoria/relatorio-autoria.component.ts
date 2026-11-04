@@ -1,8 +1,8 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from '../../../../core/services/toastr.service';
 import {
   EventoAuditoria,
   ExemploRelatorio,
@@ -33,9 +33,11 @@ interface BlocoSqlYaml {
 }
 
 @Component({
-  selector: 'app-relatorio-autoria',
-  templateUrl: './relatorio-autoria.component.html',
-  styleUrls: ['./relatorio-autoria.component.scss'],
+    selector: 'app-relatorio-autoria',
+    templateUrl: './relatorio-autoria.component.html',
+    styleUrls: ['./relatorio-autoria.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RelatorioAutoriaComponent implements OnInit, OnChanges, OnDestroy {
   @Input() relatorioEdicaoId?: number;

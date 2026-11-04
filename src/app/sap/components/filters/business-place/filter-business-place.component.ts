@@ -1,12 +1,14 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { BusinessPlacesService } from '../../../service/business-places.service';
 import { BusinessPlace } from '../../../model/business-place';
 
 
 
 @Component({
-  selector: 'filter-business-place',
-  templateUrl: './filter-business-place.component.html'
+    selector: 'filter-business-place',
+    templateUrl: './filter-business-place.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FilterBusinessPlaceComponent implements OnInit {
   

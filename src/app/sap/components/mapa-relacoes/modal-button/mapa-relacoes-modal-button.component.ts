@@ -1,9 +1,11 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
 @Component({
-  selector: 'app-mapa-relacoes-modal-button',
-  templateUrl: './mapa-relacoes-modal-button.component.html',
+    selector: 'app-mapa-relacoes-modal-button',
+    templateUrl: './mapa-relacoes-modal-button.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MapaRelacoesModalButtonComponent {
 

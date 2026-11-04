@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { VendaFutura } from '../../../model/venda/venda-futura';
 import { BusinessPartner } from '../../../model/business-partner/business-partner';
 import { NegociacaoContrato, VendaFuturaService } from '../../../service/venda-futura.service';
@@ -7,9 +7,11 @@ import { AlertService } from '../../../../shared/service/alert.service';
 import { BusinessPartnerService } from '../../../../modulos/sap-shared/_services/business-partners.service';
 
 @Component({
-  selector: 'app-gerar-pdf',
-  templateUrl: './gerar-pdf.component.html',
-  styleUrls: ['./gerar-pdf.component.scss']
+    selector: 'app-gerar-pdf',
+    templateUrl: './gerar-pdf.component.html',
+    styleUrls: ['./gerar-pdf.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class GerarPdfComponent implements OnChanges {
 

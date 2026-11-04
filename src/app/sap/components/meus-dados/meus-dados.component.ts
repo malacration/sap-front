@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { UsuarioAtualService } from '../../../modulos/sap-shared/_services/usuario-atual.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import { UsuarioAtual } from '../../model/usuario-atual';
 
 @Component({
-  selector: 'app-meus-dados',
-  templateUrl: './meus-dados.component.html',
+    selector: 'app-meus-dados',
+    templateUrl: './meus-dados.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MeusDadosComponent implements OnInit {
 

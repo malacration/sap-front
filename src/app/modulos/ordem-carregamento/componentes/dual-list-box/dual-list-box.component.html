@@ -2,15 +2,17 @@
   <div class="list-box left-list">
     <h5 class="titulo">Disponíveis <span class="order-count">{{ availableOrdersCount }} Pedidos</span></h5>
     <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermAvailable">
-    
-    <div class="list-container">
-      <div *ngIf="isLoadingOrders" class="text-center mt-3">
-        <i class="fas fa-spinner fa-spin fa-2x"></i>
-        <p>Carregando pedidos...</p>
-      </div>
 
-      <ng-container *ngIf="!isLoadingOrders">
-        <ng-container *ngFor="let group of groupedAvailableItems; trackBy: trackByDocNum">
+    <div class="list-container">
+      @if (isLoadingOrders) {
+        <div class="text-center mt-3">
+          <i class="fas fa-spinner fa-spin fa-2x"></i>
+          <p>Carregando pedidos...</p>
+        </div>
+      }
+
+      @if (!isLoadingOrders) {
+        @for (group of groupedAvailableItems; track trackByDocNum($index, group)) {
           <div class="order-group">
             <div class="order-header d-flex justify-content-between align-items-center">
               <span class="order-info" title="{{ group.items[0]?.Name || 'N/A' }}">
@@ -23,42 +25,45 @@
                 <i class="fas fa-chevron-right"></i>
               </button>
             </div>
-            
             <ul class="order-list">
-              <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
-                <div class="item-details">
-                  {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
-                </div>
-                <div class="stock-info" *ngIf="showStock">
-                    <span class="stock-green">Estoque: {{ item.OnHand }}</span>
-                    <span class="stock-gray">Produção: {{ item.OnOrder || 0 }}</span>
-                    <span class="stock-orange">
-                      Carregamento:
-                      <ng-container *ngIf="isLoading[item.ItemCode]; else loadedCarregamento">
-                        <i class="fas fa-spinner fa-spin"></i>
-                      </ng-container>
-                      <ng-template #loadedCarregamento>
-                        {{ quantidadesEmCarregamento[item.ItemCode] ?? 0 }}
-                      </ng-template>
-                    </span>
-                    <span class="stock-purple">
-                      Balanço:
-                      <ng-container *ngIf="isLoading[item.ItemCode]; else loadedBalanco">
-                        <i class="fas fa-spinner fa-spin"></i>
-                      </ng-container>
-                      <ng-template #loadedBalanco>
-                        {{ item.OnHand - (quantidadesEmCarregamento[item.ItemCode] ?? 0) }}
-                      </ng-template>
-                    </span>
+              @for (item of group.items; track trackByItem($index, item)) {
+                <li class="list-item no-click">
+                  <div class="item-details">
+                    {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
                   </div>
-              </li>
+                  @if (showStock) {
+                    <div class="stock-info">
+                      <span class="stock-green">Estoque: {{ item.OnHand }}</span>
+                      <span class="stock-gray">Produção: {{ item.OnOrder || 0 }}</span>
+                      <span class="stock-orange">
+                        Carregamento:
+                        @if (isLoading[item.ItemCode]) {
+                          <i class="fas fa-spinner fa-spin"></i>
+                        } @else {
+                          {{ quantidadesEmCarregamento[item.ItemCode] ?? 0 }}
+                        }
+                      </span>
+                      <span class="stock-purple">
+                        Balanço:
+                        @if (isLoading[item.ItemCode]) {
+                          <i class="fas fa-spinner fa-spin"></i>
+                        } @else {
+                          {{ item.OnHand - (quantidadesEmCarregamento[item.ItemCode] ?? 0) }}
+                        }
+                      </span>
+                    </div>
+                  }
+                </li>
+              }
             </ul>
           </div>
-        </ng-container>
-        <div class="text-center mt-3 load-more-wrapper" *ngIf="nextLink">
-          <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
-        </div>
-      </ng-container>
+        }
+        @if (nextLink) {
+          <div class="text-center mt-3 load-more-wrapper">
+            <button class="btn btn-primary" (click)="loadMoreOrders()">Carregar Mais</button>
+          </div>
+        }
+      }
       <button class="btn btn-sm btn-primary mt-2" (click)="selectAll()">Selecionar Todos</button>
     </div>
   </div>
@@ -76,10 +81,10 @@
     </div>
 
     <div class="list-content" [ngClass]="{'collapsed': isSelectedListCollapsed}">
-      <ng-container *ngIf="!isSelectedListCollapsed">
+      @if (!isSelectedListCollapsed) {
         <input type="text" class="form-control mb-2" placeholder="Pesquisar..." [(ngModel)]="searchTermSelected">
         <div class="list-container">
-          <ng-container *ngFor="let group of groupedSelectedItems; trackBy: trackByDocNum">
+          @for (group of groupedSelectedItems; track trackByDocNum($index, group)) {
             <div class="order-group">
               <div class="order-header d-flex align-items-center">
                 <button class="btn btn-sm btn-move-arrow mr-2" (click)="removeGroup(group)" title="Remover Pedido">
@@ -93,17 +98,19 @@
                 </span>
               </div>
               <ul class="order-list">
-                <li *ngFor="let item of group.items; trackBy: trackByItem" class="list-item no-click">
-                  <div class="item-details">
-                    {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
-                  </div>
-                </li>
+                @for (item of group.items; track trackByItem($index, item)) {
+                  <li class="list-item no-click">
+                    <div class="item-details">
+                      {{ item.ItemCode }} - {{ item.Dscription }} - Qtd: {{ item.Quantity }} - Peso: {{ item.Weight1 | number:'1.2-2' }} KG <b class="text-success">- Frete: {{item.DistribSum}}</b>
+                    </div>
+                  </li>
+                }
               </ul>
             </div>
-          </ng-container>
+          }
         </div>
         <button class="btn btn-sm btn-primary mt-2" (click)="removeAll()">Remover Todos</button>
-      </ng-container>
-      </div>
+      }
+    </div>
   </div>
 </div>

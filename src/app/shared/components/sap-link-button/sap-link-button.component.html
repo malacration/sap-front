@@ -1,24 +1,27 @@
 <span class="sap-link-button-group">
-  <button
-    *ngIf="!somenteCopiar"
-    type="button"
-    class="btn btn-sm sap-link-button"
-    [ngClass]="buttonClass"
-    [disabled]="disabled"
-    [title]="title"
-    (click)="abrir()">
-    <span class="sap-link-button__external">
-      <i class="fas fa-external-link-alt"></i>
-    </span>
-    <span class="sap-link-button__main">
-      <span class="sap-link-button__label">
-        <ng-container *ngTemplateOutlet="conteudo"></ng-container>
+  @if (!somenteCopiar) {
+    <button
+      type="button"
+      class="btn btn-sm sap-link-button"
+      [ngClass]="buttonClass"
+      [disabled]="disabled"
+      [title]="title"
+      (click)="abrir()">
+      <span class="sap-link-button__external">
+        <i class="fas fa-external-link-alt"></i>
       </span>
+      <span class="sap-link-button__main">
+        <span class="sap-link-button__label">
+          <ng-container *ngTemplateOutlet="conteudo"></ng-container>
+        </span>
+      </span>
+    </button>
+  }
+  @if (somenteCopiar) {
+    <span class="sap-link-button__texto">
+      <ng-container *ngTemplateOutlet="conteudo"></ng-container>
     </span>
-  </button>
-  <span *ngIf="somenteCopiar" class="sap-link-button__texto">
-    <ng-container *ngTemplateOutlet="conteudo"></ng-container>
-  </span>
+  }
   <button
     type="button"
     class="btn btn-sm btn-outline-secondary sap-link-button-copy"
@@ -31,8 +34,9 @@
 </span>
 
 <ng-template #conteudo>
-  <ng-container *ngIf="label; else projectedLabel">{{ label }}</ng-container>
-  <ng-template #projectedLabel>
+  @if (label) {
+    {{ label }}
+  } @else {
     <ng-content></ng-content>
-  </ng-template>
+  }
 </ng-template>

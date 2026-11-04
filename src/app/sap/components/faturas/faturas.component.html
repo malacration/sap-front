@@ -1,38 +1,41 @@
 
-<section *ngIf="!finalizado" class="content">
-
+@if (!finalizado) {
+  <section class="content">
     <br />
-
-    <app-lista-fatura *ngIf="clienteSelecionado"
+    @if (clienteSelecionado) {
+      <app-lista-fatura
         [clienteSelecionado]="clienteSelecionado"
         (closeEvent)="close()">
-    </app-lista-fatura>
-
-
-    <app-auth-fatura *ngIf="contatosOpcoes && !clienteSelecionado" 
-        [opcoes]="contatosOpcoes" 
-        [cpf]="cpfCnpjInput" 
+      </app-lista-fatura>
+    }
+    @if (contatosOpcoes && !clienteSelecionado) {
+      <app-auth-fatura
+        [opcoes]="contatosOpcoes"
+        [cpf]="cpfCnpjInput"
         (getCodigo)="recebeCodigo($event)">
-    </app-auth-fatura>
-
-    <div class="card card-primary" *ngIf="!contatosOpcoes && !this.clienteSelecionado">
+      </app-auth-fatura>
+    }
+    @if (!contatosOpcoes && !this.clienteSelecionado) {
+      <div class="card card-primary">
         <div class="card-header">
-            <h3 class="card-title"><b>Extrato de 2ª Via de fatura</b></h3>
+          <h3 class="card-title"><b>Extrato de 2ª Via de fatura</b></h3>
         </div>
-        <div class="card-body">                
-            <div class="form-group">
-                <label for="cpfCnpj">Entre com CPF ou CNPJ</label>
-                <input type="text" placeholder="CPF ou CNPJ"
-                    class="form-control" id="cpfCnpj" 
-                    [ngModel]="cpfCnpjInput | cpfCnpj"
-                    (ngModelChange)="cpfCnpjInput=$event">
-            </div>
-            <div class="form-group">
-                <button (click)="buscarContatos()" [disabled]="disableAvancar" class="btn btn-primary" >Avançar</button>
-            </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="cpfCnpj">Entre com CPF ou CNPJ</label>
+            <input type="text" placeholder="CPF ou CNPJ"
+              class="form-control" id="cpfCnpj"
+              [ngModel]="cpfCnpjInput | cpfCnpj"
+              (ngModelChange)="cpfCnpjInput=$event">
+          </div>
+          <div class="form-group">
+            <button (click)="buscarContatos()" [disabled]="disableAvancar" class="btn btn-primary" >Avançar</button>
+          </div>
         </div>
         <div class="card-footer text-muted small">
-            Canal de atendimento - {{phoneNumber}}
+          Canal de atendimento - {{phoneNumber}}
         </div>
-    </div>
-</section>
+      </div>
+    }
+  </section>
+}

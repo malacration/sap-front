@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Column } from '../../../../shared/components/table/column.model';
@@ -18,9 +18,11 @@ import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-m
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
 
 @Component({
-  selector: 'app-ordem-selected',
-  templateUrl: './selected.html',
-  styleUrls: ['./selected.scss']
+    selector: 'app-ordem-selected',
+    templateUrl: './selected.html',
+    styleUrls: ['./selected.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   @Input() selected: OrdemCarregamento | null = null;

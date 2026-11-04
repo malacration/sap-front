@@ -11,14 +11,15 @@ import {
 } from '@angular/forms';
 
 @Directive({
-  selector: '[normalText]',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NormalTextDirective),
-      multi: true
-    }
-  ]
+    selector: '[normalText]',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => NormalTextDirective),
+            multi: true
+        }
+    ],
+    standalone: false
 })
 export class NormalTextDirective implements ControlValueAccessor {
   private onChange: (value: any) => void = () => {};
@@ -27,7 +28,7 @@ export class NormalTextDirective implements ControlValueAccessor {
   constructor(private el: ElementRef, private renderer: Renderer2) {}
 
   @HostListener('input', ['$event'])
-  onKeyUp(event: KeyboardEvent): void {
+  onKeyUp(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     const rawValue = inputEl.value;
     const newVal = Number.isFinite(Number(rawValue)) ? Number(rawValue) : rawValue;

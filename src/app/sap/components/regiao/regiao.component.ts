@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -16,8 +16,10 @@ import { RegiaoDadosImpressao, RegiaoFretePdfComponent } from './regiao-frete-pd
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 
 @Component({
-  selector: 'app-regiao',
-  templateUrl: './regiao.component.html',
+    selector: 'app-regiao',
+    templateUrl: './regiao.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegiaoComponent implements OnInit, OnDestroy {
 

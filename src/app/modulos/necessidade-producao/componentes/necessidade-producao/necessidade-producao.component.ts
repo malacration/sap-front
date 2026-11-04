@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertService } from '../../../../shared/service/alert.service';
 import { Option, OptionGroup } from '../../../../sap/model/form/option';
@@ -24,9 +24,11 @@ import { queryParamsDetalhe, ROTA_DETALHE, tituloDetalhe } from '../necessidade-
  * da para ver a venda de uma filial contra o estoque da fabrica mais o da filial. Nada marcado = todos.
  */
 @Component({
-  selector: 'app-necessidade-producao',
-  templateUrl: './necessidade-producao.component.html',
-  styleUrls: ['./necessidade-producao.component.scss'],
+    selector: 'app-necessidade-producao',
+    templateUrl: './necessidade-producao.component.html',
+    styleUrls: ['./necessidade-producao.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NecessidadeProducaoComponent implements OnInit {
   itemDe = 'PAC0000000';

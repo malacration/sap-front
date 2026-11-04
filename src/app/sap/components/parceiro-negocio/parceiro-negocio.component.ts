@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
 import { Page } from '../../model/page.model';
 import { AuthService } from '../../../shared/service/auth.service';
@@ -18,9 +18,11 @@ interface ParceiroNegocioListState {
 }
 
 @Component({
-  selector: 'app-parceiro-negocio-statement',
-  templateUrl: './parceiro-negocio.component.html',
-  styleUrls: ['./parceiro-negocio.component.scss']
+    selector: 'app-parceiro-negocio-statement',
+    templateUrl: './parceiro-negocio.component.html',
+    styleUrls: ['./parceiro-negocio.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ParceiroNegocioComponent implements OnInit, OnDestroy {
   private static listState: ParceiroNegocioListState = null;

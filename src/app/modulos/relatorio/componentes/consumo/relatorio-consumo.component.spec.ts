@@ -1,5 +1,5 @@
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from '../../../../core/services/toastr.service';
 import { RelatorioService } from '../../../../sap/service/relatorio.service';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +8,11 @@ import { BsDatepickerDirective, BsDatepickerModule } from 'ngx-bootstrap/datepic
 import { FormularioParametrosComponent } from './formulario-parametros.component';
 import { CampoDataComponent } from '../../../../shared/components/campo-data/campo-data.component';
 
-@Component({ selector: 'app-parametro-cadastro', template: '' })
+@Component({
+    selector: 'app-parametro-cadastro', template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
+})
 class CadastroStub {
   @Input() parametro: any;
   @Input() valor: any;
@@ -19,7 +23,7 @@ describe('Calendario do formulario de parametros', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [FormularioParametrosComponent, CampoDataComponent, CadastroStub],
-      imports: [CommonModule, ReactiveFormsModule, NoopAnimationsModule, BsDatepickerModule.forRoot()],
+      imports: [CommonModule, ReactiveFormsModule, NoopAnimationsModule, BsDatepickerModule],
     }).compileComponents();
   });
 

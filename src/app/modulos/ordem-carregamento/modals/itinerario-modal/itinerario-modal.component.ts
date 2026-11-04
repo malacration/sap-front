@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { OrdemCarregamento } from '../../models/ordem-carregamento';
 import { ItinerarioPdfService } from '../../componentes/itinerario-pdf.component/itinerario-pdf.component';
 
 @Component({
-  selector: 'app-itinerario-modal',
-  templateUrl: './itinerario-modal.component.html',
-  styleUrls: ['./itinerario-modal.component.scss']
+    selector: 'app-itinerario-modal',
+    templateUrl: './itinerario-modal.component.html',
+    styleUrls: ['./itinerario-modal.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ItinerarioModalComponent implements OnChanges {
   @Input() show: boolean = false;

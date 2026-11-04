@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AlertService } from '../../../shared/service/alert.service';
 import {
@@ -6,8 +6,10 @@ import {
 } from '../../service/sanitizacao-contrato.service';
 
 @Component({
-  selector: 'app-sanitizacao-contrato',
-  templateUrl: './sanitizacao-contrato.component.html',
+    selector: 'app-sanitizacao-contrato',
+    templateUrl: './sanitizacao-contrato.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SanitizacaoContratoComponent implements OnDestroy {
   previa: PreviaSanitizacao = null;

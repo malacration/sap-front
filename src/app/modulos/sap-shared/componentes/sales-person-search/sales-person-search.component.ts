@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { SalesPersonDefinition } from '../../../../sap/model/sales-person/sales-person-definition';
 import { SalesPersonService } from '../../../../sap/service/sales-person.service';
 import { SearchComponent } from '../../../../shared/components/search/search.component';
@@ -6,8 +6,10 @@ import { SalesPerson } from '../../../../sap/model/sales-person/sales-person';
 
 
 @Component({
-  selector: 'app-sales-person-search',
-  templateUrl: './sales-person-search.component.html',
+    selector: 'app-sales-person-search',
+    templateUrl: './sales-person-search.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SalesPersonSearchComponent {
   @Input() name : string

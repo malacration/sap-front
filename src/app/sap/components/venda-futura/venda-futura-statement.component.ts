@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../../../shared/service/auth.service';
 import { Page } from '../../model/page.model';
 import { Column } from '../../../shared/components/table/column.model';
@@ -13,9 +13,11 @@ import { FutureDeliverySalesService } from '../../service/FutureDeliverySales.se
 import { DocumentLines } from '../../model/markting/future-delivery-sales';
 
 @Component({
-  selector: 'app-venda-futura-statement',
-  templateUrl: './venda-futura-statement.component.html',
-  styleUrls: ['./venda-futura-statement.component.scss'],
+    selector: 'app-venda-futura-statement',
+    templateUrl: './venda-futura-statement.component.html',
+    styleUrls: ['./venda-futura-statement.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class VendaFuturaStatementComponent implements OnInit, OnDestroy {
   nomeUsuario: string;

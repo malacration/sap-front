@@ -1,76 +1,90 @@
 <section class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1>Romaneios</h1>
-            </div>
-        </div>
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Romaneios</h1>
+      </div>
     </div>
+  </div>
 </section>
 
 <!-- Main content -->
 <section class="content">
-    <!-- Default box -->
-    <div class="container-fluid">
-        <div class="card card-outline card-secondary">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-sm-3">
-                        <filter-business-place (changeFilter)="businesPlaceFilter($event)" />
-                    </div>
-                    <div class="col-sm-3">
-                        <filter-numero-nf (changeFilter)="numberNfFilter($event)" />
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo Romaneio: </label>
-                        <select class="form-control container-fluid card-outline" [(ngModel)]="tipoRomaneio" (change)="changeTipo()">
-                            <option selected value="ENTRADA">Entrada</option>
-                            <option value="SAIDA">Saída</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+  <!-- Default box -->
+  <div class="container-fluid">
+    <div class="card card-outline card-secondary">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <filter-business-place (changeFilter)="businesPlaceFilter($event)" />
+          </div>
+          <div class="col-sm-3">
+            <filter-numero-nf (changeFilter)="numberNfFilter($event)" />
+          </div>
+          <div class="form-group">
+            <label>Tipo Romaneio: </label>
+            <select class="form-control container-fluid card-outline" [(ngModel)]="tipoRomaneio" (change)="changeTipo()">
+              <option selected value="ENTRADA">Entrada</option>
+              <option value="SAIDA">Saída</option>
+            </select>
+          </div>
         </div>
-
-        <div *ngIf="carregando" class="card">
-            <div class="card-header">
-                <div class="overlay">
-                    <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-                </div>
-            </div>
-        </div>
-        <div class="card card-outline card-primary">
-            <div class="card-header">
-                <h3 class="card-title">Romaneios de pesagem</h3>
-            </div>
-            <div *ngIf="!carregando" class="card-body">
-                <div *ngFor="let item of romaneiosPesagem" class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">{{item.DocNum}} - Nota: {{item.U_NumeroNota}} - {{item.U_CodParceiro}} - {{item.U_NomeParceiro}} - Data {{castDate(item.CreateDate)}} </h4>
-                        <div class="card-tools top">
-                            <button *ngIf="tipoRomaneio === 'ENTRADA'" [routerLink]="['/romaneio-fazenda-insumo', item.DocNum,'entrada']" type="button" class="btn btn-primary btn-sm mr-1">
-                                <i rou class="fa fa-clipboard"></i> Entrada Insumo
-                            </button>
-                            <button *ngIf="tipoRomaneio === 'SAIDA'" [routerLink]="['/romaneio-fazenda-insumo', item.DocNum,'saida']" type="button" class="btn btn-primary btn-sm mr-1">
-                                <i rou class="fa fa-clipboard"></i> Saída Insumo
-                            </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm" (click)="item.collapse = !item.collapse">
-                                <i *ngIf="!item.collapse" class="fa fa-plus"></i>
-                                <i *ngIf="item.collapse" class="fa fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body collapse" [ngClass]="item.collapse ? 'collapse show' : 'collapse'">
-                        <h6>Placa: {{item.U_PlacaCaminhao}}</h6>
-                        <h6>Cod. Contrato: {{item.U_CodContrato}}</h6>
-                        <h6>{{item.U_ObsRomaneio}}</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <app-paginacao (pageChange)="loadPage($event)" [totalItens]="total" [pageSize]="size"></app-paginacao>
-            </div>
-        </div>
-        
+      </div>
     </div>
+
+    @if (carregando) {
+      <div class="card">
+        <div class="card-header">
+          <div class="overlay">
+            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+          </div>
+        </div>
+      </div>
+    }
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title">Romaneios de pesagem</h3>
+      </div>
+      @if (!carregando) {
+        <div class="card-body">
+          @for (item of romaneiosPesagem; track item) {
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">{{item.DocNum}} - Nota: {{item.U_NumeroNota}} - {{item.U_CodParceiro}} - {{item.U_NomeParceiro}} - Data {{castDate(item.CreateDate)}} </h4>
+                <div class="card-tools top">
+                  @if (tipoRomaneio === 'ENTRADA') {
+                    <button [routerLink]="['/romaneio-fazenda-insumo', item.DocNum,'entrada']" type="button" class="btn btn-primary btn-sm mr-1">
+                      <i rou class="fa fa-clipboard"></i> Entrada Insumo
+                    </button>
+                  }
+                  @if (tipoRomaneio === 'SAIDA') {
+                    <button [routerLink]="['/romaneio-fazenda-insumo', item.DocNum,'saida']" type="button" class="btn btn-primary btn-sm mr-1">
+                      <i rou class="fa fa-clipboard"></i> Saída Insumo
+                    </button>
+                  }
+                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="item.collapse = !item.collapse">
+                    @if (!item.collapse) {
+                      <i class="fa fa-plus"></i>
+                    }
+                    @if (item.collapse) {
+                      <i class="fa fa-minus"></i>
+                    }
+                  </button>
+                </div>
+              </div>
+              <div class="card-body collapse" [ngClass]="item.collapse ? 'collapse show' : 'collapse'">
+                <h6>Placa: {{item.U_PlacaCaminhao}}</h6>
+                <h6>Cod. Contrato: {{item.U_CodContrato}}</h6>
+                <h6>{{item.U_ObsRomaneio}}</h6>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      <div class="card-body">
+        <app-paginacao (pageChange)="loadPage($event)" [totalItens]="total" [pageSize]="size"></app-paginacao>
+      </div>
+    </div>
+
+  </div>
 </section>

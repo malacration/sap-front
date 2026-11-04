@@ -1,4 +1,4 @@
-import * as moment from "moment"
+import moment from 'moment'
 import { Actiable, Action, ActionReturn } from "../../../shared/components/action/action.model"
 import { Column } from "../../../shared/components/table/column.model"
 import { formatCurrency } from "@angular/common"

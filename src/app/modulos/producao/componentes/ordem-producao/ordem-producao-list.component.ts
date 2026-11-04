@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Column } from '../../../../shared/components/table/column.model';
@@ -8,8 +8,10 @@ import { OrdemProducaoService } from '../../_services/ordem-producao.service';
 import { OrdemProducaoPdfService } from '../../_services/ordem-producao-pdf.service';
 
 @Component({
-  selector: 'app-ordem-producao-list',
-  templateUrl: './ordem-producao-list.component.html',
+    selector: 'app-ordem-producao-list',
+    templateUrl: './ordem-producao-list.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class OrdemProducaoListComponent implements OnInit {
 

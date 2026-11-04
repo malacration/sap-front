@@ -9,28 +9,32 @@
     (click)="onMainClick($event)"
     [attr.aria-expanded]="isExpandable ? expanded : null"
     [style.paddingLeft.px]="linkPadding"
-  >
+    >
     <i class="nav-icon" [ngClass]="iconClasses"></i>
     <p>
       {{ menuItem.name }}
-      <span *ngIf="isExpandable" class="right">
-        <i
-          class="fas fa-angle-left"
-          [@rotate]="expanded"
-          (click)="onToggleArrow($event)"
-        ></i>
-      </span>
+      @if (isExpandable) {
+        <span class="right">
+          <i
+            class="fas fa-angle-left"
+            [@rotate]="expanded"
+            (click)="onToggleArrow($event)"
+          ></i>
+        </span>
+      }
     </p>
   </a>
-  <ul
-    *ngIf="isExpandable"
-    class="nav nav-treeview"
-    [@openClose]="expanded"
-  >
-    <app-menu-item
-      *ngFor="let child of menuItem.children; trackBy: trackByChild"
-      [menuItem]="child"
-      [depth]="depth + 1"
-    ></app-menu-item>
-  </ul>
+  @if (isExpandable) {
+    <ul
+      class="nav nav-treeview"
+      [@openClose]="expanded"
+      >
+      @for (child of menuItem.children; track trackByChild($index, child)) {
+        <app-menu-item
+          [menuItem]="child"
+          [depth]="depth + 1"
+        ></app-menu-item>
+      }
+    </ul>
+  }
 </li>

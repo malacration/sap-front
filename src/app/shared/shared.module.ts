@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe, TranslateDirective } from '@ngx-translate/core';
 
 import { PageNotFoundComponent } from './components/';
 import { WebviewDirective } from './directives/';
@@ -29,7 +29,7 @@ import { SelectComponent } from './components/select/select.component';
 import { SearchComponent } from './components/search/search.component';
 import { CardComponent } from './components/card/card.component';
 import { WsService } from './WsService';
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { QrcodeComponent } from './components/qrcode/qrcode.component';
 import { SapLinkButtonComponent } from './components/sap-link-button/sap-link-button.component';
 import { SapLinkButtonDemoComponent } from './components/sap-link-button/sap-link-button-demo.component';
@@ -68,21 +68,21 @@ import { CampoDataComponent } from './components/campo-data/campo-data.component
     CampoDataComponent
   ],
   imports: [
-    CommonModule, 
+    CommonModule,
     BrowserModule,
     RouterModule,
     BrowserAnimationsModule,
-    TranslateModule,
+    TranslatePipe, TranslateDirective,
     FormsModule,
     BrowserModule,
     ReactiveFormsModule,
-    QRCodeModule,
+    QRCodeComponent,
     BsDatepickerModule
   ],
   exports: [
-    TranslateModule, 
+    TranslatePipe, TranslateDirective,
     ModalSelectComponent,
-    WebviewDirective, 
+    WebviewDirective,
     FormsModule,
     TableComponent,
     CommonModule,

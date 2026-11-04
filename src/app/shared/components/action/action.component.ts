@@ -1,12 +1,14 @@
 
-import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Action } from './action.model';
 
 
 @Component({
     selector: 'app-action',
     templateUrl: "action.component.html",
-    styleUrls: ['action.component.scss']
+    styleUrls: ['action.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ActionComponent implements OnInit {
 

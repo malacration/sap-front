@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Option } from '../../../model/form/option';
 import { BPAddress } from '../../../model/business-partner/business-partner';
 import { LocalidadeService } from '../../../../modulos/sap-shared/_services/localidade.service';
@@ -6,8 +6,10 @@ import { LocalidadeSearchComponent } from '../../../../modulos/sap-shared/compon
 import { Localidade } from '../../../model/localidade/localidade';
 
 @Component({
-  selector: 'app-endereco',
-  templateUrl: './endereco.component.html',
+    selector: 'app-endereco',
+    templateUrl: './endereco.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EnderecoComponent implements OnChanges {
 

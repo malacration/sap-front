@@ -4,12 +4,15 @@ import {
   Input,
   OnInit,
   Output,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Option } from '../../../../model/form/option';
 
 @Component({
-  selector: 'app-em-ordem-de-carregamento-select',
-  templateUrl: './em-ordem-de-carregamento.select.component.html',
+    selector: 'app-em-ordem-de-carregamento-select',
+    templateUrl: './em-ordem-de-carregamento.select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class EmOrdemDeCarregamentoSelectComponent implements OnInit {
   @Input()

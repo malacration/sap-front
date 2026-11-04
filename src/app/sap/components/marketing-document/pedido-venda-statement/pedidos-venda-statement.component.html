@@ -1,5 +1,5 @@
 <section class="content">
-  <div class="card card-primary" [hidden]="lista?.selectedDocumentList">
+  <div class="card card-primary" [hidden]="$safeNavigationMigration(lista?.selectedDocumentList)">
     <div class="card-header">
       <h3 class="card-title"><b>Pedidos - {{ lista?.nomeUsuario }}</b></h3>
     </div>
@@ -13,11 +13,13 @@
           <label class="font-weight-bold">Status</label>
           <select class="form-control" (change)="onStatusChange($event)">
             <option value="">Todos</option>
-            <option *ngFor="let s of statusOptions" [value]="s.key" [selected]="s.key === 'bost_Open'">{{ s.label }}</option>
+            @for (s of statusOptions; track s) {
+              <option [value]="s.key" [selected]="s.key === 'bost_Open'">{{ s.label }}</option>
+            }
           </select>
         </div>
         <div class="col-md-3">
-          <app-branch-select [selected]="filialSelecionada?.Bplid" (selectedOut)="onFilialChange($event)"></app-branch-select>
+          <app-branch-select [selected]="$safeNavigationMigration(filialSelecionada?.Bplid)" (selectedOut)="onFilialChange($event)"></app-branch-select>
         </div>
         <div class="col-md-4">
           <app-busines-partner-search (selected)="onClienteChange($event)"></app-busines-partner-search>
