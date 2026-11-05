@@ -87,6 +87,7 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 import { RegiaoComponent } from './sap/components/regiao/regiao.component';
 import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cadastro/normalizacao-cadastro.component';
+import { LancamentoRetornoComponent } from './sap/components/lancamento-retorno/lancamento-retorno.component';
 import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { RegiaoFretePdfComponent } from './sap/components/regiao/regiao-frete-pdf/regiao-frete-pdf.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
@@ -191,6 +192,7 @@ registerLocaleData(localeBr);
     ParceiroNegocioSingleComponent,
     RegiaoComponent,
     NormalizacaoCadastroComponent,
+    LancamentoRetornoComponent,
     SanitizacaoContratoComponent,
     RegiaoFretePdfComponent,
     LocalidadeComponent,
