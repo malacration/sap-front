@@ -100,6 +100,7 @@ import { AutorizadorComponent } from './sap/components/autorizador/autorizador.c
 import { RegraFilialComponent } from './sap/components/regra-filial/regra-filial.component';
 import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
+import { AgendaEmailComponent } from './sap/components/agenda-email/agenda-email.component';
 import { MeusDadosComponent } from './sap/components/meus-dados/meus-dados.component';
 import { DocumentosSapComponent } from './sap/components/documentos-sap/documentos-sap.component';
 import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
@@ -205,6 +206,7 @@ registerLocaleData(localeBr);
     RegraFilialComponent,
     LiberacaoTravaComponent,
     RegrasTravaComponent,
+    AgendaEmailComponent,
     RegrasAcessoComponent,
     MeusDadosComponent,
     DocumentosSapComponent,

@@ -30,6 +30,7 @@ import { AutorizadorComponent } from './sap/components/autorizador/autorizador.c
 import { RegraFilialComponent } from './sap/components/regra-filial/regra-filial.component';
 import { LiberacaoTravaComponent } from './sap/components/liberacao-trava/liberacao-trava.component';
 import { RegrasTravaComponent } from './sap/components/regras-trava/regras-trava.component';
+import { AgendaEmailComponent } from './sap/components/agenda-email/agenda-email.component';
 import { RegrasAcessoComponent } from './sap/components/regras-acesso/regras-acesso.component';
 import { CalculadoraStatementComponent } from './modulos/calculadora-preco-venda/components/statement/statement.component';
 import { ReprocessamentoComponent } from './modulos/producao/componentes/reprocessamento/repreocessamento.component';
@@ -667,6 +668,13 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         data: ["icon:fas fa-list-ul", "role:admin", "api:post:/trava/regras"],
         canActivate: [authGuard, roleGuard],
         component: RegrasTravaComponent
+      },
+      {
+        path: 'email-inadimplencia',
+        title: 'E-mail de inadimplência',
+        data: ["icon:fas fa-envelope", "role:admin", "api:put:/agenda-relatorio/inadimplencia"],
+        canActivate: [authGuard, roleGuard],
+        component: AgendaEmailComponent
       },
       {
         // Gestao das regras de acesso (perfil -> URLs/metodos). O backend so aceita admin
