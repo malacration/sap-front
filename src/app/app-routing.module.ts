@@ -20,6 +20,7 @@ import { PedidosVendaStatementComponent } from './sap/components/marketing-docum
 import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parceiro-negocio.component';
 import { RegiaoComponent } from './sap/components/regiao/regiao.component';
 import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cadastro/normalizacao-cadastro.component';
+import { LancamentoRetornoComponent } from './sap/components/lancamento-retorno/lancamento-retorno.component';
 import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
 import { MapaRelacoesComponent } from './sap/components/mapa-relacoes/mapa-relacoes.component';
@@ -288,7 +289,7 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
   {
     title: 'Financeiro',
     path: 'financeiro',
-    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "role:contabil_importacao", "role:nota_fiscal_lote"],
+    data: ["icon:fas fa-dollar-sign", "role:pix", "role:pix_admin", "role:cobranca", "role:vendedor", "role:vendedor_admin", "role:contabil_importacao", "role:nota_fiscal_lote", "role:lancamento_retorno"],
     canActivate: [authGuard],
     children: [
       {
@@ -368,6 +369,15 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
         data: ["icon:fas fa-cash-register", "sapDocumentKind:recebimento", "role:admin", "api:get:/incoming-payments"],
         canActivate: [authGuard, roleGuard],
         component: DocumentosSapComponent,
+      },
+      {
+        path: 'lancamento-retorno',
+        title: 'Lançamento de Retorno',
+        data: ["icon:fas fa-file-invoice", "role:lancamento_retorno", "api:get:/lancamento-retorno/retornos",
+              "usa:get:/lancamento-retorno/retornos/*/previa", "usa:post:/lancamento-retorno/retornos/*/lancar",
+              "usa:get:/lancamento-retorno/automatico", "usa:put:/lancamento-retorno/automatico", "usa:get:/lancamento-retorno/historico"],
+        canActivate: [authGuard, roleGuard],
+        component: LancamentoRetornoComponent,
       },
       {
         path: 'importacao-lancamentos',
