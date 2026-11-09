@@ -1,0 +1,291 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Lançamento de Retorno</h3>
+  </div>
+  <div class="card-body">
+    <p class="text-muted">
+      Gera o lançamento contábil do desconto de duplicatas a partir dos retornos do Banco do Brasil
+      importados no BankPlus. É um LCM por retorno, com todos os boletos da ocorrência de desconto,
+      inclusive os que a API já tinha liquidado e que o BankPlus deixa de fora.
+    </p>
+    <form class="form-row align-items-end" (ngSubmit)="listar()">
+      <div class="form-group col-6 col-md-3">
+        <label for="descontoDe">Arquivo de</label>
+        <input id="descontoDe" type="date" class="form-control" name="de" [(ngModel)]="de" required>
+      </div>
+      <div class="form-group col-6 col-md-3">
+        <label for="descontoAte">até</label>
+        <input id="descontoAte" type="date" class="form-control" name="ate" [(ngModel)]="ate" required>
+      </div>
+      <div class="form-group col-12 col-md-3">
+        <button type="submit" class="btn btn-primary" [disabled]="carregandoLista || !de || !ate">
+          <i class="fas" [ngClass]="carregandoLista ? 'fa-spinner fa-spin' : 'fa-search'"></i> Listar retornos
+        </button>
+      </div>
+    </form>
+
+    <div *ngIf="listou && !retornos.length && !carregandoLista" class="alert alert-light mb-0">
+      Nenhum retorno com desconto importado no BankPlus nesse período.
+    </div>
+
+    <div *ngIf="retornos.length" class="table-responsive" style="max-height: 45vh; overflow-y: auto;">
+      <table class="table table-sm table-hover">
+        <thead>
+          <tr>
+            <th>Arquivo de</th>
+            <th>Retorno</th>
+            <th>Filial</th>
+            <th class="text-right">Boletos</th>
+            <th class="text-right">Valor dos títulos</th>
+            <th class="text-right">IOF</th>
+            <th class="text-right">Juros</th>
+            <th>LCM</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of retornos" [class.table-active]="selecionado?.retorno === r">
+            <td>{{data(r.dataArquivo)}}</td>
+            <td><span title="{{r.arquivo}}">{{r.retorno}}</span></td>
+            <td>{{r.filial ?? '-'}}<span *ngIf="r.nomeFilial" class="text-muted small"> {{r.nomeFilial}}</span></td>
+            <td class="text-right">
+              {{r.boletos}}
+              <span *ngIf="r.jaPagos" class="badge badge-warning" title="Já liquidados pela API: o BankPlus não os lança">{{r.jaPagos}} já pago(s)</span>
+              <span *ngIf="r.semSituacao" class="badge badge-danger" title="O BankPlus não colocou estes boletos na Carteira Descontada: ajustar a situação no BankPlus">{{r.semSituacao}} sem situação</span>
+            </td>
+            <td class="text-right">{{r.totalFace | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+            <td class="text-right">{{r.totalIof | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+            <td class="text-right">{{r.totalJuros | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+            <td>
+              <span *ngIf="r.lcm" class="badge badge-success">LCM {{r.lcm}}</span>
+              <span *ngIf="!r.lcm && r.lcmBankPlus" class="badge badge-secondary" title="Gerado pelo BankPlus">BankPlus: {{r.lcmBankPlus}}</span>
+              <span *ngIf="!r.lcm && !r.lcmBankPlus" class="badge badge-warning">Pendente</span>
+            </td>
+            <td class="text-right">
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="ver(r)"
+                      [disabled]="selecionado?.lancando">Ver</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card" *ngIf="selecionado as item">
+  <div class="card-header d-flex align-items-center">
+    <h3 class="card-title text-break">
+      <i class="fas fa-file-alt"></i> Retorno {{item.retorno.retorno}}
+      <small class="text-muted">{{item.retorno.arquivo}}</small>
+    </h3>
+    <div class="ml-auto">
+      <span *ngIf="item.carregando" class="badge badge-secondary"><i class="fas fa-spinner fa-spin"></i> Carregando...</span>
+      <span *ngIf="item.jdtNum && !item.jaExistia" class="badge badge-success">LCM {{item.jdtNum}} gerado</span>
+      <span *ngIf="item.jdtNum && item.jaExistia" class="badge badge-info">Já lançado: LCM {{item.jdtNum}}</span>
+      <ng-container *ngIf="item.previa && !item.jdtNum">
+        <span *ngIf="item.previa.lcmExistente" class="badge badge-info">Já lançado: LCM {{item.previa.lcmExistente}}</span>
+        <span *ngIf="!item.previa.lcmExistente && item.previa.erros.length" class="badge badge-danger">Não pode ser lançado</span>
+        <span *ngIf="podeLancar(item)" class="badge badge-warning">Pronto para lançar</span>
+      </ng-container>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div *ngIf="item.erro" class="alert alert-danger mb-0">{{item.erro}}</div>
+    <div *ngIf="item.erroLancamento" class="alert alert-danger">
+      {{item.erroLancamento}}
+      <span *ngIf="item.previaDesatualizada"> Conferindo no SAP se o LCM foi gravado antes de liberar outra tentativa.</span>
+    </div>
+
+    <ng-container *ngIf="item.previa as p">
+      <div class="row small mb-2">
+        <div class="col-6 col-md-2"><strong>Convênio</strong><br>{{p.convenio}}</div>
+        <div class="col-6 col-md-2"><strong>Contrato BankPlus</strong><br>{{p.contrato}}</div>
+        <div class="col-6 col-md-2"><strong>Data do lançamento</strong><br>{{data(p.dataLancamento) || '-'}}</div>
+        <div class="col-6 col-md-3"><strong>Filial</strong><br>{{p.filial ?? '-'}}<span *ngIf="p.nomeFilial"> - {{p.nomeFilial}}</span></div>
+        <div class="col-6 col-md-3"><strong>Referência</strong><br>{{p.reference}}</div>
+      </div>
+
+      <div *ngIf="p.erros.length" class="alert alert-danger">
+        <div *ngFor="let erro of p.erros">{{erro}}</div>
+      </div>
+      <div *ngIf="p.avisos?.length" class="alert alert-warning">
+        <div *ngFor="let aviso of p.avisos"><i class="fas fa-exclamation-triangle"></i> {{aviso}}</div>
+      </div>
+
+      <div class="row text-center border rounded py-2 mx-0 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="small text-muted">Boletos</div>
+          <strong>{{p.titulos.length}}</strong>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="small text-muted">Valor dos títulos</div>
+          <strong>{{p.totalFace | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</strong>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="small text-muted">IOF</div>
+          <strong>{{p.totalIof | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</strong>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="small text-muted">Juros</div>
+          <strong>{{p.totalJuros | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</strong>
+        </div>
+      </div>
+
+      <h6 class="mt-3">Boletos descontados ({{p.titulos.length}})</h6>
+      <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+        <table class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>Nosso número</th>
+              <th>Documento</th>
+              <th>Cliente</th>
+              <th>Vencimento</th>
+              <th class="text-right">Valor do título</th>
+              <th class="text-right">IOF</th>
+              <th class="text-right">Juros</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of p.titulos" [class.table-warning]="t.jaPago">
+              <td>{{t.nossoNumero}}</td>
+              <td>{{t.documento}}</td>
+              <td>{{t.cliente}}<span *ngIf="t.nomeCliente" class="text-muted small"> {{t.nomeCliente}}</span></td>
+              <td>{{data(t.vencimento)}}</td>
+              <td class="text-right">{{t.valorFace | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+              <td class="text-right">{{t.iof | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+              <td class="text-right">{{t.juros | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+              <td>
+                <span *ngIf="t.jaPago" class="badge badge-warning" title="{{t.divergencia}}">Já pago</span>
+                <span *ngIf="!t.jaPago && t.divergencia" class="small text-muted">{{t.divergencia}}</span>
+                <span *ngIf="t.semSituacaoDescontada" class="badge badge-danger" title="Situação no BankPlus: {{t.situacao ?? 'nenhuma'}}">Sem situação</span>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="font-weight-bold">
+              <td colspan="4">Total</td>
+              <td class="text-right">{{p.totalFace | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+              <td class="text-right">{{p.totalIof | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+              <td class="text-right">{{p.totalJuros | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <ng-container *ngIf="p.linhas.length">
+        <h6 class="mt-3">Lançamento contábil: {{p.memo}}</h6>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Conta</th>
+                <th>Descrição</th>
+                <th class="text-right">Débito</th>
+                <th class="text-right">Crédito</th>
+                <th>Dimensões</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of p.linhas">
+                <td>{{l.conta}}</td>
+                <td>{{l.descricao}}</td>
+                <td class="text-right">{{l.debito ? (l.debito | currency:'BRL':'symbol':'1.2-2':'pt-BR') : ''}}</td>
+                <td class="text-right">{{l.credito ? (l.credito | currency:'BRL':'symbol':'1.2-2':'pt-BR') : ''}}</td>
+                <td>{{l.costingCode}}<span *ngIf="l.costingCode2"> / {{l.costingCode2}}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <button type="button" class="btn btn-warning" [disabled]="!podeLancar(item)" (click)="lancar(item)">
+        <i class="fas fa-book" [class.fa-spin]="item.lancando"></i>
+        {{item.lancando ? 'Gerando LCM...' : 'Gerar LCM'}}
+      </button>
+    </ng-container>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex align-items-center">
+    <h3 class="card-title">Lançamento automático</h3>
+    <div class="ml-auto" *ngIf="automatico">
+      <span *ngIf="automatico.U_Ativo == 'Y'" class="badge badge-success">Ligado</span>
+      <span *ngIf="automatico.U_Ativo != 'Y'" class="badge badge-secondary">Desligado</span>
+    </div>
+  </div>
+  <div class="card-body">
+    <div *ngIf="automaticoIndisponivel" class="alert alert-light mb-0">
+      O lançamento automático e o histórico ainda não estão disponíveis neste ambiente
+      (faltam as tabelas LANC_RET_CFG e LANC_RET_LOG no SAP).
+    </div>
+
+    <ng-container *ngIf="automatico">
+      <p class="text-muted mb-2">
+        Ligado, o sistema gera sozinho, a cada 30 minutos, o LCM dos retornos com desconto importados no
+        BankPlus a partir do dia em que foi ligado. Retornos que não podem ser lançados ficam no histórico
+        com o motivo e continuam disponíveis na lista acima.
+      </p>
+      <div class="d-flex align-items-center flex-wrap mb-3" style="gap: .75rem">
+        <button type="button" class="btn" [ngClass]="automatico.U_Ativo == 'Y' ? 'btn-outline-danger' : 'btn-success'"
+                [disabled]="alterandoAutomatico" (click)="alternarAutomatico()">
+          <i class="fas" [ngClass]="alterandoAutomatico ? 'fa-spinner fa-spin' : 'fa-power-off'"></i>
+          {{automatico.U_Ativo == 'Y' ? 'Desligar automático' : 'Ligar automático'}}
+        </button>
+        <span *ngIf="automatico.U_Data" class="small text-muted">
+          {{automatico.U_Ativo == 'Y' ? 'Ligado' : 'Desligado'}} por {{automatico.U_Usuario}} em {{dataHora(automatico.U_Data)}}
+        </span>
+      </div>
+
+      <h6 class="d-flex align-items-center">
+        Histórico
+        <button type="button" class="btn btn-sm btn-link" (click)="carregarHistorico()" [disabled]="carregandoHistorico"
+                aria-label="Atualizar histórico">
+          <i class="fas fa-sync-alt" [class.fa-spin]="carregandoHistorico"></i>
+        </button>
+      </h6>
+      <div *ngIf="!historico.length && !carregandoHistorico" class="small text-muted">Nada registrado ainda.</div>
+      <div *ngIf="historico.length" class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Quando</th>
+              <th>Origem</th>
+              <th>Retorno</th>
+              <th>Resultado</th>
+              <th>LCM</th>
+              <th class="text-right">Valor</th>
+              <th>Usuário</th>
+              <th>Detalhe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of historico">
+              <td class="text-nowrap">{{dataHora(h.U_Data)}}</td>
+              <td>{{h.U_Origem == 'AUTOMATICO' ? 'Automático' : h.U_Origem == 'MANUAL' ? 'Tela' : 'Configuração'}}</td>
+              <td>{{h.U_Retorno || ''}}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'badge-success': h.U_Resultado == 'LANCADO' || h.U_Resultado == 'LIGADO',
+                  'badge-info': h.U_Resultado == 'JA_EXISTIA',
+                  'badge-warning': h.U_Resultado == 'RECUSADO',
+                  'badge-danger': h.U_Resultado == 'ERRO',
+                  'badge-secondary': h.U_Resultado == 'DESLIGADO'}">
+                  {{ {LANCADO: 'Lançado', JA_EXISTIA: 'Já existia', RECUSADO: 'Recusado', ERRO: 'Erro',
+                      LIGADO: 'Ligado', DESLIGADO: 'Desligado'}[h.U_Resultado] || h.U_Resultado }}
+                </span>
+              </td>
+              <td>{{h.U_Lcm || ''}}</td>
+              <td class="text-right">{{h.U_Valor ? (h.U_Valor | currency:'BRL':'symbol':'1.2-2':'pt-BR') : ''}}</td>
+              <td>{{h.U_Usuario}}</td>
+              <td class="small">{{h.U_Mensagem}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</div>
