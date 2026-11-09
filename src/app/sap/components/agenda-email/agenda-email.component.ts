@@ -11,6 +11,7 @@ import { AlertService } from '../../../shared/service/alert.service';
  */
 @Component({
   selector: 'app-agenda-email',
+  standalone: false,
   templateUrl: './agenda-email.component.html',
 })
 export class AgendaEmailComponent implements OnInit, OnDestroy {
