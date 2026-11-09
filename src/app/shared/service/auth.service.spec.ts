@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AuthService } from './auth.service';
 import { ConfigService } from '../../core/services/config.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 /** Monta um JWT falso: só o payload importa, a assinatura nunca é validada no front. */
 function fakeToken(payload: any): string {
@@ -14,12 +15,14 @@ describe('AuthService — roles do token', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
-      providers: [
+    imports: [RouterTestingModule],
+    providers: [
         AuthService,
         { provide: ConfigService, useValue: { getHost: () => 'http://localhost:8080' } },
-      ],
-    });
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+    ]
+});
     service = TestBed.inject(AuthService);
     localStorage.removeItem('token');
   });

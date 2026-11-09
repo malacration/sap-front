@@ -1,6 +1,10 @@
 
 <button type="button" class="btn btn-{{color}}" (click)="bClick()" [disabled]="action.retorno.carregando">
-    <i *ngIf="!action.retorno.carregando" class="{{action.icon}}"></i> 
-    <span *ngIf="action.retorno.carregando" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-    {{action.label}}
+  @if (!action.retorno.carregando) {
+    <i class="{{action.icon}}"></i>
+  }
+  @if (action.retorno.carregando) {
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+  }
+  {{action.label}}
 </button>

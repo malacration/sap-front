@@ -1,127 +1,149 @@
 <div class="row">
-    <div class="alert alert-warning" role="alert">
-        <h4 class="alert-heading">Atenção, Vendedor!</h4>
-        <p>
-            A troca substitui produtos deste contrato por outros. Antes de confirmar, veja como ela afeta o pagamento:
-        </p>
-        <ul>
-            <li>
-                <b>Se a troca aumentar o valor do contrato:</b> a diferença será cobrada em um <b>novo boleto</b>, com vencimento na <b>mesma data da última parcela</b> já existente.
-            </li>
-            <li>
-                <b>Se o cliente quiser outras condições de pagamento</b> para esse valor a mais, não use a troca: <b>encerre este contrato e crie um novo acordo</b>.
-            </li>
-            <li>
-                <b>Recomendação:</b> mantenha o total da troca próximo ao valor atual do contrato. Assim as parcelas já acordadas são preservadas, e qualquer valor adicional pode ser tratado em um contrato separado.
-            </li>
-            <li>
-                <b>Se a troca reduzir o valor do contrato:</b> os <b>últimos boletos em aberto</b> serão cancelados até o saldo refletir a mudança, e <b>novos boletos</b> poderão ser gerados. Avise o cliente sobre os novos títulos.
-            </li>
-        </ul>
-        <p class="mb-0">
-            Revise os valores e, se necessário, alinhe as novas condições com o cliente antes de confirmar.
-        </p>
-    </div>
+  <div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">Atenção, Vendedor!</h4>
+    <p>
+      A troca substitui produtos deste contrato por outros. Antes de confirmar, veja como ela afeta o pagamento:
+    </p>
+    <ul>
+      <li>
+        <b>Se a troca aumentar o valor do contrato:</b> a diferença será cobrada em um <b>novo boleto</b>, com vencimento na <b>mesma data da última parcela</b> já existente.
+      </li>
+      <li>
+        <b>Se o cliente quiser outras condições de pagamento</b> para esse valor a mais, não use a troca: <b>encerre este contrato e crie um novo acordo</b>.
+      </li>
+      <li>
+        <b>Recomendação:</b> mantenha o total da troca próximo ao valor atual do contrato. Assim as parcelas já acordadas são preservadas, e qualquer valor adicional pode ser tratado em um contrato separado.
+      </li>
+      <li>
+        <b>Se a troca reduzir o valor do contrato:</b> os <b>últimos boletos em aberto</b> serão cancelados até o saldo refletir a mudança, e <b>novos boletos</b> poderão ser gerados. Avise o cliente sobre os novos títulos.
+      </li>
+    </ul>
+    <p class="mb-0">
+      Revise os valores e, se necessário, alinhe as novas condições com o cliente antes de confirmar.
+    </p>
+  </div>
 </div>
 
 <div class="card card-primary">
-    <div class="card-header">
-        Itens a serem substituídos
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col">
-                <form>
-                    <div class="form-group">
-                        <app-select #selectComponent [options]="filteredItems" 
-                            [label]="'Item a ser subistituido'" 
-                            (selectedOut)="selecionado($event)">
-                        </app-select>
-                    </div>
-        
-                    <div class="form-group">
-                        <label for="quantity">Quantidade</label>
-                        <input type="number" id="quantity" [(ngModel)]="quantity" name="quantity" class="form-control" required
-                            [max]="selectedItem?.qtdDisponivel" />
-                    </div>
+  <div class="card-header">
+    Itens a serem substituídos
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col">
+        <form>
+          <div class="form-group">
+            <app-select #selectComponent [options]="filteredItems"
+              [label]="'Item a ser subistituido'"
+              (selectedOut)="selecionado($event)">
+            </app-select>
+          </div>
 
-                    <button type="button" class="btn btn-success" (click)="validateEhAdiciona()">
-                        Trocar
-                    </button>
-                </form>
-            </div>
+          <div class="form-group">
+            <label for="quantity">Quantidade</label>
+            <input type="number" id="quantity" [(ngModel)]="quantity" name="quantity" class="form-control" required
+              [max]="$safeNavigationMigration(selectedItem?.qtdDisponivel)" />
+          </div>
+
+          <button type="button" class="btn btn-success" (click)="validateEhAdiciona()">
+            Trocar
+          </button>
+        </form>
+      </div>
+    </div>
+    @if (itensRetirados.length > 0) {
+      <div class="row mt-2">
+        <div class="col">
+          <h5>Itens a serem substituídos.</h5>
+          <ul class="list-group mt-3">
+            @for (item of itensRetirados; track item; let i = $index) {
+              <li class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                {{ item.descricao }} - Quantidade: {{ item.quantidade }}
+                <button class="btn btn-danger btn-sm" (click)="removerItem(i)">Remover</button>
+              </li>
+            }
+          </ul>
         </div>
-        <div class="row mt-2" *ngIf="itensRetirados.length > 0">
-            <div class="col">
-                <h5>Itens a serem substituídos.</h5>
-                <ul class="list-group mt-3">
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                        *ngFor="let item of itensRetirados; let i = index">
-                        {{ item.descricao }} - Quantidade: {{ item.quantidade }}
-                        <button class="btn btn-danger btn-sm" (click)="removerItem(i)">Remover</button>
-                    </li>
-                </ul>
-            </div>
-        </div>
+      </div>
+    }
+  </div>
+  <div class="card-footer">
+    <b>Total:</b> {{totalItensRetirada() | currency}}
+  </div>
+  @if (loadingSalvar) {
+    <div class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
     </div>
-    <div class="card-footer"> 
-        <b>Total:</b> {{totalItensRetirada() | currency}}
-    </div>
-    <div *ngIf="loadingSalvar" class="overlay">
-        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-    </div>
+  }
 </div>
 
 <div class="row">
-    <div class="col">
-        <p class="mb-2">
-            Condição de pagamento do contrato: <b>{{ vendaFutura?.condicaoPagamentoLabel }}</b>
-            <small class="text-muted d-block">O desconto/juros dessa condição é aplicado aos novos produtos, conforme a tabela de preço de cada um.</small>
-        </p>
-        <div class="form-group">
-            <card-itens
-                [geralLoading]="loadingSalvar"
-                [title]="'Novos Produtos'"
-                (changeItens)="changeItensNovos($event)"
-                [branchId]="branchId">
-            </card-itens>
-            <small *ngIf="itensNovos?.length > 0 && carregandoCondicao" class="text-muted d-block">
-                <i class="fas fa-sync fa-spin"></i> Aplicando o desconto da condição de pagamento...
-            </small>
-            <small *ngIf="itensNovos?.length > 0 && !carregandoCondicao && nomeCondicao && pendenciasCondicao.length == 0" class="text-muted d-block">
-                Preços com a condição de pagamento do pedido original: <b>{{nomeCondicao}}</b>
-            </small>
-            <div *ngIf="itensNovos?.length > 0 && pendenciasCondicao.length > 0" class="alert alert-danger mt-2 py-2">
-                <div *ngFor="let pendencia of pendenciasCondicao">{{pendencia}}</div>
-            </div>
+  <div class="col">
+    <p class="mb-2">
+      Condição de pagamento do contrato: <b>{{ vendaFutura?.condicaoPagamentoLabel }}</b>
+      <small class="text-muted d-block">O desconto/juros dessa condição é aplicado aos novos produtos, conforme a tabela de preço de cada um.</small>
+    </p>
+    <div class="form-group">
+      <card-itens
+        [geralLoading]="loadingSalvar"
+        [title]="'Novos Produtos'"
+        (changeItens)="changeItensNovos($event)"
+        [branchId]="branchId">
+      </card-itens>
+      @if (itensNovos?.length > 0 && carregandoCondicao) {
+        <small class="text-muted d-block">
+          <i class="fas fa-sync fa-spin"></i> Aplicando o desconto da condição de pagamento...
+        </small>
+      }
+      @if (itensNovos?.length > 0 && !carregandoCondicao && nomeCondicao && pendenciasCondicao.length == 0) {
+        <small class="text-muted d-block">
+          Preços com a condição de pagamento do pedido original: <b>{{nomeCondicao}}</b>
+        </small>
+      }
+      @if (itensNovos?.length > 0 && pendenciasCondicao.length > 0) {
+        <div class="alert alert-danger mt-2 py-2">
+          @for (pendencia of pendenciasCondicao; track pendencia) {
+            <div>{{pendencia}}</div>
+          }
         </div>
+      }
     </div>
+  </div>
 </div>
 
 
-<div *ngIf="totalBalanco() != 0" class="row mt-3">
+@if (totalBalanco() != 0) {
+  <div class="row mt-3">
     <div class="col">
-        <div [ngClass]="totalBalanco() > 0 ? 'alert alert-success' : 'alert alert-danger'" role="alert">
-            <h4 class="alert-heading">
-                <i [ngClass]="totalBalanco() > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                Resultado Financeiro
-            </h4>
-            <hr>
-            <p *ngIf="totalBalanco() > 0" class="mb-0 fs-5">
-                O contrato será <strong>acrescido</strong> no valor de:
-                <strong>{{ totalBalanco() | currency }}</strong>
+      <div [ngClass]="totalBalanco() > 0 ? 'alert alert-success' : 'alert alert-danger'" role="alert">
+        <h4 class="alert-heading">
+          <i [ngClass]="totalBalanco() > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+          Resultado Financeiro
+        </h4>
+        <hr>
+          @if (totalBalanco() > 0) {
+            <p class="mb-0 fs-5">
+              O contrato será <strong>acrescido</strong> no valor de:
+              <strong>{{ totalBalanco() | currency }}</strong>
             </p>
-            <p *ngIf="totalBalanco() < 0" class="mb-0 fs-5">
-                O contrato será <strong>reduzido</strong> no valor de:
-                <strong>{{ totalBalanco() | currency }}</strong>
+          }
+          @if (totalBalanco() < 0) {
+            <p class="mb-0 fs-5">
+              O contrato será <strong>reduzido</strong> no valor de:
+              <strong>{{ totalBalanco() | currency }}</strong>
             </p>
+          }
         </div>
+      </div>
     </div>
-</div>
+  }
 
 
-<div class="row" *ngIf="itensRetirados?.length > 0 && !loadingSalvar">
-    <div class="col">
+  @if (itensRetirados?.length > 0 && !loadingSalvar) {
+    <div class="row">
+      <div class="col">
         <button (click)="salvarPedido()" class="btn btn-primary" [disabled]="!podeConfirmar">Confirmar troca dos produtos</button>
+      </div>
     </div>
-</div>
+  }

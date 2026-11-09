@@ -1,10 +1,12 @@
 <div class="tabs">
-    <ul class="tab-titles">
-        <li *ngFor="let tab of tabs" (click)="selectTab(tab)" [class.active]="tab.active">
+  <ul class="tab-titles">
+    @for (tab of tabs; track tab) {
+      <li (click)="selectTab(tab)" [class.active]="tab.active">
         {{ tab.tabTitle }}
-        </li>
-    </ul>
-    <div class="tab-content">
-        <ng-content></ng-content>
-    </div>
+      </li>
+    }
+  </ul>
+  <div class="tab-content">
+    <ng-content></ng-content>
+  </div>
 </div>

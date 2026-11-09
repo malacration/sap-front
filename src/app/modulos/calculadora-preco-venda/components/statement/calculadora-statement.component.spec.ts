@@ -10,6 +10,7 @@ import { of, Subject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { CalculadoraStatementComponent } from './statement.component';
 import { By } from '@angular/platform-browser';
+import { WsService } from '../../../../shared/WsService';
 
 class CalculadoraServiceStub {
   getProdutosFromLocalStorage(_k: string) { return of([]); }
@@ -33,6 +34,7 @@ describe('CalculadoraStatementComponent', () => {
       providers: [
         { provide: CalculadoraService, useClass: CalculadoraServiceStub },
         { provide: ParameterService, useClass: ParameterServiceStub },
+        { provide: WsService, useValue: jasmine.createSpyObj('WsService', ['request']) },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -65,7 +67,6 @@ describe('CalculadoraStatementComponent', () => {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([label, arr]) => `${label} -> ${arr.map(n => `${n.toFixed(2)}ms`).join(', ')}`);
     if (lines.length) {
-      // eslint-disable-next-line no-console
       console.info(lines.join('\n'));
     }
   });
@@ -86,23 +87,23 @@ describe('CalculadoraStatementComponent', () => {
   it('clica no botão Salvar', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(component.analiseSelected).toBeNull
+    expect(component.analiseSelected).toBeNull();
     const carregarButtons = fixture.debugElement.queryAll(By.css('.form-group > button.btn.btn-primary'));
     expect(carregarButtons.length).withContext('Nenhum botão .btn-primary encontrado').toBeGreaterThan(0);
     const firstBtnDe = carregarButtons[0];
     
-    measure("Carrega Relatorio", async () =>{
+    await measure("Carrega Relatorio", async () =>{
         firstBtnDe.nativeElement.click();
         await fixture.whenStable();
     })
 
-    expect(component.analiseSelected).not.toBeNull
+    expect(component.analiseSelected).not.toBeNull();
   });
 
   it('Clica no input do componente', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(component.analiseSelected).toBeNull
+    expect(component.analiseSelected).toBeNull();
     const carregarButtons = fixture.debugElement.queryAll(By.css('.form-group > button.btn.btn-primary'));
     expect(carregarButtons.length).withContext('Nenhum botão .btn-primary encontrado').toBeGreaterThan(0);
     const firstBtnDe = carregarButtons[0];
@@ -110,11 +111,11 @@ describe('CalculadoraStatementComponent', () => {
     firstBtnDe.nativeElement.click();
     await fixture.whenStable();
     
-    measure("teste table com o currency", async () =>{
+    await measure("teste table com o currency", async () =>{
         //TODO procurar como achar esse botao na tela...
     })
 
-    expect(component.analiseSelected).not.toBeNull
+    expect(component.analiseSelected).not.toBeNull();
   });
 
 

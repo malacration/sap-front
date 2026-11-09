@@ -1,12 +1,14 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ListComponent } from '../marketing-document/core/list/list.component';
 import { DocumentService } from '../marketing-document/core/documento.service';
 import { SapDocumentKind, SAP_DOCUMENT_CONFIGS, SapDocumentServiceFactory } from '../../service/document/sap-document.service';
 
 @Component({
-  selector: 'app-documentos-sap',
-  templateUrl: './documentos-sap.component.html',
+    selector: 'app-documentos-sap',
+    templateUrl: './documentos-sap.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DocumentosSapComponent implements OnInit {
 

@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -6,10 +6,12 @@ import { openCloseAnimation, rotateAnimation } from './menu-item.animations';
 import { MenuItem } from '../menu-item.model';
 
 @Component({
-  selector: 'app-menu-item',
-  templateUrl: './menu-item.component.html',
-  styleUrls: ['./menu-item.component.scss'],
-  animations: [openCloseAnimation, rotateAnimation],
+    selector: 'app-menu-item',
+    templateUrl: './menu-item.component.html',
+    styleUrls: ['./menu-item.component.scss'],
+    animations: [openCloseAnimation, rotateAnimation],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class MenuItemComponent implements OnInit, OnChanges, OnDestroy {
   @Input() menuItem!: MenuItem;

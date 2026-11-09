@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { LastPrice } from '../../models/last-price';
 import { CalculadoraService } from '../../service/calculadora.service';
@@ -23,8 +23,10 @@ export interface FontePreco {
  * (precoSelecionado) ou (fechar) para sair sem mudar nada.
  */
 @Component({
-  selector: 'fontes-preco',
-  templateUrl: './fontes-preco.component.html',
+    selector: 'fontes-preco',
+    templateUrl: './fontes-preco.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FontesPrecoComponent implements OnChanges, OnDestroy {
 

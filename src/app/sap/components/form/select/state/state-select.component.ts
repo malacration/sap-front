@@ -1,13 +1,15 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { StateService } from '../../../../service/addresses/state.service';
 import { Option } from '../../../../model/form/option';
 
 
 
 @Component({
-  selector: 'app-state-select',
-  templateUrl: './state-select.component.html',
-  styleUrls: ['./state-select.component.scss']
+    selector: 'app-state-select',
+    templateUrl: './state-select.component.html',
+    styleUrls: ['./state-select.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class StateSelectComponent implements OnInit {
 

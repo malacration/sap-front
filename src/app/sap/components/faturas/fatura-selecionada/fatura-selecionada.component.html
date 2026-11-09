@@ -1,29 +1,33 @@
 <div class="card card-outline card-info">
-    <div class="card-header">
-        <h3 class="card-title">Detalhes da Nota {{fatura.nota}}</h3>
-        <div class="card-tools">
-            <button name="voltar" class="btn btn-warning btn-sm" (click)="voltar($event)">Voltar</button>
-        </div>
+  <div class="card-header">
+    <h3 class="card-title">Detalhes da Nota {{fatura.nota}}</h3>
+    <div class="card-tools">
+      <button name="voltar" class="btn btn-warning btn-sm" (click)="voltar($event)">Voltar</button>
     </div>
-    <div class="card-body">
-        <dl class="row mb-2">
-            <dt class="col-sm-2">ID</dt>
-            <dd class="col-sm-4">{{fatura.id || fatura.docEntry}}</dd>
-            <dt class="col-sm-2">Vendedor</dt>
-            <dd class="col-sm-4">{{fatura.vendedorFormatado}}</dd>
-            <dt class="col-sm-2">Data</dt>
-            <dd class="col-sm-4">{{fatura.dataF}}</dd>
-            <dt class="col-sm-2">Status</dt>
-            <dd class="col-sm-4">{{fatura.statusLabel}}</dd>
-            <dt class="col-sm-2">Valor</dt>
-            <dd class="col-sm-4">{{fatura.valorCurrency}}</dd>
-            <dt class="col-sm-2">Parcelas</dt>
-            <dd class="col-sm-4">{{fatura.numParcelas}}</dd>
-        </dl>
+  </div>
+  <div class="card-body">
+    <dl class="row mb-2">
+      <dt class="col-sm-2">ID</dt>
+      <dd class="col-sm-4">{{fatura.id || fatura.docEntry}}</dd>
+      <dt class="col-sm-2">Vendedor</dt>
+      <dd class="col-sm-4">{{fatura.vendedorFormatado}}</dd>
+      <dt class="col-sm-2">Data</dt>
+      <dd class="col-sm-4">{{fatura.dataF}}</dd>
+      <dt class="col-sm-2">Status</dt>
+      <dd class="col-sm-4">{{fatura.statusLabel}}</dd>
+      <dt class="col-sm-2">Valor</dt>
+      <dd class="col-sm-4">{{fatura.valorCurrency}}</dd>
+      <dt class="col-sm-2">Parcelas</dt>
+      <dd class="col-sm-4">{{fatura.numParcelas}}</dd>
+    </dl>
 
-        <app-table *ngIf="carregado" [content]="parcelas" [definition]="definition" (actionOutput)="action($event)"></app-table>
-        <div *ngIf="!carregado" class="text-center p-2">
-            <i class="fas fa-spinner fa-spin"></i> Carregando parcelas...
-        </div>
-    </div>
+    @if (carregado) {
+      <app-table [content]="parcelas" [definition]="definition" (actionOutput)="action($event)"></app-table>
+    }
+    @if (!carregado) {
+      <div class="text-center p-2">
+        <i class="fas fa-spinner fa-spin"></i> Carregando parcelas...
+      </div>
+    }
+  </div>
 </div>

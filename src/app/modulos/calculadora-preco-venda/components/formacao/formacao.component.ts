@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { Produto } from '../../models/produto';
 import { Analise } from '../../models/analise';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -16,9 +16,11 @@ import { WsService } from '../../../../shared/WsService';
 import { SelecaoProdutoComponent } from '../selecao-produto/selecao-produto.component';
 
 @Component({
-  selector: 'formacao-preco',
-  templateUrl: './formacao.component.html',
-  styleUrls: ['./formacao.component.scss']
+    selector: 'formacao-preco',
+    templateUrl: './formacao.component.html',
+    styleUrls: ['./formacao.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FormacaoPrecoStatementComponent implements OnInit, OnChanges, OnDestroy {
   

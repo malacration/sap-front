@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Parcela, ParcelaDefinition } from '../../../model/fatura/parcela.model';
 import { Fatura } from '../../../model/fatura/fatura.model';
 import { InstallmentService } from '../../../service/fatura/installment.service copy';
@@ -10,8 +10,10 @@ import { AlertService } from '../../../../shared/service/alert.service';
 
 
 @Component({
-  selector: 'app-fatura-selecionada',
-  templateUrl: './fatura-selecionada.component.html',
+    selector: 'app-fatura-selecionada',
+    templateUrl: './fatura-selecionada.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class FaturaSelecionadaComponent implements OnInit {
   

@@ -1,5 +1,5 @@
 import { formatCurrency } from '@angular/common';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Action, ActionReturn } from '../../../shared/components/action/action.model';
 import { ReplaceFilial } from '../../../utils/replaceFilial';
 

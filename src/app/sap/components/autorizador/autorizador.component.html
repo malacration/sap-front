@@ -1,47 +1,55 @@
 <br>
-<section class="content">
+  <section class="content">
     <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title"><b>Autorizadores</b></h3>
+      <div class="card-header">
+        <h3 class="card-title"><b>Autorizadores</b></h3>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">
+          Quem pode aprovar/rejeitar cada motivo de autorização na Central de Autorizações.
+          Sem nenhuma linha pra um motivo, ninguém consegue decidir sobre ele.
+        </p>
+        <div class="form-row align-items-end mb-3">
+          <!-- Select, nao texto livre: o motivo tem que casar exatamente com o que o motor
+          de regras produz. Digitado errado, o autorizador nao serve pra nada e o
+          documento fica pendente sem ninguem que possa aprovar. -->
+          <div class="col-sm-4 form-group">
+            <label>Motivo</label>
+            <select class="form-control" [(ngModel)]="novoAutorizador.U_motivo"
+              [disabled]="motivos.length == 0">
+              <option value="" disabled>Selecione o motivo</option>
+              @for (motivo of motivos; track motivo) {
+                <option [value]="motivo">{{motivo}}</option>
+              }
+            </select>
+            @if (motivos.length == 0) {
+              <small class="text-danger">
+                Não foi possível carregar os motivos do motor de regras.
+              </small>
+            }
+          </div>
+          <div class="col-sm-4 form-group">
+            <label>Usuário</label>
+            <input class="form-control" type="text" [(ngModel)]="novoAutorizador.U_usuario" placeholder="username da aplicação">
+          </div>
+          <div class="col-sm-4 form-group">
+            <button class="btn btn-success" [disabled]="loading" (click)="adicionar()">
+              <i class="fas fa-check"></i> Adicionar
+            </button>
+          </div>
         </div>
-        <div class="card-body">
-            <p class="text-muted">
-                Quem pode aprovar/rejeitar cada motivo de autorização na Central de Autorizações.
-                Sem nenhuma linha pra um motivo, ninguém consegue decidir sobre ele.
-            </p>
-            <div class="form-row align-items-end mb-3">
-                <!-- Select, nao texto livre: o motivo tem que casar exatamente com o que o motor
-                     de regras produz. Digitado errado, o autorizador nao serve pra nada e o
-                     documento fica pendente sem ninguem que possa aprovar. -->
-                <div class="col-sm-4 form-group">
-                    <label>Motivo</label>
-                    <select class="form-control" [(ngModel)]="novoAutorizador.U_motivo"
-                            [disabled]="motivos.length == 0">
-                        <option value="" disabled>Selecione o motivo</option>
-                        <option *ngFor="let motivo of motivos" [value]="motivo">{{motivo}}</option>
-                    </select>
-                    <small *ngIf="motivos.length == 0" class="text-danger">
-                        Não foi possível carregar os motivos do motor de regras.
-                    </small>
-                </div>
-                <div class="col-sm-4 form-group">
-                    <label>Usuário</label>
-                    <input class="form-control" type="text" [(ngModel)]="novoAutorizador.U_usuario" placeholder="username da aplicação">
-                </div>
-                <div class="col-sm-4 form-group">
-                    <button class="btn btn-success" [disabled]="loading" (click)="adicionar()">
-                        <i class="fas fa-check"></i> Adicionar
-                    </button>
-                </div>
+        <hr>
+          <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
+          @if (!loading && lista?.length == 0) {
+            <div class="text-center text-muted p-3">
+              Nenhum autorizador cadastrado.
             </div>
-            <hr>
-            <app-table [content]="lista" [definition]="definicaoLista" (actionOutput)="onAction($event)"></app-table>
-            <div *ngIf="!loading && lista?.length == 0" class="text-center text-muted p-3">
-                Nenhum autorizador cadastrado.
-            </div>
+          }
         </div>
-        <div *ngIf="loading" class="overlay">
+        @if (loading) {
+          <div class="overlay">
             <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-        </div>
-    </div>
-</section>
+          </div>
+        }
+      </div>
+    </section>

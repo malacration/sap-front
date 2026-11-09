@@ -1,13 +1,12 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics",
     "analytics": "f6c4c17d-5946-4e2b-acc0-2fd4c1bd5cb7"
   },
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "angular-electron": {
+    "sap-front": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -22,13 +21,17 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist",
+            "outputPath": {
+              "base": "dist",
+              "browser": ""
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
             "tsConfig": "src/tsconfig.app.json",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.svg",
@@ -58,10 +61,7 @@
               "node_modules/codemirror/addon/mode/simple.js",
               "node_modules/codemirror/mode/handlebars/handlebars.js"
             ],
-            "customWebpackConfig": {
-              "path": "./angular.webpack.js",
-              "replaceDuplicatePlugins": true
-            }
+            "browser": "src/main.ts"
           },
           "configurations": {
             "dev": {
@@ -71,8 +71,6 @@
               "namedChunks": false,
               "aot": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -81,22 +79,19 @@
               ]
             },
             "production": {
-              "serviceWorker": true,
-              "ngswConfigPath": "ngsw-config.json",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
                 }
-              ]
+              ],
+              "serviceWorker": "ngsw-config.json"
             },
             "web": {
               "optimization": false,
@@ -105,8 +100,6 @@
               "namedChunks": false,
               "aot": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": false,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -115,53 +108,52 @@
               ]
             },
             "web-production": {
-              "serviceWorker": true,
-              "ngswConfigPath": "ngsw-config.json",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.web.prod.ts"
                 }
-              ]
+              ],
+              "serviceWorker": "ngsw-config.json"
             }
-          }
+          },
+          "defaultConfiguration": "web-production"
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
-            "browserTarget": "angular-electron:build"
+            "buildTarget": "sap-front:build"
           },
           "configurations": {
             "dev": {
-              "browserTarget": "angular-electron:build:dev"
+              "buildTarget": "sap-front:build:dev"
             },
             "production": {
-              "browserTarget": "angular-electron:build:production"
+              "buildTarget": "sap-front:build:production"
             },
             "web": {
-              "browserTarget": "angular-electron:build:web"
+              "buildTarget": "sap-front:build:web"
             },
             "web-production": {
-              "browserTarget": "angular-electron:build:web-production"
+              "buildTarget": "sap-front:build:web-production"
             }
-          }
+          },
+          "defaultConfiguration": "web"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
-            "browserTarget": "angular-electron:build"
+            "buildTarget": "sap-front:build"
           }
         },
         "test": {
-          "builder": "@angular-builders/custom-webpack:karma",
+          "builder": "@angular/build:karma",
           "defaultConfiguration": "web",
           "configurations": {
             "web": {
@@ -171,14 +163,13 @@
                   "with": "src/environments/environment.web.ts"
                 }
               ]
-            },
-            "electron": {
-              "browsers": "AngularElectron"
             }
           },
           "options": {
             "main": "src/test.ts",
-            "polyfills": "src/polyfills-test.ts",
+            "polyfills": [
+              "src/polyfills-test.ts"
+            ],
             "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "inlineStyleLanguage": "scss",
@@ -202,11 +193,7 @@
               "src/favicon.svg",
               "src/logo.png",
               "src/assets"
-            ],
-            "customWebpackConfig": {
-              "path": "./angular.webpack.js",
-              "replaceDuplicatePlugins": true
-            }
+            ]
           }
         },
         "lint": {
@@ -219,23 +206,8 @@
           }
         }
       }
-    },
-    "angular-electron-e2e": {
-      "root": "e2e",
-      "projectType": "application",
-      "architect": {
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "e2e/**/*.ts"
-            ]
-          }
-        }
-      }
     }
   },
-  "defaultProject": "angular-electron",
   "schematics": {
     "@angular-eslint/schematics:application": {
       "setParserOptionsProject": true

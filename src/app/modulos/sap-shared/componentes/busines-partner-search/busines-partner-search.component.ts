@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { BusinessPartnerDefinition } from '../../../../sap/model/business-partner/business-partner-definition';
 import { BusinessPartnerService } from '../../_services/business-partners.service';
 import { SearchService } from '../../../../sap/service/search.service';
@@ -8,8 +8,10 @@ import { BusinessPartner } from '../../../../sap/model/business-partner/business
 
 
 @Component({
-  selector: 'app-busines-partner-search',
-  templateUrl: './busines-partner-search.component.html',
+    selector: 'app-busines-partner-search',
+    templateUrl: './busines-partner-search.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class BusinesPartnerSearchComponent {
 

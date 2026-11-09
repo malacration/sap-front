@@ -17,9 +17,11 @@
             (selectedOut)="aoSelecionarStatus($event)"
           ></app-select>
         </div>
-        <div class="col-md-2 col-sm-6" *ngIf="carregando">
-          <i class="fas fa-sync-alt fa-spin"></i> Carregando...
-        </div>
+        @if (carregando) {
+          <div class="col-md-2 col-sm-6">
+            <i class="fas fa-sync-alt fa-spin"></i> Carregando...
+          </div>
+        }
         <div class="col-md-4 col-sm-6 ml-auto text-right">
           <button type="button" class="btn btn-outline-secondary" [disabled]="carregando || gerandoEmbalagem || !pagina?.content?.length"
             (click)="embalagemDaPagina()" title="Um bloco de embalagem por ordem listada nesta página">
@@ -28,17 +30,19 @@
         </div>
       </div>
 
-      <app-table [content]="pagina?.content" [definition]="definition" (cellClick)="abrir($event)"></app-table>
-      <div *ngIf="!carregando && !pagina?.content?.length" class="text-center text-muted py-4">
-        Nenhuma ordem de produção encontrada.
-      </div>
+      <app-table [content]="$safeNavigationMigration(pagina?.content)" [definition]="definition" (cellClick)="abrir($event)"></app-table>
+      @if (!carregando && !pagina?.content?.length) {
+        <div class="text-center text-muted py-4">
+          Nenhuma ordem de produção encontrada.
+        </div>
+      }
     </div>
 
     <div class="card-footer clearfix">
       <app-paginacao
         [paginaAtual]="paginaAtual"
-        [totalItens]="pagina?.totalElements"
-        [pageSize]="pagina?.size"
+        [totalItens]="$safeNavigationMigration(pagina?.totalElements)"
+        [pageSize]="$safeNavigationMigration(pagina?.size)"
         (pageChange)="carregar($event)"
       ></app-paginacao>
     </div>

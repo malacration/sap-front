@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TravaOtpService, TravaOtpResponse } from '../../service/trava-otp.service';
 import { TravaRegraService, Regra } from '../../service/trava-regra.service';
@@ -12,8 +12,10 @@ import { TravaRegraService, Regra } from '../../service/trava-regra.service';
  * alem do contador mostrado.
  */
 @Component({
-  selector: 'app-liberacao-trava',
-  templateUrl: './liberacao-trava.component.html',
+    selector: 'app-liberacao-trava',
+    templateUrl: './liberacao-trava.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class LiberacaoTravaComponent implements OnInit, OnDestroy {
 

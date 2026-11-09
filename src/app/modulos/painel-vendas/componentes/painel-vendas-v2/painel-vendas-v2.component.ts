@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Subject, EMPTY, forkJoin } from 'rxjs';
 import { catchError, debounceTime, finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { Branch } from '../../../../sap/model/branch';
@@ -25,9 +25,11 @@ interface SerieGrafico {
 }
 
 @Component({
-  selector: 'app-painel-vendas-v2',
-  templateUrl: './painel-vendas-v2.component.html',
-  styleUrls: ['./painel-vendas-v2.component.scss'],
+    selector: 'app-painel-vendas-v2',
+    templateUrl: './painel-vendas-v2.component.html',
+    styleUrls: ['./painel-vendas-v2.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PainelVendasV2Component implements OnInit, OnDestroy {
   dataInicio: string;

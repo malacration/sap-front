@@ -1,102 +1,114 @@
 <br>
-<section class="content">
+  <section class="content">
     <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title"><b>Ticket Médio de Frete por Localidade</b></h3>
-            <div class="card-tools">
-                <button class="btn btn-sm btn-outline-light" [disabled]="loading || linhas.length == 0" (click)="gerarPdf()">
-                    <i class="fas fa-file-invoice"></i> Gerar PDF
-                </button>
+      <div class="card-header">
+        <h3 class="card-title"><b>Ticket Médio de Frete por Localidade</b></h3>
+        <div class="card-tools">
+          <button class="btn btn-sm btn-outline-light" [disabled]="loading || linhas.length == 0" (click)="gerarPdf()">
+            <i class="fas fa-file-invoice"></i> Gerar PDF
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <form class="container-fluid" (ngSubmit)="buscar()" autocomplete="off">
+          <div class="form-row align-items-end">
+            <div class="col-auto">
+              <label for="de" class="col-form-label">De</label>
+              <app-campo-data inputId="de" name="de" [(ngModel)]="de"></app-campo-data>
             </div>
+            <div class="col-auto">
+              <label for="ate" class="col-form-label">Até</label>
+              <app-campo-data inputId="ate" name="ate" [(ngModel)]="ate"></app-campo-data>
+            </div>
+            <div class="col-auto" style="min-width: 220px;">
+              <app-branch-select (selectedOut)="selecionaFilial($event)"></app-branch-select>
+            </div>
+            <div class="col-auto">
+              <button type="submit" [disabled]="loading" class="btn btn-success">
+                {{ loading ? 'Buscando...' : 'Buscar' }}
+              </button>
+            </div>
+            <div class="col-auto">
+              <label class="col-form-label d-block">Ticket médio</label>
+              <div class="btn-group">
+                <button type="button" class="btn"
+                  [class.btn-primary]="metrica == 'nota'"
+                  [class.btn-outline-primary]="metrica != 'nota'"
+                  (click)="trocarMetrica('nota')">
+                  Por nota
+                </button>
+                <button type="button" class="btn"
+                  [class.btn-primary]="metrica == 'produto'"
+                  [class.btn-outline-primary]="metrica != 'produto'"
+                  (click)="trocarMetrica('produto')">
+                  Por produto
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <hr>
+
+          <p class="text-muted">
+            Notas fiscais com frete cobrado no período, agrupadas pela localidade do endereço de entrega da nota.
+            @if (metrica == 'nota') {
+              <span>
+                O ticket médio é o frete total da localidade dividido pela quantidade de notas.
+              </span>
+            }
+            @if (metrica == 'produto') {
+              <span>
+                O ticket médio é o frete total da localidade dividido pela quantidade de produtos vendidos nessas notas.
+              </span>
+            }
+          </p>
+
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Localidade</th>
+                <th class="text-center">Notas</th>
+                <th class="text-center">Produtos</th>
+                <th class="text-right">Frete Total</th>
+                <th class="text-right">{{rotuloMetrica}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (linha of linhasOrdenadas; track linha) {
+                <tr>
+                  <td>{{linha.Localidade || linha.CodLocalidade}}</td>
+                  <td class="text-center">{{linha.Notas}}</td>
+                  <td class="text-center">{{formatNumero(linha.Quantidade)}}</td>
+                  <td class="text-right">{{linha.TotalFrete | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
+                  <td class="text-right"><b>{{ticketDaLinha(linha) | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</b></td>
+                </tr>
+              }
+              @if (!loading && buscou && linhas.length == 0) {
+                <tr>
+                  <td colspan="5" class="text-center text-muted">
+                    Nenhuma nota com frete cobrado nesse período.
+                  </td>
+                </tr>
+              }
+            </tbody>
+            @if (linhas.length > 0) {
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th class="text-center">{{totalNotas}}</th>
+                  <th class="text-center">{{formatNumero(totalQuantidade)}}</th>
+                  <th class="text-right">{{totalFrete | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</th>
+                  <th class="text-right">{{ticketMedioGeral | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</th>
+                </tr>
+              </tfoot>
+            }
+          </table>
         </div>
-        <div class="card-body">
-            <form class="container-fluid" (ngSubmit)="buscar()" autocomplete="off">
-                <div class="form-row align-items-end">
-                    <div class="col-auto">
-                        <label for="de" class="col-form-label">De</label>
-                        <app-campo-data inputId="de" name="de" [(ngModel)]="de"></app-campo-data>
-                    </div>
-                    <div class="col-auto">
-                        <label for="ate" class="col-form-label">Até</label>
-                        <app-campo-data inputId="ate" name="ate" [(ngModel)]="ate"></app-campo-data>
-                    </div>
-                    <div class="col-auto" style="min-width: 220px;">
-                        <app-branch-select (selectedOut)="selecionaFilial($event)"></app-branch-select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" [disabled]="loading" class="btn btn-success">
-                            {{ loading ? 'Buscando...' : 'Buscar' }}
-                        </button>
-                    </div>
-                    <div class="col-auto">
-                        <label class="col-form-label d-block">Ticket médio</label>
-                        <div class="btn-group">
-                            <button type="button" class="btn"
-                                    [class.btn-primary]="metrica == 'nota'"
-                                    [class.btn-outline-primary]="metrica != 'nota'"
-                                    (click)="trocarMetrica('nota')">
-                                Por nota
-                            </button>
-                            <button type="button" class="btn"
-                                    [class.btn-primary]="metrica == 'produto'"
-                                    [class.btn-outline-primary]="metrica != 'produto'"
-                                    (click)="trocarMetrica('produto')">
-                                Por produto
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-
-            <hr>
-
-            <p class="text-muted">
-                Notas fiscais com frete cobrado no período, agrupadas pela localidade do endereço de entrega da nota.
-                <span *ngIf="metrica == 'nota'">
-                    O ticket médio é o frete total da localidade dividido pela quantidade de notas.
-                </span>
-                <span *ngIf="metrica == 'produto'">
-                    O ticket médio é o frete total da localidade dividido pela quantidade de produtos vendidos nessas notas.
-                </span>
-            </p>
-
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Localidade</th>
-                        <th class="text-center">Notas</th>
-                        <th class="text-center">Produtos</th>
-                        <th class="text-right">Frete Total</th>
-                        <th class="text-right">{{rotuloMetrica}}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let linha of linhasOrdenadas">
-                        <td>{{linha.Localidade || linha.CodLocalidade}}</td>
-                        <td class="text-center">{{linha.Notas}}</td>
-                        <td class="text-center">{{formatNumero(linha.Quantidade)}}</td>
-                        <td class="text-right">{{linha.TotalFrete | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</td>
-                        <td class="text-right"><b>{{ticketDaLinha(linha) | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</b></td>
-                    </tr>
-                    <tr *ngIf="!loading && buscou && linhas.length == 0">
-                        <td colspan="5" class="text-center text-muted">
-                            Nenhuma nota com frete cobrado nesse período.
-                        </td>
-                    </tr>
-                </tbody>
-                <tfoot *ngIf="linhas.length > 0">
-                    <tr>
-                        <th>Total</th>
-                        <th class="text-center">{{totalNotas}}</th>
-                        <th class="text-center">{{formatNumero(totalQuantidade)}}</th>
-                        <th class="text-right">{{totalFrete | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</th>
-                        <th class="text-right">{{ticketMedioGeral | currency:'BRL':'symbol':'1.2-2':'pt-BR'}}</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-        <div *ngIf="loading" class="overlay">
+        @if (loading) {
+          <div class="overlay">
             <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-        </div>
-    </div>
-</section>
+          </div>
+        }
+      </div>
+    </section>

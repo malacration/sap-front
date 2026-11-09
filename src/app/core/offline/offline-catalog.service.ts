@@ -156,7 +156,7 @@ export class OfflineCatalogService {
       .toUpperCase();
   }
 
-  private concat(chunks: Uint8Array[]): Uint8Array {
+  private concat(chunks: Uint8Array[]): Uint8Array<ArrayBuffer> {
     const output = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
     let offset = 0;
     chunks.forEach(chunk => {
@@ -166,7 +166,7 @@ export class OfflineCatalogService {
     return output;
   }
 
-  private async gunzip(bytes: Uint8Array): Promise<string> {
+  private async gunzip(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
     const Decompression = (window as any).DecompressionStream;
     if (!Decompression) {
       throw new Error('Este navegador não suporta a descompressão do catálogo offline');
@@ -175,7 +175,7 @@ export class OfflineCatalogService {
     return new Response(stream).text();
   }
 
-  private async sha256(bytes: Uint8Array): Promise<string> {
+  private async sha256(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
     const digest = await crypto.subtle.digest('SHA-256', bytes);
     return [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('');
   }

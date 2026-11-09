@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Option } from '../../../../model/form/option';
 import { CityService } from '../../../../service/addresses/city.service';
 
 
 @Component({
-  selector: 'app-city-select',
-  templateUrl: './city-select.component.html'
+    selector: 'app-city-select',
+    templateUrl: './city-select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CitySelectComponent implements OnInit, OnChanges {
 

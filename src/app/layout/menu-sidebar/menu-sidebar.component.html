@@ -1,65 +1,75 @@
 <!-- Brand Logo -->
 <a [routerLink]="['/']" class="brand-link">
-    <!-- <pf-image
-        src="assets/img/logo.png"
-        alt="AdminLTE Logo"
-        class="brand-image"
-        height="33"
-        width="33"
-        rounded
-        style="opacity: 0.8"
-    ></pf-image> -->
-    <span class="brand-text font-weight-light">{{title}}</span>
+  <!-- <pf-image
+  src="assets/img/logo.png"
+  alt="AdminLTE Logo"
+  class="brand-image"
+  height="33"
+  width="33"
+  rounded
+  style="opacity: 0.8"
+></pf-image> -->
+<span class="brand-text font-weight-light">{{title}}</span>
 </a>
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <!-- Sidebar user (optional) -->
-    <div class="user-panel mt-3 pb-3 mb-3 d-flex flex-column align-items-start">
-        <div *ngIf="isLoggedIn()">
-            <div class="info">
-                <a>
-                    Bem vindo
-                </a>
-                <button title="Clique para sair" (click)="logout()" class="btn btn-logout" type="submit">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-            <div class="info">
-                <a>
-                    {{ userName() }}   
-                </a>
-            </div>
-            <div *ngIf="!isKeycloak()" class="info">
-                <small><a [routerLink]="['change-passowrd']">Trocar Senha</a></small>
-            </div>
-            <div class="info">
-                <small><a [routerLink]="['meus-dados']">Meus Dados</a></small>
-            </div>
+  <!-- Sidebar user (optional) -->
+  <div class="user-panel mt-3 pb-3 mb-3 d-flex flex-column align-items-start">
+    @if (isLoggedIn()) {
+      <div>
+        <div class="info">
+          <a>
+            Bem vindo
+          </a>
+          <button title="Clique para sair" (click)="logout()" class="btn btn-logout" type="submit">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
         </div>
-    
-        <div *ngIf="!isLoggedIn()" class="info w-100">
-            <a [routerLink]="['/login']" class="d-block">
-                Fazer o Login 
-            </a>
+        <div class="info">
+          <a>
+            {{ userName() }}
+          </a>
         </div>
-    </div>
-    
+        @if (!isKeycloak()) {
+          <div class="info">
+            <small><a [routerLink]="['change-passowrd']">Trocar Senha</a></small>
+          </div>
+        }
+        <div class="info">
+          <small><a [routerLink]="['meus-dados']">Meus Dados</a></small>
+        </div>
+      </div>
+    }
 
-    <div *ngIf="false" class="form-inline">
-        search
-        <!-- <app-sidebar-search></app-sidebar-search> -->
-    </div>
+    @if (!isLoggedIn()) {
+      <div class="info w-100">
+        <a [routerLink]="['/login']" class="d-block">
+          Fazer o Login
+        </a>
+      </div>
+    }
+  </div>
 
-    <!-- Sidebar Menu -->
-    <nav class="mt-2" style="overflow-y: hidden">
-        <ul
-            class="nav nav-pills nav-sidebar flex-column"
-            data-widget="treeview"
-            role="menu"
-            data-accordion="false"
-        >
-        <app-menu-item *ngFor="let item of menu; trackBy: trackByUrl" [menuItem]="item"></app-menu-item>
-        </ul>
-    </nav>
+
+  @if (false) {
+    <div class="form-inline">
+      search
+      <!-- <app-sidebar-search></app-sidebar-search> -->
+    </div>
+  }
+
+  <!-- Sidebar Menu -->
+  <nav class="mt-2" style="overflow-y: hidden">
+    <ul
+      class="nav nav-pills nav-sidebar flex-column"
+      data-widget="treeview"
+      role="menu"
+      data-accordion="false"
+      >
+      @for (item of menu; track trackByUrl($index, item)) {
+        <app-menu-item [menuItem]="item"></app-menu-item>
+      }
+    </ul>
+  </nav>
 </div>

@@ -5,9 +5,8 @@
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
 
-@import 'admin-lte/node_modules/bootstrap/scss/functions';
+@import 'bootstrap/scss/functions';
 @import 'admin-lte/build/scss/bootstrap-variables';
-@import 'ngx-toastr/toastr';
 @import 'ngx-bootstrap/datepicker/bs-datepicker.css';
 
 $custom-color: #25A246;
@@ -24,9 +23,8 @@ $theme-colors: (
 }
 
 
-@import 'admin-lte/node_modules/bootstrap/scss/bootstrap';
+@import 'bootstrap/scss/bootstrap';
 
-@import 'ngx-toastr/toastr';
 @import 'admin-lte/build/scss/variables';
 @import 'admin-lte/build/scss/variables-alt';
 

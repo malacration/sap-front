@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { RadioItem } from './radio.model';
 
 
 
 @Component({
-  selector: 'app-radio',
-  templateUrl: './radio.component.html',
+    selector: 'app-radio',
+    templateUrl: './radio.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RadioComponent {
 

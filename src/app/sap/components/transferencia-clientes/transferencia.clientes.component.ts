@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SalesPersonService } from '../../service/sales-person.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-transferencia-clientes',
-  templateUrl: './transferencia.clientes.component.html',
-  styleUrls: ['./transferencia.clientes.component.scss']
+    selector: 'app-transferencia-clientes',
+    templateUrl: './transferencia.clientes.component.html',
+    styleUrls: ['./transferencia.clientes.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TransferenciaClientesComponent implements OnInit {
   originSalesPerson: any;

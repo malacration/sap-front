@@ -12,14 +12,15 @@ import {
 } from '@angular/forms';
 
 @Directive({
-  selector: '[app-currency]',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CurrencyDirective),
-      multi: true
-    }
-  ]
+    selector: '[app-currency]',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => CurrencyDirective),
+            multi: true
+        }
+    ],
+    standalone: false
 })
 export class CurrencyDirective implements ControlValueAccessor {
   private onChange: (value: number | null) => void = () => {};

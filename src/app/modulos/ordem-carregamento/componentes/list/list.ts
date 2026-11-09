@@ -1,13 +1,15 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ChangeDetectionStrategy } from "@angular/core";
 import { Column } from "../../../../shared/components/table/column.model";
 import { OrdemCarregamento } from "../../models/ordem-carregamento";
 import { Page } from "../../../../sap/model/page.model";
 import { ActionReturn } from "../../../../shared/components/action/action.model";
 
 @Component({
-  selector: 'ordem-carregamento-list',
-  templateUrl: './list.html',
-  styleUrls: ['./list.scss']
+    selector: 'ordem-carregamento-list',
+    templateUrl: './list.html',
+    styleUrls: ['./list.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ListComponent implements OnInit, OnDestroy {
 

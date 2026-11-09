@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Option } from '../../../../model/form/option';
 import { CondicaoPagamento, CondicaoPagamentoService } from '../../../../service/condicao-pagamento.service';
 
 
 @Component({
-  selector: 'app-condicao-pagamento-select',
-  templateUrl: './condicao-pagamento-select.component.html'
+    selector: 'app-condicao-pagamento-select',
+    templateUrl: './condicao-pagamento-select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CondicaoPagamentoSelectComponent implements OnInit, OnChanges {
 

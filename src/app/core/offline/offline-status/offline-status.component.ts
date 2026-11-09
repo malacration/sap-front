@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { OfflineCatalogService, OfflineCatalogProgress } from '../offline-catalog.service';
 import { OfflineContextService } from '../offline-context.service';
@@ -6,9 +6,11 @@ import { OfflineRuntimeState } from '../offline.models';
 import { AuthService } from '../../../shared/service/auth.service';
 
 @Component({
-  selector: 'app-offline-status',
-  templateUrl: './offline-status.component.html',
-  styleUrls: ['./offline-status.component.scss'],
+    selector: 'app-offline-status',
+    templateUrl: './offline-status.component.html',
+    styleUrls: ['./offline-status.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class OfflineStatusComponent {
   readonly state$: Observable<OfflineRuntimeState> = this.context.state$;

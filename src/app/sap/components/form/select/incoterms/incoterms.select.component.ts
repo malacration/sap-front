@@ -6,12 +6,15 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Option } from '../../../../model/form/option';
 
 @Component({
-  selector: 'app-incoterms-select',
-  templateUrl: './incoterms.select.component.html',
+    selector: 'app-incoterms-select',
+    templateUrl: './incoterms.select.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class IncotermsSelectComponent implements OnInit {
   @Input()

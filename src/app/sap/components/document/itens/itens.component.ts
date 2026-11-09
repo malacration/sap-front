@@ -1,12 +1,14 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Item } from '../../../model/item';
 import { ComissaoService } from '../../../../modulos/sap-shared/_services/comissao.service';
 import { Comissao } from '../../../model/comissao';
 
 @Component({
-  selector: 'card-itens',
-  templateUrl: './itens.component.html',
-  styleUrls: ['./itens.component.scss'],
+    selector: 'card-itens',
+    templateUrl: './itens.component.html',
+    styleUrls: ['./itens.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ItensComponent implements OnInit {
 

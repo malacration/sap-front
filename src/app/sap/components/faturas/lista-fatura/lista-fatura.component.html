@@ -1,56 +1,64 @@
 <div class="card card-primary">
-    <div *ngIf="showHeader" class="card-header">
-        <h3 class="card-title"><b>Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
-        <div class="card-tools">
-            <button (click)="close()" type="button" class="btn btn-warning btn-sm">
-                Sair
-            </button>
-        </div>
+  @if (showHeader) {
+    <div class="card-header">
+      <h3 class="card-title"><b>Bem Vindo {{clienteSelecionado?.CardName}} | {{cpfCnpjInput}} </b></h3>
+      <div class="card-tools">
+        <button (click)="close()" type="button" class="btn btn-warning btn-sm">
+          Sair
+        </button>
+      </div>
     </div>
-    <div class="card-body">                
-        <div *ngIf="faturaSelecionada" class="fatura-selecionada">
-            <app-fatura-selecionada 
-                (close)="descelecionarFatura($event)" 
-                [fatura]="faturaSelecionada">
-            </app-fatura-selecionada>
-        </div>
-        <form *ngIf="!faturaSelecionada" class="container-fluid px-0 mb-3" (ngSubmit)="filtrar()" autocomplete="off">
-          <div class="form-row align-items-end">
-            <!-- <filter-business-place class="col-md-3" /> -->
-            <filter-datas (changeFilter)="changeDatas($event)" class="col-md-3"></filter-datas>
-            <filter-numero-nf (changeFilter)="changeNumeroNf($event)" class="col-sm-2"></filter-numero-nf>
-            <div class="col-sm-2 form-group">
-              <label>Status</label>
-              <select class="form-control" name="statusNota" [(ngModel)]="filter.status" (change)="changeStatus(filter.status)">
-                <option value="bost_Open">Abertas</option>
-                <option value="bost_Close">Fechadas</option>
-                <option value="">Todas</option>
-              </select>
-            </div>
-            <div class="col-sm-3 form-group">
-              <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedor($event)"></app-sales-person-search>
-            </div>
-            <div class="col-sm-2 form-group">
-              <button class="btn btn-success" [disabled]="loading" type="submit">Filtrar</button>
-            </div>
+  }
+  <div class="card-body">
+    @if (faturaSelecionada) {
+      <div class="fatura-selecionada">
+        <app-fatura-selecionada
+          (close)="descelecionarFatura($event)"
+          [fatura]="faturaSelecionada">
+        </app-fatura-selecionada>
+      </div>
+    }
+    @if (!faturaSelecionada) {
+      <form class="container-fluid px-0 mb-3" (ngSubmit)="filtrar()" autocomplete="off">
+        <div class="form-row align-items-end">
+          <!-- <filter-business-place class="col-md-3" /> -->
+          <filter-datas (changeFilter)="changeDatas($event)" class="col-md-3"></filter-datas>
+          <filter-numero-nf (changeFilter)="changeNumeroNf($event)" class="col-sm-2"></filter-numero-nf>
+          <div class="col-sm-2 form-group">
+            <label>Status</label>
+            <select class="form-control" name="statusNota" [(ngModel)]="filter.status" (change)="changeStatus(filter.status)">
+              <option value="bost_Open">Abertas</option>
+              <option value="bost_Close">Fechadas</option>
+              <option value="">Todas</option>
+            </select>
           </div>
-        </form>
-        <div *ngIf="!faturaSelecionada" class="table-responsive">
-          <table class="table table-hover table-striped">
-            <thead>
+          <div class="col-sm-3 form-group">
+            <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedor($event)"></app-sales-person-search>
+          </div>
+          <div class="col-sm-2 form-group">
+            <button class="btn btn-success" [disabled]="loading" type="submit">Filtrar</button>
+          </div>
+        </div>
+      </form>
+    }
+    @if (!faturaSelecionada) {
+      <div class="table-responsive">
+        <table class="table table-hover table-striped">
+          <thead>
+            <tr>
+              <th>Nº Nota</th>
+              <th>Data</th>
+              <th>Status</th>
+              <th>Vendedor</th>
+              <th>Parcelas</th>
+              <th>Termina em</th>
+              <th class="text-right">Valor</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fatura of faturas.content; track fatura) {
               <tr>
-                <th>Nº Nota</th>
-                <th>Data</th>
-                <th>Status</th>
-                <th>Vendedor</th>
-                <th>Parcelas</th>
-                <th>Termina em</th>
-                <th class="text-right">Valor</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let fatura of faturas.content">
                 <td>{{fatura.nota}}</td>
                 <td>{{fatura.dataF}}</td>
                 <td>{{fatura.statusLabel}}</td>
@@ -65,22 +73,32 @@
                   <button type="button" class="btn btn-sm btn-outline-primary" (click)="actionFatura('ver-fatura', fatura)">
                     Detalhes
                   </button>
-                  <button *ngIf="fatura.numParcelas <= 1 && fatura.isBoleto" type="button" class="btn btn-sm btn-outline-secondary" (click)="actionFatura('show-boleto', fatura)">
-                    <i class="fas fa-barcode"></i> Boleto
-                  </button>
+                  @if (fatura.numParcelas <= 1 && fatura.isBoleto) {
+                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="actionFatura('show-boleto', fatura)">
+                      <i class="fas fa-barcode"></i> Boleto
+                    </button>
+                  }
                 </td>
               </tr>
-              <tr *ngIf="!loading && faturas.content.length == 0">
+            }
+            @if (!loading && faturas.content.length == 0) {
+              <tr>
                 <td colspan="8" class="text-center text-muted">Nenhuma nota encontrada.</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+  <div class="card-footer clearfix">
+    @if (!faturaSelecionada) {
+      <app-paginacao (pageChange)="loadFaturas($event)" [totalItens]="faturas.totalElements" [pageSize]="faturas.size"></app-paginacao>
+    }
+  </div>
+  @if (loading) {
+    <div class="overlay">
+      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
     </div>
-    <div class="card-footer clearfix">
-        <app-paginacao *ngIf="!faturaSelecionada" (pageChange)="loadFaturas($event)" [totalItens]="faturas.totalElements" [pageSize]="faturas.size"></app-paginacao>
-    </div>
-    <div *ngIf="loading" class="overlay">
-        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-    </div>
+  }
 </div>

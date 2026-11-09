@@ -15,9 +15,11 @@
               <div class="form-group">
                 <label class="font-weight-bold">Parceiro de Negócio</label>
                 <app-busines-partner-search (selected)="onParceiroChange($event)"></app-busines-partner-search>
-                <small *ngIf="parceiroNome" class="text-success">
-                  <i class="fas fa-check"></i> {{ parceiroNome }}
-                </small>
+                @if (parceiroNome) {
+                  <small class="text-success">
+                    <i class="fas fa-check"></i> {{ parceiroNome }}
+                  </small>
+                }
               </div>
 
               <div class="form-group">
@@ -35,80 +37,88 @@
                   class="btn btn-success"
                   [disabled]="gerarDesabilitado"
                   (click)="gerar()"
-                >
+                  >
                   <i [ngClass]="icons.pix.emitir"></i> Gerar PIX
                 </button>
               </div>
             </div>
 
             <!-- LOADING -->
-            <div *ngIf="etapa === 'loading'" class="text-center py-5">
-              <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-              <p class="mt-2 text-muted">Gerando PIX...</p>
-            </div>
+            @if (etapa === 'loading') {
+              <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-2 text-muted">Gerando PIX...</p>
+              </div>
+            }
 
             <!-- ERRO -->
-            <div *ngIf="etapa === 'erro'">
-              <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i> Erro ao gerar PIX. Tente novamente.
+            @if (etapa === 'erro') {
+              <div>
+                <div class="alert alert-danger">
+                  <i class="fas fa-exclamation-triangle"></i> Erro ao gerar PIX. Tente novamente.
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="voltar()">
+                  <i class="fas fa-arrow-left"></i> Voltar
+                </button>
               </div>
-              <button type="button" class="btn btn-secondary btn-sm" (click)="voltar()">
-                <i class="fas fa-arrow-left"></i> Voltar
-              </button>
-            </div>
+            }
 
             <!-- RESULTADO -->
-            <div *ngIf="etapa === 'resultado' && pixData" class="text-center">
-              <div *ngIf="parceiroNome" class="mb-2 text-muted">
-                <i class="fas fa-user"></i> {{ parceiroNome }}
-              </div>
-              <div class="mb-3">
-                <span class="h4 font-weight-bold text-success">
-                  {{ (pixData.ValorTotal ?? pixData.Total) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                </span>
-                <div *ngIf="pixData.JurosValor > 0" class="mt-1">
-                  <small class="text-muted">
-                    Valor nominal: {{ pixData.ValorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                    &nbsp;|&nbsp;
-                    Juros: {{ pixData.JurosValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                  </small>
+            @if (etapa === 'resultado' && pixData) {
+              <div class="text-center">
+                @if (parceiroNome) {
+                  <div class="mb-2 text-muted">
+                    <i class="fas fa-user"></i> {{ parceiroNome }}
+                  </div>
+                }
+                <div class="mb-3">
+                  <span class="h4 font-weight-bold text-success">
+                    {{ (pixData.ValorTotal ?? pixData.Total) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                  </span>
+                  @if (pixData.JurosValor > 0) {
+                    <div class="mt-1">
+                      <small class="text-muted">
+                        Valor nominal: {{ pixData.ValorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                        &nbsp;|&nbsp;
+                        Juros: {{ pixData.JurosValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                      </small>
+                    </div>
+                  }
                 </div>
-              </div>
-
-              <div class="d-flex justify-content-center mb-3">
-                <app-qrcode [value]="pixData.U_QrCodePix" [size]="220"></app-qrcode>
-              </div>
-
-              <div class="input-group mb-3">
-                <input type="text" class="form-control form-control-sm" [value]="pixData.U_QrCodePix" readonly />
-                <div class="input-group-append">
-                  <button
-                    class="btn btn-sm"
-                    [ngClass]="copiado ? 'btn-success' : 'btn-primary'"
-                    type="button"
-                    (click)="copiar()"
-                  >
-                    <i [ngClass]="icons.pix.copiar"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+                <div class="d-flex justify-content-center mb-3">
+                  <app-qrcode [value]="pixData.U_QrCodePix" [size]="220"></app-qrcode>
+                </div>
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control form-control-sm" [value]="pixData.U_QrCodePix" readonly />
+                  <div class="input-group-append">
+                    <button
+                      class="btn btn-sm"
+                      [ngClass]="copiado ? 'btn-success' : 'btn-primary'"
+                      type="button"
+                      (click)="copiar()"
+                      >
+                      <i [ngClass]="icons.pix.copiar"></i> {{ copiado ? 'Copiado!' : 'Copiar' }}
+                    </button>
+                  </div>
+                </div>
+                @if (pixData.U_pix_due_date || pixData.DueDate) {
+                  <div class="alert alert-light py-1 px-2 border mb-3">
+                    <small class="text-muted">
+                      <i class="far fa-clock"></i>
+                      Vencimento: {{ (pixData.U_pix_due_date || pixData.DueDate) | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
+                    </small>
+                  </div>
+                }
+                <div class="d-flex justify-content-between align-items-center">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="voltar()">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                  </button>
+                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="abrirLinkCliente()">
+                    <i [ngClass]="icons.pix.abrirLink"></i> Abrir link do cliente
                   </button>
                 </div>
               </div>
-
-              <div *ngIf="pixData.U_pix_due_date || pixData.DueDate" class="alert alert-light py-1 px-2 border mb-3">
-                <small class="text-muted">
-                  <i class="far fa-clock"></i>
-                  Vencimento: {{ (pixData.U_pix_due_date || pixData.DueDate) | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
-                </small>
-              </div>
-
-              <div class="d-flex justify-content-between align-items-center">
-                <button type="button" class="btn btn-outline-secondary btn-sm" (click)="voltar()">
-                  <i class="fas fa-arrow-left"></i> Voltar
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" (click)="abrirLinkCliente()">
-                  <i [ngClass]="icons.pix.abrirLink"></i> Abrir link do cliente
-                </button>
-              </div>
-            </div>
+            }
 
           </div>
         </div>

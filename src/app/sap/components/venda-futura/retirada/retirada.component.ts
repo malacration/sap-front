@@ -1,5 +1,5 @@
 
-import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnChanges, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { LinhaItem, VendaFutura } from '../../../model/venda/venda-futura';
 import { Column } from '../../../../shared/components/table/column.model';
 import { DownPaymentService } from '../../../service/DownPaymentService';
@@ -14,9 +14,11 @@ import { BPAddress } from '../../../model/business-partner/business-partner';
 import { BusinessPartnerService } from '../../../../modulos/sap-shared/_services/business-partners.service';
 
 @Component({
-  selector: 'app-venda-futura-retirada',
-  templateUrl: './retirada.component.html',
-  styleUrls: ['./retirada.component.scss']
+    selector: 'app-venda-futura-retirada',
+    templateUrl: './retirada.component.html',
+    styleUrls: ['./retirada.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RetiradaComponent implements OnInit {
   

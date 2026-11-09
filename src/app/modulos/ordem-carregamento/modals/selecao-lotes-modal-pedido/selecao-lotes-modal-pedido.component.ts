@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 import { BatchStockService } from '../../../../modulos/sap-shared/_services/BatchStockService';
@@ -32,9 +32,11 @@ interface LoteEdicao extends BatchStock {
 }
 
 @Component({
-  selector: 'app-selecao-lotes-modal-pedido',
-  templateUrl: './selecao-lotes-modal-pedido.component.html',
-  styleUrls: ['./selecao-lotes-modal-pedido.component.scss']
+    selector: 'app-selecao-lotes-modal-pedido',
+    templateUrl: './selecao-lotes-modal-pedido.component.html',
+    styleUrls: ['./selecao-lotes-modal-pedido.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SelecaoLotesModalPedidoComponent implements OnChanges {
   @Input() show: boolean = false;

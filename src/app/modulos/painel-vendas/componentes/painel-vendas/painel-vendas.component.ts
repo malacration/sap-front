@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import * as moment from 'moment';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import moment from 'moment';
 
 import { AuthService } from '../../../../shared/service/auth.service';
 import { Column } from '../../../../shared/components/table/column.model';
@@ -16,8 +16,10 @@ interface BarraMes {
 type VisualizacaoDetalhe = 'faturamento' | 'produto';
 
 @Component({
-  selector: 'app-painel-vendas',
-  templateUrl: './painel-vendas.component.html',
+    selector: 'app-painel-vendas',
+    templateUrl: './painel-vendas.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PainelVendasComponent implements OnInit {
   podeEscolherVendedor = false;

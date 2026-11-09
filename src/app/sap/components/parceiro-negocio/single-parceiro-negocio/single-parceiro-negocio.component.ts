@@ -5,6 +5,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { BusinessPartnerService } from '../../../../modulos/sap-shared/_services/business-partners.service';
@@ -27,9 +28,11 @@ import { SalesPersonService } from '../../../service/sales-person.service';
 import { AuthService } from '../../../../shared/service/auth.service';
 
 @Component({
-  selector: 'app-parceiro-negocio-single',
-  templateUrl: './single-parceiro-negocio.component.html',
-  styleUrls: ['./single-parceiro-negocio.component.scss'],
+    selector: 'app-parceiro-negocio-single',
+    templateUrl: './single-parceiro-negocio.component.html',
+    styleUrls: ['./single-parceiro-negocio.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class ParceiroNegocioSingleComponent implements OnInit {
   constructor(

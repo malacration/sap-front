@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AlertService } from '../../../shared/service/alert.service';
 import { CadastroParaNormalizar, NormalizacaoCadastroService } from '../../../modulos/sap-shared/_services/normalizacao-cadastro.service';
 
@@ -9,8 +9,10 @@ import { CadastroParaNormalizar, NormalizacaoCadastroService } from '../../../mo
  * o que vai mudar. Sao milhares de cadastros escritos no SAP e nao existe desfazer.
  */
 @Component({
-  selector: 'app-normalizacao-cadastro',
-  templateUrl: './normalizacao-cadastro.component.html',
+    selector: 'app-normalizacao-cadastro',
+    templateUrl: './normalizacao-cadastro.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NormalizacaoCadastroComponent {
 

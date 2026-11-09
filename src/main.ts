@@ -1,4 +1,4 @@
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 
@@ -22,7 +22,7 @@ function bootstrapFailed() {
 
 function bootstrap() {
   platformBrowserDynamic()
-    .bootstrapModule(AppModule, {preserveWhitespaces: false})
+    .bootstrapModule(AppModule, { applicationProviders: [provideZoneChangeDetection()], preserveWhitespaces: false,})
     .catch((err: any) => console.error(err));
 }
 

@@ -1,28 +1,34 @@
 <br>
-<section class="content">
+  <section class="content">
     <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title"><b>Central de Autorizações</b></h3>
-        </div>
-        <div class="card-body">
-            <app-tabs>
-                <app-tab tabTitle="Pendentes" [active]="true">
-                    <app-table [content]="pendentes" [definition]="definicaoPendentes" (actionOutput)="onAction($event)"></app-table>
-                    <div *ngIf="!loadingPendentes && pendentes?.length == 0" class="text-center text-muted p-3">
-                        Nenhuma autorização pendente pra você decidir.
-                    </div>
-                </app-tab>
+      <div class="card-header">
+        <h3 class="card-title"><b>Central de Autorizações</b></h3>
+      </div>
+      <div class="card-body">
+        <app-tabs>
+          <app-tab tabTitle="Pendentes" [active]="true">
+            <app-table [content]="pendentes" [definition]="definicaoPendentes" (actionOutput)="onAction($event)"></app-table>
+            @if (!loadingPendentes && pendentes?.length == 0) {
+              <div class="text-center text-muted p-3">
+                Nenhuma autorização pendente pra você decidir.
+              </div>
+            }
+          </app-tab>
 
-                <app-tab tabTitle="Histórico">
-                    <app-table [content]="historico" [definition]="definicaoHistorico"></app-table>
-                    <div *ngIf="!loadingHistorico && historico?.length == 0" class="text-center text-muted p-3">
-                        Nenhuma autorização registrada.
-                    </div>
-                </app-tab>
-            </app-tabs>
+          <app-tab tabTitle="Histórico">
+            <app-table [content]="historico" [definition]="definicaoHistorico"></app-table>
+            @if (!loadingHistorico && historico?.length == 0) {
+              <div class="text-center text-muted p-3">
+                Nenhuma autorização registrada.
+              </div>
+            }
+          </app-tab>
+        </app-tabs>
+      </div>
+      @if (loadingPendentes || loadingHistorico) {
+        <div class="overlay">
+          <i class="fas fa-2x fa-sync-alt fa-spin"></i>
         </div>
-        <div *ngIf="loadingPendentes || loadingHistorico" class="overlay">
-            <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-        </div>
+      }
     </div>
-</section>
+  </section>

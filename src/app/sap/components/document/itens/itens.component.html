@@ -1,16 +1,20 @@
 <div class="card card-primary">
   <div class="card-header">
     <b>{{title}}</b>
-    <div class="card-tools" *ngIf="itens && itens.length > 0">
-      {{itens.length}} item{{itens.length > 1 ? "s" : ""}}
-    </div>
+    @if (itens && itens.length > 0) {
+      <div class="card-tools">
+        {{itens.length}} item{{itens.length > 1 ? "s" : ""}}
+      </div>
+    }
   </div>
   <div class="card-body py-3 px-1">
     <div class="col mb-4">
       <app-item-search (contentSelected)="addItem($event)" [title]="'Selecione um produto'" [branchId]="branchId"></app-item-search>
     </div>
     <div class="row m-0 p-0">
-      <div *ngIf="showThumbnail" class="col p-0"></div>
+      @if (showThumbnail) {
+        <div class="col p-0"></div>
+      }
       <div class="col-3 m-0 p-0 ml-2 text-center">
         Descrição
       </div>
@@ -24,55 +28,61 @@
       </div>
     </div>
     <hr>
-    <div *ngFor="let item of itens" class="align-items-center mb-4 mx-1 p-0 items rounded">
-      <div class="row m-0 p-0">
-          <div *ngIf="showThumbnail && item.urlImagem != null" class="col p-0">
-            <img class="img-fluid teste border-0 m-0" src="{{item.urlImagem}}" alt="Generic placeholder image">
-          </div>
-          <div class="col-3 m-0 p-0 ml-2">
-            <div class="row m-0 p-0"><small class="text-muted">{{item.ItemCode}}</small></div>
-            <div class="row m-0 p-0">{{item.ItemDescription}}</div>
-            <div class="row m-0 p-0 text-muted">{{item.unitPriceBrl()}} por {{item.SalUnitMsr}}</div>
-          </div>
-          <div class="col-3 m-0 p-0 ml-2 text-center">
-            <div class="input-group m-0">
-              <input class="form-control text-center p-1" type="number" [(ngModel)]="item.quantidade" (ngModelChange)="quantidadeChange()">
-              <!-- <input class="form-control text-center p-1" type="number" [(ngModel)]="item.desconto" placeholder="desc"> -->
-              <desconto [valor]="item.antesDescontoFinanceiroNumber()" [descontoMaximo]="descontoMaximoDoItem(item)" (descontoPercentual)="item.aplicaDesconto($event)"></desconto>
+      @for (item of itens; track item) {
+        <div class="align-items-center mb-4 mx-1 p-0 items rounded">
+          <div class="row m-0 p-0">
+            @if (showThumbnail && item.urlImagem != null) {
+              <div class="col p-0">
+                <img class="img-fluid teste border-0 m-0" src="{{item.urlImagem}}" alt="Generic placeholder image">
+              </div>
+            }
+            <div class="col-3 m-0 p-0 ml-2">
+              <div class="row m-0 p-0"><small class="text-muted">{{item.ItemCode}}</small></div>
+              <div class="row m-0 p-0">{{item.ItemDescription}}</div>
+              <div class="row m-0 p-0 text-muted">{{item.unitPriceBrl()}} por {{item.SalUnitMsr}}</div>
             </div>
-          </div>
-          <div class="col-3 m-0 p-0 ml-2 text-center">
-            <div class="input-group m-0">
-              <div class="col-sm text-center">
-                <span class="text-nowrap small text-center">{{item.total()}}</span>
+            <div class="col-3 m-0 p-0 ml-2 text-center">
+              <div class="input-group m-0">
+                <input class="form-control text-center p-1" type="number" [(ngModel)]="item.quantidade" (ngModelChange)="quantidadeChange()">
+                <!-- <input class="form-control text-center p-1" type="number" [(ngModel)]="item.desconto" placeholder="desc"> -->
+                <desconto [valor]="item.antesDescontoFinanceiroNumber()" [descontoMaximo]="descontoMaximoDoItem(item)" (descontoPercentual)="item.aplicaDesconto($event)"></desconto>
+              </div>
+            </div>
+            <div class="col-3 m-0 p-0 ml-2 text-center">
+              <div class="input-group m-0">
+                <div class="col-sm text-center">
+                  <span class="text-nowrap small text-center">{{item.total()}}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm m-0 p-0 ml-2">
+              <div class="float-right">
+                <button (click)="remover(item)" type="button" class="btn btn-sm ml-1 small" title="Remove item">
+                  <i class="fas fa-trash"></i>
+                </button>
               </div>
             </div>
           </div>
-          <div class="col-sm m-0 p-0 ml-2">
-            <div class="float-right">
-              <button (click)="remover(item)" type="button" class="btn btn-sm ml-1 small" title="Remove item">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-      </div>
+        </div>
+      }
     </div>
-  </div>
-  <div class="card-footer">
-    <div class="row m-0 p-0">
-      <div class="col">
-        <b>Total:</b> {{total() | currency}}
+    <div class="card-footer">
+      <div class="row m-0 p-0">
+        <div class="col">
+          <b>Total:</b> {{total() | currency}}
+        </div>
+        <!-- //TODO precisa ajudar o metodo de arredondamento, esse gera valores inconsistentes
+        <div class="col">
+          <button (click)="arredondarParaTroco()"  type="button" class="btn btn-sm btn-primary" title="Ajustar desconto">
+            Arredondar com Desconto
+          </button>
+        </div> -->
       </div>
-      <!-- //TODO precisa ajudar o metodo de arredondamento, esse gera valores inconsistentes
-      <div class="col">
-        <button (click)="arredondarParaTroco()"  type="button" class="btn btn-sm btn-primary" title="Ajustar desconto">
-          Arredondar com Desconto
-        </button>
-      </div> -->
+
     </div>
-    
+    @if (geralLoading) {
+      <div class="overlay">
+        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+      </div>
+    }
   </div>
-  <div *ngIf="geralLoading" class="overlay">
-    <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-</div>
-</div>

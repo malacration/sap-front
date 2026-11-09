@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Route, Router } from '@angular/router';
 import { Observable, lastValueFrom } from 'rxjs';
 import { apisDaRota } from '../../../core/route-flags';
@@ -50,9 +50,11 @@ interface LinhaRegra {
  * é o backend; esta tela só edita o cadastro e testa "este perfil pode chamar isto?".
  */
 @Component({
-  selector: 'app-regras-acesso',
-  templateUrl: './regras-acesso.component.html',
-  styleUrls: ['./regras-acesso.component.scss'],
+    selector: 'app-regras-acesso',
+    templateUrl: './regras-acesso.component.html',
+    styleUrls: ['./regras-acesso.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegrasAcessoComponent implements OnInit {
 

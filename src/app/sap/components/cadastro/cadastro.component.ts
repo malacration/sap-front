@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { BusinessPartnerService } from '../../../modulos/sap-shared/_services/business-partners.service';
 import { AlertService } from '../../../shared/service/alert.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
@@ -9,8 +9,10 @@ import { Observable, concatAll, delay, forkJoin, from, map, merge, of, reduce, s
 import { BPAddress, BusinessPartner, Person, Referencia } from '../../model/business-partner/business-partner';
 
 @Component({
-  selector: 'app-cadastro',
-  templateUrl: './cadastro.component.html',
+    selector: 'app-cadastro',
+    templateUrl: './cadastro.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CadastroComponent implements OnInit {
 

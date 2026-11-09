@@ -1,6 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService } from '../../../../shared/service/auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { ToastrService } from '../../../../core/services/toastr.service';
 import { RelatorioService } from '../../../../sap/service/relatorio.service';
 import { RelatorioAutoriaComponent } from '../autoria/relatorio-autoria.component';
 import { RelatorioTokensComponent } from '../tokens/relatorio-tokens.component';
@@ -8,9 +8,11 @@ import { TabDirective } from 'ngx-bootstrap/tabs';
 import { RelatorioConsumoComponent } from '../consumo/relatorio-consumo.component';
 
 @Component({
-  selector: 'app-relatorio',
-  templateUrl: './relatorio.component.html',
-  styleUrls: ['./relatorio.component.scss'],
+    selector: 'app-relatorio',
+    templateUrl: './relatorio.component.html',
+    styleUrls: ['./relatorio.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RelatorioComponent {
   readonly isAdmin: boolean;

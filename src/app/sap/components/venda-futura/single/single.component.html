@@ -1,442 +1,514 @@
 <br>
-<section class="content">
+  <section class="content">
     <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title">
-                <b>Detalhe do contrato da venda futura</b>
-                <span class="badge badge-pill ml-2" style="font-size: 0.8rem;"
+      <div class="card-header">
+        <h3 class="card-title">
+          <b>Detalhe do contrato da venda futura</b>
+          <span class="badge badge-pill ml-2" style="font-size: 0.8rem;"
                     [ngClass]="{
                         'badge-info': selected.U_status === 'aberto',
                         'badge-warning': selected.U_status === 'entregue',
                         'badge-success': selected.U_status === 'concluido',
                         'badge-danger': selected.U_status === 'cancelado'
                     }">
-                    {{ selected.statusLabel }}
-                </span>
-            </h3>
-            <div class="card-tools float-right d-flex align-items-center">
-                <app-mapa-relacoes-modal-button
-                    [tipo]="'contrato'"
-                    [docEntry]="selected?.DocEntry"
-                    [buttonClass]="'btn-outline-light'"
-                    [label]="'Mapa de Relações'">
-                </app-mapa-relacoes-modal-button>
-                <!-- spinner sempre ocupa o espaco (visibility, nao *ngIf) pra nao empurrar os
-                     botoes ao lado quando aparece/some -->
-                <i class="fas fa-sync-alt fa-spin text-white mr-2"
-                   [style.visibility]="(loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes) ? 'visible' : 'hidden'"></i>
+            {{ selected.statusLabel }}
+          </span>
+        </h3>
+        <div class="card-tools float-right d-flex align-items-center">
+          <app-mapa-relacoes-modal-button
+            [tipo]="'contrato'"
+            [docEntry]="$safeNavigationMigration(selected?.DocEntry)"
+            [buttonClass]="'btn-outline-light'"
+            [label]="'Mapa de Relações'">
+          </app-mapa-relacoes-modal-button>
+          <!-- spinner sempre ocupa o espaco (visibility, nao *ngIf) pra nao empurrar os
+          botoes ao lado quando aparece/some -->
+          <i class="fas fa-sync-alt fa-spin text-white mr-2"
+          [style.visibility]="(loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes) ? 'visible' : 'hidden'"></i>
 
-                <!-- Financeiro -->
-                <div class="btn-group btn-group-sm acoes-dropdown mr-2">
-                    <button type="button" class="btn btn-success dropdown-toggle"
-                        [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('financeiro')">
-                        <i class="fa-solid fa-coins"></i> Financeiro
-                    </button>
-                    <div class="dropdown-menu" [class.show]="menuAberto === 'financeiro'">
-                        <button class="dropdown-item" type="button" [disabled]="loadingCriaBoletos"
-                            (click)="menuAberto = null; confirmEmitirBoletos()">
-                            <i *ngIf="!loadingCriaBoletos" class="fa-solid fa-barcode"></i>
-                            <i *ngIf="loadingCriaBoletos" class="fas fa-sync-alt fa-spin"></i>
-                            {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
-                        </button>
-                        <button *ngIf="podeGerarPix" class="dropdown-item" type="button" [disabled]="gerarPixLoading"
-                            (click)="menuAberto = null; gerarPixContrato(true)">
-                            <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.emitir"></i>
-                            <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
-                            {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
-                        </button>
-                        <button *ngIf="podeGerarPix && autorizadoPixSemJuros" class="dropdown-item" type="button"
-                            [disabled]="gerarPixLoading"
-                            (click)="menuAberto = null; gerarPixContrato(false)">
-                            <i *ngIf="!gerarPixLoading" [ngClass]="icons.pix.semJuros"></i>
-                            <i *ngIf="gerarPixLoading" class="fas fa-sync-alt fa-spin"></i>
-                            {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX (Sem Juros)' }}
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Produtos -->
-                <div class="btn-group btn-group-sm acoes-dropdown mr-2">
-                    <button type="button" class="btn btn-info dropdown-toggle"
-                        [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('produtos')">
-                        <i class="fa-solid fa-boxes-stacked"></i> Produtos
-                    </button>
-                    <div class="dropdown-menu" [class.show]="menuAberto === 'produtos'">
-                        <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalRetirada()">
-                            <i class="fa-solid fa-box-open"></i> Retirar
-                        </button>
-                        <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalTroca()">
-                            <i class="fa-solid fa-right-left"></i> Troca
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Minutar Contrato -->
-                <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm mr-2"
-                    [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes">
-                    <i class="fa-solid fa-file-lines"></i> Minutar Contrato
-                </button>
-
-                <!-- Reversões -->
-                <div class="btn-group btn-group-sm acoes-dropdown">
-                    <button type="button" class="btn btn-danger dropdown-toggle"
-                        [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('reversoes')">
-                        <i class="fa-solid fa-rotate-left"></i> Reversões
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-right" [class.show]="menuAberto === 'reversoes'">
-                        <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalVincularDevolucao()">
-                            <i class="fa-solid fa-link"></i> Vincular Devolução
-                        </button>
-                        <button class="dropdown-item text-danger" type="button" (click)="menuAberto = null; encerrarContrato()">
-                            <i class="fa-solid fa-ban"></i> Cancelar Contrato
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3">Número do Contrato:</dt>
-                <dd class="col-sm-3">
-                    <!-- somenteCopiar: o link abria a propria tela de novo. Fica so o copiar,
-                         que e o que serve pra levar a chave pro SAP. -->
-                    <app-sap-link-button
-                        [label]="selected.DocEntry"
-                        [somenteCopiar]="true">
-                    </app-sap-link-button>
-                </dd>
-                <dt class="col-sm-3">Filial:</dt>
-                <dd class="col-sm-3">{{ selected.filialFormatada }}</dd>
-
-                <dt class="col-sm-3">Número do Pedido:</dt>
-                <dd class="col-sm-3">
-                    <app-sap-link-button
-                        [label]="selected.OrderDocNum"
-                        [sapRouterLink]="'/venda/pedidos-venda'"
-                        [queryParams]="{ id: selected.U_orderDocEntry }">
-                    </app-sap-link-button>
-                </dd>
-                <dt class="col-sm-3">Entry Pedido:</dt>
-                <dd class="col-sm-3">
-                    <app-sap-link-button
-                        [label]="selected.U_orderDocEntry"
-                        [sapRouterLink]="'/venda/pedidos-venda'"
-                        [queryParams]="{ id: selected.U_orderDocEntry }">
-                    </app-sap-link-button>
-                </dd>
-
-                <dt class="col-sm-3">Código do Cliente:</dt>
-                <dd class="col-sm-3">
-                    <app-sap-link-button
-                        [label]="selected.U_cardCode"
-                        [sapRouterLink]="'/clientes/parceiro-negocio/' + selected.U_cardCode">
-                    </app-sap-link-button>
-                </dd>
-                <dt class="col-sm-3">Nome do Cliente:</dt>
-                <dd class="col-sm-3">
-                    <app-sap-link-button
-                        [label]="selected.U_cardName"
-                        [sapRouterLink]="'/clientes/parceiro-negocio/' + selected.U_cardCode">
-                    </app-sap-link-button>
-                </dd>
-
-                <dt class="col-sm-3">Vendedor:</dt>
-                <dd class="col-sm-9">{{ selected.SalesEmployeeName }}</dd>
-
-                <dt class="col-sm-3">Condição de Pagamento:</dt>
-                <dd class="col-sm-9">{{ selected.condicaoPagamentoLabel }}</dd>
-
-                <dt class="col-sm-3">Valor do Frete:</dt>
-                <dd class="col-sm-9">{{ selected.frete }}</dd>
-
-                <dt class="col-sm-3">Valor Total:</dt>
-                <dd class="col-sm-9">
-                    <i *ngIf="selected.itensLoading" class="fas fa-sync-alt fa-spin text-secondary mr-1"></i>
-                    <span *ngIf="!selected.itensLoading">{{ selected.totalCurrency }}</span>
-                </dd>
-
-                <dt class="col-sm-3">Data de Criação:</dt>
-                <dd class="col-sm-9">{{ selected.dataCriacao }}</dd>
-
-                <dd class="col-sm">
-                    <app-tabs>
-                        <app-tab tabTitle="Produtos" [active]="true">
-                            <div *ngIf="loadingEntregas" class="tab-loading">
-                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
-                                <p class="mt-2 text-muted small">Carregando produtos...</p>
-                            </div>
-                            <app-table
-                                *ngIf="!loadingEntregas"
-                                [content]="selected?.AR_CF_LINHACollection"
-                                [definition]="definition"
-                                (actionOutput)="action($event)">
-                            </app-table>
-                        </app-tab>
-
-                        <app-tab tabTitle="Pedidos">
-                            <div *ngIf="loadingPedidos" class="tab-loading">
-                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
-                                <p class="mt-2 text-muted small">Carregando pedidos...</p>
-                            </div>
-                            <app-table
-                                *ngIf="!loadingPedidos"
-                                [content]="pedidos"
-                                [definition]="documentDefinition">
-                            </app-table>
-                        </app-tab>
-
-                        <app-tab tabTitle="Boletos">
-                            <div *ngIf="loadingBoletos" class="tab-loading">
-                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
-                                <p class="mt-2 text-muted small">Carregando boletos...</p>
-                            </div>
-
-                            <ng-container *ngIf="!loadingBoletos">
-                                <div *ngIf="boletos.length === 0" class="text-center text-muted py-4">
-                                    <i class="fas fa-file-invoice fa-2x mb-2"></i>
-                                    <p>Nenhum boleto encontrado.</p>
-                                </div>
-
-                                <div *ngFor="let boleto of boletos; let i = index"
-                                    class="boleto-card card mb-2"
-                                    [ngClass]="i % 2 === 0 ? 'boleto-par' : 'boleto-impar'">
-                                    <div class="card-header py-2">
-                                        <div class="row no-gutters align-items-center">
-                                            <div class="col-auto pr-3">
-                                                <span class="font-weight-bold">#{{ boleto.DocNum }}</span>
-                                            </div>
-                                            <div class="col-3">
-                                                <span class="badge badge-pill" style="font-size: 0.85rem;"
-                                                    [ngClass]="boleto.DocStatus === 'O' ? 'badge-success' : 'badge-secondary'">
-                                                    {{ statusBoletoLabel(boleto) }}
-                                                </span>
-                                            </div>
-                                            <div class="col text-right">
-                                                <div class="font-weight-bold">
-                                                    {{ (boleto.JurosValor > 0 ? boleto.ValorTotal : boleto.DocTotal)
-                                                        | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                                                </div>
-                                                <div *ngIf="boleto.JurosValor > 0" class="small text-muted">
-                                                    Valor nominal: {{ boleto.ValorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                                                    &nbsp;|&nbsp;
-                                                    Juros: {{ boleto.JurosValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                                                </div>
-                                                <div class="small text-muted">
-                                                    Venc.: {{ boleto.DocDueDate | date:'dd/MM/yyyy':'':'pt-BR' }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="card-body" *ngIf="possuiPix(boleto)">
-                                        <!-- Com PIX -->
-                                        <div>
-                                            <div class="row align-items-center">
-                                                <div class="col-auto text-center">
-                                                    <app-qrcode [value]="boleto.U_QrCodePix || ''" [size]="160"></app-qrcode>
-                                                </div>
-                                                <div class="col">
-                                                    <p class="text-muted small mb-1">Copia e Cola</p>
-                                                    <div class="input-group mb-2">
-                                                        <input type="text" class="form-control form-control-sm"
-                                                            [value]="boleto.U_pix_textContent" readonly />
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-sm"
-                                                                [ngClass]="foiCopiado(boleto) ? 'btn-success' : 'btn-outline-primary'"
-                                                                type="button"
-                                                                (click)="copiarPix(boleto)">
-                                                                <i [ngClass]="icons.pix.copiar"></i>
-                                                                {{ foiCopiado(boleto) ? 'Copiado!' : 'Copiar' }}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    <div *ngIf="boleto.U_pix_due_date"
-                                                        class="alert alert-light py-1 px-2 border mb-2">
-                                                        <small class="text-muted">
-                                                            <i class="far fa-clock"></i>
-                                                            Vencimento PIX:
-                                                            {{ boleto.U_pix_due_date | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
-                                                        </small>
-                                                    </div>
-
-                                                    <div class="d-flex gap-2">
-                                                        <button type="button"
-                                                            class="btn btn-sm btn-outline-info mr-2"
-                                                            [disabled]="isConsultando(boleto)"
-                                                            (click)="consultarPix(boleto)">
-                                                            <i *ngIf="!isConsultando(boleto)" [ngClass]="icons.pix.verificarPagamento"></i>
-                                                            <i *ngIf="isConsultando(boleto)" class="fas fa-sync-alt fa-spin"></i>
-                                                            {{ isConsultando(boleto) ? 'Consultando...' : 'Consultar Pagamento' }}
-                                                        </button>
-                                                        <button *ngIf="boleto.U_pix_link"
-                                                            type="button"
-                                                            class="btn btn-sm btn-outline-secondary"
-                                                            (click)="abrirLinkPix(boleto)">
-                                                            <i [ngClass]="icons.pix.abrirLink"></i>
-                                                            Link do Cliente
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </ng-container>
-                        </app-tab>
-
-                        <app-tab tabTitle="Entregas">
-                            <div *ngIf="loadingEntregas" class="tab-loading">
-                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
-                                <p class="mt-2 text-muted small">Carregando entregas...</p>
-                            </div>
-                            <app-table
-                                *ngIf="!loadingEntregas"
-                                [content]="entregas"
-                                [definition]="documentDefinition"
-                                (actionOutput)="action($event)">
-                            </app-table>
-                        </app-tab>
-
-                        <app-tab *ngIf="podeVerPendentesBaixa" tabTitle="Pendentes de Baixa">
-                            <div *ngIf="loadingPendentes" class="tab-loading">
-                                <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
-                                <p class="mt-2 text-muted small">Carregando pendências...</p>
-                            </div>
-                            <ng-container *ngIf="!loadingPendentes">
-                                <div *ngIf="pendentesBaixa.length === 0" class="text-center text-muted py-4">
-                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
-                                    <p>Nenhuma reclassificação pendente de baixa.</p>
-                                </div>
-                                <app-table
-                                    *ngIf="pendentesBaixa.length > 0"
-                                    [content]="pendentesBaixa"
-                                    [definition]="pendentesDefinition"
-                                    (actionOutput)="action($event)">
-                                </app-table>
-                            </ng-container>
-                        </app-tab>
-
-                    </app-tabs>
-                </dd>
-            </dl>
-        </div>
-        <div class="card-footer">
-            <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
-        </div>
-        <div *ngIf="loadingCriaBoletos" class="overlay d-flex align-items-center justify-content-center flex-column">
-            <i class="fas fa-3x fa-sync-alt fa-spin"></i>
-            <p class="mt-3">Emitindo boletos, aguarde...</p>
-        </div>
-        <div *ngIf="gerarPixLoading" class="overlay d-flex align-items-center justify-content-center flex-column">
-            <i class="fa-3x fa-pulse" [ngClass]="icons.pix.emitir"></i>
-            <i class="fas fa-sync-alt fa-spin mt-2"></i>
-            <p class="mt-3">Gerando PIX para os boletos, aguarde...</p>
-        </div>
-    </div>
-</section>
-
-<app-modal #retirada [title]="'Retirada de Produtos'">
-    <app-venda-futura-retirada
-        [vendaFutura]="selected"
-        (retirados)="closeModal($event)"
-        (eventoRetirou)="ngOnInit()">
-    </app-venda-futura-retirada>
-</app-modal>
-
-<app-modal #troca [title]="'Troca de Produtos'">
-    <app-venda-futura-troca
-        [vendaFutura]="selected"
-        (closeModal)="closeModal($event)"
-        (eventoTrocou)="ngOnInit()">
-    </app-venda-futura-troca>
-</app-modal>
-
-<app-modal #vincularDevolucao [title]="'Vincular Devolução ao Contrato'" modalSize="lg">
-    <div class="p-2">
-        <div class="form-group">
-            <label>Número da devolução (DocNum)</label>
-            <input type="number" class="form-control" [(ngModel)]="vincularDevolucaoDocNum"
-                   placeholder="Ex: 12345">
-            <small class="text-muted d-block">Devolução avulsa ainda não vinculada ao contrato.</small>
-        </div>
-        <div class="form-group">
-            <label>Nota de saída</label>
-            <select class="form-control" [(ngModel)]="vincularNotaSaidaDocEntry">
-                <option [ngValue]="null" disabled>Selecione a nota de saída...</option>
-                <option *ngFor="let nota of notasSaida" [ngValue]="nota.DocEntry">
-                    Nº {{ nota.DocNum }} — {{ nota.formattedDocDate }} — {{ nota.totalCurrency }}
-                </option>
-            </select>
-            <small class="text-muted d-block">Notas de saída (entregas) já lançadas neste contrato.</small>
-            <small *ngIf="notasSaida.length === 0" class="text-danger d-block">
-                Nenhuma nota de saída carregada para este contrato.
-            </small>
-        </div>
-        <div class="text-right mt-3">
-            <button type="button" class="btn btn-secondary btn-sm mr-2"
-                    (click)="vincularDevolucaoModal.closeModal()">Cancelar</button>
-            <button type="button" class="btn btn-primary btn-sm"
-                    [disabled]="vinculandoDevolucao"
-                    (click)="confirmarVincularDevolucao()">
-                <i *ngIf="vinculandoDevolucao" class="fas fa-sync-alt fa-spin"></i>
-                Vincular
+          <!-- Financeiro -->
+          <div class="btn-group btn-group-sm acoes-dropdown mr-2">
+            <button type="button" class="btn btn-success dropdown-toggle"
+              [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('financeiro')">
+              <i class="fa-solid fa-coins"></i> Financeiro
             </button>
-        </div>
-    </div>
-</app-modal>
+            <div class="dropdown-menu" [class.show]="menuAberto === 'financeiro'">
+              <button class="dropdown-item" type="button" [disabled]="loadingCriaBoletos"
+                (click)="menuAberto = null; confirmEmitirBoletos()">
+                @if (!loadingCriaBoletos) {
+                  <i class="fa-solid fa-barcode"></i>
+                }
+                @if (loadingCriaBoletos) {
+                  <i class="fas fa-sync-alt fa-spin"></i>
+                }
+                {{ loadingCriaBoletos ? 'Emitindo...' : 'Emitir Boletos' }}
+              </button>
+              @if (podeGerarPix) {
+                <button class="dropdown-item" type="button" [disabled]="gerarPixLoading"
+                  (click)="menuAberto = null; gerarPixContrato(true)">
+                  @if (!gerarPixLoading) {
+                    <i [ngClass]="icons.pix.emitir"></i>
+                  }
+                  @if (gerarPixLoading) {
+                    <i class="fas fa-sync-alt fa-spin"></i>
+                  }
+                  {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX' }}
+                </button>
+              }
+              @if (podeGerarPix && autorizadoPixSemJuros) {
+                <button class="dropdown-item" type="button"
+                  [disabled]="gerarPixLoading"
+                  (click)="menuAberto = null; gerarPixContrato(false)">
+                  @if (!gerarPixLoading) {
+                    <i [ngClass]="icons.pix.semJuros"></i>
+                  }
+                  @if (gerarPixLoading) {
+                    <i class="fas fa-sync-alt fa-spin"></i>
+                  }
+                  {{ gerarPixLoading ? 'Gerando PIX...' : 'Gerar PIX (Sem Juros)' }}
+                </button>
+              }
+            </div>
+          </div>
 
-<app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
-    <div *ngIf="pagamentoPixLoading" class="text-center p-4">
-        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-        <p class="mt-3 mb-0 text-muted">Consultando status do pagamento PIX...</p>
-    </div>
-    <div *ngIf="pagamentoPixData" class="p-2">
-        <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
-        <div class="mb-1">
-            <strong>Status:</strong>
-            <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
-                {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
-            </span>
-        </div>
-        <div class="mb-1">
-            <strong>Valor original:</strong>
-            <span *ngIf="pagamentoPixData.originalAmount != null; else valorOriginalVazio">
-                {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-            </span>
-            <ng-template #valorOriginalVazio>-</ng-template>
-        </div>
-        <div class="mb-1" *ngIf="pagamentoPixData.receivedAmount != null">
-            <strong>Valor recebido:</strong>
-            {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-        </div>
-        <div class="mb-1">
-            <strong>Data do pagamento:</strong>
-            <span *ngIf="pagamentoPixData.paymentDate; else dataPagamentoVazia">
-                {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
-            </span>
-            <ng-template #dataPagamentoVazia>-</ng-template>
-        </div>
-        <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType || '-' }}</div>
-    </div>
-</app-modal>
+          <!-- Produtos -->
+          <div class="btn-group btn-group-sm acoes-dropdown mr-2">
+            <button type="button" class="btn btn-info dropdown-toggle"
+              [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('produtos')">
+              <i class="fa-solid fa-boxes-stacked"></i> Produtos
+            </button>
+            <div class="dropdown-menu" [class.show]="menuAberto === 'produtos'">
+              <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalRetirada()">
+                <i class="fa-solid fa-box-open"></i> Retirar
+              </button>
+              <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalTroca()">
+                <i class="fa-solid fa-right-left"></i> Troca
+              </button>
+            </div>
+          </div>
 
-<app-modal
-  #previewModal
-  [title]="'Preview do PDF'"
-  style="width: 90%; max-width: 1400px;">
-  <div class="pdf-preview-container" style="height: 80vh; padding: 10px;">
-    <div class="pdf-toolbar">
-      <button (click)="gerarPDF()" class="btn btn-success btn-sm"
-        [disabled]="gerarPdfComponent?.gerandoPdf || gerarPdfComponent?.carregandoDados">
-        <i class="fas" [ngClass]="gerarPdfComponent?.gerandoPdf || gerarPdfComponent?.carregandoDados ? 'fa-spinner fa-spin' : 'fa-file-download'"></i>
-        {{ gerarPdfComponent?.gerandoPdf ? 'Gerando PDF...' : (gerarPdfComponent?.carregandoDados ? 'Carregando dados...' : 'Baixar PDF') }}
-      </button>
+          <!-- Minutar Contrato -->
+          <button (click)="abrirModalPreview()" type="button" class="btn btn-warning btn-sm mr-2"
+            [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes">
+            <i class="fa-solid fa-file-lines"></i> Minutar Contrato
+          </button>
+
+          <!-- Reversões -->
+          <div class="btn-group btn-group-sm acoes-dropdown">
+            <button type="button" class="btn btn-danger dropdown-toggle"
+              [disabled]="loadingEntregas || loadingBoletos || loadingPedidos || loadingPendentes" (click)="toggleMenu('reversoes')">
+              <i class="fa-solid fa-rotate-left"></i> Reversões
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" [class.show]="menuAberto === 'reversoes'">
+              <button class="dropdown-item" type="button" (click)="menuAberto = null; openModalVincularDevolucao()">
+                <i class="fa-solid fa-link"></i> Vincular Devolução
+              </button>
+              <button class="dropdown-item text-danger" type="button" (click)="menuAberto = null; encerrarContrato()">
+                <i class="fa-solid fa-ban"></i> Cancelar Contrato
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <dl class="row">
+          <dt class="col-sm-3">Número do Contrato:</dt>
+          <dd class="col-sm-3">
+            <!-- somenteCopiar: o link abria a propria tela de novo. Fica so o copiar,
+            que e o que serve pra levar a chave pro SAP. -->
+            <app-sap-link-button
+              [label]="selected.DocEntry"
+              [somenteCopiar]="true">
+            </app-sap-link-button>
+          </dd>
+          <dt class="col-sm-3">Filial:</dt>
+          <dd class="col-sm-3">{{ selected.filialFormatada }}</dd>
+
+          <dt class="col-sm-3">Número do Pedido:</dt>
+          <dd class="col-sm-3">
+            <app-sap-link-button
+              [label]="selected.OrderDocNum"
+              [sapRouterLink]="'/venda/pedidos-venda'"
+              [queryParams]="{ id: selected.U_orderDocEntry }">
+            </app-sap-link-button>
+          </dd>
+          <dt class="col-sm-3">Entry Pedido:</dt>
+          <dd class="col-sm-3">
+            <app-sap-link-button
+              [label]="selected.U_orderDocEntry"
+              [sapRouterLink]="'/venda/pedidos-venda'"
+              [queryParams]="{ id: selected.U_orderDocEntry }">
+            </app-sap-link-button>
+          </dd>
+
+          <dt class="col-sm-3">Código do Cliente:</dt>
+          <dd class="col-sm-3">
+            <app-sap-link-button
+              [label]="selected.U_cardCode"
+              [sapRouterLink]="'/clientes/parceiro-negocio/' + selected.U_cardCode">
+            </app-sap-link-button>
+          </dd>
+          <dt class="col-sm-3">Nome do Cliente:</dt>
+          <dd class="col-sm-3">
+            <app-sap-link-button
+              [label]="selected.U_cardName"
+              [sapRouterLink]="'/clientes/parceiro-negocio/' + selected.U_cardCode">
+            </app-sap-link-button>
+          </dd>
+
+          <dt class="col-sm-3">Vendedor:</dt>
+          <dd class="col-sm-9">{{ selected.SalesEmployeeName }}</dd>
+
+          <dt class="col-sm-3">Condição de Pagamento:</dt>
+          <dd class="col-sm-9">{{ selected.condicaoPagamentoLabel }}</dd>
+
+          <dt class="col-sm-3">Valor do Frete:</dt>
+          <dd class="col-sm-9">{{ selected.frete }}</dd>
+
+          <dt class="col-sm-3">Valor Total:</dt>
+          <dd class="col-sm-9">
+            @if (selected.itensLoading) {
+              <i class="fas fa-sync-alt fa-spin text-secondary mr-1"></i>
+            }
+            @if (!selected.itensLoading) {
+              <span>{{ selected.totalCurrency }}</span>
+            }
+          </dd>
+
+          <dt class="col-sm-3">Data de Criação:</dt>
+          <dd class="col-sm-9">{{ selected.dataCriacao }}</dd>
+
+          <dd class="col-sm">
+            <app-tabs>
+              <app-tab tabTitle="Produtos" [active]="true">
+                @if (loadingEntregas) {
+                  <div class="tab-loading">
+                    <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                    <p class="mt-2 text-muted small">Carregando produtos...</p>
+                  </div>
+                }
+                @if (!loadingEntregas) {
+                  <app-table
+                    [content]="$safeNavigationMigration(selected?.AR_CF_LINHACollection)"
+                    [definition]="definition"
+                    (actionOutput)="action($event)">
+                  </app-table>
+                }
+              </app-tab>
+
+              <app-tab tabTitle="Pedidos">
+                @if (loadingPedidos) {
+                  <div class="tab-loading">
+                    <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                    <p class="mt-2 text-muted small">Carregando pedidos...</p>
+                  </div>
+                }
+                @if (!loadingPedidos) {
+                  <app-table
+                    [content]="pedidos"
+                    [definition]="documentDefinition">
+                  </app-table>
+                }
+              </app-tab>
+
+              <app-tab tabTitle="Boletos">
+                @if (loadingBoletos) {
+                  <div class="tab-loading">
+                    <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                    <p class="mt-2 text-muted small">Carregando boletos...</p>
+                  </div>
+                }
+
+                @if (!loadingBoletos) {
+                  @if (boletos.length === 0) {
+                    <div class="text-center text-muted py-4">
+                      <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                      <p>Nenhum boleto encontrado.</p>
+                    </div>
+                  }
+                  @for (boleto of boletos; track boleto; let i = $index) {
+                    <div
+                      class="boleto-card card mb-2"
+                      [ngClass]="i % 2 === 0 ? 'boleto-par' : 'boleto-impar'">
+                      <div class="card-header py-2">
+                        <div class="row no-gutters align-items-center">
+                          <div class="col-auto pr-3">
+                            <span class="font-weight-bold">#{{ boleto.DocNum }}</span>
+                          </div>
+                          <div class="col-3">
+                            <span class="badge badge-pill" style="font-size: 0.85rem;"
+                              [ngClass]="boleto.DocStatus === 'O' ? 'badge-success' : 'badge-secondary'">
+                              {{ statusBoletoLabel(boleto) }}
+                            </span>
+                          </div>
+                          <div class="col text-right">
+                            <div class="font-weight-bold">
+                              {{ (boleto.JurosValor > 0 ? boleto.ValorTotal : boleto.DocTotal)
+                              | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                            </div>
+                            @if (boleto.JurosValor > 0) {
+                              <div class="small text-muted">
+                                Valor nominal: {{ boleto.ValorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                                &nbsp;|&nbsp;
+                                Juros: {{ boleto.JurosValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                              </div>
+                            }
+                            <div class="small text-muted">
+                              Venc.: {{ boleto.DocDueDate | date:'dd/MM/yyyy':'':'pt-BR' }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      @if (possuiPix(boleto)) {
+                        <div class="card-body">
+                          <!-- Com PIX -->
+                          <div>
+                            <div class="row align-items-center">
+                              <div class="col-auto text-center">
+                                <app-qrcode [value]="boleto.U_QrCodePix || ''" [size]="160"></app-qrcode>
+                              </div>
+                              <div class="col">
+                                <p class="text-muted small mb-1">Copia e Cola</p>
+                                <div class="input-group mb-2">
+                                  <input type="text" class="form-control form-control-sm"
+                                    [value]="boleto.U_pix_textContent" readonly />
+                                  <div class="input-group-append">
+                                    <button class="btn btn-sm"
+                                      [ngClass]="foiCopiado(boleto) ? 'btn-success' : 'btn-outline-primary'"
+                                      type="button"
+                                      (click)="copiarPix(boleto)">
+                                      <i [ngClass]="icons.pix.copiar"></i>
+                                      {{ foiCopiado(boleto) ? 'Copiado!' : 'Copiar' }}
+                                    </button>
+                                  </div>
+                                </div>
+                                @if (boleto.U_pix_due_date) {
+                                  <div
+                                    class="alert alert-light py-1 px-2 border mb-2">
+                                    <small class="text-muted">
+                                      <i class="far fa-clock"></i>
+                                      Vencimento PIX:
+                                      {{ boleto.U_pix_due_date | date:'dd/MM/yyyy HH:mm':'':'pt-BR' }}
+                                    </small>
+                                  </div>
+                                }
+                                <div class="d-flex gap-2">
+                                  <button type="button"
+                                    class="btn btn-sm btn-outline-info mr-2"
+                                    [disabled]="isConsultando(boleto)"
+                                    (click)="consultarPix(boleto)">
+                                    @if (!isConsultando(boleto)) {
+                                      <i [ngClass]="icons.pix.verificarPagamento"></i>
+                                    }
+                                    @if (isConsultando(boleto)) {
+                                      <i class="fas fa-sync-alt fa-spin"></i>
+                                    }
+                                    {{ isConsultando(boleto) ? 'Consultando...' : 'Consultar Pagamento' }}
+                                  </button>
+                                  @if (boleto.U_pix_link) {
+                                    <button
+                                      type="button"
+                                      class="btn btn-sm btn-outline-secondary"
+                                      (click)="abrirLinkPix(boleto)">
+                                      <i [ngClass]="icons.pix.abrirLink"></i>
+                                      Link do Cliente
+                                    </button>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+              </app-tab>
+
+              <app-tab tabTitle="Entregas">
+                @if (loadingEntregas) {
+                  <div class="tab-loading">
+                    <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                    <p class="mt-2 text-muted small">Carregando entregas...</p>
+                  </div>
+                }
+                @if (!loadingEntregas) {
+                  <app-table
+                    [content]="entregas"
+                    [definition]="documentDefinition"
+                    (actionOutput)="action($event)">
+                  </app-table>
+                }
+              </app-tab>
+
+              @if (podeVerPendentesBaixa) {
+                <app-tab tabTitle="Pendentes de Baixa">
+                  @if (loadingPendentes) {
+                    <div class="tab-loading">
+                      <i class="fas fa-2x fa-sync-alt fa-spin text-secondary"></i>
+                      <p class="mt-2 text-muted small">Carregando pendências...</p>
+                    </div>
+                  }
+                  @if (!loadingPendentes) {
+                    @if (pendentesBaixa.length === 0) {
+                      <div class="text-center text-muted py-4">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <p>Nenhuma reclassificação pendente de baixa.</p>
+                      </div>
+                    }
+                    @if (pendentesBaixa.length > 0) {
+                      <app-table
+                        [content]="pendentesBaixa"
+                        [definition]="pendentesDefinition"
+                        (actionOutput)="action($event)">
+                      </app-table>
+                    }
+                  }
+                </app-tab>
+              }
+
+            </app-tabs>
+          </dd>
+        </dl>
+      </div>
+      <div class="card-footer">
+        <button type="button" class="btn btn-secondary" (click)="voltar()">Voltar</button>
+      </div>
+      @if (loadingCriaBoletos) {
+        <div class="overlay d-flex align-items-center justify-content-center flex-column">
+          <i class="fas fa-3x fa-sync-alt fa-spin"></i>
+          <p class="mt-3">Emitindo boletos, aguarde...</p>
+        </div>
+      }
+      @if (gerarPixLoading) {
+        <div class="overlay d-flex align-items-center justify-content-center flex-column">
+          <i class="fa-3x fa-pulse" [ngClass]="icons.pix.emitir"></i>
+          <i class="fas fa-sync-alt fa-spin mt-2"></i>
+          <p class="mt-3">Gerando PIX para os boletos, aguarde...</p>
+        </div>
+      }
     </div>
-    <div class="pdf-preview" style="overflow-y: auto; height: calc(100% - 50px);">
-      <div class="pdf-preview-content">
-        <app-gerar-pdf [vendaFutura]="selected"></app-gerar-pdf>
+  </section>
+
+  <app-modal #retirada [title]="'Retirada de Produtos'">
+    <app-venda-futura-retirada
+      [vendaFutura]="selected"
+      (retirados)="closeModal($event)"
+      (eventoRetirou)="ngOnInit()">
+    </app-venda-futura-retirada>
+  </app-modal>
+
+  <app-modal #troca [title]="'Troca de Produtos'">
+    <app-venda-futura-troca
+      [vendaFutura]="selected"
+      (closeModal)="closeModal($event)"
+      (eventoTrocou)="ngOnInit()">
+    </app-venda-futura-troca>
+  </app-modal>
+
+  <app-modal #vincularDevolucao [title]="'Vincular Devolução ao Contrato'" modalSize="lg">
+    <div class="p-2">
+      <div class="form-group">
+        <label>Número da devolução (DocNum)</label>
+        <input type="number" class="form-control" [(ngModel)]="vincularDevolucaoDocNum"
+          placeholder="Ex: 12345">
+        <small class="text-muted d-block">Devolução avulsa ainda não vinculada ao contrato.</small>
+      </div>
+      <div class="form-group">
+        <label>Nota de saída</label>
+        <select class="form-control" [(ngModel)]="vincularNotaSaidaDocEntry">
+          <option [ngValue]="null" disabled>Selecione a nota de saída...</option>
+          @for (nota of notasSaida; track nota) {
+            <option [ngValue]="nota.DocEntry">
+              Nº {{ nota.DocNum }} — {{ nota.formattedDocDate }} — {{ nota.totalCurrency }}
+            </option>
+          }
+        </select>
+        <small class="text-muted d-block">Notas de saída (entregas) já lançadas neste contrato.</small>
+        @if (notasSaida.length === 0) {
+          <small class="text-danger d-block">
+            Nenhuma nota de saída carregada para este contrato.
+          </small>
+        }
+      </div>
+      <div class="text-right mt-3">
+        <button type="button" class="btn btn-secondary btn-sm mr-2"
+        (click)="vincularDevolucaoModal.closeModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary btn-sm"
+          [disabled]="vinculandoDevolucao"
+          (click)="confirmarVincularDevolucao()">
+          @if (vinculandoDevolucao) {
+            <i class="fas fa-sync-alt fa-spin"></i>
+          }
+          Vincular
+        </button>
       </div>
     </div>
-  </div>
-</app-modal>
+  </app-modal>
+
+  <app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
+    @if (pagamentoPixLoading) {
+      <div class="text-center p-4">
+        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+        <p class="mt-3 mb-0 text-muted">Consultando status do pagamento PIX...</p>
+      </div>
+    }
+    @if (pagamentoPixData) {
+      <div class="p-2">
+        <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
+        <div class="mb-1">
+          <strong>Status:</strong>
+          <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
+            {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
+          </span>
+        </div>
+        <div class="mb-1">
+          <strong>Valor original:</strong>
+          @if (pagamentoPixData.originalAmount != null) {
+            <span>
+              {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+          } @else {
+            -
+          }
+        </div>
+        @if (pagamentoPixData.receivedAmount != null) {
+          <div class="mb-1">
+            <strong>Valor recebido:</strong>
+            {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+          </div>
+        }
+        <div class="mb-1">
+          <strong>Data do pagamento:</strong>
+          @if (pagamentoPixData.paymentDate) {
+            <span>
+              {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          } @else {
+            -
+          }
+        </div>
+        <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType || '-' }}</div>
+      </div>
+    }
+  </app-modal>
+
+  <app-modal
+    #previewModal
+    [title]="'Preview do PDF'"
+    style="width: 90%; max-width: 1400px;">
+    <div class="pdf-preview-container" style="height: 80vh; padding: 10px;">
+      <div class="pdf-toolbar">
+        <button (click)="gerarPDF()" class="btn btn-success btn-sm"
+          [disabled]="gerarPdfComponent?.gerandoPdf || gerarPdfComponent?.carregandoDados">
+          <i class="fas" [ngClass]="gerarPdfComponent?.gerandoPdf || gerarPdfComponent?.carregandoDados ? 'fa-spinner fa-spin' : 'fa-file-download'"></i>
+          {{ gerarPdfComponent?.gerandoPdf ? 'Gerando PDF...' : (gerarPdfComponent?.carregandoDados ? 'Carregando dados...' : 'Baixar PDF') }}
+        </button>
+      </div>
+      <div class="pdf-preview" style="overflow-y: auto; height: calc(100% - 50px);">
+        <div class="pdf-preview-content">
+          <app-gerar-pdf [vendaFutura]="selected"></app-gerar-pdf>
+        </div>
+      </div>
+    </div>
+  </app-modal>

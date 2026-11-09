@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable, { RowInput } from 'jspdf-autotable';
 import { AlertService } from '../../../../shared/service/alert.service';
@@ -8,8 +8,10 @@ import { TicketFreteLocalidade } from '../../../../sap/model/ticket-frete.model'
 import { TicketFreteService } from '../../service/ticket-frete.service';
 
 @Component({
-  selector: 'app-ticket-frete',
-  templateUrl: './ticket-frete.component.html',
+    selector: 'app-ticket-frete',
+    templateUrl: './ticket-frete.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TicketFreteComponent implements OnInit {
 

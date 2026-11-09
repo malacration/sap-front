@@ -1,4 +1,4 @@
-import * as moment from "moment";
+import moment from 'moment';
 import { Action, ActionReturn } from "../../../shared/components/action/action.model";
 import { formatCurrency } from "@angular/common";
 import { DocumentTypes } from "../labels/document-types";

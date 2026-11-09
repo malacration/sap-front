@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import {
   DetalheNecessidade,
@@ -36,8 +36,10 @@ export function tituloDetalhe(detalhe: DetalheNecessidade): string {
 
 /** Documentos de uma celula da necessidade de producao em tela cheia, aberta em nova aba. */
 @Component({
-  selector: 'app-necessidade-producao-detalhe',
-  templateUrl: './necessidade-producao-detalhe.component.html',
+    selector: 'app-necessidade-producao-detalhe',
+    templateUrl: './necessidade-producao-detalhe.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class NecessidadeProducaoDetalheComponent implements OnInit {
   filtro: NecessidadeProducaoDetalheFiltro | null = null;

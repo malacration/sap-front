@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { APP_INITIALIZER, DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
 
@@ -11,7 +11,6 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 
 // NG Translate
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './layout/header/header.component';
@@ -21,7 +20,6 @@ import { MenuSidebarComponent } from './layout/menu-sidebar/menu-sidebar.compone
 import { MessagesComponent } from './layout/header/messages/messages.component';
 import { NotificationsComponent } from './layout/header/notifications/notifications.component';
 import { UserComponent } from './layout/header/user/user.component';
-import { ToastrModule } from 'ngx-toastr';
 import { MenuItemComponent } from './layout/menu-sidebar/menu-item/menu-item.component';
 import { HomeComponent } from './home/home.component';
 import { RomaneioFazendaInsumoComponent } from './sap/components/romaneio-fazenda-insumo/romaneio-fazenda-insumo.component';
@@ -89,6 +87,7 @@ import { ParceiroNegocioComponent } from './sap/components/parceiro-negocio/parc
 import { ParceiroNegocioSingleComponent } from './sap/components/parceiro-negocio/single-parceiro-negocio/single-parceiro-negocio.component';
 import { RegiaoComponent } from './sap/components/regiao/regiao.component';
 import { NormalizacaoCadastroComponent } from './sap/components/normalizacao-cadastro/normalizacao-cadastro.component';
+import { LancamentoRetornoComponent } from './sap/components/lancamento-retorno/lancamento-retorno.component';
 import { SanitizacaoContratoComponent } from './sap/components/sanitizacao-contrato/sanitizacao-contrato.component';
 import { RegiaoFretePdfComponent } from './sap/components/regiao/regiao-frete-pdf/regiao-frete-pdf.component';
 import { LocalidadeComponent } from './sap/components/localidade/localidade.component';
@@ -131,7 +130,7 @@ import { OrdemCarregamentoModule } from './modulos/ordem-carregamento/ordem-carr
 import { PainelVendasModule } from './modulos/painel-vendas/painel-vendas.module';
 import { RelatorioFreteModule } from './modulos/relatorio-frete/relatorio-frete.module';
 import { NecessidadeProducaoModule } from './modulos/necessidade-producao/necessidade-producao.module';
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { CobrancaModule } from './modulos/cobranca/cobranca.module';
 import { NotaFiscalLoteModule } from './modulos/nota-fiscal-lote/nota-fiscal-lote.module';
 import { RelatorioModule } from './modulos/relatorio/relatorio.module';
@@ -143,7 +142,6 @@ registerLocaleData(localeBr);
 
  
 // AoT requires an exported function for factories
-const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new TranslateHttpLoader(http, './assets/i18n/', '.json');
 
 @NgModule({
   declarations: [
@@ -195,6 +193,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     ParceiroNegocioSingleComponent,
     RegiaoComponent,
     NormalizacaoCadastroComponent,
+    LancamentoRetornoComponent,
     SanitizacaoContratoComponent,
     RegiaoFretePdfComponent,
     LocalidadeComponent,
@@ -228,8 +227,8 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
   ],
   imports: [
     // Providers do datepicker uma vez so; o campo (app-campo-data) vem do SharedModule.
-    BsDatepickerModule.forRoot(),
-    TypeaheadModule.forRoot(),
+    BsDatepickerModule,
+    TypeaheadModule,
     NgxPaginationModule,
     CalculadoraModule,
     BrowserModule,
@@ -239,7 +238,7 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     CoreModule,
     SharedModule,
     SapSharedModule,
-    QRCodeModule,
+    QRCodeComponent,
     OrdemCarregamentoModule,
     PainelVendasModule,
     RelatorioFreteModule,
@@ -252,11 +251,6 @@ const httpLoaderFactory = (http: HttpClient): TranslateHttpLoader =>  new Transl
     LoadingBarRouterModule,
     LoadingBarHttpClientModule,
     AppRoutingModule,
-    ToastrModule.forRoot({
-      timeOut: 3000,
-      positionClass: 'toast-top-right',
-      preventDuplicates: true
-    }),
     // ProfabricComponentsModule,
     StoreModule.forRoot({ui: uiReducer}),
     ServiceWorkerModule.register('ngsw-worker.js', {

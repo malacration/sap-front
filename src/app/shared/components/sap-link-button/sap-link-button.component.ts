@@ -1,12 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 type RouterLinkLike = string | any[];
 
 @Component({
-  selector: 'app-sap-link-button',
-  templateUrl: './sap-link-button.component.html',
-  styleUrls: ['./sap-link-button.component.scss']
+    selector: 'app-sap-link-button',
+    templateUrl: './sap-link-button.component.html',
+    styleUrls: ['./sap-link-button.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SapLinkButtonComponent {
   @Input() label: string | number = '';

@@ -1,8 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
-  selector: 'app-qrcode',
-  templateUrl: './qrcode.component.html',
+    selector: 'app-qrcode',
+    templateUrl: './qrcode.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class QrcodeComponent {
   @Input()

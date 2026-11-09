@@ -17,7 +17,9 @@
             <label>Cobrador</label>
             <select class="form-control" name="filtroCobrador" [(ngModel)]="filtroCobrador" (change)="buscar()">
               <option value="">Todos</option>
-              <option *ngFor="let c of cobradoresDisponiveis" [value]="c">{{ c }}</option>
+              @for (c of cobradoresDisponiveis; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
             </select>
           </div>
           <div class="col-md-2 col-sm-6">
@@ -51,14 +53,18 @@
     </div>
   </div>
 
-  <div *ngIf="erro" class="alert alert-warning">{{ erro }}</div>
+  @if (erro) {
+    <div class="alert alert-warning">{{ erro }}</div>
+  }
 
   <div class="dashboard-conteudo overlay-wrapper">
 
-    <div *ngIf="carregandoResumo" class="overlay d-flex flex-column align-items-center justify-content-center">
-      <div><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
-      <div class="mt-2">Buscando indicadores | Tempo: {{ formatTime() }}</div>
-    </div>
+    @if (carregandoResumo) {
+      <div class="overlay d-flex flex-column align-items-center justify-content-center">
+        <div><i class="fas fa-2x fa-sync-alt fa-spin"></i></div>
+        <div class="mt-2">Buscando indicadores | Tempo: {{ formatTime() }}</div>
+      </div>
+    }
 
     <div class="row">
       <div class="col-md-3 col-sm-6">
@@ -79,17 +85,23 @@
             <span class="info-box-text">Recuperado no período</span>
             <span class="info-box-number">{{ dashboard.recuperadoCurrency }}</span>
             <span class="progress-description">
-              <span *ngIf="dashboard.variacaoRecuperado !== null"
-                    [class.texto-bom]="dashboard.recuperadoSubiu"
-                    [class.texto-ruim]="!dashboard.recuperadoSubiu">
-                {{ dashboard.variacaoRecuperadoLabel }}
-              </span>
-              <span *ngIf="dashboard.variacaoRecuperado !== null">
-                vs {{ dashboard.anteriorCurrency }}
-              </span>
-              <span *ngIf="dashboard.variacaoRecuperado === null" class="text-muted">
-                {{ dashboard.variacaoRecuperadoLabel || dashboard.RecuperadoDocumentos + ' documentos' }}
-              </span>
+              @if (dashboard.variacaoRecuperado !== null) {
+                <span
+                  [class.texto-bom]="dashboard.recuperadoSubiu"
+                  [class.texto-ruim]="!dashboard.recuperadoSubiu">
+                  {{ dashboard.variacaoRecuperadoLabel }}
+                </span>
+              }
+              @if (dashboard.variacaoRecuperado !== null) {
+                <span>
+                  vs {{ dashboard.anteriorCurrency }}
+                </span>
+              }
+              @if (dashboard.variacaoRecuperado === null) {
+                <span class="text-muted">
+                  {{ dashboard.variacaoRecuperadoLabel || dashboard.RecuperadoDocumentos + ' documentos' }}
+                </span>
+              }
             </span>
           </div>
         </div>
@@ -103,7 +115,9 @@
             <span class="info-box-number">{{ dashboard.semAcaoCurrency }}</span>
             <span class="progress-description">
               {{ dashboard.SemAcaoParcelas }} parcelas
-              <span class="text-muted" *ngIf="dashboard.semAcaoPercentual"> · {{ dashboard.semAcaoPercentual }}</span>
+              @if (dashboard.semAcaoPercentual) {
+                <span class="text-muted"> · {{ dashboard.semAcaoPercentual }}</span>
+              }
             </span>
           </div>
         </div>
@@ -117,7 +131,9 @@
             <span class="info-box-number">{{ dashboard.promessaVencidaCurrency }}</span>
             <span class="progress-description">
               {{ dashboard.PromessaVencidaParcelas }} parcelas
-              <span class="text-muted" *ngIf="dashboard.promessaVencidaPercentual"> · {{ dashboard.promessaVencidaPercentual }}</span>
+              @if (dashboard.promessaVencidaPercentual) {
+                <span class="text-muted"> · {{ dashboard.promessaVencidaPercentual }}</span>
+              }
             </span>
           </div>
         </div>
@@ -132,7 +148,9 @@
             <div class="grafico">
               <canvas #graficoAging></canvas>
             </div>
-            <p *ngIf="dashboard.Faixas.length === 0" class="text-muted mb-0">Nada em atraso no recorte atual.</p>
+            @if (dashboard.Faixas.length === 0) {
+              <p class="text-muted mb-0">Nada em atraso no recorte atual.</p>
+            }
           </div>
         </div>
       </div>
@@ -144,7 +162,9 @@
             <div class="grafico">
               <canvas #graficoFilial></canvas>
             </div>
-            <p *ngIf="dashboard.PorFilial.length === 0" class="text-muted mb-0">Sem dados de filial no recorte atual.</p>
+            @if (dashboard.PorFilial.length === 0) {
+              <p class="text-muted mb-0">Sem dados de filial no recorte atual.</p>
+            }
           </div>
         </div>
       </div>
@@ -160,9 +180,11 @@
             <div class="grafico">
               <canvas #graficoEvolucao></canvas>
             </div>
-            <p *ngIf="evolucao.length === 0 && !carregandoEvolucao" class="text-muted mb-0">
-              Nenhuma recuperação registrada no período.
-            </p>
+            @if (evolucao.length === 0 && !carregandoEvolucao) {
+              <p class="text-muted mb-0">
+                Nenhuma recuperação registrada no período.
+              </p>
+            }
           </div>
         </div>
       </div>
@@ -174,9 +196,11 @@
             <div class="grafico">
               <canvas #graficoCobrador></canvas>
             </div>
-            <p *ngIf="dashboard.PorCobrador.length === 0" class="text-muted mb-0">
-              Nenhuma ação de cobrança registrada no período.
-            </p>
+            @if (dashboard.PorCobrador.length === 0) {
+              <p class="text-muted mb-0">
+                Nenhuma ação de cobrança registrada no período.
+              </p>
+            }
           </div>
         </div>
       </div>
@@ -197,18 +221,22 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let cobrador of dashboard.PorCobrador"
+                @for (cobrador of dashboard.PorCobrador; track cobrador) {
+                  <tr
                     [class.clicavel]="cobradorEhClicavel(cobrador.Cobrador)"
                     [title]="cobradorEhClicavel(cobrador.Cobrador) ? tituloDoCobrador(cobrador.Cobrador) : ''"
                     (click)="verCobrador(cobrador.Cobrador)">
-                  <td>{{ cobrador.Cobrador }}</td>
-                  <td class="text-right">{{ cobrador.TitulosTrabalhados }}</td>
-                  <td class="text-right">{{ cobrador.recuperadoCurrency }}</td>
-                  <td class="text-right">{{ cobrador.ParcelasComPromessaVencida }}</td>
-                </tr>
-                <tr *ngIf="dashboard.PorCobrador.length === 0">
-                  <td colspan="4" class="text-muted">Nada registrado no período.</td>
-                </tr>
+                    <td>{{ cobrador.Cobrador }}</td>
+                    <td class="text-right">{{ cobrador.TitulosTrabalhados }}</td>
+                    <td class="text-right">{{ cobrador.recuperadoCurrency }}</td>
+                    <td class="text-right">{{ cobrador.ParcelasComPromessaVencida }}</td>
+                  </tr>
+                }
+                @if (dashboard.PorCobrador.length === 0) {
+                  <tr>
+                    <td colspan="4" class="text-muted">Nada registrado no período.</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -228,16 +256,20 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let status of dashboard.PorStatus"
+                @for (status of dashboard.PorStatus; track status) {
+                  <tr
                     [class.clicavel]="statusEhClicavel(status.Status)"
                     (click)="verStatus(status.Status)">
-                  <td>{{ status.Status }}</td>
-                  <td class="text-right">{{ status.Parcelas }}</td>
-                  <td class="text-right">{{ status.saldoCurrency }}</td>
-                </tr>
-                <tr *ngIf="dashboard.PorStatus.length === 0">
-                  <td colspan="3" class="text-muted">Nada em atraso no recorte atual.</td>
-                </tr>
+                    <td>{{ status.Status }}</td>
+                    <td class="text-right">{{ status.Parcelas }}</td>
+                    <td class="text-right">{{ status.saldoCurrency }}</td>
+                  </tr>
+                }
+                @if (dashboard.PorStatus.length === 0) {
+                  <tr>
+                    <td colspan="3" class="text-muted">Nada em atraso no recorte atual.</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -259,11 +291,13 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let faixa of dashboard.Faixas">
-                  <td>{{ faixa.Faixa }}</td>
-                  <td class="text-right">{{ faixa.Parcelas }}</td>
-                  <td class="text-right">{{ faixa.saldoCurrency }}</td>
-                </tr>
+                @for (faixa of dashboard.Faixas; track faixa) {
+                  <tr>
+                    <td>{{ faixa.Faixa }}</td>
+                    <td class="text-right">{{ faixa.Parcelas }}</td>
+                    <td class="text-right">{{ faixa.saldoCurrency }}</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>

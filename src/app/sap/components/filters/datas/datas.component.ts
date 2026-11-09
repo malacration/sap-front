@@ -1,11 +1,13 @@
-import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { debounceTime, distinctUntilChanged, filter, fromEvent, tap } from 'rxjs';
 
 
 
 @Component({
-  selector: 'filter-datas',
-  templateUrl: './datas.component.html'
+    selector: 'filter-datas',
+    templateUrl: './datas.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class DatasComponent implements OnInit {
   

@@ -11,14 +11,15 @@ import {
 } from '@angular/forms';
 
 @Directive({
-  selector: '[app-percentage]',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => PercentageDirective),
-      multi: true
-    }
-  ]
+    selector: '[app-percentage]',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => PercentageDirective),
+            multi: true
+        }
+    ],
+    standalone: false
 })
 export class PercentageDirective implements ControlValueAccessor {
   private onChange: (value: number | null) => void = () => {};
@@ -31,7 +32,7 @@ export class PercentageDirective implements ControlValueAccessor {
    * Só tentamos converter para número e chamamos onChange (FormControl).
    */
   @HostListener('input', ['$event'])
-  onKeyUp(event: KeyboardEvent): void {
+  onKeyUp(event: Event): void {
     const inputEl = event.target as HTMLInputElement;
     const rawValue = inputEl.value;
 

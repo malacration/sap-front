@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { BatchStockService } from '../../../../../modulos/sap-shared/_services/BatchStockService';
 import { BatchStock } from '../../../../../modulos/sap-shared/_models/BatchStock.model';
@@ -9,8 +9,10 @@ import { Item } from '../../../../model/item';
  * seleciona nem reserva lote. A escolha do lote continua na ordem de carregamento.
  */
 @Component({
-  selector: 'app-lotes-item',
-  templateUrl: './lotes-item.component.html',
+    selector: 'app-lotes-item',
+    templateUrl: './lotes-item.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class LotesItemComponent {
 

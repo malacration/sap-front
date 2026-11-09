@@ -1,12 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CotacaoService } from '../../../service/document/cotacao.service';
 
 
 
 @Component({
-  selector: 'app-marketing-document-cotacao',
-  templateUrl: './cotacoes-statement.component.html',
-  styleUrls: ['./cotacoes-statement.component.scss']
+    selector: 'app-marketing-document-cotacao',
+    templateUrl: './cotacoes-statement.component.html',
+    styleUrls: ['./cotacoes-statement.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CotacoesStatementComponent {
   

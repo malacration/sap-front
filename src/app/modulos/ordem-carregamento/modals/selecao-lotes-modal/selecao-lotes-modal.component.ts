@@ -1,9 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { BatchStock } from '../../../../modulos/sap-shared/_models/BatchStock.model';
 
 @Component({
-  selector: 'app-selecao-lotes-modal',
-  templateUrl: './selecao-lotes-modal.component.html'
+    selector: 'app-selecao-lotes-modal',
+    templateUrl: './selecao-lotes-modal.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class SelecaoLotesModalComponent {
   @Input() show: boolean = false;

@@ -20,7 +20,7 @@
       <tbody>
         <tr>
           <th>Valor dos produtos</th>
-          <td>{{ vendaFutura?.TotalProdutosCalculadoCurrency | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+          <td>{{ $safeNavigationMigration(vendaFutura?.TotalProdutosCalculadoCurrency) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
         </tr>
         <tr>
           <th>Valor do frete</th>
@@ -53,12 +53,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let prod of vendaFutura?.AR_CF_LINHACollection">
-          <td>{{ prod.U_description }}</td>
-          <td>{{ prod.U_quantity }}</td>
-          <td>{{ prod.precoNegociadoCurrency }}</td>
-          <td>{{ prod.totalCurrency }}</td>
-        </tr>
+        @for (prod of vendaFutura?.AR_CF_LINHACollection; track prod) {
+          <tr>
+            <td>{{ prod.U_description }}</td>
+            <td>{{ prod.U_quantity }}</td>
+            <td>{{ prod.precoNegociadoCurrency }}</td>
+            <td>{{ prod.totalCurrency }}</td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>

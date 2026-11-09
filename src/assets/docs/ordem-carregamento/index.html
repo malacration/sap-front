@@ -356,7 +356,7 @@
               <thead><tr><th>Botão</th><th>Para que serve</th></tr></thead>
               <tbody>
                 <tr><td><span class="btnex btnex--warning">Editar</span></td><td>Volta à montagem para incluir/tirar documentos ou mudar quantidades.</td></tr>
-                <tr><td><span class="btnex btnex--info">Exportar</span></td><td><strong>Itinerário</strong>, <strong>Romaneio</strong>, <strong>Ordem em PDF</strong> e <strong>Ordem em imagem</strong> (seção <a href="#especiais">5</a>).</td></tr>
+                <tr><td><span class="btnex btnex--info">Exportar</span></td><td><strong>Itinerário</strong>, <strong>Romaneio</strong>, <strong>Controle de expedição (BPF)</strong>, <strong>Ordem em PDF</strong> e <strong>Ordem em imagem</strong> (seção <a href="#especiais">5</a>).</td></tr>
                 <tr><td><span class="btnex btnex--success">Gerar NF de Saída</span></td><td>Gera as notas da carga (passo 7).</td></tr>
                 <tr><td><span class="btnex btnex--danger">Cancelar Ordem</span></td><td>Cancela a ordem (seção <a href="#especiais">5</a>).</td></tr>
               </tbody>
@@ -466,6 +466,9 @@
                 <tr><td><span class="badge">Em Processamento</span> / <span class="badge">Erro Interno</span> / <span class="badge">Não enviada</span></td><td>Ainda não voltou da SEFAZ, deu erro na TaxPlus ou não foi transmitida. Acompanhe na TaxPlus.</td></tr>
               </tbody>
             </table>
+            <p class="mt">O status da NF-e muda na TaxPlus depois que a nota é gerada (ex.: de <em>Em Processamento</em> para
+              <em>Autorizado</em>). Clique em <span class="btnex btnex--ghost">Atualizar</span>, no topo da aba, para
+              recarregar as notas, o status e o histórico sem sair da ordem.</p>
             <p class="mt"><strong>Por que não foi autorizada?</strong> Nas notas que não estão
               autorizadas e para as quais a TaxPlus devolveu uma mensagem aparece o ícone
               <strong>ⓘ</strong> ao lado do status. Ele abre a última mensagem da TaxPlus para aquela nota: o
@@ -543,7 +546,9 @@
               abre <strong>“Organizar Itinerário (Paradas)”</strong> com um documento por linha
               (parada, pedido, cliente, localidade e quantidade de itens).
               <strong>Arraste as linhas</strong> para definir a ordem das entregas e clique em
-              <span class="btnex btnex--primary">Gerar PDF do Itinerário</span>.</p>
+              <span class="btnex btnex--primary">Gerar PDF do Itinerário</span>.
+              No PDF, cada parada traz o <strong>Contato Cliente</strong> (celular do cadastro do cliente;
+              se não houver, o telefone fixo; senão “N/I”).</p>
             <figure class="shot">
               <img class="shot__img" src="img/itinerario.png" alt="Organizar Itinerário com as paradas da carga">
           <figcaption class="shot__cap">Arraste as linhas para definir a ordem das paradas e gere o PDF.</figcaption>
@@ -560,9 +565,30 @@
             <p>Também no menu <span class="btnex btnex--info">Exportar</span>:</p>
             <ul>
               <li><strong>Romaneio</strong> — romaneio da carga agrupado (exige placa e motorista preenchidos);</li>
+              <li><strong>Controle de expedição (BPF)</strong> — o modelo da logística, em A4 paisagem, para conferir o
+                veículo e anotar os lotes na hora de carregar (veja abaixo);</li>
               <li><strong>Ordem em PDF</strong> — a ordem com placa, motorista, transportadora e a tabela de itens;</li>
               <li><strong>Ordem em imagem</strong> — a mesma ordem como imagem, para mandar por mensagem.</li>
             </ul>
+            <p class="mt"><strong>Controle de expedição (BPF):</strong> o documento já vem preenchido com o que a ordem sabe e
+              deixa em branco o que se anota à mão no pátio.</p>
+            <table class="tbl">
+              <thead><tr><th>Já vem preenchido</th><th>Fica em branco, para preencher à mão</th></tr></thead>
+              <tbody><tr>
+                <td>Número e data da ordem, destino (as localidades da carga), placa, motorista, e uma linha por item com
+                  cliente, documento (<em>PV</em> para pedido, <em>NF</em> para NF de venda futura), localidade, produto,
+                  quantidade, peso unitário e peso total. Totais em sacos e kg no rodapé.</td>
+                <td>Horário inicial e final, Nº e peso do TKT, peso da NF, acompanhamento de carga (SIM/NÃO), condições do
+                  veículo (piso e lateral: limpo, pragas, odores, íntegro, tipo de limpeza), <strong>quantidade e lote
+                  realizados</strong> (dois por linha) e condições do produto (proteção com lona, rotulagem, aparência).</td>
+              </tr></tbody>
+            </table>
+            <figure class="shot">
+              <img class="shot__img" src="img/controle-expedicao.png" alt="Controle de expedição (BPF) gerado pela ordem">
+              <figcaption class="shot__cap">Controle de expedição (BPF): o que a ordem preenche e as lacunas de lote e conferência.</figcaption>
+            </figure>
+            <p>Ele sai em quantas páginas forem precisas, com linhas em branco no fim para itens de última hora. Se a carga
+              tiver muitas localidades, o destino aparece em letra menor, em até duas linhas.</p>
           </div>
         </article>
       </section>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { PixGeradoItem, PixPedidoRequest, PixService } from '../../../sap/service/pix.service';
 import { Branch } from '../../../sap/model/branch';
 import { Icons } from '../../../shared/icons';
@@ -6,8 +6,10 @@ import { Icons } from '../../../shared/icons';
 type Etapa = 'selecao' | 'loading' | 'resultado' | 'erro';
 
 @Component({
-  selector: 'app-pix-page',
-  templateUrl: './pix-page.component.html',
+    selector: 'app-pix-page',
+    templateUrl: './pix-page.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class PixPageComponent {
   readonly icons = Icons;

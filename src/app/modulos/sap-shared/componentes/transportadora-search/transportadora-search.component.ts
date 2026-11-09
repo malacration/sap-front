@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 import { BusinessPartnerDefinition } from '../../../../sap/model/business-partner/business-partner-definition';
 import { BusinessPartnerService } from '../../_services/business-partners.service';
 
 
 @Component({
-  selector: 'app-transportadora-search',
-  templateUrl: './transportadora-search.component.html',
+    selector: 'app-transportadora-search',
+    templateUrl: './transportadora-search.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class TransportadoraSearchComponent {
 

@@ -47,266 +47,294 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let endereco of selected?.BPAddresses">
-                    <td>{{ tipoEndereco(endereco) }}</td>
-                    <td>{{ endereco.AddressName }}</td>
-                    <td>{{ endereco.Street }}</td>
-                    <td>{{ endereco.Block }}</td>
-                    <td>{{ endereco.StreetNo }}</td>
-                    <td>{{ endereco.ZipCode }}</td>
-                    <td>{{ endereco.County }}</td>
-                    <td>{{ endereco.State }}</td>
-                    <td>{{ nomeLocalidade(endereco) }}</td>
-                    <td class="text-right">
-                      <button *ngIf="isEntrega(endereco)" class="btn btn-sm btn-primary"
-                              (click)="editarLocalidade(endereco)">
-                        <i class="fas fa-map-marker-alt"></i> Localidade
-                      </button>
-                    </td>
-                  </tr>
+                  @for (endereco of selected?.BPAddresses; track endereco) {
+                    <tr>
+                      <td>{{ tipoEndereco(endereco) }}</td>
+                      <td>{{ endereco.AddressName }}</td>
+                      <td>{{ endereco.Street }}</td>
+                      <td>{{ endereco.Block }}</td>
+                      <td>{{ endereco.StreetNo }}</td>
+                      <td>{{ endereco.ZipCode }}</td>
+                      <td>{{ endereco.County }}</td>
+                      <td>{{ endereco.State }}</td>
+                      <td>{{ nomeLocalidade(endereco) }}</td>
+                      <td class="text-right">
+                        @if (isEntrega(endereco)) {
+                          <button class="btn btn-sm btn-primary"
+                            (click)="editarLocalidade(endereco)">
+                            <i class="fas fa-map-marker-alt"></i> Localidade
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </app-tab>
 
 
             <app-tab tabTitle="Cotações" [active]="false">
-              <ng-container *ngIf="abasCarregadas.cotacoes">
-              <form class="container-fluid px-0 mb-3" (ngSubmit)="loadCotacoes(0)" autocomplete="off">
-                <div class="form-row align-items-end">
-                  <div class="col-sm-2 form-group">
-                    <label>Nº Cotação</label>
-                    <input class="form-control" type="number" name="cotacaoDocNum" [(ngModel)]="cotacaoFiltro.docNum">
+              @if (abasCarregadas.cotacoes) {
+                <form class="container-fluid px-0 mb-3" (ngSubmit)="loadCotacoes(0)" autocomplete="off">
+                  <div class="form-row align-items-end">
+                    <div class="col-sm-2 form-group">
+                      <label>Nº Cotação</label>
+                      <input class="form-control" type="number" name="cotacaoDocNum" [(ngModel)]="cotacaoFiltro.docNum">
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <label>Status</label>
+                      <select class="form-control" name="cotacaoStatus" [(ngModel)]="cotacaoFiltro.status">
+                        <option value="bost_Open">Abertas</option>
+                        <option value="bost_Close">Fechadas</option>
+                        <option value="">Todas</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <label>De</label>
+                      <app-campo-data name="cotacaoDataInicial" [(ngModel)]="cotacaoFiltro.dataInicial"></app-campo-data>
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <label>Até</label>
+                      <app-campo-data name="cotacaoDataFinal" [(ngModel)]="cotacaoFiltro.dataFinal"></app-campo-data>
+                    </div>
+                    <div class="col-sm-3 form-group">
+                      <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorCotacao($event)"></app-sales-person-search>
+                    </div>
+                    <div class="col-sm-1 form-group">
+                      <button class="btn btn-success btn-block" [disabled]="cotacoesLoading" type="submit">
+                        Filtrar
+                      </button>
+                    </div>
                   </div>
-                  <div class="col-sm-2 form-group">
-                    <label>Status</label>
-                    <select class="form-control" name="cotacaoStatus" [(ngModel)]="cotacaoFiltro.status">
-                      <option value="bost_Open">Abertas</option>
-                      <option value="bost_Close">Fechadas</option>
-                      <option value="">Todas</option>
-                    </select>
-                  </div>
-                  <div class="col-sm-2 form-group">
-                    <label>De</label>
-                    <app-campo-data name="cotacaoDataInicial" [(ngModel)]="cotacaoFiltro.dataInicial"></app-campo-data>
-                  </div>
-                  <div class="col-sm-2 form-group">
-                    <label>Até</label>
-                    <app-campo-data name="cotacaoDataFinal" [(ngModel)]="cotacaoFiltro.dataFinal"></app-campo-data>
-                  </div>
-                  <div class="col-sm-3 form-group">
-                    <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorCotacao($event)"></app-sales-person-search>
-                  </div>
-                  <div class="col-sm-1 form-group">
-                    <button class="btn btn-success btn-block" [disabled]="cotacoesLoading" type="submit">
-                      Filtrar
-                    </button>
-                  </div>
+                </form>
+                <div class="table-responsive">
+                  <table class="table table-hover table-striped">
+                    <thead>
+                      <tr>
+                        <th>Nº</th>
+                        <th>Data</th>
+                        <th>Validade/Entrega</th>
+                        <th>Status</th>
+                        <th>Vendedor</th>
+                        <th class="text-right">Total</th>
+                        <th>Observação</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (cotacao of cotacoes; track cotacao) {
+                        <tr>
+                          <td>
+                            <app-sap-link-button
+                              [label]="cotacao.DocNum"
+                              [sapRouterLink]="['/venda/cotacao']"
+                              [queryParams]="{ id: cotacao.DocEntry }">
+                            </app-sap-link-button>
+                          </td>
+                          <td>{{cotacao.dataCriacao}}</td>
+                          <td>{{cotacao.dataEntrega}}</td>
+                          <td>{{cotacao.statusLabel}}</td>
+                          <td>{{cotacao.vendedor}}</td>
+                          <td class="text-right">{{cotacao.totalCurrency}}</td>
+                          <td>{{cotacao.Comments || cotacao.ClosingRemarks || '-'}}</td>
+                          <td class="text-right">
+                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarCotacaoDetalhe(cotacao)">
+                              <i class="fas fa-list"></i> Detalhes
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                      @if (!cotacoesLoading && cotacoes.length == 0) {
+                        <tr>
+                          <td colspan="8" class="text-center text-muted">Nenhuma cotação encontrada.</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
                 </div>
-              </form>
-              <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                  <thead>
-                    <tr>
-                      <th>Nº</th>
-                      <th>Data</th>
-                      <th>Validade/Entrega</th>
-                      <th>Status</th>
-                      <th>Vendedor</th>
-                      <th class="text-right">Total</th>
-                      <th>Observação</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let cotacao of cotacoes">
-                      <td>
-                        <app-sap-link-button
-                          [label]="cotacao.DocNum"
-                          [sapRouterLink]="['/venda/cotacao']"
-                          [queryParams]="{ id: cotacao.DocEntry }">
-                        </app-sap-link-button>
-                      </td>
-                      <td>{{cotacao.dataCriacao}}</td>
-                      <td>{{cotacao.dataEntrega}}</td>
-                      <td>{{cotacao.statusLabel}}</td>
-                      <td>{{cotacao.vendedor}}</td>
-                      <td class="text-right">{{cotacao.totalCurrency}}</td>
-                      <td>{{cotacao.Comments || cotacao.ClosingRemarks || '-'}}</td>
-                      <td class="text-right">
-                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarCotacaoDetalhe(cotacao)">
-                          <i class="fas fa-list"></i> Detalhes
-                        </button>
-                      </td>
-                    </tr>
-                    <tr *ngIf="!cotacoesLoading && cotacoes.length == 0">
-                      <td colspan="8" class="text-center text-muted">Nenhuma cotação encontrada.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div *ngIf="cotacaoDetalhe" class="card card-outline card-info mt-3">
-                <div class="card-header">
-                  <h3 class="card-title">Detalhes da Cotação {{cotacaoDetalhe.DocNum}}</h3>
-                </div>
-                <div class="card-body">
-                  <dl class="row mb-2">
-                    <dt class="col-sm-2">DocEntry</dt>
-                    <dd class="col-sm-4">{{cotacaoDetalhe.DocEntry}}</dd>
-                    <dt class="col-sm-2">Vendedor</dt>
-                    <dd class="col-sm-4">{{cotacaoDetalhe.vendedor}}</dd>
-                    <dt class="col-sm-2">Data</dt>
-                    <dd class="col-sm-4">{{cotacaoDetalhe.dataCriacao}}</dd>
-                    <dt class="col-sm-2">Entrega</dt>
-                    <dd class="col-sm-4">{{cotacaoDetalhe.dataEntrega}}</dd>
-                    <dt class="col-sm-2">Status</dt>
-                    <dd class="col-sm-4">{{cotacaoDetalhe.statusLabel}}</dd>
-                    <dt class="col-sm-2">Total</dt>
-                    <dd class="col-sm-4">{{cotacaoDetalhe.totalCurrency}}</dd>
-                    <dt class="col-sm-2">Observação</dt>
-                    <dd class="col-sm-10">{{cotacaoDetalhe.Comments || cotacaoDetalhe.ClosingRemarks || '-'}}</dd>
-                  </dl>
-                  <app-table
-                    *ngIf="cotacaoDetalhe.DocumentLines?.length"
-                    [content]="cotacaoDetalhe.DocumentLines"
-                    [definition]="linhasPedidoDefinition">
-                  </app-table>
-                  <div *ngIf="!cotacaoDetalhe.DocumentLines?.length" class="text-center text-muted p-2">
-                    Nenhum item carregado para esta cotação.
+                @if (cotacaoDetalhe) {
+                  <div class="card card-outline card-info mt-3">
+                    <div class="card-header">
+                      <h3 class="card-title">Detalhes da Cotação {{cotacaoDetalhe.DocNum}}</h3>
+                    </div>
+                    <div class="card-body">
+                      <dl class="row mb-2">
+                        <dt class="col-sm-2">DocEntry</dt>
+                        <dd class="col-sm-4">{{cotacaoDetalhe.DocEntry}}</dd>
+                        <dt class="col-sm-2">Vendedor</dt>
+                        <dd class="col-sm-4">{{cotacaoDetalhe.vendedor}}</dd>
+                        <dt class="col-sm-2">Data</dt>
+                        <dd class="col-sm-4">{{cotacaoDetalhe.dataCriacao}}</dd>
+                        <dt class="col-sm-2">Entrega</dt>
+                        <dd class="col-sm-4">{{cotacaoDetalhe.dataEntrega}}</dd>
+                        <dt class="col-sm-2">Status</dt>
+                        <dd class="col-sm-4">{{cotacaoDetalhe.statusLabel}}</dd>
+                        <dt class="col-sm-2">Total</dt>
+                        <dd class="col-sm-4">{{cotacaoDetalhe.totalCurrency}}</dd>
+                        <dt class="col-sm-2">Observação</dt>
+                        <dd class="col-sm-10">{{cotacaoDetalhe.Comments || cotacaoDetalhe.ClosingRemarks || '-'}}</dd>
+                      </dl>
+                      @if (cotacaoDetalhe.DocumentLines?.length) {
+                        <app-table
+                          [content]="cotacaoDetalhe.DocumentLines"
+                          [definition]="linhasPedidoDefinition">
+                        </app-table>
+                      }
+                      @if (!cotacaoDetalhe.DocumentLines?.length) {
+                        <div class="text-center text-muted p-2">
+                          Nenhum item carregado para esta cotação.
+                        </div>
+                      }
+                    </div>
                   </div>
-                </div>
-              </div>
-              <app-paginacao
-                (pageChange)="loadCotacoes($event)"
-                [totalItens]="cotacoesPage?.totalElements"
-                [pageSize]="cotacoesPage?.size">
-              </app-paginacao>
-              <div *ngIf="cotacoesLoading" class="text-center p-2">
-                <i class="fas fa-spinner fa-spin"></i> Carregando cotações...
-              </div>
-              </ng-container>
+                }
+                <app-paginacao
+                  (pageChange)="loadCotacoes($event)"
+                  [totalItens]="$safeNavigationMigration(cotacoesPage?.totalElements)"
+                  [pageSize]="$safeNavigationMigration(cotacoesPage?.size)">
+                </app-paginacao>
+                @if (cotacoesLoading) {
+                  <div class="text-center p-2">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando cotações...
+                  </div>
+                }
+              }
             </app-tab>
             <app-tab tabTitle="Pedido de Venda" [active]="false">
-              <ng-container *ngIf="abasCarregadas.pedidos">
-              <form class="container-fluid px-0 mb-3" (ngSubmit)="loadPedidos(0)" autocomplete="off">
-                <div class="form-row align-items-end">
-                  <div class="col-sm-2 form-group">
-                    <label>Nº Pedido</label>
-                    <input class="form-control" type="number" name="pedidoDocNum" [(ngModel)]="pedidoFiltro.docNum">
+              @if (abasCarregadas.pedidos) {
+                <form class="container-fluid px-0 mb-3" (ngSubmit)="loadPedidos(0)" autocomplete="off">
+                  <div class="form-row align-items-end">
+                    <div class="col-sm-2 form-group">
+                      <label>Nº Pedido</label>
+                      <input class="form-control" type="number" name="pedidoDocNum" [(ngModel)]="pedidoFiltro.docNum">
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <label>Status</label>
+                      <select class="form-control" name="pedidoStatus" [(ngModel)]="pedidoFiltro.status">
+                        <option value="bost_Open">Abertos</option>
+                        <option value="bost_Close">Fechados</option>
+                        <option value="">Todos</option>
+                      </select>
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <label>De</label>
+                      <app-campo-data name="pedidoDataInicial" [(ngModel)]="pedidoFiltro.dataInicial"></app-campo-data>
+                    </div>
+                    <div class="col-sm-2 form-group">
+                      <label>Até</label>
+                      <app-campo-data name="pedidoDataFinal" [(ngModel)]="pedidoFiltro.dataFinal"></app-campo-data>
+                    </div>
+                    <div class="col-sm-3 form-group">
+                      <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorPedido($event)"></app-sales-person-search>
+                    </div>
+                    <div class="col-sm-1 form-group">
+                      <button class="btn btn-success btn-block" [disabled]="pedidoVendaLoading" type="submit">
+                        Filtrar
+                      </button>
+                    </div>
                   </div>
-                  <div class="col-sm-2 form-group">
-                    <label>Status</label>
-                    <select class="form-control" name="pedidoStatus" [(ngModel)]="pedidoFiltro.status">
-                      <option value="bost_Open">Abertos</option>
-                      <option value="bost_Close">Fechados</option>
-                      <option value="">Todos</option>
-                    </select>
-                  </div>
-                  <div class="col-sm-2 form-group">
-                    <label>De</label>
-                    <app-campo-data name="pedidoDataInicial" [(ngModel)]="pedidoFiltro.dataInicial"></app-campo-data>
-                  </div>
-                  <div class="col-sm-2 form-group">
-                    <label>Até</label>
-                    <app-campo-data name="pedidoDataFinal" [(ngModel)]="pedidoFiltro.dataFinal"></app-campo-data>
-                  </div>
-                  <div class="col-sm-3 form-group">
-                    <app-sales-person-search [name]="'Vendedor'" (selected)="selecionaVendedorPedido($event)"></app-sales-person-search>
-                  </div>
-                  <div class="col-sm-1 form-group">
-                    <button class="btn btn-success btn-block" [disabled]="pedidoVendaLoading" type="submit">
-                      Filtrar
-                    </button>
-                  </div>
+                </form>
+                <div class="table-responsive">
+                  <table class="table table-hover table-striped">
+                    <thead>
+                      <tr>
+                        <th>Nº</th>
+                        <th>Data</th>
+                        <th>Entrega</th>
+                        <th>Status</th>
+                        <th>Vendedor</th>
+                        <th class="text-right">Total</th>
+                        <th>Observação</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (pedido of pedidoVenda; track pedido) {
+                        <tr>
+                          <td>
+                            <app-sap-link-button
+                              [label]="pedido.DocNum"
+                              [sapRouterLink]="['/venda/pedidos-venda']"
+                              [queryParams]="{ id: pedido.DocEntry }">
+                            </app-sap-link-button>
+                          </td>
+                          <td>{{pedido.dataCriacao}}</td>
+                          <td>{{pedido.dataEntrega}}</td>
+                          <td>{{pedido.statusLabel}}</td>
+                          <td>{{pedido.vendedor}}</td>
+                          <td class="text-right">{{pedido.totalCurrency}}</td>
+                          <td>{{pedido.Comments || pedido.ClosingRemarks || '-'}}</td>
+                          <td class="text-right">
+                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarPedidoDetalhe(pedido)">
+                              <i class="fas fa-list"></i> Detalhes
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                      @if (!pedidoVendaLoading && pedidoVenda.length == 0) {
+                        <tr>
+                          <td colspan="8" class="text-center text-muted">Nenhum pedido encontrado.</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
                 </div>
-              </form>
-              <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                  <thead>
-                    <tr>
-                      <th>Nº</th>
-                      <th>Data</th>
-                      <th>Entrega</th>
-                      <th>Status</th>
-                      <th>Vendedor</th>
-                      <th class="text-right">Total</th>
-                      <th>Observação</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let pedido of pedidoVenda">
-                      <td>
-                        <app-sap-link-button
-                          [label]="pedido.DocNum"
-                          [sapRouterLink]="['/venda/pedidos-venda']"
-                          [queryParams]="{ id: pedido.DocEntry }">
-                        </app-sap-link-button>
-                      </td>
-                      <td>{{pedido.dataCriacao}}</td>
-                      <td>{{pedido.dataEntrega}}</td>
-                      <td>{{pedido.statusLabel}}</td>
-                      <td>{{pedido.vendedor}}</td>
-                      <td class="text-right">{{pedido.totalCurrency}}</td>
-                      <td>{{pedido.Comments || pedido.ClosingRemarks || '-'}}</td>
-                      <td class="text-right">
-                        <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarPedidoDetalhe(pedido)">
-                          <i class="fas fa-list"></i> Detalhes
-                        </button>
-                      </td>
-                    </tr>
-                    <tr *ngIf="!pedidoVendaLoading && pedidoVenda.length == 0">
-                      <td colspan="8" class="text-center text-muted">Nenhum pedido encontrado.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div *ngIf="pedidoDetalhe" class="card card-outline card-info mt-3">
-                <div class="card-header">
-                  <h3 class="card-title">Detalhes do Pedido {{pedidoDetalhe.DocNum}}</h3>
-                </div>
-                <div class="card-body">
-                  <dl class="row mb-2">
-                    <dt class="col-sm-2">DocEntry</dt>
-                    <dd class="col-sm-4">{{pedidoDetalhe.DocEntry}}</dd>
-                    <dt class="col-sm-2">Vendedor</dt>
-                    <dd class="col-sm-4">{{pedidoDetalhe.vendedor}}</dd>
-                    <dt class="col-sm-2">Data</dt>
-                    <dd class="col-sm-4">{{pedidoDetalhe.dataCriacao}}</dd>
-                    <dt class="col-sm-2">Entrega</dt>
-                    <dd class="col-sm-4">{{pedidoDetalhe.dataEntrega}}</dd>
-                    <dt class="col-sm-2">Status</dt>
-                    <dd class="col-sm-4">{{pedidoDetalhe.statusLabel}}</dd>
-                    <dt class="col-sm-2">Total</dt>
-                    <dd class="col-sm-4">{{pedidoDetalhe.totalCurrency}}</dd>
-                    <dt class="col-sm-2">Observação</dt>
-                    <dd class="col-sm-10">{{pedidoDetalhe.Comments || pedidoDetalhe.ClosingRemarks || '-'}}</dd>
-                  </dl>
-                  <app-table
-                    *ngIf="pedidoDetalhe.DocumentLines?.length"
-                    [content]="pedidoDetalhe.DocumentLines"
-                    [definition]="linhasPedidoDefinition">
-                  </app-table>
-                  <div *ngIf="!pedidoDetalhe.DocumentLines?.length" class="text-center text-muted p-2">
-                    Nenhum item carregado para este pedido.
+                @if (pedidoDetalhe) {
+                  <div class="card card-outline card-info mt-3">
+                    <div class="card-header">
+                      <h3 class="card-title">Detalhes do Pedido {{pedidoDetalhe.DocNum}}</h3>
+                    </div>
+                    <div class="card-body">
+                      <dl class="row mb-2">
+                        <dt class="col-sm-2">DocEntry</dt>
+                        <dd class="col-sm-4">{{pedidoDetalhe.DocEntry}}</dd>
+                        <dt class="col-sm-2">Vendedor</dt>
+                        <dd class="col-sm-4">{{pedidoDetalhe.vendedor}}</dd>
+                        <dt class="col-sm-2">Data</dt>
+                        <dd class="col-sm-4">{{pedidoDetalhe.dataCriacao}}</dd>
+                        <dt class="col-sm-2">Entrega</dt>
+                        <dd class="col-sm-4">{{pedidoDetalhe.dataEntrega}}</dd>
+                        <dt class="col-sm-2">Status</dt>
+                        <dd class="col-sm-4">{{pedidoDetalhe.statusLabel}}</dd>
+                        <dt class="col-sm-2">Total</dt>
+                        <dd class="col-sm-4">{{pedidoDetalhe.totalCurrency}}</dd>
+                        <dt class="col-sm-2">Observação</dt>
+                        <dd class="col-sm-10">{{pedidoDetalhe.Comments || pedidoDetalhe.ClosingRemarks || '-'}}</dd>
+                      </dl>
+                      @if (pedidoDetalhe.DocumentLines?.length) {
+                        <app-table
+                          [content]="pedidoDetalhe.DocumentLines"
+                          [definition]="linhasPedidoDefinition">
+                        </app-table>
+                      }
+                      @if (!pedidoDetalhe.DocumentLines?.length) {
+                        <div class="text-center text-muted p-2">
+                          Nenhum item carregado para este pedido.
+                        </div>
+                      }
+                    </div>
                   </div>
-                </div>
-              </div>
-              <app-paginacao
-                (pageChange)="loadPedidos($event)"
-                [totalItens]="pedidoVendaPage?.totalElements"
-                [pageSize]="pedidoVendaPage?.size">
-              </app-paginacao>
-              <div *ngIf="pedidoVendaLoading" class="text-center p-2">
-                <i class="fas fa-spinner fa-spin"></i> Carregando pedidos...
-              </div>
-              </ng-container>
+                }
+                <app-paginacao
+                  (pageChange)="loadPedidos($event)"
+                  [totalItens]="$safeNavigationMigration(pedidoVendaPage?.totalElements)"
+                  [pageSize]="$safeNavigationMigration(pedidoVendaPage?.size)">
+                </app-paginacao>
+                @if (pedidoVendaLoading) {
+                  <div class="text-center p-2">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando pedidos...
+                  </div>
+                }
+              }
             </app-tab>
             <app-tab tabTitle="Notas" [active]="false">
-              <app-lista-fatura *ngIf="abasCarregadas.notas" [clienteSelecionado]="selected" [showHeader]="false"></app-lista-fatura>
+              @if (abasCarregadas.notas) {
+                <app-lista-fatura [clienteSelecionado]="selected" [showHeader]="false"></app-lista-fatura>
+              }
             </app-tab>
 
             <app-tab tabTitle="Contrato Venda Futura" [active]="false">
-              <ng-container *ngIf="abasCarregadas.contratosVendaFutura">
+              @if (abasCarregadas.contratosVendaFutura) {
                 <form class="container-fluid px-0 mb-3" (ngSubmit)="loadContratosVendaFutura()" autocomplete="off">
                   <div class="form-row align-items-end">
                     <div class="col-sm-3 form-group">
@@ -340,128 +368,150 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let contrato of contratosVendaFutura">
-                        <td>
-                          <app-sap-link-button
-                            [label]="contrato.DocEntry"
-                            [sapRouterLink]="['/venda/venda-futura']"
-                            [queryParams]="{ id: contrato.DocEntry }">
-                          </app-sap-link-button>
-                        </td>
-                        <td>
-                          <app-sap-link-button
-                            *ngIf="contrato.U_orderDocEntry; else pedidoOrigemVazio"
-                            [label]="contrato.OrderDocNum || contrato.U_orderDocEntry"
-                            [sapRouterLink]="['/venda/pedidos-venda']"
-                            [queryParams]="{ id: contrato.U_orderDocEntry }">
-                          </app-sap-link-button>
-                          <ng-template #pedidoOrigemVazio>-</ng-template>
-                        </td>
-                        <td>{{contrato.dataCriacao}}</td>
-                        <td>{{contrato.statusLabel}}</td>
-                        <td>{{contrato.SalesEmployeeName || contrato.U_vendedor || '-'}}</td>
-                        <td>{{contrato.filialFormatada || contrato.U_filial || '-'}}</td>
-                        <td class="text-right">{{contrato.U_valorProdutos | currency : "BRL" : "symbol" : "1.2-2"}}</td>
-                        <td class="text-right">
-                          <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarContratoDetalhe(contrato)">
-                            <i class="fas fa-list"></i> Detalhes
-                          </button>
-                        </td>
-                      </tr>
-                      <tr *ngIf="!contratosVendaFuturaLoading && contratosVendaFutura.length == 0">
-                        <td colspan="8" class="text-center text-muted">Nenhum contrato encontrado.</td>
-                      </tr>
+                      @for (contrato of contratosVendaFutura; track contrato) {
+                        <tr>
+                          <td>
+                            <app-sap-link-button
+                              [label]="contrato.DocEntry"
+                              [sapRouterLink]="['/venda/venda-futura']"
+                              [queryParams]="{ id: contrato.DocEntry }">
+                            </app-sap-link-button>
+                          </td>
+                          <td>
+                            @if (contrato.U_orderDocEntry) {
+                              <app-sap-link-button
+                                [label]="contrato.OrderDocNum || contrato.U_orderDocEntry"
+                                [sapRouterLink]="['/venda/pedidos-venda']"
+                                [queryParams]="{ id: contrato.U_orderDocEntry }">
+                              </app-sap-link-button>
+                            } @else {
+                              -
+                            }
+                          </td>
+                          <td>{{contrato.dataCriacao}}</td>
+                          <td>{{contrato.statusLabel}}</td>
+                          <td>{{contrato.SalesEmployeeName || contrato.U_vendedor || '-'}}</td>
+                          <td>{{contrato.filialFormatada || contrato.U_filial || '-'}}</td>
+                          <td class="text-right">{{contrato.U_valorProdutos | currency : "BRL" : "symbol" : "1.2-2"}}</td>
+                          <td class="text-right">
+                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="selecionarContratoDetalhe(contrato)">
+                              <i class="fas fa-list"></i> Detalhes
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                      @if (!contratosVendaFuturaLoading && contratosVendaFutura.length == 0) {
+                        <tr>
+                          <td colspan="8" class="text-center text-muted">Nenhum contrato encontrado.</td>
+                        </tr>
+                      }
                     </tbody>
                   </table>
                 </div>
-                <div *ngIf="contratoDetalhe" class="card card-outline card-info mt-3">
-                  <div class="card-header">
-                    <h3 class="card-title">Detalhes do Contrato {{contratoDetalhe.DocEntry}}</h3>
-                  </div>
-                  <div class="card-body">
-                    <dl class="row mb-2">
-                      <dt class="col-sm-2">Pedido Origem</dt>
-                      <dd class="col-sm-4">{{contratoDetalhe.OrderDocNum || contratoDetalhe.U_orderDocEntry || '-'}}</dd>
-                      <dt class="col-sm-2">Vendedor</dt>
-                      <dd class="col-sm-4">{{contratoDetalhe.SalesEmployeeName || contratoDetalhe.U_vendedor || '-'}}</dd>
-                      <dt class="col-sm-2">Data</dt>
-                      <dd class="col-sm-4">{{contratoDetalhe.dataCriacao}}</dd>
-                      <dt class="col-sm-2">Status</dt>
-                      <dd class="col-sm-4">{{contratoDetalhe.statusLabel}}</dd>
-                      <dt class="col-sm-2">Filial</dt>
-                      <dd class="col-sm-4">{{contratoDetalhe.filialFormatada || contratoDetalhe.U_filial || '-'}}</dd>
-                      <dt class="col-sm-2">Total</dt>
-                      <dd class="col-sm-4">{{contratoDetalhe.totalCurrency}}</dd>
-                    </dl>
-                    <app-table
-                      *ngIf="contratoDetalhe.AR_CF_LINHACollection?.length"
-                      [content]="contratoDetalhe.AR_CF_LINHACollection"
-                      [definition]="contratoItensDefinition">
-                    </app-table>
-                    <div *ngIf="!contratoDetalhe.AR_CF_LINHACollection?.length" class="text-center text-muted p-2">
-                      Nenhum item carregado para este contrato.
+                @if (contratoDetalhe) {
+                  <div class="card card-outline card-info mt-3">
+                    <div class="card-header">
+                      <h3 class="card-title">Detalhes do Contrato {{contratoDetalhe.DocEntry}}</h3>
+                    </div>
+                    <div class="card-body">
+                      <dl class="row mb-2">
+                        <dt class="col-sm-2">Pedido Origem</dt>
+                        <dd class="col-sm-4">{{contratoDetalhe.OrderDocNum || contratoDetalhe.U_orderDocEntry || '-'}}</dd>
+                        <dt class="col-sm-2">Vendedor</dt>
+                        <dd class="col-sm-4">{{contratoDetalhe.SalesEmployeeName || contratoDetalhe.U_vendedor || '-'}}</dd>
+                        <dt class="col-sm-2">Data</dt>
+                        <dd class="col-sm-4">{{contratoDetalhe.dataCriacao}}</dd>
+                        <dt class="col-sm-2">Status</dt>
+                        <dd class="col-sm-4">{{contratoDetalhe.statusLabel}}</dd>
+                        <dt class="col-sm-2">Filial</dt>
+                        <dd class="col-sm-4">{{contratoDetalhe.filialFormatada || contratoDetalhe.U_filial || '-'}}</dd>
+                        <dt class="col-sm-2">Total</dt>
+                        <dd class="col-sm-4">{{contratoDetalhe.totalCurrency}}</dd>
+                      </dl>
+                      @if (contratoDetalhe.AR_CF_LINHACollection?.length) {
+                        <app-table
+                          [content]="contratoDetalhe.AR_CF_LINHACollection"
+                          [definition]="contratoItensDefinition">
+                        </app-table>
+                      }
+                      @if (!contratoDetalhe.AR_CF_LINHACollection?.length) {
+                        <div class="text-center text-muted p-2">
+                          Nenhum item carregado para este contrato.
+                        </div>
+                      }
                     </div>
                   </div>
-                </div>
-                <div *ngIf="!contratosVendaFuturaLoading && contratosVendaFuturaPage?.nextLink" class="text-center mt-2">
-                  <button class="btn btn-primary" (click)="carregarMaisContratosVendaFutura()">
-                    Carregar Mais
-                    <i class="far fa-plus-square"></i>
-                  </button>
-                </div>
-                <div *ngIf="contratosVendaFuturaLoading" class="text-center p-2">
-                  <i class="fas fa-spinner fa-spin"></i> Carregando contratos...
-                </div>
-              </ng-container>
+                }
+                @if (!contratosVendaFuturaLoading && contratosVendaFuturaPage?.nextLink) {
+                  <div class="text-center mt-2">
+                    <button class="btn btn-primary" (click)="carregarMaisContratosVendaFutura()">
+                      Carregar Mais
+                      <i class="far fa-plus-square"></i>
+                    </button>
+                  </div>
+                }
+                @if (contratosVendaFuturaLoading) {
+                  <div class="text-center p-2">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando contratos...
+                  </div>
+                }
+              }
             </app-tab>
 
             <app-tab tabTitle="Contas a Receber" [active]="false">
-              <ng-container *ngIf="abasCarregadas.contasReceber">
-              <div *ngIf="contasReceberLoading" class="text-center p-3">
-                <i class="fas fa-spinner fa-spin"></i> Carregando contas a
-                receber...
-              </div>
-              <div
-                *ngIf="!contasReceberLoading && contasReceberEmpty"
-                class="text-center p-3 text-muted"
-              >
-                Nenhuma valor em aberto encontrado.
-              </div>
-              <app-table
-                *ngIf="!contasReceberLoading && !contasReceberEmpty"
-                [content]="contasReceber"
-                [definition]="contasReceberDefinition"
-                (actionOutput)="action($event)"
-              >
-              </app-table>
-              <div
-                *ngIf="!contasReceberEmpty && !contasReceberLoading"
-                class="text-right p-3"
-              >
-                <strong>Total:</strong>
-                {{ totalContasReceber | currency : "BRL" : "symbol" : "1.2-2" }}
-              </div>
-               <div class="card-footer clearfix">
-              <div
-                *ngIf="!loading && pageContent.nextLink"
-                class="col text-center"
-              >
-                <button
-                  class="btn btn-primary"
-                  (click)="changePageFunction(pageContent.nextLink)"
-                >
-                  Carregar Mais
-                  <i class="far fa-plus-square"></i>
-                </button>
-              </div>
-
-              <div *ngIf="loading" class="overlay">
-                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-              </div>
-            </div>
-              </ng-container>
+              @if (abasCarregadas.contasReceber) {
+                @if (contasReceberLoading) {
+                  <div class="text-center p-3">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando contas a
+                    receber...
+                  </div>
+                }
+                @if (!contasReceberLoading && contasReceberEmpty) {
+                  <div
+                    class="text-center p-3 text-muted"
+                    >
+                    Nenhuma valor em aberto encontrado.
+                  </div>
+                }
+                @if (!contasReceberLoading && !contasReceberEmpty) {
+                  <app-table
+                    [content]="contasReceber"
+                    [definition]="contasReceberDefinition"
+                    (actionOutput)="action($event)"
+                    >
+                  </app-table>
+                }
+                @if (!contasReceberEmpty && !contasReceberLoading) {
+                  <div
+                    class="text-right p-3"
+                    >
+                    <strong>Total:</strong>
+                    {{ totalContasReceber | currency : "BRL" : "symbol" : "1.2-2" }}
+                  </div>
+                }
+                <div class="card-footer clearfix">
+                  @if (!loading && pageContent.nextLink) {
+                    <div
+                      class="col text-center"
+                      >
+                      <button
+                        class="btn btn-primary"
+                        (click)="changePageFunction(pageContent.nextLink)"
+                        >
+                        Carregar Mais
+                        <i class="far fa-plus-square"></i>
+                      </button>
+                    </div>
+                  }
+                  @if (loading) {
+                    <div class="overlay">
+                      <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                    </div>
+                  }
+                </div>
+              }
             </app-tab>
-           
+
           </app-tabs>
         </dd>
       </dl>
@@ -475,106 +525,118 @@
 </section>
 
 <app-modal #modalPix [title]="'Pagamento via PIX'" modalSize="lg">
-  <div *ngIf="qrCodeData" class="text-center p-2">
-    <p class="mb-2">Escaneie o QR Code abaixo:</p>
+  @if (qrCodeData) {
+    <div class="text-center p-2">
+      <p class="mb-2">Escaneie o QR Code abaixo:</p>
+      <div class="mb-2">
+        <div class="font-weight-bold">
+          Total: {{ qrCodeData.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+        </div>
+        @if (qrCodeData.juros && qrCodeData.juros > 0) {
+          <div>
+            <small class="text-muted">
+              Valor nominal: {{ qrCodeData.valorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </small>
+            <br>
+              <small class="text-muted">
+                Juros: {{ qrCodeData.juros | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+              </small>
+            </div>
+          }
+        </div>
+        <div class="d-flex justify-content-center my-3">
+          <app-qrcode
+            [value]="qrCodeData.qrCodeCopyPaste"
+            [size]="200">
+          </app-qrcode>
+        </div>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control form-control-sm" [value]="qrCodeData.qrCodeCopyPaste" readonly>
+          <div class="input-group-append">
+            <button class="btn btn-sm" [ngClass]="pixCopiado ? 'btn-success' : 'btn-primary'" type="button" (click)="copiarPix()">
+              <i [ngClass]="icons.pix.copiar"></i> {{ pixCopiado ? 'Copiado' : 'Copiar' }}
+            </button>
+          </div>
+        </div>
+        <div class="alert alert-light py-1 px-2 border">
+          <small class="text-muted">Vencimento em: {{ qrCodeData.expirationDate | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+        <div class="d-flex justify-content-center gap-2 mt-2">
+          <button type="button" class="btn btn-outline-success" (click)="compartilharLinkPix()">
+            <i [ngClass]="icons.pix.compartilhar"></i> {{ linkPixCopiado ? 'Link Copiado!' : 'Compartilhar Link' }}
+          </button>
+          @if (contaPixAtual) {
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              (click)="checarPagamento(contaPixAtual)"
+              >
+              <i [ngClass]="icons.pix.verificarPagamento"></i> Verificar Pagamento
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </app-modal>
 
-    <div class="mb-2">
-      <div class="font-weight-bold">
-        Total: {{ qrCodeData.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+  <app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
+    @if (pagamentoPixData) {
+      <div class="p-2">
+        <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
+        <div class="mb-1">
+          <strong>Status:</strong>
+          <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
+            {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
+          </span>
+        </div>
+        <div class="mb-1">
+          <strong>Valor original:</strong>
+          @if (pagamentoPixData.originalAmount != null) {
+            <span>
+              {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+            </span>
+          } @else {
+            -
+          }
+        </div>
+        @if (pagamentoPixData.receivedAmount != null) {
+          <div class="mb-1">
+            <strong>Valor recebido:</strong>
+            {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+          </div>
+        }
+        <div class="mb-1">
+          <strong>Data do pagamento:</strong>
+          @if (pagamentoPixData.paymentDate) {
+            <span>
+              {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          } @else {
+            -
+          }
+        </div>
+        <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType }}</div>
       </div>
-      <div *ngIf="qrCodeData.juros && qrCodeData.juros > 0">
-        <small class="text-muted">
-          Valor nominal: {{ qrCodeData.valorTitulo | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-        </small>
-        <br>
-        <small class="text-muted">
-          Juros: {{ qrCodeData.juros | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-        </small>
-      </div>
-    </div>
-    
-    <div class="d-flex justify-content-center my-3">
-      <app-qrcode 
-        [value]="qrCodeData.qrCodeCopyPaste" 
-        [size]="200">
-      </app-qrcode>
-    </div>
-    
-    <div class="input-group mb-3">
-      <input type="text" class="form-control form-control-sm" [value]="qrCodeData.qrCodeCopyPaste" readonly>
-      <div class="input-group-append">
-        <button class="btn btn-sm" [ngClass]="pixCopiado ? 'btn-success' : 'btn-primary'" type="button" (click)="copiarPix()">
-          <i [ngClass]="icons.pix.copiar"></i> {{ pixCopiado ? 'Copiado' : 'Copiar' }}
+    }
+  </app-modal>
+
+  <app-modal #modalLocalidade [title]="'Localidade do Endereço de Entrega'" modalSize="lg">
+    @if (enderecoEditando) {
+      <div class="p-2">
+        <p>
+          <strong>Endereço:</strong> {{ enderecoEditando.AddressName }} -
+          {{ enderecoEditando.Street }}, {{ enderecoEditando.StreetNo }}
+        </p>
+        <p>
+          <strong>Localidade atual:</strong> {{ nomeLocalidade(enderecoEditando) }}
+        </p>
+        <app-localidade-search (selected)="selecionaLocalidade($event)"></app-localidade-search>
+        <hr />
+        <button type="button" class="btn btn-danger"
+          [disabled]="!enderecoEditando.U_Localidade || loading"
+          (click)="limpaLocalidade()">
+          <i class="far fa-times-circle"></i> Remover vínculo
         </button>
       </div>
-    </div>
-    
-    <div class="alert alert-light py-1 px-2 border">
-       <small class="text-muted">Vencimento em: {{ qrCodeData.expirationDate | date:'dd/MM/yyyy HH:mm' }}</small>
-    </div>
-
-    <div class="d-flex justify-content-center gap-2 mt-2">
-      <button type="button" class="btn btn-outline-success" (click)="compartilharLinkPix()">
-        <i [ngClass]="icons.pix.compartilhar"></i> {{ linkPixCopiado ? 'Link Copiado!' : 'Compartilhar Link' }}
-      </button>
-      <button
-        *ngIf="contaPixAtual"
-        type="button"
-        class="btn btn-outline-primary"
-        (click)="checarPagamento(contaPixAtual)"
-      >
-        <i [ngClass]="icons.pix.verificarPagamento"></i> Verificar Pagamento
-      </button>
-    </div>
-  </div>
-</app-modal>
-
-<app-modal #modalPagamentoPix [title]="'Status do Pagamento PIX'" modalSize="lg">
-  <div *ngIf="pagamentoPixData" class="p-2">
-    <div class="mb-1"><strong>TxId:</strong> {{ pagamentoPixData.txId }}</div>
-    <div class="mb-1">
-      <strong>Status:</strong>
-      <span [ngClass]="pagamentoPixData.paid ? 'text-success' : 'text-warning'">
-        {{ pagamentoPixData.paid ? 'Pago' : 'Pendente' }}
-      </span>
-    </div>
-    <div class="mb-1">
-      <strong>Valor original:</strong>
-      <span *ngIf="pagamentoPixData.originalAmount != null; else valorOriginalVazio">
-        {{ pagamentoPixData.originalAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-      </span>
-      <ng-template #valorOriginalVazio>-</ng-template>
-    </div>
-    <div class="mb-1" *ngIf="pagamentoPixData.receivedAmount != null">
-      <strong>Valor recebido:</strong>
-      {{ pagamentoPixData.receivedAmount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-    </div>
-    <div class="mb-1">
-      <strong>Data do pagamento:</strong>
-      <span *ngIf="pagamentoPixData.paymentDate; else dataPagamentoVazia">
-        {{ pagamentoPixData.paymentDate | date:'dd/MM/yyyy HH:mm' }}
-      </span>
-      <ng-template #dataPagamentoVazia>-</ng-template>
-    </div>
-    <div class="mb-1"><strong>Tipo:</strong> {{ pagamentoPixData.paymentType }}</div>
-  </div>
-</app-modal>
-
-<app-modal #modalLocalidade [title]="'Localidade do Endereço de Entrega'" modalSize="lg">
-  <div *ngIf="enderecoEditando" class="p-2">
-    <p>
-      <strong>Endereço:</strong> {{ enderecoEditando.AddressName }} -
-      {{ enderecoEditando.Street }}, {{ enderecoEditando.StreetNo }}
-    </p>
-    <p>
-      <strong>Localidade atual:</strong> {{ nomeLocalidade(enderecoEditando) }}
-    </p>
-    <app-localidade-search (selected)="selecionaLocalidade($event)"></app-localidade-search>
-    <hr />
-    <button type="button" class="btn btn-danger"
-            [disabled]="!enderecoEditando.U_Localidade || loading"
-            (click)="limpaLocalidade()">
-      <i class="far fa-times-circle"></i> Remover vínculo
-    </button>
-  </div>
-</app-modal>
+    }
+  </app-modal>

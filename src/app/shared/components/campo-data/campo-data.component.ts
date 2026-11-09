@@ -1,4 +1,4 @@
-import { Component, forwardRef, Input } from '@angular/core';
+import { Component, forwardRef, Input, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { defineLocale } from 'ngx-bootstrap/chronos';
 import { BsDatepickerConfig, BsLocaleService } from 'ngx-bootstrap/datepicker';
@@ -15,11 +15,13 @@ defineLocale('pt-br', ptBrLocale);
  * assim as telas trocam so a tag, sem mexer na logica.
  */
 @Component({
-  selector: 'app-campo-data',
-  templateUrl: './campo-data.component.html',
-  providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => CampoDataComponent), multi: true },
-  ],
+    selector: 'app-campo-data',
+    templateUrl: './campo-data.component.html',
+    providers: [
+        { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => CampoDataComponent), multi: true },
+    ],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class CampoDataComponent implements ControlValueAccessor {
   @Input() inputId?: string;

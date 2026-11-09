@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RegraFilialService } from '../../../modulos/sap-shared/_services/regra-filial.service';
 import { AutorizadorService } from '../../../modulos/sap-shared/_services/autorizador.service';
 import { BranchService } from '../../service/branch.service';
@@ -9,8 +9,10 @@ import { Column } from '../../../shared/components/table/column.model';
 import { ActionReturn } from '../../../shared/components/action/action.model';
 
 @Component({
-  selector: 'app-regra-filial',
-  templateUrl: './regra-filial.component.html',
+    selector: 'app-regra-filial',
+    templateUrl: './regra-filial.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RegraFilialComponent implements OnInit {
 

@@ -3,7 +3,7 @@ import { Column } from "../../../shared/components/table/column.model"
 import { formatCurrency } from "@angular/common"
 import { Parcela } from "./parcela.model"
 import { Paga } from "./paga.model"
-import * as moment from 'moment';
+import moment from 'moment';
 
 
 

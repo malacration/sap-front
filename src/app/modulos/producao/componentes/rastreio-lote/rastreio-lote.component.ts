@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LadoRastreio, MapaNode, MapaRelacoesResponse, mesclarNivel, SITUACAO_ORIGEM_DISPONIVEL } from '../../../../sap/model/mapa-relacoes';
 import { AlertService } from '../../../../shared/service/alert.service';
@@ -14,8 +14,10 @@ import { OrdemProducaoService } from '../../_services/ordem-producao.service';
  * Declarado no AppModule e nao no ProducaoModule: o grafo do mapa de relacoes e declarado la.
  */
 @Component({
-  selector: 'app-rastreio-lote',
-  templateUrl: './rastreio-lote.component.html',
+    selector: 'app-rastreio-lote',
+    templateUrl: './rastreio-lote.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class RastreioLoteComponent implements OnInit {
 
