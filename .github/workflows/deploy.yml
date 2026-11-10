@@ -29,10 +29,12 @@ jobs:
     - name: Build web app
       run: npm run web:build
 
+    # O config de exemplo (host localhost) só existe para o build passar; no zip ele sobrescreveria o config do ambiente.
     - name: Archive build artifacts
       run: |
         cd dist
-        zip -r ../build.zip .
+        zip -r ../build.zip . -x config
+        if unzip -l ../build.zip | grep -qE ' config$'; then echo "build.zip não pode levar o config"; exit 1; fi
 
     - name: Attach asset na release existente
       uses: softprops/action-gh-release@v3.0.3
