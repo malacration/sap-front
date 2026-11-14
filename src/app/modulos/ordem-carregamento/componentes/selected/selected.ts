@@ -353,6 +353,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.capacidade = this.selected.U_capacidadeCaminhao || null;
     this.nomeMotorista = this.selected.U_motorista || '';
     this.pesoCaminhao = this.totalPesoPedidos || null;
+    this.carregarTransportadora(this.selected.U_transportadora);
 
     if (this.selected.pedidosVendaCarregados && this.selected.pedidosVenda.length > 0) {
       this.syncPedidosState(this.selected.pedidosVenda);
@@ -395,13 +396,42 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.lastSelectedDocEntry = null;
     this.lastPedidosRef = null;
     this.pedidosXAuxiliares = [];
+    this.definirTransportadora(null);
   }
 
-  selectBp(event: BusinessPartner): void {
+  /**
+   * Transportadora ja gravada na ordem. Sem isso o campo vinha vazio (ou com a da ordem aberta antes)
+   * e salvar a Logistica gravava U_transportadora errado ou nulo. O codigo entra na hora, e o nome
+   * completo quando o SAP responde: se a consulta falhar ou demorar, salvar ainda preserva o codigo.
+   */
+  private carregarTransportadora(cardCode: string | null | undefined): void {
+    this.definirTransportadora(cardCode ? Object.assign(new BusinessPartner(), { CardCode: cardCode, CardName: cardCode }) : null);
+  }
+
+  selectBp(event: BusinessPartner | undefined): void {
     if (!this.ordemAberta) return;
-    this.businessPartnerService.get(event.CardCode).subscribe({
-      next: (bp) => this.businessPartner = bp,
-      error: () => this.alertService.error('Erro ao carregar dados do parceiro.')
+    // Botao de limpar do campo emite undefined.
+    this.definirTransportadora(event || null);
+  }
+
+  /** Cada troca (carga da ordem, escolha, limpeza) invalida a consulta anterior ainda em voo. */
+  private transportadoraSeq = 0;
+
+  /**
+   * A transportadora vale na hora (salvar ja grava o CardCode dela); o GET so completa o cadastro.
+   * Resposta de uma troca anterior e descartada: sem isso, a da ordem salva chegando depois de o
+   * usuario limpar ou escolher outra desfazia a escolha. Falha no GET: o ErrorInterceptor ja avisa,
+   * e a transportadora fica com o que ja tinha (o CardCode continua valendo para salvar).
+   */
+  private definirTransportadora(bp: BusinessPartner | null): void {
+    const seq = ++this.transportadoraSeq;
+    this.businessPartner = bp;
+    if (!bp) return;
+    this.businessPartnerService.get(bp.CardCode).subscribe({
+      next: (completo) => {
+        if (seq === this.transportadoraSeq) this.businessPartner = completo;
+      },
+      error: () => {}
     });
   }
 
