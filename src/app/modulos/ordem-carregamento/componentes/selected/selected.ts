@@ -48,10 +48,10 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   showLoteModalPedido: boolean = false;
   showExportMenu: boolean = false;
   baixandoDanfes = false;
-  // Ordem cuja geracao esta em andamento: trocar de ordem no meio nao trava nem mistura a outra.
-  gerandoBoletosOrdem: number | null = null;
+  // Ordens com geracao em andamento: trocar de ordem no meio nao trava nem libera de novo a outra.
+  private gerandoBoletosOrdens = new Set<number>();
   get gerandoBoletos(): boolean {
-    return this.gerandoBoletosOrdem != null && this.gerandoBoletosOrdem === this.selected?.DocEntry;
+    return this.selected?.DocEntry != null && this.gerandoBoletosOrdens.has(this.selected.DocEntry);
   }
   baixandoBoletos = false;
   // Botoes da aba Notas Emitidas, pelo status das NF-e e dos boletos (botoesNotas).
@@ -259,7 +259,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
         }
       },
       error: (err) => {
-        if (this.selected?.DocEntry !== docEntry) return;
+        if (this.selected?.DocEntry !== docEntry || seq !== this.notasSeq) return;
         console.error('Erro ao carregar notas', err);
         this.loading = false;
       }
@@ -307,8 +307,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   gerarBoletos(): void {
     if (!this.selected?.DocEntry || this.gerandoBoletos) return;
     const docEntry = this.selected.DocEntry;
-    this.gerandoBoletosOrdem = docEntry;
-    const fim = () => { if (this.gerandoBoletosOrdem === docEntry) this.gerandoBoletosOrdem = null; };
+    this.gerandoBoletosOrdens.add(docEntry);
+    const fim = () => this.gerandoBoletosOrdens.delete(docEntry);
     this.ordemCarregamentoService.gerarBoletos(docEntry).subscribe({
       next: (resultado) => {
         fim();
