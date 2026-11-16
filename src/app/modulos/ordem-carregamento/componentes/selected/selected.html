@@ -217,6 +217,13 @@
                 <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="baixarDanfes()" [disabled]="baixandoDanfes">
                   <i class="fas" [ngClass]="baixandoDanfes ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Baixar DANFEs (zip)
                 </button>
+                <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="gerarBoletos()" [disabled]="gerandoBoletos"
+                  title="Gera na BankPlus os boletos que faltam nas notas desta ordem">
+                  <i class="fas" [ngClass]="gerandoBoletos ? 'fa-spinner fa-spin' : 'fa-barcode'"></i> Gerar boletos
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="baixarBoletos()" [disabled]="baixandoBoletos">
+                  <i class="fas" [ngClass]="baixandoBoletos ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Baixar boletos (zip)
+                </button>
               }
             </div>
             <app-table [definition]="notasEmitida" [content]="flattened" (click)="verMotivo($event)"></app-table>

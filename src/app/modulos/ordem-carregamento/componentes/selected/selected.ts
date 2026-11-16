@@ -9,7 +9,7 @@ import { DocumentList } from '../../../../sap/model/markting/document-list';
 import { RouteLink } from '../../../../sap/model/route-link';
 import { OrdemCarregamento, escaparHtml } from '../../models/ordem-carregamento';
 import { AlertService } from '../../../../shared/service/alert.service';
-import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
+import { OrdemCarregamentoService, ResultadoBoleto } from '../../service/ordem-carregamento.service';
 import { BusinessPartnerService } from '../../../sap-shared/_services/business-partners.service';
 import { PedidosVendaService } from '../../../../sap/service/document/pedidos-venda.service';
 import { ParameterService } from '../../../../shared/service/parameter.service';
@@ -47,6 +47,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   showLoteModalPedido: boolean = false;
   showExportMenu: boolean = false;
   baixandoDanfes = false;
+  gerandoBoletos = false;
+  baixandoBoletos = false;
   // Capacidade do caminhao (opcional), gravada em U_capacidadeCaminhao.
   capacidade: number | null = null;
 
@@ -290,6 +292,43 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
         this.alertService.error('Erro ao baixar os DANFEs.');
         this.baixandoDanfes = false;
       }
+    });
+  }
+
+  gerarBoletos(): void {
+    if (!this.selected?.DocEntry || this.gerandoBoletos) return;
+    this.gerandoBoletos = true;
+    this.ordemCarregamentoService.gerarBoletos(this.selected.DocEntry).subscribe({
+      next: (resultado) => {
+        this.gerandoBoletos = false;
+        const conta = (s: ResultadoBoleto['situacao']) => resultado.filter(r => r.situacao === s).length;
+        const resumo = `${conta('GERADO')} nota(s) com boleto gerado, ${conta('JA_TINHA')} já tinha(m) boleto, ` +
+          `${conta('NAO_E_BOLETO')} não é(são) boleto, ${conta('ERRO')} com erro.`;
+        const erros = resultado.filter(r => r.situacao === 'ERRO').map(r => `${r.nota}: ${r.mensagem}`);
+        if (erros.length) this.alertService.error(`${resumo}\n${erros.join('\n')}`);
+        else this.alertService.info(resumo);
+        this.atualizarNotas();
+      },
+      // o interceptor de erro ja mostra a mensagem do backend
+      error: () => this.gerandoBoletos = false
+    });
+  }
+
+  baixarBoletos(): void {
+    if (!this.selected?.DocEntry) return;
+    const docEntry = this.selected.DocEntry;
+    this.baixandoBoletos = true;
+    this.ordemCarregamentoService.boletos(docEntry).subscribe({
+      next: (zip) => {
+        const url = URL.createObjectURL(zip);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `boletos-ordem-${docEntry}.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.baixandoBoletos = false;
+      },
+      error: () => this.baixandoBoletos = false
     });
   }
 

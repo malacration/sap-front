@@ -9,6 +9,12 @@ import { OrdemCarregamentoDto } from '../models/ordem-carregamento-dto';
 import { DocumentList } from '../../../sap/model/markting/document-list';
 import { PedidoVenda } from '../../../sap/model/document/pedido-venda.model';
 
+export interface ResultadoBoleto {
+  nota: string;
+  situacao: 'GERADO' | 'JA_TINHA' | 'NAO_E_BOLETO' | 'ERRO';
+  mensagem: string;
+}
+
 export interface CarregamentoDetalhes {
   DocEntry: number;
   Quantity: number;
@@ -166,6 +172,15 @@ export class OrdemCarregamentoService {
 
     danfes(idCarregamento: number): Observable<Blob> {
       return this.http.get(`${this.url}/danfes/${idCarregamento}`, { responseType: 'blob' });
+    }
+
+    // Gera na BankPlus os boletos que faltam nas NFs da ordem; clicar de novo nao duplica.
+    gerarBoletos(idCarregamento: number): Observable<ResultadoBoleto[]> {
+      return this.http.post<ResultadoBoleto[]>(`${this.url}/${idCarregamento}/boletos`, {});
+    }
+
+    boletos(idCarregamento: number): Observable<Blob> {
+      return this.http.get(`${this.url}/boletos/${idCarregamento}`, { responseType: 'blob' });
     }
 
     private filtrosBusca(dataInicial: string, dataFinal: string, filial: string, localidade: string | undefined, vendedor: number, cidade: string): HttpParams {
