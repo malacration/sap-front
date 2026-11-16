@@ -11,7 +11,7 @@ import { PedidoVenda } from '../../../sap/model/document/pedido-venda.model';
 
 export interface ResultadoBoleto {
   nota: string;
-  situacao: 'GERADO' | 'JA_TINHA' | 'NAO_E_BOLETO' | 'ERRO';
+  situacao: 'GERADO' | 'JA_TINHA' | 'JA_PAGA' | 'NAO_E_BOLETO' | 'ERRO';
   mensagem: string;
 }
 

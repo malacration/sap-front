@@ -48,7 +48,11 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   showLoteModalPedido: boolean = false;
   showExportMenu: boolean = false;
   baixandoDanfes = false;
-  gerandoBoletos = false;
+  // Ordem cuja geracao esta em andamento: trocar de ordem no meio nao trava nem mistura a outra.
+  gerandoBoletosOrdem: number | null = null;
+  get gerandoBoletos(): boolean {
+    return this.gerandoBoletosOrdem != null && this.gerandoBoletosOrdem === this.selected?.DocEntry;
+  }
   baixandoBoletos = false;
   // Botoes da aba Notas Emitidas, pelo status das NF-e e dos boletos (botoesNotas).
   botoes = botoesNotas([]);
@@ -302,20 +306,25 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
 
   gerarBoletos(): void {
     if (!this.selected?.DocEntry || this.gerandoBoletos) return;
-    this.gerandoBoletos = true;
-    this.ordemCarregamentoService.gerarBoletos(this.selected.DocEntry).subscribe({
+    const docEntry = this.selected.DocEntry;
+    this.gerandoBoletosOrdem = docEntry;
+    const fim = () => { if (this.gerandoBoletosOrdem === docEntry) this.gerandoBoletosOrdem = null; };
+    this.ordemCarregamentoService.gerarBoletos(docEntry).subscribe({
       next: (resultado) => {
-        this.gerandoBoletos = false;
+        fim();
         const conta = (s: ResultadoBoleto['situacao']) => resultado.filter(r => r.situacao === s).length;
-        const resumo = `${conta('GERADO')} nota(s) com boleto gerado, ${conta('JA_TINHA')} já tinha(m) boleto, ` +
-          `${conta('NAO_E_BOLETO')} não é(são) boleto, ${conta('ERRO')} com erro.`;
+        const outraOrdem = this.selected?.DocEntry !== docEntry;
+        const resumo = (outraOrdem ? `Ordem ${docEntry}: ` : '') +
+          `${conta('GERADO')} nota(s) com boleto gerado, ${conta('JA_TINHA')} já tinha(m) boleto, ` +
+          `${conta('JA_PAGA')} já paga(s), ${conta('NAO_E_BOLETO')} não é(são) boleto, ${conta('ERRO')} com erro.`;
         const erros = resultado.filter(r => r.situacao === 'ERRO').map(r => `${r.nota}: ${r.mensagem}`);
         if (erros.length) this.alertService.error(`${resumo}\n${erros.join('\n')}`);
         else this.alertService.info(resumo);
-        this.atualizarNotas();
+        // loadNotas e nao atualizarNotas: uma atualizacao manual em andamento pode ter lido o status de antes.
+        if (!outraOrdem) this.loadNotas();
       },
       // o interceptor de erro ja mostra a mensagem do backend
-      error: () => this.gerandoBoletos = false
+      error: () => fim()
     });
   }
 
