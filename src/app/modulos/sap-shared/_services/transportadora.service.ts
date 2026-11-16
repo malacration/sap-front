@@ -10,7 +10,7 @@ import { SearchService } from '../../../sap/service/search.service';
  * Busca de transportadora igual a lista de PN do SAP: fornecedores (CardType S), sem o recorte
  * da carteira do vendedor que a busca de cliente aplica.
  *
- * shortcut: usa search-vendedor, que devolve so a 1a pagina do Service Layer (20 linhas) e nao
+ * shortcut: o search-fornecedor devolve so a 1a pagina do Service Layer (20 linhas) e nao
  * tem nextLink; se faltar transportadora na lista, criar endpoint paginado.
  */
 @Injectable({
@@ -21,7 +21,7 @@ export class TransportadoraService implements SearchService<BusinessPartner> {
   private url : string
 
   constructor(config : ConfigService, private http : HttpClient) {
-    this.url = config.getHost() + "/business-partners/search-vendedor"
+    this.url = config.getHost() + "/business-partners/search-fornecedor"
   }
 
   search(keyWord : string) : Observable<Page<BusinessPartner>> {
