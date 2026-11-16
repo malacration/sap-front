@@ -20,6 +20,7 @@ import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-m
 import { FATURA_RESERVA, chaveEntrada, isFaturaReserva } from '../../models/fatura-reserva';
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
 import { LinhaOrdem } from '../../models/linha-ordem';
+import { botoesNotas } from '../../models/botoes-notas';
 
 @Component({
     selector: 'app-ordem-selected',
@@ -49,6 +50,8 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   baixandoDanfes = false;
   gerandoBoletos = false;
   baixandoBoletos = false;
+  // Botoes da aba Notas Emitidas, pelo status das NF-e e dos boletos (botoesNotas).
+  botoes = botoesNotas([]);
   // Capacidade do caminhao (opcional), gravada em U_capacidadeCaminhao.
   capacidade: number | null = null;
 
@@ -210,6 +213,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.loading = true;
     // A -> B -> A: a resposta da primeira carga de A nao pode repor notas antigas sobre a segunda.
     const seq = ++this.notasSeq;
+    this.botoes = botoesNotas([]); // outra ordem nao herda os botoes da anterior enquanto carrega
     // Status da NF-e vem da TaxPlus pelo sap-odbc; se falhar, a lista sai sem status.
     const status$ = this.ordemCarregamentoService.statusNotas(this.selected.DocEntry).pipe(catchError(() => of([])));
     const docEntry = this.selected.DocEntry;
@@ -217,6 +221,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       next: ([docs, status]) => {
         if (this.selected?.DocEntry !== docEntry || seq !== this.notasSeq) return;
         const statusPorDoc = new Map(status.map(s => [`${s.DocType}-${s.DocEntry}`, s]));
+        this.botoes = botoesNotas(status);
         this.notas = docs;
         this.motivosNfe.clear();
         this.flattened = this.notas.flatMap((nota) =>

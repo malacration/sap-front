@@ -213,14 +213,18 @@
                 title="Recarrega as notas, o status da NF-e e o histórico">
                 <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Atualizar
               </button>
-              @if (notas?.length) {
+              @if (botoes.danfes) {
                 <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="baixarDanfes()" [disabled]="baixandoDanfes">
                   <i class="fas" [ngClass]="baixandoDanfes ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Baixar DANFEs (zip)
                 </button>
+              }
+              @if (botoes.gerarBoletos) {
                 <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="gerarBoletos()" [disabled]="gerandoBoletos"
-                  title="Gera na BankPlus os boletos que faltam nas notas desta ordem">
+                  title="Gera na BankPlus os boletos que faltam nas notas autorizadas desta ordem">
                   <i class="fas" [ngClass]="gerandoBoletos ? 'fa-spinner fa-spin' : 'fa-barcode'"></i> Gerar boletos
                 </button>
+              }
+              @if (botoes.baixarBoletos) {
                 <button type="button" class="btn btn-sm btn-outline-primary ml-2" (click)="baixarBoletos()" [disabled]="baixandoBoletos">
                   <i class="fas" [ngClass]="baixandoBoletos ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Baixar boletos (zip)
                 </button>
