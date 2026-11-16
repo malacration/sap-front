@@ -237,7 +237,7 @@
                           </div>
                           <div class="col-3">
                             <span class="badge badge-pill" style="font-size: 0.85rem;"
-                              [ngClass]="boleto.DocStatus === 'O' ? 'badge-success' : 'badge-secondary'">
+                              [ngClass]="statusBoletoClass(boleto)">
                               {{ statusBoletoLabel(boleto) }}
                             </span>
                           </div>

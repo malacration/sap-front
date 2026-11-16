@@ -18,6 +18,7 @@ export interface BoletoVf {
   U_pix_proxima_consulta_em?: string;
   U_pix_consultar_ate?: string;
   Devolucao?: string;
+  Recebimento?: string;
   TaxaJurosMoraPercent?: number;
   JurosValor?: number;
   ValorTitulo?: number;
