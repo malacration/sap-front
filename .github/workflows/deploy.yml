@@ -23,13 +23,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Prepare default configuration
-      run: cp src/config.example src/config
-
     - name: Build web app
       run: npm run web:build
 
-    # O config de exemplo (host localhost) só existe para o build passar; no zip ele sobrescreveria o config do ambiente.
+    # O config e do ambiente (Nginx/entrypoint): um config no zip sobrescreveria o dele no deploy.
     - name: Archive build artifacts
       run: |
         cd dist

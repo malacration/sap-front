@@ -8,14 +8,14 @@ Aplicação web/PWA em Angular 22.2.4, CLI/build 22.2.5 e TypeScript 6.0.3. Elec
 nvm install
 nvm use
 npm ci
-# Copie src/config.example para src/config e ajuste o host do backend local.
+# Crie src/config (fora do git) com o host do backend local: {"host": "http://localhost:8080"}
 npm start
 npm run lint
 npm run web:build
 CHROME_BIN=/usr/bin/google-chrome npm test -- --browsers=ChromeHeadless
 ```
 
-Node 26.13.0 LTS está fixado em `.nvmrc` e `.node-version`. A configuração local `src/config` não entra nas imagens; o build Docker usa o exemplo e o Nginx recebe `/config` em runtime. `Dockerfile` gera a imagem de produção, `Dockerfile.hmg` mantém a configuração externa da homologação e `Dockerfile.dev` usa o proxy fornecido pelo Compose. O container de desenvolvimento sincroniza as dependências do volume com o lockfile ao iniciar.
+Node 26.13.0 LTS está fixado em `.nvmrc` e `.node-version`. A configuração local `src/config` é opcional no build e não entra nas imagens nem no `build.zip`; o Nginx recebe `/config` em runtime. `Dockerfile` gera a imagem de produção, `Dockerfile.hmg` mantém a configuração externa da homologação e `Dockerfile.dev` usa o proxy fornecido pelo Compose. O container de desenvolvimento sincroniza as dependências do volume com o lockfile ao iniciar.
 
 ## Compatibilidade preservada
 
