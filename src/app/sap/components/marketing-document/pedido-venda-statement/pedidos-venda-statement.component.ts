@@ -26,6 +26,7 @@ export class PedidosVendaStatementComponent {
   constructor(public pedidosVendaService: PedidosVendaService) {
     this.pedidosVendaService.filtro.data = this.dataFiltro;
     this.pedidosVendaService.filtro.status = 'bost_Open';
+    this.pedidosVendaService.filtro.docNum = undefined;
   }
 
   onStatusChange(event: Event) {
@@ -43,6 +44,12 @@ export class PedidosVendaStatementComponent {
 
   onClienteChange(parceiro: any) {
     this.pedidosVendaService.filtro.cliente = parceiro?.CardCode ?? undefined;
+    this.lista.reload();
+  }
+
+  onDocNumChange(event: Event) {
+    const docNum = Number((event.target as HTMLInputElement).value);
+    this.pedidosVendaService.filtro.docNum = docNum > 0 ? docNum : undefined;
     this.lista.reload();
   }
 
