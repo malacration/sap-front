@@ -47,4 +47,23 @@ describe('CadastroRelatorioService', () => {
     expect(retorno.data).toBe(item);
     expect(item.codigo).toBe('C1');
   });
+
+  it('carregar mais segue o nextLink sem reenviar q e os itens continuam selecionaveis', () => {
+    let pagina: any;
+    service.buscar('item', 'cadastros/item?q=pac%2Fx&pagina=1').subscribe(resposta => pagina = resposta);
+    const req = http.expectOne('/api/v1/relatorios/cadastros/item?q=pac%2Fx&pagina=1');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.keys()).toEqual([]);
+    req.flush({ content: [{ codigo: 'PAC51', nome: 'Pac' }], nextLink: '' });
+    const retorno = pagina.content[0].getActions()[0].retorno;
+    expect(retorno.type).toBe('selected');
+    expect(retorno.data.codigo).toBe('PAC51');
+  });
+
+  it('link de outro tipo vira termo de busca', () => {
+    service.buscar('item', 'cadastros/parceiro_negocio?q=x&pagina=1').subscribe();
+    const req = http.expectOne(r => r.url === '/api/v1/relatorios/cadastros/item');
+    expect(req.request.params.get('q')).toBe('cadastros/parceiro_negocio?q=x&pagina=1');
+    req.flush({ content: [], nextLink: '' });
+  });
 });
