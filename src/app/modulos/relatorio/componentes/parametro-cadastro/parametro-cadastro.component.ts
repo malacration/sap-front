@@ -19,7 +19,9 @@ const TIPOS_NUMERICOS: TipoParametro[] = ['vendedor', 'condicao_pagamento', 'gru
     selector: 'app-parametro-cadastro',
     templateUrl: './parametro-cadastro.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+    standalone: false,
+    // Aqui e não no RelatorioModule: o módulo é eager, e o provider dele iria para o injetor raiz.
+    providers: [CadastroRelatorioService]
 })
 export class ParametroCadastroComponent implements OnChanges, OnDestroy {
   @Input() parametro!: Parametro;

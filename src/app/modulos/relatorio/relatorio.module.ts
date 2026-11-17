@@ -15,7 +15,6 @@ import { RelatorioConsumoComponent } from './componentes/consumo/relatorio-consu
 import { EditorCodigoComponent } from './componentes/editor-codigo/editor-codigo.component';
 import { RelatorioComponent } from './componentes/principal/relatorio.component';
 import { NgxDropzoneCompatComponent } from './componentes/upload/ngx-dropzone-compat.component';
-import { CadastroRelatorioService } from './servicos/cadastro-relatorio.service';
 
 @NgModule({
   declarations: [
@@ -39,7 +38,6 @@ import { CadastroRelatorioService } from './servicos/cadastro-relatorio.service'
     TabsModule,
     ModalModule,
   ],
-  providers: [CadastroRelatorioService],
   exports: [RelatorioComponent],
 })
 export class RelatorioModule {}

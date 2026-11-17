@@ -6,7 +6,7 @@ import { Page } from '../../../sap/model/page.model';
 
 /**
  * Busca de cadastros do sap-reports, de USO EXCLUSIVO dos filtros de parâmetro de relatório.
- * Telas de venda e cadastro continuam nas buscas do sap-service. Fornecido só pelo RelatorioModule.
+ * Telas de venda e cadastro continuam nas buscas do sap-service. Fornecido só pelo componente parametro-cadastro.
  */
 @Injectable()
 export class CadastroRelatorioService {

@@ -1,7 +1,30 @@
 import { SimpleChange } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { ParametroCadastroComponent } from './parametro-cadastro.component';
 import { TipoParametro } from '../../modelos/relatorio.model';
+import { CadastroRelatorioService } from '../../servicos/cadastro-relatorio.service';
+import { ConfigService } from '../../../../core/services/config.service';
+import { SalesPersonService } from '../../../../sap/service/sales-person.service';
+import { LocalidadeService } from '../../../sap-shared/_services/localidade.service';
+
+describe('Parametro de cadastro: provider', () => {
+  it('fornece o CadastroRelatorioService so no proprio componente', () => {
+    TestBed.configureTestingModule({
+      declarations: [ParametroCadastroComponent],
+      providers: [
+        { provide: SalesPersonService, useValue: {} },
+        { provide: LocalidadeService, useValue: {} },
+        { provide: ConfigService, useValue: {} },
+        { provide: HttpClient, useValue: {} },
+      ],
+    }).overrideTemplate(ParametroCadastroComponent, '');
+    const fixture = TestBed.createComponent(ParametroCadastroComponent);
+    expect(fixture.debugElement.injector.get(CadastroRelatorioService)).toBeTruthy();
+    expect(TestBed.inject(CadastroRelatorioService, null)).toBeNull();
+  });
+});
 
 describe('Parametro de cadastro', () => {
   let component: ParametroCadastroComponent;
@@ -13,7 +36,7 @@ describe('Parametro de cadastro', () => {
     component.ngOnChanges({ parametro: new SimpleChange(null, component.parametro, true) });
   }
   beforeEach(() => {
-    service = jasmine.createSpyObj('Cadastro', ['search', 'searchItem']);
+    service = jasmine.createSpyObj('Cadastro', ['search']);
     service.search.and.returnValue(of({ content: [], nextLink: '' }));
     cadastros = jasmine.createSpyObj('CadastroRelatorioService', ['buscar']);
     cadastros.buscar.and.returnValue(of({ content: [], nextLink: '' }));
@@ -72,7 +95,6 @@ describe('Parametro de cadastro', () => {
     configurar('item');
     component.service!.search('x').subscribe();
     expect(cadastros.buscar).toHaveBeenCalledWith('item', 'x');
-    expect(service.searchItem).not.toHaveBeenCalled();
     expect(service.search).not.toHaveBeenCalled();
   });
 
