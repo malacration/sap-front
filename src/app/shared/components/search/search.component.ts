@@ -82,6 +82,8 @@ export class SearchComponent<T> {
   searchService($event){
     this.keyword = this.normalizaKeyword($event)
     this.resultadoBusca.content.splice(0, this.resultadoBusca.content.length)
+    //sem isso, se a busca nova falha, o "Carregar Mais" segue o link da busca anterior
+    this.resultadoBusca.nextLink = ''
     this.changePageService(this.keyword, true)
   }
 

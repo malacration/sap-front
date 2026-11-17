@@ -91,4 +91,14 @@ describe('SearchComponent - busca', () => {
 
     expect(component.loading).toBeFalse();
   });
+
+  it('busca nova que falha nao herda o nextLink da busca anterior', () => {
+    comResultado(pagina([{ CardCode: 'C1' }], 'cadastros/parceiro_negocio?q=A&pagina=1'));
+    component.searchService('A');
+    component.service = { search: () => throwError(() => new Error('rede')) } as any;
+
+    component.searchService('B');
+
+    expect(component.resultadoBusca.nextLink).toBe('');
+  });
 });
