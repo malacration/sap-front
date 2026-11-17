@@ -61,6 +61,17 @@
         </select>
       </div>
       <div class="col-sm-4">
+        <label for="painelFrete">Frete</label>
+        <select id="painelFrete" class="form-control" [(ngModel)]="frete" (ngModelChange)="getPedidos()" [disabled]="tipoDocumento === 'nf-venda-futura'" [attr.aria-describedby]="tipoDocumento !== 'pedido' ? 'painelFreteAjuda' : null">
+          <option value="todos">Todos</option>
+          <option value="com">Com frete</option>
+          <option value="sem">Sem frete</option>
+        </select>
+        @if (tipoDocumento !== 'pedido') {
+          <small id="painelFreteAjuda" class="text-muted">O filtro de frete vale só para pedidos.</small>
+        }
+      </div>
+      <div class="col-sm-4">
         <app-em-ordem-de-carregamento-select
           [selected]="emOrdemDeCarregamento"
           (selectedOut)="onEmOrdemDeCarregamentoChange($event)"

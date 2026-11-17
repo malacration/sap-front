@@ -136,8 +136,9 @@ export class OrdemCarregamentoService {
   }
 
     // Pedidos da ordem de carregamento (sap-odbc), paginados por pedido.
-    searchPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: string | undefined, vendedor: number, cidade: string, pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
-      const params = this.filtrosBusca(dataInicial, dataFinal, filial, localidade, vendedor, cidade).set('pagina', String(pagina));
+    // frete: 'com' | 'sem' | 'todos'.
+    searchPedidos(dataInicial: string, dataFinal: string, filial: string, localidade: string | undefined, vendedor: number, cidade: string, frete: string, pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
+      const params = this.filtrosBusca(dataInicial, dataFinal, filial, localidade, vendedor, cidade).set('frete', frete).set('pagina', String(pagina));
       return this.http
         .get<{ content: PedidoVenda[]; temMais: boolean }>(`${this.url}/search-pedidos`, { params })
         .pipe(
