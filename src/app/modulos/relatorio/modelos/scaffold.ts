@@ -5,7 +5,8 @@ descricao: Descreva em uma linha o que este relatório responde
 papeis: [admin]
 
 # Cada item vira um campo do formulário.
-# Cadastros: filial, vendedor, parceiro_negocio, item, localidade.
+# Cadastros: filial, vendedor, parceiro_negocio, item, localidade, fornecedor,
+# conta_contabil, centro_custo, condicao_pagamento, grupo_item, deposito.
 # Cadastros e lista aceitam multiplo: true para usar IN (:nome).
 # O \`nome\` precisa ser IGUAL ao :nome usado no SQL.
 parametros:

@@ -1,13 +1,18 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, ChangeDetectionStrategy } from '@angular/core';
 import { Subject, throwError } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
-import { Parametro } from '../../modelos/relatorio.model';
+import { Parametro, TipoParametro } from '../../modelos/relatorio.model';
 import { SalesPersonService } from '../../../../sap/service/sales-person.service';
-import { ItemService } from '../../../../sap/service/item.service';
-import { BusinessPartnerService } from '../../../sap-shared/_services/business-partners.service';
 import { LocalidadeService } from '../../../sap-shared/_services/localidade.service';
 import { SearchService } from '../../../../sap/service/search.service';
+import { CadastroRelatorioService } from '../../servicos/cadastro-relatorio.service';
 import { Column } from '../../../../shared/components/table/column.model';
+
+/** Cadastros buscados no sap-reports (busca exclusiva de relatório); o tipo vira só o segmento da URL. */
+const TIPOS_SAP_REPORTS: TipoParametro[] = ['parceiro_negocio', 'item', 'fornecedor', 'conta_contabil',
+  'centro_custo', 'condicao_pagamento', 'grupo_item', 'deposito'];
+/** Códigos inteiros no SQL; `-1` (À vista) em condicao_pagamento precisa continuar número. */
+const TIPOS_NUMERICOS: TipoParametro[] = ['vendedor', 'condicao_pagamento', 'grupo_item'];
 
 /** Registro fechado de cadastros: o YAML nunca fornece URL, SQL ou nome de propriedade. */
 @Component({
@@ -30,22 +35,22 @@ export class ParametroCadastroComponent implements OnChanges, OnDestroy {
 
   constructor(
     private vendedores: SalesPersonService,
-    private parceiros: BusinessPartnerService,
-    private itens: ItemService,
     private localidades: LocalidadeService,
+    private cadastrosRelatorio: CadastroRelatorioService,
   ) {}
 
   ngOnChanges(changes: import('@angular/core').SimpleChanges): void {
     if (!changes.parametro) return;
     this.nomes.clear();
     this.erro = '';
+    const tipo = this.parametro.tipo;
     const cadastros = {
       vendedor: { service: this.vendedores, codigo: 'SalesEmployeeCode', nome: 'SalesEmployeeName' },
-      parceiro_negocio: { service: this.parceiros, codigo: 'CardCode', nome: 'CardName' },
-      item: { service: { search: (termo: any) => this.itens.searchItem(termo) }, codigo: 'ItemCode', nome: 'ItemDescription' },
       localidade: { service: this.localidades, codigo: 'Code', nome: 'Name' },
     };
-    const cadastro = cadastros[this.parametro.tipo];
+    const cadastro = cadastros[tipo] ?? (TIPOS_SAP_REPORTS.includes(tipo) ? {
+      service: { search: (termo: any) => this.cadastrosRelatorio.buscar(tipo, termo) }, codigo: 'codigo', nome: 'nome',
+    } : undefined);
     this.service = undefined;
     if (!cadastro) return;
     this.campoCodigo = cadastro.codigo;
@@ -75,7 +80,7 @@ export class ParametroCadastroComponent implements OnChanges, OnDestroy {
   selecionar(registro: any): void {
     // app-search.clear() emite undefined; não deve apagar as escolhas já acumuladas.
     if (!registro || registro[this.campoCodigo] == null) return;
-    const codigo = this.parametro.tipo === 'vendedor'
+    const codigo = TIPOS_NUMERICOS.includes(this.parametro.tipo)
       ? Number(registro[this.campoCodigo]) : String(registro[this.campoCodigo]);
     this.nomes.set(codigo, String(registro[this.campoNome] || ''));
     this.atualizar(this.parametro.multiplo ? [...new Set([...this.selecionados, codigo])] : codigo);
