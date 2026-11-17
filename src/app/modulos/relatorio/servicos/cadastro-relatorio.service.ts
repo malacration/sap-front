@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ConfigService } from '../../../core/services/config.service';
 import { Page } from '../../../sap/model/page.model';
+import { CadastroRelatorio } from '../modelos/cadastro-relatorio.model';
 
 /**
  * Busca de cadastros do sap-reports, de USO EXCLUSIVO dos filtros de parâmetro de relatório.
@@ -12,8 +13,12 @@ import { Page } from '../../../sap/model/page.model';
 export class CadastroRelatorioService {
   constructor(private config: ConfigService, private http: HttpClient) {}
 
-  buscar(tipo: string, termo: string): Observable<Page<{ codigo: string | number; nome: string }>> {
-    return this.http.get<Page<{ codigo: string | number; nome: string }>>(
-      `${this.config.getHostRelatorios()}/relatorios/cadastros/${tipo}`, { params: { q: termo ?? '' } });
+  buscar(tipo: string, termo: string): Observable<Page<CadastroRelatorio>> {
+    return this.http.get<Page<CadastroRelatorio>>(
+      `${this.config.getHostRelatorios()}/relatorios/cadastros/${tipo}`, { params: { q: termo ?? '' } })
+      .pipe(map(page => {
+        page.content = page.content.map(it => Object.assign(new CadastroRelatorio(), it));
+        return page;
+      }));
   }
 }

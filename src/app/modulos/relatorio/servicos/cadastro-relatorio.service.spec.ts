@@ -33,6 +33,18 @@ describe('CadastroRelatorioService', () => {
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('q')).toBe('1.1%');
     req.flush({ content: [{ codigo: '1.1.01', nome: 'Caixa' }], nextLink: '' });
-    expect(pagina.content).toEqual([{ codigo: '1.1.01', nome: 'Caixa' }]);
+    expect(pagina.content).toEqual([jasmine.objectContaining({ codigo: '1.1.01', nome: 'Caixa' })]);
+  });
+
+  it('itens da busca podem ser selecionados', () => {
+    let pagina: any;
+    service.buscar('cliente', 'X').subscribe(resposta => pagina = resposta);
+    http.expectOne(r => r.url === '/api/v1/relatorios/cadastros/cliente')
+      .flush({ content: [{ codigo: 'C1', nome: 'X' }], nextLink: '' });
+    const item = pagina.content[0];
+    const retorno = item.getActions()[0].retorno;
+    expect(retorno.type).toBe('selected');
+    expect(retorno.data).toBe(item);
+    expect(item.codigo).toBe('C1');
   });
 });
