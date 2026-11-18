@@ -98,7 +98,8 @@ export class FormularioParametrosComponent implements OnDestroy {
   }
 
   cadastro(parametro: Parametro): boolean {
-    return ['filial', 'vendedor', 'parceiro_negocio', 'item', 'localidade'].includes(parametro.tipo);
+    return ['filial', 'vendedor', 'parceiro_negocio', 'item', 'localidade', 'fornecedor', 'conta_contabil',
+      'centro_custo', 'condicao_pagamento', 'grupo_item', 'deposito'].includes(parametro.tipo);
   }
 
   atualizarCadastro(parametro: Parametro, valor: unknown): void {

@@ -11,7 +11,13 @@ export type TipoParametro =
   | 'vendedor'
   | 'parceiro_negocio'
   | 'item'
-  | 'localidade';
+  | 'localidade'
+  | 'fornecedor'
+  | 'conta_contabil'
+  | 'centro_custo'
+  | 'condicao_pagamento'
+  | 'grupo_item'
+  | 'deposito';
 
 export type TipoColuna =
   | 'texto'
