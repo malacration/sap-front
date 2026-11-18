@@ -38,7 +38,7 @@
               "src/logo.png",
               "src/manifest.webmanifest",
               "src/assets",
-              "src/config"
+              { "glob": "config", "input": "src", "output": "/" }
             ],
             "styles": [
               "node_modules/codemirror/lib/codemirror.css",
