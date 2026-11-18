@@ -9,7 +9,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts --no-audit --no
 
 FROM dependencies AS build
 COPY . .
-RUN cp src/config.example src/config && npm run web:build
+RUN npm run web:build
 
 FROM nginx:stable-alpine AS runtime
 COPY --from=build /app/dist/ /usr/share/nginx/html/

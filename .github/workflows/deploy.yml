@@ -23,16 +23,15 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Prepare default configuration
-      run: cp src/config.example src/config
-
     - name: Build web app
       run: npm run web:build
 
+    # O config e do ambiente (Nginx/entrypoint): um config no zip sobrescreveria o dele no deploy.
     - name: Archive build artifacts
       run: |
         cd dist
-        zip -r ../build.zip .
+        zip -r ../build.zip . -x config
+        if unzip -l ../build.zip | grep -qE ' config$'; then echo "build.zip não pode levar o config"; exit 1; fi
 
     - name: Attach asset na release existente
       uses: softprops/action-gh-release@v3.0.3
