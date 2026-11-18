@@ -43,6 +43,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
   incoterms: string = '%';
   // '' = todos, 'pedido' ou 'nf-venda-futura'
   tipoDocumento: string = '';
+  // 'todos', 'com' ou 'sem'
+  frete: string = 'todos';
   constructor(
     private PainelExpedicaoPedidosService: PainelExpedicaoPedidosService
   ) {}
@@ -129,7 +131,8 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         this.groupBy,
         this.localidade,
         this.incoterms,
-        this.tipoDocumento
+        this.tipoDocumento,
+        this.frete
       )
       .subscribe({
         next: (data) => {

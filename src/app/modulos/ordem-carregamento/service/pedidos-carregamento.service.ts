@@ -26,7 +26,8 @@ export class PainelExpedicaoPedidosService {
     agrupador?: string,
     localidade?: Localidade,
     incoterms?: string,
-    tipo?: string
+    tipo?: string,
+    frete: string = 'todos'
   ): Observable<Page<PainelExpedicaoPedidos>> {
     let params = new HttpParams()
       .set('dataInicial', dataInicial)
@@ -34,7 +35,8 @@ export class PainelExpedicaoPedidosService {
       .set('filial', filial.toString())
       .set('agrupador', agrupador || '')
       .set('localidade', localidade?.Code ?? '')
-      .set('incoterms',incoterms);
+      .set('incoterms',incoterms)
+      .set('frete', frete);
 
     if (cliente) params = params.set('cliente', cliente);
     if (item) params = params.set('item', item);

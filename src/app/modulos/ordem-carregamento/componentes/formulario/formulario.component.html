@@ -83,20 +83,36 @@
               </select>
             </div>
           </div>
-          <div class="col-sm-4 d-flex align-items-end">
-            <div class="form-group mr-2">
-              <button
-                class="btn btn-primary"
-                [disabled]="!canFilter()"
-                (click)="criarAnalise()"
-                >
-                <i class="fas fa-search"></i> Filtrar
-              </button>
+          <div class="col-sm-2">
+            <div class="form-group">
+              <label for="frete">Frete</label>
+              <select id="frete" class="form-control" [(ngModel)]="frete" [disabled]="tipoDocumento === 'nf-venda-futura'" [attr.aria-describedby]="tipoDocumento !== 'pedido' ? 'freteAjuda' : null">
+                <option value="todos">Todos</option>
+                <option value="com">Com frete</option>
+                <option value="sem">Sem frete</option>
+              </select>
+              @if (tipoDocumento !== 'pedido') {
+                <small id="freteAjuda" class="text-muted">O filtro de frete vale só para pedidos.</small>
+              }
             </div>
-            @if (!canFilter()) {
-              <small class="form-group text-muted">Escolha a filial para filtrar.</small>
-            }
-
+          </div>
+          <div class="col-sm-4">
+            <div class="form-group">
+              <!-- spacer: keeps the button level with the selects even when the frete hint grows the row -->
+              <label class="invisible" aria-hidden="true">&nbsp;</label>
+              <div class="d-flex align-items-center">
+                <button
+                  class="btn btn-primary mr-2"
+                  [disabled]="!canFilter()"
+                  (click)="criarAnalise()"
+                  >
+                  <i class="fas fa-search"></i> Filtrar
+                </button>
+                @if (!canFilter()) {
+                  <small class="text-muted">Escolha a filial para filtrar.</small>
+                }
+              </div>
+            </div>
           </div>
         </div>
       </card>
