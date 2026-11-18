@@ -21,7 +21,7 @@ export class FutureDeliverySales {
   U_vf_estornada: number = 0;
 
   get formattedDocDate() {
-    return moment(this.DocDate).format('DD/MM/YYYY');
+    return moment.utc(this.DocDate).format('DD/MM/YYYY');
   }
 
   get totalCurrency() {
@@ -89,7 +89,7 @@ export class DocumentLines {
   }
 
   get formattedDocDate() {
-    return moment(this.DocDate).format('DD/MM/YYYY');
+    return moment.utc(this.DocDate).format('DD/MM/YYYY');
   }
 
   isVenda() : boolean{
