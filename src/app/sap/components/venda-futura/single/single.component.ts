@@ -266,7 +266,15 @@ export class VendaFuturaSingleComponent implements OnInit {
   // ── Boletos ──────────────────────────────────────────────────────────────
 
   statusBoletoLabel(boleto: BoletoVf): string {
-    return boleto.DocStatus === 'O' ? 'Aberto' : 'Pago/Cancelado';
+    if (boleto.Devolucao) return 'Cancelado (devolvido)';
+    if (boleto.DocStatus === 'O') return 'Aberto';
+    return boleto.Recebimento ? 'Pago' : 'Fechado';
+  }
+
+  statusBoletoClass(boleto: BoletoVf): string {
+    if (boleto.Devolucao) return 'badge-danger';
+    if (boleto.DocStatus === 'O') return 'badge-warning';
+    return boleto.Recebimento ? 'badge-success' : 'badge-secondary';
   }
 
   // ── Emitir boletos ───────────────────────────────────────────────────────
