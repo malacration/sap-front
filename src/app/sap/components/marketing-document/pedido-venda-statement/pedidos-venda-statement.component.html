@@ -5,7 +5,12 @@
     </div>
     <div class="card-body">
       <div class="row align-items-end mb-3">
-        <div class="col-md-3">
+        <div class="col-md-2">
+          <label class="font-weight-bold" for="filtro-docnum">Nº do pedido</label>
+          <input id="filtro-docnum" type="text" inputmode="numeric" class="form-control" placeholder="Todos"
+            (change)="onDocNumChange($event)">
+        </div>
+        <div class="col-md-2">
           <label class="font-weight-bold">Data (a partir de)</label>
           <app-campo-data [ngModel]="dataFiltro" [ngModelOptions]="{standalone: true}" (ngModelChange)="onDataChange($event)"></app-campo-data>
         </div>
@@ -21,7 +26,7 @@
         <div class="col-md-3">
           <app-branch-select [selected]="$safeNavigationMigration(filialSelecionada?.Bplid)" (selectedOut)="onFilialChange($event)"></app-branch-select>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <app-busines-partner-search (selected)="onClienteChange($event)"></app-busines-partner-search>
         </div>
       </div>

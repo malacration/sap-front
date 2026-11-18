@@ -33,7 +33,7 @@ export class PedidosVendaService implements DocumentService{
         ];
     }
 
-    filtro: { status?: string; filial?: number; cliente?: string; data?: string } = {};
+    filtro: { status?: string; filial?: number; cliente?: string; data?: string; docNum?: number } = {};
 
     get(_pagina : number): Observable<Page<DocumentList>> {
         let params = `?`;
@@ -41,6 +41,7 @@ export class PedidosVendaService implements DocumentService{
         if (this.filtro.filial != null && this.filtro.filial !== -1)  params += `filial=${this.filtro.filial}&`;
         if (this.filtro.cliente) params += `cliente=${this.filtro.cliente}&`;
         if (this.filtro.data)    params += `data=${this.filtro.data}&`;
+        if (this.filtro.docNum)  params += `docNum=${this.filtro.docNum}&`;
 
         return this.hppCliente
             .get<{ content: any[]; nextLink?: string }>(this.url + "/listar" + params)

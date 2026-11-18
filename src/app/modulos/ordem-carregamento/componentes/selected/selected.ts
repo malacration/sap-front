@@ -9,7 +9,7 @@ import { DocumentList } from '../../../../sap/model/markting/document-list';
 import { RouteLink } from '../../../../sap/model/route-link';
 import { OrdemCarregamento, escaparHtml } from '../../models/ordem-carregamento';
 import { AlertService } from '../../../../shared/service/alert.service';
-import { OrdemCarregamentoService } from '../../service/ordem-carregamento.service';
+import { OrdemCarregamentoService, ResultadoBoleto } from '../../service/ordem-carregamento.service';
 import { BusinessPartnerService } from '../../../sap-shared/_services/business-partners.service';
 import { PedidosVendaService } from '../../../../sap/service/document/pedidos-venda.service';
 import { ParameterService } from '../../../../shared/service/parameter.service';
@@ -20,6 +20,7 @@ import { PedidoX } from '../../modals/selecao-lotes-modal-pedido/selecao-lotes-m
 import { FATURA_RESERVA, chaveEntrada, isFaturaReserva } from '../../models/fatura-reserva';
 import { PdfCarregamentoService } from '../../service/pdf-carregamento.service';
 import { LinhaOrdem } from '../../models/linha-ordem';
+import { botoesNotas } from '../../models/botoes-notas';
 
 @Component({
     selector: 'app-ordem-selected',
@@ -47,6 +48,14 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
   showLoteModalPedido: boolean = false;
   showExportMenu: boolean = false;
   baixandoDanfes = false;
+  // Ordens com geracao em andamento: trocar de ordem no meio nao trava nem libera de novo a outra.
+  private gerandoBoletosOrdens = new Set<number>();
+  get gerandoBoletos(): boolean {
+    return this.selected?.DocEntry != null && this.gerandoBoletosOrdens.has(this.selected.DocEntry);
+  }
+  baixandoBoletos = false;
+  // Botoes da aba Notas Emitidas, pelo status das NF-e e dos boletos (botoesNotas).
+  botoes = botoesNotas([]);
   // Capacidade do caminhao (opcional), gravada em U_capacidadeCaminhao.
   capacidade: number | null = null;
 
@@ -208,6 +217,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
     this.loading = true;
     // A -> B -> A: a resposta da primeira carga de A nao pode repor notas antigas sobre a segunda.
     const seq = ++this.notasSeq;
+    this.botoes = botoesNotas([]); // outra ordem nao herda os botoes da anterior enquanto carrega
     // Status da NF-e vem da TaxPlus pelo sap-odbc; se falhar, a lista sai sem status.
     const status$ = this.ordemCarregamentoService.statusNotas(this.selected.DocEntry).pipe(catchError(() => of([])));
     const docEntry = this.selected.DocEntry;
@@ -215,6 +225,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
       next: ([docs, status]) => {
         if (this.selected?.DocEntry !== docEntry || seq !== this.notasSeq) return;
         const statusPorDoc = new Map(status.map(s => [`${s.DocType}-${s.DocEntry}`, s]));
+        this.botoes = botoesNotas(status);
         this.notas = docs;
         this.motivosNfe.clear();
         this.flattened = this.notas.flatMap((nota) =>
@@ -248,7 +259,7 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
         }
       },
       error: (err) => {
-        if (this.selected?.DocEntry !== docEntry) return;
+        if (this.selected?.DocEntry !== docEntry || seq !== this.notasSeq) return;
         console.error('Erro ao carregar notas', err);
         this.loading = false;
       }
@@ -290,6 +301,48 @@ export class OrdemCarregamentoSelectedComponent implements OnInit, OnChanges {
         this.alertService.error('Erro ao baixar os DANFEs.');
         this.baixandoDanfes = false;
       }
+    });
+  }
+
+  gerarBoletos(): void {
+    if (!this.selected?.DocEntry || this.gerandoBoletos) return;
+    const docEntry = this.selected.DocEntry;
+    this.gerandoBoletosOrdens.add(docEntry);
+    const fim = () => this.gerandoBoletosOrdens.delete(docEntry);
+    this.ordemCarregamentoService.gerarBoletos(docEntry).subscribe({
+      next: (resultado) => {
+        fim();
+        const conta = (s: ResultadoBoleto['situacao']) => resultado.filter(r => r.situacao === s).length;
+        const outraOrdem = this.selected?.DocEntry !== docEntry;
+        const resumo = (outraOrdem ? `Ordem ${docEntry}: ` : '') +
+          `${conta('GERADO')} nota(s) com boleto gerado, ${conta('JA_TINHA')} já tinha(m) boleto, ` +
+          `${conta('JA_PAGA')} já paga(s), ${conta('NAO_E_BOLETO')} não é(são) boleto, ${conta('ERRO')} com erro.`;
+        const erros = resultado.filter(r => r.situacao === 'ERRO').map(r => `${r.nota}: ${r.mensagem}`);
+        if (erros.length) this.alertService.error(`${resumo}\n${erros.join('\n')}`);
+        else this.alertService.info(resumo);
+        // loadNotas e nao atualizarNotas: uma atualizacao manual em andamento pode ter lido o status de antes.
+        if (!outraOrdem) this.loadNotas();
+      },
+      // o interceptor de erro ja mostra a mensagem do backend
+      error: () => fim()
+    });
+  }
+
+  baixarBoletos(): void {
+    if (!this.selected?.DocEntry) return;
+    const docEntry = this.selected.DocEntry;
+    this.baixandoBoletos = true;
+    this.ordemCarregamentoService.boletos(docEntry).subscribe({
+      next: (zip) => {
+        const url = URL.createObjectURL(zip);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `boletos-ordem-${docEntry}.zip`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.baixandoBoletos = false;
+      },
+      error: () => this.baixandoBoletos = false
     });
   }
 
