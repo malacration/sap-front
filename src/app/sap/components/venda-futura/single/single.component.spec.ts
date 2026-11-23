@@ -34,4 +34,27 @@ describe('VendaFuturaSingleComponent - status do boleto', () => {
     expect(c.statusBoletoLabel(b)).toBe('Fechado');
     expect(c.statusBoletoClass(b)).toBe('badge-secondary');
   });
+
+  describe('com StatusPagamento do backend', () => {
+    const casos: [BoletoVf['StatusPagamento'], string, string][] = [
+      ['DEVOLVIDO', 'Devolvido', 'badge-danger'],
+      ['PAGO', 'Pago', 'badge-success'],
+      ['PARCIAL', 'Parcialmente pago', 'badge-info'],
+      ['ABERTO', 'Aberto', 'badge-warning'],
+    ];
+    casos.forEach(([status, label, cls]) => {
+      it(status + ' -> ' + label, () => {
+        // DocStatus 'O' + Recebimento provam que StatusPagamento tem precedencia sobre o legado
+        const b = boleto({ StatusPagamento: status, DocStatus: 'O', Recebimento: '1' });
+        expect(c.statusBoletoLabel(b)).toBe(label);
+        expect(c.statusBoletoClass(b)).toBe(cls);
+      });
+    });
+
+    it('null cai no comportamento legado', () => {
+      const b = boleto({ StatusPagamento: null, DocStatus: 'O', Recebimento: '1' });
+      expect(c.statusBoletoLabel(b)).toBe('Aberto');
+      expect(c.statusBoletoClass(b)).toBe('badge-warning');
+    });
+  });
 });

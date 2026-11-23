@@ -19,6 +19,8 @@ export interface BoletoVf {
   U_pix_consultar_ate?: string;
   Devolucao?: string;
   Recebimento?: string;
+  StatusPagamento?: 'DEVOLVIDO' | 'PAGO' | 'PARCIAL' | 'ABERTO' | null;
+  PaidToDate?: number;
   TaxaJurosMoraPercent?: number;
   JurosValor?: number;
   ValorTitulo?: number;
