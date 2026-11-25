@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { NgModel } from '@angular/forms';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import moment from 'moment';
 import { ToastrService } from '../../../core/services/toastr.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -8,7 +9,7 @@ import { Column } from '../../../shared/components/table/column.model';
 import { Branch } from '../../../sap/model/branch';
 import { SalesPerson } from '../../../sap/model/sales-person/sales-person';
 import {
-  CATEGORIAS_DOCUMENTO_LOTE, CategoriaDocumentoLote, FormaPagamentoLote, LinhaImportacaoLote, NotaFiscalLote,
+  CATEGORIAS_DOCUMENTO_LOTE, CategoriaDocumentoLote, Cessionaria, FormaPagamentoLote, ImportacaoLoteResultado, LinhaImportacaoLote, ModoImportacao, NotaFiscalLote,
   SITUACAO_IMPORTACAO_ROTULO, SITUACAO_TROCA_ROTULO,
   STATUS_SAP_NOTA, StatusSapNota, StatusSefaz, TipoDocumentoLote, TrocaFormaPagamentoResultado, categoriaInfo,
 } from '../../../sap/model/fiscal/nota-fiscal-lote';
@@ -18,6 +19,7 @@ import { SearchService } from '../../../sap/service/search.service';
 import { BusinessPartner } from '../../../sap/model/business-partner/business-partner';
 import { AlertService } from '../../../shared/service/alert.service';
 import { AuthService } from '../../../shared/service/auth.service';
+import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { LogoService } from '../../../core/services/logo.service';
 
 @Component({
@@ -72,6 +74,27 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   baixarBoleto = false;
   // PDF do contrato de venda futura de cada adiantamento (NF nao tem).
   baixarContrato = false;
+  // Termo de cessao: exige a cessionaria; as opcoes vem do backend na primeira vez que o termo e marcado.
+  baixarTermo = false;
+  // Como a planilha do banco acha as notas: nosso numero (BB) ou numero da nota (outros bancos).
+  modoImportacao: ModoImportacao = 'NOSSO_NUMERO';
+  cessionaria = '';
+  cessionarias: Cessionaria[] = [];
+  private cessionariasCarregadas = false;
+  readonly NOVA_CESSIONARIA = '__nova__';
+  // Codigo da cessionaria aberta no modal em modo edicao; null = modal de criacao.
+  editandoCodigo: string | null = null;
+  @ViewChild('modalCessionaria') modalCessionaria: ModalComponent;
+  // Id do ultimo GET da lista iniciado: so a resposta dele vale (os anteriores sao descartados).
+  private seqCessionarias = 0;
+  private listaCessionarias?: Subscription;
+  private salvarCessionariaSub?: Subscription;
+  // Muda a cada abertura/fechamento do modal e a cada escolha na lista: o POST so seleciona a nova
+  // cessionaria se o fluxo de criacao em que nasceu continua o mesmo.
+  private fluxoCessionaria = 0;
+  private nomePdfOriginal = '';
+  novaCessionaria = { nome: '', nomePdf: '', cnpj: '' };
+  salvandoCessionaria = false;
   // Tipos do download em andamento, para o aviso nao mudar se alguem mexer nas caixas.
   boletoNoDownload = false;
 
@@ -89,6 +112,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
    */
   // Chave tipo + docEntry (NotaFiscalLote.chave): NF e adiantamento podem ter o mesmo docEntry.
   private selecao = new Map<string, NotaFiscalLote>();
+  // Parcelas escolhidas na lista (uma linha por parcela), por documento, para o termo de cessao.
+  // Sem entrada = documento inteiro (adicionado por "todas do filtro", planilha ou lote antigo).
+  private parcelasEscolhidas = new Map<string, number[]>();
 
   // Copia do lote para o painel, refeita a cada mudanca (loteAlterado), e nao getter: o painel
   // redesenharia a lista a cada ciclo de deteccao.
@@ -140,6 +166,10 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.download?.unsubscribe();
     this.troca?.unsubscribe();
     this.importacao?.unsubscribe();
+    this.listaCessionarias?.unsubscribe();
+    this.salvarCessionariaSub?.unsubscribe();
+    // Saiu da tela com salvamento pendente: o dialog fica no body e o bloqueio de fechar o seguraria sobre a proxima rota.
+    this.modalCessionaria?.closeModal();
   }
 
   ngOnInit(): void {
@@ -151,6 +181,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.carregarLote();
     this.definirPeriodoPadrao();
     this.filtrar();
+  }
+
+  // Modelo de planilha do "Baixar modelo", conforme o modo.
+  get modeloImportacao(): string {
+    return this.modoImportacao === 'NUMERO_NOTA' ? 'assets/modelos/modelo-importacao-nota-nome.xlsx' : 'assets/modelos/modelo-planilha-banco.xlsx';
   }
 
   get filtrandoPorNf(): boolean {
@@ -274,6 +309,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     return this.selecao.size;
   }
 
+  // O termo so sai de NF (OINV) com parcela em aberto e nao cancelada (nota-fiscal-lote-termo-cessao.sql).
+  get notasFechadasNoLote(): number {
+    return Array.from(this.selecao.values()).filter((n) => n.tipo !== 'AD' && (n.statusSap === 'FECHADO' || n.statusSap === 'CANCELADO')).length;
+  }
+
   get todasDaPaginaSelecionadas(): boolean {
     return this.notas.length > 0 && this.notas.every((nota) => nota.selecionado);
   }
@@ -281,12 +321,46 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   action(event: ActionReturn): void {
     if (event.type === 'nota-lote-toggle-selecao' && !this.loteTravado()) {
       const nota = event.data as NotaFiscalLote;
-      if (this.selecao.has(nota.chave)) {
+      const parcelas = this.parcelasEscolhidas.get(nota.chave);
+      if (!this.selecao.has(nota.chave)) {
+        this.adicionar([nota], true);
+      } else if (nota.parcela == null) {
         this.remover(nota.chave);
+      } else if (parcelas && !parcelas.includes(nota.parcela)) {
+        // Documento com parcelas escolhidas: clicar em outra parcela soma.
+        this.parcelasEscolhidas.set(nota.chave, [...parcelas, nota.parcela].sort((a, b) => a - b));
+        this.loteAlterado();
       } else {
-        this.adicionar([nota]);
+        this.retirarParcelas([nota]);
+        this.loteAlterado();
       }
     }
+  }
+
+  /**
+   * Tira do lote as parcelas destas linhas. Documento inteiro vira as parcelas que sobram (1..N, N =
+   * `parcelas` da linha: a lista da tela pode nao ter todas); o documento sai quando nao sobra nenhuma.
+   * Linha sem parcela (lote antigo) tira o documento. Quem chama refaz o painel (loteAlterado).
+   */
+  private retirarParcelas(linhas: NotaFiscalLote[]): void {
+    const porDocumento = new Map<string, NotaFiscalLote[]>();
+    linhas.forEach((linha) => porDocumento.set(linha.chave, [...(porDocumento.get(linha.chave) ?? []), linha]));
+    porDocumento.forEach((doc, chave) => {
+      if (!this.selecao.has(chave)) {
+        return;
+      }
+      const retiradas = doc.map((linha) => linha.parcela);
+      const total = Math.max(...doc.map((linha) => linha.parcelas || 0), ...retiradas.map((p) => p ?? 0));
+      const atuais = this.parcelasEscolhidas.get(chave)
+        ?? (retiradas.includes(null) || retiradas.includes(undefined) ? [] : Array.from({ length: total }, (_, i) => i + 1));
+      const restantes = atuais.filter((parcela) => !retiradas.includes(parcela));
+      if (restantes.length === 0) {
+        this.selecao.delete(chave);
+        this.parcelasEscolhidas.delete(chave);
+      } else {
+        this.parcelasEscolhidas.set(chave, restantes);
+      }
+    });
   }
 
   alternarSelecaoDaPagina(): void {
@@ -294,9 +368,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.todasDaPaginaSelecionadas) {
-      this.remover(...this.notas.map((nota) => nota.chave));
+      // So as parcelas desta pagina: as escolhidas em outras ficam no lote.
+      this.retirarParcelas(this.notas);
+      this.loteAlterado();
     } else {
-      this.adicionar(this.notas);
+      this.adicionar(this.notas, true);
     }
   }
 
@@ -345,25 +421,28 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       this.toastr.info('Espere o "Adicionar todas do filtro" terminar.');
       return;
     }
-    if (!arquivo.name.toLowerCase().endsWith('.xlsx')) {
-      this.toastr.warning('Use a planilha em .xlsx (se o banco exportou .xls, abra e salve como .xlsx).');
+    if (!/\.(xlsx|csv)$/i.test(arquivo.name)) {
+      this.toastr.warning('Use a planilha em .xlsx ou .csv (se o banco exportou .xls, abra e salve como .xlsx).');
       return;
     }
     this.importacao?.unsubscribe();
     this.importando = true;
-    this.importacao = this.service.importarPlanilha(arquivo).subscribe({
+    this.importacao = this.service.importarPlanilha(arquivo, this.modoImportacao).subscribe({
       next: (r) => {
         this.importando = false;
-        this.linhasImportacao = r.linhas.filter((l) => l.situacao !== 'ENCONTRADO');
+        // ENCONTRADO sem mensagem entra limpo e fica oculto; com mensagem (ex.: valor diferente) a pessoa le antes de baixar.
+        this.linhasImportacao = r.linhas.filter((l) => l.situacao !== 'ENCONTRADO' || !!l.mensagem?.trim());
         const titulos = r.linhas.length;
-        const naoViraram = r.linhas.filter((l) => l.situacao === 'NAO_ENCONTRADO' || l.situacao === 'FORA_DA_TELA').length;
+        const naoViraram = r.linhas.filter((l) => ['NAO_ENCONTRADO', 'FORA_DA_TELA', 'AMBIGUO', 'PAGA'].includes(l.situacao)).length;
         if (r.documentos.length === 0) {
           this.toastr.warning(`Nenhum dos ${titulos} título(s) da planilha virou documento do lote. Veja o motivo abaixo da lista.`);
           return;
         }
+        const anteriores = new Map(r.documentos.map((n) => [n.chave, { noLote: this.selecao.has(n.chave), parcelas: this.parcelasEscolhidas.get(n.chave) }]));
         if (!this.adicionar(r.documentos)) {
           return;
         }
+        this.restringirAsParcelasDaPlanilha(r, anteriores);
         const partes = [`${titulos} título(s) da planilha: ${r.documentos.length} documento(s) no lote`];
         if (naoViraram > 0) {
           partes.push(`${naoViraram} sem documento`);
@@ -371,6 +450,10 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
         const divergentes = r.linhas.filter((l) => l.situacao === 'DIVERGENTE').length;
         if (divergentes > 0) {
           partes.push(`${divergentes} com divergência`);
+        }
+        const comAviso = r.linhas.filter((l) => l.situacao === 'ENCONTRADO' && !!l.mensagem?.trim()).length;
+        if (comAviso > 0) {
+          partes.push(`${comAviso} com aviso`);
         }
         if (this.linhasImportacao.length > 0) {
           this.toastr.warning(partes.join(', ') + '. Veja as linhas abaixo da lista.', 'Planilha', { timeOut: 15000 });
@@ -402,22 +485,30 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
    * Unico lugar que poe nota no lote, e por isso o unico que aplica o teto: o que ja esta no lote
    * e ignorado, e se o resto passar do limite nada entra (tudo ou nada, como o "adicionar todas").
    */
-  private adicionar(notas: NotaFiscalLote[]): boolean {
+  // porParcela: as linhas vieram da lista (uma por parcela) e cada uma guarda a parcela escolhida; sem
+  // isso o documento entra inteiro (e leva todas as parcelas em aberto no termo).
+  private adicionar(notas: NotaFiscalLote[], porParcela = false): boolean {
     // Tambem pega resposta de "adicionar todas" pedida antes do download comecar.
     if (this.loteTravado()) {
       return false;
     }
     const novas = new Map<string, NotaFiscalLote>();
     notas.filter((nota) => !this.selecao.has(nota.chave)).forEach((nota) => novas.set(nota.chave, nota));
-    if (novas.size === 0) {
-      return true;
-    }
-    if (this.selecao.size + novas.size > this.limite) {
+    if (novas.size > 0 && this.selecao.size + novas.size > this.limite) {
       this.toastr.warning(
         `O lote tem ${this.selecao.size} nota(s); com estas ficaria com ${this.selecao.size + novas.size}, e o limite é ${this.limite}.`);
       return false;
     }
     novas.forEach((nota, chave) => this.selecao.set(chave, nota));
+    if (porParcela) {
+      notas.filter((nota) => nota.parcela != null && (this.parcelasEscolhidas.has(nota.chave) || novas.has(nota.chave)))
+        .forEach((nota) => {
+          const atuais = this.parcelasEscolhidas.get(nota.chave) ?? [];
+          this.parcelasEscolhidas.set(nota.chave, Array.from(new Set([...atuais, nota.parcela])).sort((a, b) => a - b));
+        });
+    } else {
+      notas.forEach((nota) => this.parcelasEscolhidas.delete(nota.chave));
+    }
     this.loteAlterado();
     return true;
   }
@@ -427,6 +518,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     if (this.loteTravado()) {
       return;
     }
+    chaves.forEach((chave) => this.parcelasEscolhidas.delete(chave));
     const removeu = chaves.map((chave) => this.selecao.delete(chave)).some((r) => r);
     if (removeu) {
       this.loteAlterado();
@@ -447,6 +539,7 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   private esvaziarLote(): void {
     this.cancelarAdicionarTodas();
     this.selecao.clear();
+    this.parcelasEscolhidas.clear();
     this.loteAlterado();
   }
 
@@ -608,7 +701,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
       return;
     }
     if (!this.algumTipoMarcado) {
-      this.toastr.warning('Marque DANFE, XML, boleto ou contrato.');
+      this.toastr.warning('Marque DANFE, XML, boleto, contrato ou termo de cessão.');
+      return;
+    }
+    if (this.baixarTermo && !this.cessionaria) {
+      this.toastr.warning('Escolha a cessionária do termo de cessão.');
       return;
     }
     if (this.selecao.size > this.limite) {
@@ -620,9 +717,11 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     const documentos = Array.from(this.selecao.values());
     const notasFiscais = documentos.filter((n) => n.tipo !== 'AD').length;
     const adiantamentos = documentos.length - notasFiscais;
-    const nfGeraArquivo = this.baixarPdf || this.baixarXml || this.baixarBoleto;
+    const nfGeraArquivo = this.baixarPdf || this.baixarXml || this.baixarBoleto || this.baixarTermo;
+    // Termo nao entra aqui: adiantamento nao tem termo, vai so para o avisos.txt do zip.
     const adGeraArquivo = this.baixarBoleto || this.baixarContrato;
-    if ((notasFiscais === 0 || !nfGeraArquivo) && (adiantamentos === 0 || !adGeraArquivo)) {
+    // Com termo o pedido sempre sai: lote so de adiantamento volta com o zip so de avisos.txt.
+    if (!this.baixarTermo && (notasFiscais === 0 || !nfGeraArquivo) && (adiantamentos === 0 || !adGeraArquivo)) {
       this.toastr.warning(adiantamentos === 0
         ? 'O contrato só vem de adiantamento de venda futura: marque DANFE, XML ou boleto para as NF-e.'
         : 'Adiantamento só tem boleto e contrato (não emite NF-e): marque "Boleto" ou "Contrato" para baixar.');
@@ -638,11 +737,26 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     this.quantidadeBaixando = quantidade;
     this.boletoNoDownload = this.baixarBoleto;
     this.download?.unsubscribe();
-    const [pdf, xml, boleto, contrato] = [this.baixarPdf, this.baixarXml, this.baixarBoleto, this.baixarContrato];
+    const [pdf, xml, boleto, contrato, termo] = [this.baixarPdf, this.baixarXml, this.baixarBoleto, this.baixarContrato, this.baixarTermo];
+    const cessionaria = termo ? this.cessionaria : null;
+    // So o termo: o zip pode vir so com avisos.txt (nota sem parcela em aberto), entao nao da para contar notas.
+    const soTermo = termo && !pdf && !xml && !boleto && !contrato;
+    // So NF: adiantamento nao tem termo, e o docEntry sozinho confundiria NF e adiantamento.
+    const parcelasTermo = termo
+      ? documentos.filter((d) => d.tipo !== 'AD').flatMap((d) =>
+        (this.parcelasEscolhidas.get(d.chave) ?? []).map((parcela) => ({ docEntry: d.docEntry, parcela })))
+      : [];
+    // So avisa (nao bloqueia): o termo manda o cliente ignorar o boleto do Banco do Brasil.
+    if (termo && boleto) {
+      this.toastr.warning(
+        'O termo de cessão orienta o cliente a ignorar o boleto do Banco do Brasil. Confira se quer baixar os dois juntos.',
+        'Boleto e termo de cessão',
+        { timeOut: 15000 });
+    }
     // O logo do PDF do contrato e o do deploy da tela; sem contrato nem busca (e o pedido sai na hora).
     const logo = contrato && this.logoService ? from(this.logoService.dataUri()) : of(null);
     this.download = logo.pipe(
-      switchMap((dataUri) => this.service.baixar(documentos, pdf, xml, boleto, contrato, dataUri))
+      switchMap((dataUri) => this.service.baixar(documentos, pdf, xml, boleto, contrato, dataUri, termo, cessionaria, parcelasTermo))
     ).subscribe({
       next: (download) => {
         this.salvar(download.arquivo, download.nome);
@@ -653,7 +767,9 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
             'Lote baixado com pendências',
             { timeOut: 15000 });
         } else {
-          this.toastr.success(`${quantidade} nota(s) baixada(s).`);
+          this.toastr.success(soTermo
+            ? 'Lote gerado. Notas sem parcela em aberto aparecem em avisos.txt.'
+            : `${quantidade} nota(s) baixada(s).`);
         }
         if (adiantamentosSemArquivo > 0) {
           this.toastr.info(
@@ -677,8 +793,154 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
     });
   }
 
+  // O lote fica so com as parcelas que a planilha cita. Linha sem parcela (qualquer uma do documento) =
+  // documento inteiro. Documento que ja estava no lote: restricao manual soma com a da planilha; sem
+  // restricao (inteiro) continua inteiro.
+  private restringirAsParcelasDaPlanilha(r: ImportacaoLoteResultado, anteriores: Map<string, { noLote: boolean; parcelas?: number[] }>): void {
+    const citadas = new Map<string, (number | null)[]>();
+    r.linhas.filter((l) => l.situacao === 'ENCONTRADO' || l.situacao === 'DIVERGENTE').forEach((l) => {
+      const chave = `${l.tipo}-${l.docEntry}`;
+      citadas.set(chave, [...(citadas.get(chave) ?? []), l.parcela ?? null]);
+    });
+    r.documentos.forEach((n) => {
+      const parcelas = citadas.get(n.chave);
+      const antes = anteriores.get(n.chave);
+      if (!parcelas) {
+        // Nenhuma linha util citou o documento: a importacao nao opina; devolve a restricao que ele tinha.
+        if (antes?.parcelas) {
+          this.parcelasEscolhidas.set(n.chave, antes.parcelas);
+        }
+        return;
+      }
+      if (parcelas.includes(null) || (antes?.noLote && !antes.parcelas)) {
+        return;
+      }
+      this.parcelasEscolhidas.set(n.chave,
+        Array.from(new Set([...(antes?.parcelas ?? []), ...(parcelas as number[])])).sort((a, b) => a - b));
+    });
+    this.loteAlterado();
+  }
+
   get algumTipoMarcado(): boolean {
-    return this.baixarPdf || this.baixarXml || this.baixarBoleto || this.baixarContrato;
+    return this.baixarPdf || this.baixarXml || this.baixarBoleto || this.baixarContrato || this.baixarTermo;
+  }
+
+  // A opcao "+ Nova cessionaria" nao e valor: abre o modal e devolve o controle ao que estava.
+  escolherCessionaria(valor: string, modelo: NgModel): void {
+    if (valor !== this.NOVA_CESSIONARIA) {
+      this.cessionaria = valor;
+      this.fluxoCessionaria++;
+      return;
+    }
+    modelo.control.setValue(this.cessionaria, { emitEvent: false });
+    this.abrirModalCessionaria();
+  }
+
+  editarCessionariaSelecionada(): void {
+    const atual = this.cessionarias.find((c) => c.codigo === this.cessionaria);
+    if (atual) {
+      this.abrirModalCessionaria(atual);
+    }
+  }
+
+  private abrirModalCessionaria(atual?: Cessionaria): void {
+    // Com um salvamento pendente nao abre outro: o retorno dele nao pode cair num modal novo.
+    if (this.salvandoCessionaria) {
+      return;
+    }
+    this.editandoCodigo = atual?.codigo ?? null;
+    this.fluxoCessionaria++;
+    this.nomePdfOriginal = (atual?.nomePdf ?? '').trim();
+    // shortcut: a lista nao traz CNPJ; mostra o codigo (formatado se for 14 digitos). Upgrade: backend devolver cnpj.
+    this.novaCessionaria = atual
+      ? { nome: atual.nome, nomePdf: atual.nomePdf ?? '', cnpj: /^\d{14}$/.test(atual.codigo) ? this.formatarCnpj(atual.codigo) : atual.codigo }
+      : { nome: '', nomePdf: '', cnpj: '' };
+    this.modalCessionaria.openModal();
+  }
+
+  // Com POST pendente o modal nao fecha (fechamentoBloqueado), entao nao ha corrida entre fechar e o POST.
+  modalCessionariaFechado(): void {
+    this.fluxoCessionaria++;
+  }
+
+  // shortcut: so CNPJ (14 digitos), sem validar digito verificador; o backend valida.
+  formatarCnpj(valor: string): string {
+    return (valor ?? '').replace(/\D/g, '').slice(0, 14)
+      .replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
+  }
+
+  salvarCessionaria(): void {
+    this.salvandoCessionaria = true;
+    const { nome, nomePdf, cnpj } = this.novaCessionaria;
+    if (this.editandoCodigo !== null) {
+      // Chave ausente = backend mantem; null = limpa (o PDF volta a usar o nome).
+      const dados: { nome: string; nomePdf?: string | null } = { nome: nome.trim() };
+      if (nomePdf.trim() !== this.nomePdfOriginal) {
+        dados.nomePdf = nomePdf.trim() || null;
+      }
+      this.salvarCessionariaSub = this.service.editarCessionaria(this.editandoCodigo, dados).subscribe({
+        next: (editada) => {
+          this.salvandoCessionaria = false;
+          // Edicao local ate a recarga (que substitui qualquer GET pendente) chegar.
+          this.cessionarias = this.cessionarias.map((c) => (c.codigo === editada.codigo ? { ...c, ...editada } : c));
+          this.carregarCessionarias();
+          this.modalCessionaria.closeModal();
+          this.toastr.success('Cessionária atualizada.');
+        },
+        error: () => (this.salvandoCessionaria = false),
+      });
+      return;
+    }
+    // Erro do backend: o ErrorInterceptor global ja mostra a mensagem.
+    const fluxo = this.fluxoCessionaria;
+    this.salvarCessionariaSub = this.service.criarCessionaria({ nome: nome.trim(), nomePdf: nomePdf.trim(), cnpj }).subscribe({
+      next: (criada) => {
+        this.salvandoCessionaria = false;
+        // Insercao local ja com a resposta do POST; a recarga completa a lista.
+        this.cessionarias = [...this.cessionarias.filter((c) => c.codigo !== criada.codigo), criada];
+        // So seleciona se o usuario continua no mesmo fluxo; senao mantem a escolha dele.
+        if (fluxo === this.fluxoCessionaria) {
+          this.cessionaria = criada.codigo;
+        }
+        this.modalCessionaria.closeModal();
+        this.carregarCessionarias();
+      },
+      error: () => (this.salvandoCessionaria = false),
+    });
+  }
+
+  // Ultimo GET iniciado vence; apos todo POST/PATCH ha um novo, que sempre sucede os pendentes.
+  private carregarCessionarias(): void {
+    const id = ++this.seqCessionarias;
+    this.cessionariasCarregadas = true;
+    this.listaCessionarias?.unsubscribe();
+    this.listaCessionarias = this.service.cessionarias().subscribe({
+      next: (lista) => {
+        if (id !== this.seqCessionarias) {
+          return;
+        }
+        this.cessionarias = lista ?? [];
+        if (this.cessionaria && !this.cessionarias.some((c) => c.codigo === this.cessionaria)) {
+          this.cessionaria = '';
+        }
+      },
+      // Permite tentar de novo ao desmarcar e marcar o termo.
+      error: () => {
+        if (id === this.seqCessionarias) {
+          this.cessionariasCarregadas = false;
+        }
+      },
+    });
+  }
+
+  onTermoChange(): void {
+    if (!this.baixarTermo) {
+      this.cessionaria = '';
+    }
+    if (this.baixarTermo && !this.cessionariasCarregadas) {
+      this.carregarCessionarias();
+    }
   }
 
   /**
@@ -702,12 +964,21 @@ export class NotaFiscalLoteComponent implements OnInit, OnDestroy {
   private loteAlterado(): void {
     this.notasDoLote = Array.from(this.selecao.values());
     this.totalDoLote = this.notasDoLote.reduce((soma, nota) => soma + (Number(nota.total) || 0), 0);
-    this.notas.forEach((nota) => (nota.selecionado = this.selecao.has(nota.chave)));
-    this.storage.salvar(this.notasDoLote, this.usuario());
+    this.notas.forEach((nota) => {
+      const parcelas = this.parcelasEscolhidas.get(nota.chave);
+      nota.selecionado = this.selecao.has(nota.chave) && (!parcelas || nota.parcela == null || parcelas.includes(nota.parcela));
+    });
+    this.storage.salvar(this.notasDoLote, this.usuario(), this.parcelasEscolhidas);
   }
 
   private carregarLote(): void {
-    this.storage.carregar(this.usuario()).forEach((nota) => this.selecao.set(nota.chave, nota));
+    this.storage.carregar(this.usuario()).forEach((nota) => {
+      this.selecao.set(nota.chave, nota);
+      // Lote guardado antes das parcelas escolhidas nao tem o campo: documento inteiro.
+      if (nota.parcelasTermo?.length) {
+        this.parcelasEscolhidas.set(nota.chave, nota.parcelasTermo);
+      }
+    });
     this.loteAlterado();
   }
 

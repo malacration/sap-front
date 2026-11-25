@@ -18,7 +18,8 @@ export class NotaFiscalLoteStorageService {
   // (NF ou adiantamento); a v1 so tinha NF e e lida como NF.
   private static readonly VERSAO = 2;
 
-  salvar(notas: NotaFiscalLote[], usuario: string): void {
+  // parcelas: por chave do documento, as parcelas escolhidas para o termo; sem entrada = documento inteiro.
+  salvar(notas: NotaFiscalLote[], usuario: string, parcelas = new Map<string, number[]>()): void {
     try {
       const storage = window.sessionStorage;
       if (notas.length === 0) {
@@ -28,7 +29,10 @@ export class NotaFiscalLoteStorageService {
       storage.setItem(NotaFiscalLoteStorageService.CHAVE, JSON.stringify({
         v: NotaFiscalLoteStorageService.VERSAO,
         usuario,
-        notas: notas.map((nota) => NotaFiscalLote.paraArmazenar(nota)),
+        notas: notas.map((nota) => ({
+          ...NotaFiscalLote.paraArmazenar(nota),
+          ...(parcelas.has(nota.chave) ? { parcelasTermo: parcelas.get(nota.chave) } : {}),
+        })),
       }));
     } catch {
       // Cota cheia ou storage bloqueado: o lote segue so em memoria.
@@ -50,7 +54,8 @@ export class NotaFiscalLoteStorageService {
       dados.notas
         .filter((nota: any) => Number.isInteger(nota?.docEntry) && nota.docEntry > 0)
         .filter((nota: any) => nota.tipo == null || nota.tipo === 'NF' || nota.tipo === 'AD')
-        .map((nota: any) => NotaFiscalLote.from({ ...nota, tipo: nota.tipo ?? 'NF', categoria: nota.categoria ?? nota.tipo ?? 'NF' }))
+        .map((nota: any) => NotaFiscalLote.from({ ...nota, tipo: nota.tipo ?? 'NF', categoria: nota.categoria ?? nota.tipo ?? 'NF',
+          parcelasTermo: Array.isArray(nota.parcelasTermo) ? nota.parcelasTermo.filter(Number.isInteger) : undefined }))
         .forEach((nota: NotaFiscalLote) => porChave.set(nota.chave, nota));
       return Array.from(porChave.values());
     } catch {

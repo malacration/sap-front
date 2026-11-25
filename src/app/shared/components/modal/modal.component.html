@@ -1,8 +1,8 @@
 <ng-template #template>
   @if (showHeader) {
     <div class="modal-header modal-xl">
-      <h4 class="modal-title pull-left">{{title}}</h4>
-      <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+      <h4 class="modal-title pull-left" [attr.id]="ariaLabelledBy">{{title}}</h4>
+      <button type="button" class="btn-close close pull-right" aria-label="Close" [disabled]="fechamentoBloqueado" (click)="fecharPeloX()">
         <span aria-hidden="true" class="visually-hidden">&times;</span>
       </button>
     </div>

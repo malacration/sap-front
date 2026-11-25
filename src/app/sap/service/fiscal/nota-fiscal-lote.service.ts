@@ -5,7 +5,7 @@ import { ConfigService } from '../../../core/services/config.service';
 import { Column } from '../../../shared/components/table/column.model';
 import { Page } from '../../model/page.model';
 import {
-  CategoriaDocumentoLote, FormaPagamentoLote, ImportacaoLoteResultado, NotaFiscalLote, StatusSapNota, StatusSefaz,
+  CategoriaDocumentoLote, Cessionaria, FormaPagamentoLote, ImportacaoLoteResultado, ModoImportacao, NotaFiscalLote, StatusSapNota, StatusSefaz,
   TrocaFormaPagamentoResultado,
 } from '../../model/fiscal/nota-fiscal-lote';
 import { BusinessPartner } from '../../model/business-partner/business-partner';
@@ -91,6 +91,18 @@ export class NotaFiscalLoteService {
     return this.http.get<StatusSefaz[]>(this.url + '/status-boleto');
   }
 
+  cessionarias(): Observable<Cessionaria[]> {
+    return this.http.get<Cessionaria[]>(this.url + '/cessionarias');
+  }
+
+  criarCessionaria(dados: { nome: string; nomePdf: string; cnpj: string }): Observable<Cessionaria> {
+    return this.http.post<Cessionaria>(this.url + '/cessionarias', dados);
+  }
+
+  editarCessionaria(codigo: string, dados: { nome: string; nomePdf?: string | null }): Observable<Cessionaria> {
+    return this.http.patch<Cessionaria>(`${this.url}/cessionarias/${encodeURIComponent(codigo)}`, dados);
+  }
+
   // OINV e ODPI tem DocEntry proprio: o backend recebe NF e adiantamentos em listas separadas.
   static porTipo(documentos: NotaFiscalLote[]): { docEntries: number[]; adiantamentos: number[] } {
     return {
@@ -101,8 +113,12 @@ export class NotaFiscalLoteService {
 
   // contrato: PDF do contrato de venda futura de cada adiantamento; logo (data: URI) vai no PDF dele.
   baixar(documentos: NotaFiscalLote[], pdf: boolean, xml: boolean, boleto = false, contrato = false,
-         logo: string | null = null): Observable<NotaFiscalLoteDownload> {
-    const corpo = { ...NotaFiscalLoteService.porTipo(documentos), pdf, xml, boleto, contrato, ...(contrato && logo ? { logo } : {}) };
+         logo: string | null = null, termo = false, cessionaria: string | null = null,
+         parcelasTermo: { docEntry: number; parcela: number }[] = []): Observable<NotaFiscalLoteDownload> {
+    const corpo = { ...NotaFiscalLoteService.porTipo(documentos), pdf, xml, boleto, contrato, ...(contrato && logo ? { logo } : {}),
+      termo, cessionaria: termo ? cessionaria : null,
+      // Documento sem entrada = todas as parcelas em aberto (o backend decide).
+      ...(termo && parcelasTermo.length ? { parcelasTermo } : {}) };
     return this.http
       .post(this.url + '/download', corpo, { observe: 'response', responseType: 'blob' })
       .pipe(
@@ -115,11 +131,12 @@ export class NotaFiscalLoteService {
       );
   }
 
-  // Planilha de titulos do banco (.xlsx) vai crua no corpo; volta o que por no lote e o que houve
-  // com cada linha. Nao grava nada.
-  importarPlanilha(arquivo: Blob): Observable<ImportacaoLoteResultado> {
+  // Planilha de titulos do banco (.xlsx ou .csv) vai crua no corpo; volta o que por no lote e o que
+  // houve com cada linha. Nao grava nada. No modo NUMERO_NOTA a busca e em todas as notas (sem filtro da tela).
+  importarPlanilha(arquivo: Blob, modo: ModoImportacao = 'NOSSO_NUMERO'): Observable<ImportacaoLoteResultado> {
+    const params = modo === 'NUMERO_NOTA' ? new HttpParams().set('modo', modo) : new HttpParams();
     return this.http.post<ImportacaoLoteResultado>(this.url + '/importar-planilha', arquivo,
-      { headers: { 'Content-Type': 'application/octet-stream' } }).pipe(
+      { headers: { 'Content-Type': 'application/octet-stream' }, params }).pipe(
       map((r) => ({ linhas: r?.linhas ?? [], documentos: (r?.documentos ?? []).map((d) => NotaFiscalLote.from(d)) }))
     );
   }
