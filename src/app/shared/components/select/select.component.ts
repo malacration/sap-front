@@ -51,6 +51,8 @@ export class SelectComponent implements OnInit, OnChanges {
   @Input()
   set grupos(grupos : Array<OptionGroup>){
     this.gruposInternos = grupos ?? []
+    // Quem so liga [grupos] (deposito) e recebe [] enquanto carrega nao e modo plano com busca.
+    this.gruposLigado = true
     // Todos recolhidos menos o primeiro: grupo grande (24 meses, no filtro de cobranca) abriria
     // o painel com uma lista que o usuario tem que rolar pra achar o que quer.
     this.recolhidos = new Set(this.gruposInternos.slice(1).map(grupo => grupo.label))
@@ -71,8 +73,11 @@ export class SelectComponent implements OnInit, OnChanges {
 
   selecionados : Array<any> = []
   aberto = false
+  // Filtro do modo plano; limpo quando o menu fecha.
+  busca = ''
 
   private gruposInternos : Array<OptionGroup> = []
+  gruposLigado = false
   private recolhidos = new Set<string>()
 
   @Output()
@@ -105,6 +110,8 @@ export class SelectComponent implements OnInit, OnChanges {
 
   toggleAberto(){
     this.aberto = !this.aberto
+    if(!this.aberto)
+      this.busca = ''
   }
 
   // Mesmo padrao do dropdown de acoes da venda futura: fecha no clique fora sem depender
@@ -115,8 +122,34 @@ export class SelectComponent implements OnInit, OnChanges {
   // nunca se fechariam - clicar em um deixaria os dois menus abertos e sobrepostos.
   @HostListener('document:click', ['$event'])
   onDocumentClick(event : MouseEvent){
-    if(this.multiple && !this.elementRef.nativeElement.contains(event.target))
+    if(this.multiple && !this.elementRef.nativeElement.contains(event.target)){
       this.aberto = false
+      this.busca = ''
+    }
+  }
+
+  private normalizar(texto : string){
+    return (texto ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  }
+
+  // Opcoes do modo plano que passam no filtro (sem acento e sem diferenciar maiuscula).
+  get opcoesVisiveis() : Array<Option>{
+    const termo = this.normalizar(this.busca.trim())
+    return termo ? this.options.filter(it => this.normalizar(it.description).includes(termo)) : this.options
+  }
+
+  get todosVisiveisMarcados(){
+    const visiveis = this.opcoesVisiveis
+    return visiveis.length == 0 || visiveis.every(it => this.estaSelecionado(it))
+  }
+
+  // Mantem o que ja estava marcado (inclusive o que o filtro esconde) e soma os visiveis.
+  marcarTodos(){
+    // Set: valor visivel repetido nao entra duas vezes; mantem a referencia original (objeto).
+    const marcados = new Set(this.selecionados)
+    this.opcoesVisiveis.forEach(it => marcados.add(it.value))
+    this.selecionados = [...marcados]
+    this.selectedOut.emit([...this.selecionados])
   }
 
   estaSelecionado(it : Option){

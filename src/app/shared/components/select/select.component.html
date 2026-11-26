@@ -25,20 +25,41 @@
       (click)="toggleAberto()">
       {{ resumoSelecao }}
     </button>
-    <div class="dropdown-menu app-select-multi-menu" [class.show]="aberto">
+    <div class="dropdown-menu app-select-multi-menu" [class.show]="aberto" [class.app-select-plano]="!agrupado">
       <!-- Modo plano: lista de checkbox, um por opcao. -->
       @if (!agrupado) {
-        <button type="button" class="dropdown-item text-muted" (click)="limparSelecao()"
-          [disabled]="selecionados.length == 0">
-          Limpar seleção
-        </button>
+        <div class="app-select-topo">
+          @if (!gruposLigado) {
+            <!-- Enter no input submeteria o <form> que envolve o filtro. -->
+            <input type="text" class="form-control form-control-sm mb-1" placeholder="Pesquisar..."
+              [(ngModel)]="busca" (keydown.enter)="$event.preventDefault()" aria-label="Pesquisar">
+          }
+          <div class="d-flex">
+            @if (!gruposLigado) {
+              <button type="button" class="dropdown-item text-muted" (click)="marcarTodos()"
+                [disabled]="todosVisiveisMarcados">
+                Marcar todos
+              </button>
+            }
+            <button type="button" class="dropdown-item text-muted" (click)="limparSelecao()"
+              [disabled]="selecionados.length == 0">
+              Limpar seleção
+            </button>
+          </div>
+        </div>
         <div class="dropdown-divider"></div>
-        @for (it of options; track trackByOption($index, it)) {
-          <label class="dropdown-item mb-0">
-            <input type="checkbox" class="mr-2" [checked]="estaSelecionado(it)" (change)="alternar(it)">
-            {{ it.description }}
-          </label>
-        }
+        <!-- So a lista rola; busca e botoes ficam parados acima dela. -->
+        <div class="app-select-lista">
+          @if (!gruposLigado && opcoesVisiveis.length == 0) {
+            <div class="dropdown-item-text text-muted">Nenhuma opção encontrada</div>
+          }
+          @for (it of opcoesVisiveis; track trackByOption($index, it)) {
+            <label class="dropdown-item mb-0">
+              <input type="checkbox" class="mr-2" [checked]="estaSelecionado(it)" (change)="alternar(it)">
+              {{ it.description }}
+            </label>
+          }
+        </div>
       }
       <!-- Modo agrupado: "(Todos)" no lugar do "Limpar seleção" (mesma função, no idioma da
       árvore), grupo marcável com +/- e as opções recuadas embaixo. -->
