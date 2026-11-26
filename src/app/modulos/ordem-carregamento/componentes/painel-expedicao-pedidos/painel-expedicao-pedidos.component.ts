@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import moment from 'moment';
 
 import { Branch } from '../../../../sap/model/branch';
@@ -10,7 +11,7 @@ import { Page } from '../../../../sap/model/page.model';
 import { NextLinkService } from '../../../../sap/service/nextLink.service';
 import { PainelExpedicaoPedidos } from '../../../../sap/model/painel-expedicao-pedidos.model';
 import { Localidade } from '../../../../sap/model/localidade/localidade';
-import { PainelExpedicaoPedidosService } from '../../service/pedidos-carregamento.service';
+import { PainelExpedicaoPedidosService, PainelExpedicaoTotais } from '../../service/pedidos-carregamento.service';
 
 @Component({
     selector: 'painel-expedicao-pedidos',
@@ -18,7 +19,7 @@ import { PainelExpedicaoPedidosService } from '../../service/pedidos-carregament
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class PainelExpedicaoPedidosComponent implements OnInit {
+export class PainelExpedicaoPedidosComponent implements OnInit, OnDestroy {
   startDate = '';
   endDate = '';
   carregando = false;
@@ -32,8 +33,13 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     totalElements: 0,
     size: 0,
   };
-  private todosPedidos: PainelExpedicaoPedidos[] = [];
-  branchId: string;
+  readonly tamanhoPagina = 50;
+  paginaAtual = 0;
+  totalItens = 0;
+  totais: PainelExpedicaoTotais | null = null;
+  private consultaPagina?: Subscription;
+  private consultaTotais?: Subscription;
+  branchIds: number[] = [];
   cliente: any;
   vendedor: any;
   item: string;
@@ -55,6 +61,13 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     this.endDate = hoje.format('YYYY-MM-DD');  
     this.getPedidos();
   }
+
+  ngOnDestroy(): void {
+    this.consultaPagina?.unsubscribe();
+    this.consultaTotais?.unsubscribe();
+    this.stopLoading();
+  }
+
   private formatPedido(p: PainelExpedicaoPedidos): PainelExpedicaoPedidos {
      const m = new PainelExpedicaoPedidos();
     Object.assign(m, p);
@@ -116,15 +129,45 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
     }
   }
 
+  // Toda mudanca de filtro: volta para a pagina 0 e refaz os totais.
   getPedidos(): void {
-    if (!this.startDate || !this.endDate || this.branchId == null) return;
+    if (!this.startDate || !this.endDate) return;
+    if (!this.branchIds.length) {
+      // Exige ao menos uma filial: sem seleção, não consulta e limpa o que estava na tela.
+      this.consultaPagina?.unsubscribe();
+      this.consultaTotais?.unsubscribe();
+      this.stopLoading();
+      this.resultado = { content: [], nextLink: null, totalElements: 0, size: 0 };
+      this.totalItens = 0;
+      this.paginaAtual = 0;
+      this.totais = null;
+      return;
+    }
 
+    this.carregarPagina(0);
+    this.consultaTotais?.unsubscribe();
+    this.totais = null;
+    this.consultaTotais = this.PainelExpedicaoPedidosService
+      .getTotais(
+        this.startDate, this.endDate, this.branchIds, this.cliente, this.item, this.vendedor,
+        this.localidade, this.incoterms, this.tipoDocumento, this.frete, this.emOrdemDeCarregamento
+      )
+      .subscribe({
+        next: (t) => (this.totais = t),
+        error: () => (this.totais = null),
+      });
+  }
+
+  carregarPagina(pagina: number): void {
+    if (!this.startDate || !this.endDate || !this.branchIds.length) return;
+
+    this.consultaPagina?.unsubscribe();
     this.startLoading();
-    this.PainelExpedicaoPedidosService
+    this.consultaPagina = this.PainelExpedicaoPedidosService
       .getByFilters(
         this.startDate,
         this.endDate,
-        +this.branchId,
+        this.branchIds,
         this.cliente,
         this.item,
         this.vendedor,
@@ -132,59 +175,25 @@ export class PainelExpedicaoPedidosComponent implements OnInit {
         this.localidade,
         this.incoterms,
         this.tipoDocumento,
-        this.frete
+        this.frete,
+        this.emOrdemDeCarregamento,
+        pagina,
+        this.tamanhoPagina
       )
       .subscribe({
         next: (data) => {
-          const conteudoFormatado = data.content.map((p) =>
-            this.formatPedido(p)
-          );
-
-          // guarda todos sem filtro
-          this.todosPedidos = conteudoFormatado;
-
-          // aplica filtro no front
-          this.aplicarFiltrosFront();
-
-          // mantém outros metadados da paginação
-          this.resultado = {
-            ...this.resultado,
-            nextLink: data.nextLink,
-            totalElements: this.resultado.content.length,
-            size: this.resultado.content.length,
-          };
-
+          this.resultado = { ...data, content: data.content.map((p) => this.formatPedido(p)) };
+          this.totalItens = data.totalElements;
+          this.paginaAtual = pagina;
           this.stopLoading();
         },
         error: () => {
-          this.todosPedidos = [];
-          this.resultado.content = [];
-          this.resultado.totalElements = 0;
-          this.resultado.size = 0;
+          this.resultado = { content: [], nextLink: null, totalElements: 0, size: 0 };
+          this.totalItens = 0;
+          this.paginaAtual = 0;
           this.stopLoading();
         },
       });
-  }
-private aplicarFiltrosFront(): void {
-    let filtrados = [...this.todosPedidos];
-
-    if (this.emOrdemDeCarregamento === 'Sim') {
-      filtrados = filtrados.filter(
-        (p) => p.EmOrdemDeCarregamento === 'Sim'
-      );
-    } else if (this.emOrdemDeCarregamento === 'Não') {
-      filtrados = filtrados.filter(
-        (p) => p.EmOrdemDeCarregamento === 'Não'
-      );
-    }
-  
-
-    this.resultado = {
-      ...this.resultado,
-      content: filtrados,
-      totalElements: filtrados.length,
-      size: filtrados.length,
-    };
   }
 
   selectLocalidade(localidade: Localidade): void {
@@ -195,8 +204,8 @@ private aplicarFiltrosFront(): void {
     return moment(ymd, 'YYYYMMDD').format('DD/MM/YYYY');
   }
 
-  selectBranch(branch: Branch): void {
-    this.branchId = branch.Bplid;
+  selectBranches(branches: Branch[]): void {
+    this.branchIds = (branches ?? []).map((b) => +b.Bplid);
     this.getPedidos();
   }
 

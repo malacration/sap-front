@@ -11,7 +11,8 @@
       </div>
       <div class="col-sm-3">
         <app-branch-select
-          (selectedOut)="selectBranch($event)"
+          [multiple]="true"
+          (selectedManyOut)="selectBranches($event)"
         ></app-branch-select>
       </div>
       <div class="col-sm-3">
@@ -113,10 +114,17 @@
     }
   }
 
-  @if (!carregando && resultado.content.length > 0) {
-    <div class="row mt-3">
-      <div class="col-12 text-center"></div>
+  @if (totalItens > 0) {
+    <div class="mt-2">
+      <app-paginacao
+        (pageChange)="carregarPagina($event)"
+        [totalItens]="totalItens"
+        [pageSize]="tamanhoPagina"
+        [paginaAtual]="paginaAtual">
+      </app-paginacao>
     </div>
   }
-  <span>Total de {{ resultado.content.length }} itens</span>
+  @if (totais) {
+    <span aria-live="polite">Total de {{ totais.linhas }} itens | {{ totais.pedidos }} pedidos | {{ totais.notasVendaFutura }} NFs de venda futura</span>
+  }
 </div>
