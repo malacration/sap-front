@@ -58,4 +58,11 @@ describe('Calendario do formulario de parametros', () => {
       tick(500);
     }));
   }
+
+  it('trata os tipos novos de cadastro com o componente de busca', () => {
+    const component = TestBed.createComponent(FormularioParametrosComponent).componentInstance;
+    for (const tipo of ['fornecedor', 'conta_contabil', 'centro_custo', 'condicao_pagamento', 'grupo_item', 'deposito'] as const) {
+      expect(component.cadastro({ nome: 'p', tipo, obrigatorio: false })).withContext(tipo).toBeTrue();
+    }
+  });
 });
