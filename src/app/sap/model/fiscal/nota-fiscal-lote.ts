@@ -77,7 +77,7 @@ export const SITUACAO_TROCA_ROTULO: { [s in SituacaoTrocaFormaPagamento]: string
 };
 
 // Importacao da planilha de titulos do banco (POST /nota-fiscal-lote/importar-planilha).
-export type SituacaoLinhaImportacao = 'ENCONTRADO' | 'DIVERGENTE' | 'NAO_ENCONTRADO' | 'FORA_DA_TELA';
+export type SituacaoLinhaImportacao = 'ENCONTRADO' | 'DIVERGENTE' | 'NAO_ENCONTRADO' | 'FORA_DA_TELA' | 'AMBIGUO' | 'PAGA';
 
 export const SITUACAO_IMPORTACAO_ROTULO: { [s in SituacaoLinhaImportacao]: string } = {
   ENCONTRADO: 'Encontrado',
@@ -86,6 +86,10 @@ export const SITUACAO_IMPORTACAO_ROTULO: { [s in SituacaoLinhaImportacao]: strin
   NAO_ENCONTRADO: 'Não encontrado',
   // A BankPlus conhece o boleto, mas o documento nao aparece nesta tela.
   FORA_DA_TELA: 'Fora da tela',
+  // Modo numero da nota: o mesmo numero existe em mais de uma filial/serie; nao entra no lote.
+  AMBIGUO: 'Ambígua',
+  // A parcela da planilha ja esta paga no SAP: nao entra no lote.
+  PAGA: 'Paga',
 };
 
 export interface LinhaImportacaoLote {
@@ -103,9 +107,19 @@ export interface LinhaImportacaoLote {
   mensagem: string;
 }
 
+export type ModoImportacao = 'NOSSO_NUMERO' | 'NUMERO_NOTA';
+
 export interface ImportacaoLoteResultado {
   documentos: NotaFiscalLote[];
   linhas: LinhaImportacaoLote[];
+}
+
+// Cessionaria (securitizadora) do termo de cessao, de GET /nota-fiscal-lote/cessionarias.
+export interface Cessionaria {
+  codigo: string;
+  nome: string;
+  telefone?: string | null;
+  nomePdf?: string | null;
 }
 
 export interface StatusSefaz {
@@ -155,6 +169,8 @@ export class NotaFiscalLote {
   statusSap: StatusSapNota;
 
   selecionado = false;
+  // So no lote guardado na aba: parcelas escolhidas para o termo; ausente = documento inteiro.
+  parcelasTermo?: number[];
 
   // `chave` e getter aqui: um campo `chave` vindo no JSON (o backend ja nao manda) faria o
   // Object.assign lancar TypeError e a lista sumir em silencio.

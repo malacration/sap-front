@@ -21,6 +21,9 @@
     "paths": {
       "src/*": [
         "./src/*"
+      ],
+      "cytoscape-node-html-label": [
+        "./src/types/cytoscape-node-html-label.d.ts"
       ]
     },
     "resolveJsonModule": true,

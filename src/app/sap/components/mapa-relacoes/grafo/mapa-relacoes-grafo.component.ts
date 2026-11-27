@@ -6,12 +6,15 @@ import { elementosCancelados, estaCancelado, etiquetaSituacao, getCliente, LadoR
 //interop CJS/ESM: dependendo do bundler, o modulo vem como {default: fn} ou como a propria funcao
 const cytoscape : any = (cytoscapeLib as any).default || cytoscapeLib;
 
-//cytoscape-node-html-label tem um .d.ts quebrado (declara "module"/"cytoscape" como
-//globais, conflitando com @types/node e com os tipos do proprio cytoscape) - usa require()
-//pra nao entrar na checagem de tipos desse arquivo
-const nodeHtmlLabel : any = require('cytoscape-node-html-label');
-//layout em camadas do rastreio de lote (ver montarArvore); sem tipos no projeto, mesmo motivo do require acima
-const dagre : any = require('dagre');
+//cytoscape-node-html-label tem um .d.ts quebrado (ver src/typings.d.ts). require() nao existe
+//no bundler ESM (esbuild/vite), por isso import.
+import * as nodeHtmlLabelLib from 'cytoscape-node-html-label';
+//layout em camadas do rastreio de lote (ver montarArvore); sem tipos no projeto, mesmo motivo do ts-ignore acima
+// @ts-ignore
+import * as dagreLib from 'dagre';
+
+const nodeHtmlLabel : any = (nodeHtmlLabelLib as any).default || nodeHtmlLabelLib;
+const dagre : any = (dagreLib as any).default || dagreLib;
 nodeHtmlLabel(cytoscape);
 
 const ESTILO_TRACEJADO: Array<string> = ['CONCILIACAO', 'APROPRIACAO']
