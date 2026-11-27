@@ -28,6 +28,22 @@
         max-height: 15rem;
         overflow-y: auto;
 
+        // Modo plano: o menu nao rola; so a lista abaixo da busca (sem sticky, o padding
+        // superior do .dropdown-menu deixava as opcoes aparecerem acima do cabecalho).
+        &.app-select-plano {
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        .app-select-topo {
+            padding: 0.25rem 0.5rem 0;
+        }
+
+        .app-select-lista {
+            max-height: 10rem;
+            overflow-y: auto;
+        }
+
         // Modo agrupado: o grupo e uma linha propria (recolher + checkbox + rotulo) e as opcoes
         // ficam recuadas na largura do +/- mais a margem.
         .app-select-grupo {

@@ -142,6 +142,51 @@ describe('SelectComponent no modo multiple', () => {
     expect(checkboxes()[1].checked).toBe(true);
     expect(emitido.length).toBe(0);
   });
+
+  describe('busca e "Marcar todos" (modo plano)', () => {
+    beforeEach(() => {
+      component.options = [new Option('1', 'São Paulo'), new Option('2', 'SAO Carlos'), new Option('3', 'Curitiba')];
+      fixture.detectChanges();
+    });
+
+    function digitar(texto: string) {
+      component.busca = texto;
+      fixture.detectChanges();
+    }
+
+    it('filtra sem diferenciar acento nem maiuscula', () => {
+      digitar('sao');
+      expect(component.opcoesVisiveis.map(o => o.value)).toEqual(['1', '2']);
+      digitar('CURITÍBA');
+      expect(component.opcoesVisiveis.map(o => o.value)).toEqual(['3']);
+    });
+
+    it('mostra aviso quando nada casa e fecha limpando a busca', () => {
+      digitar('xyz');
+      expect(fixture.nativeElement.textContent).toContain('Nenhuma opção encontrada');
+      component.aberto = true;
+      component.toggleAberto();
+      expect(component.busca).toBe('');
+    });
+
+    it('Marcar todos soma so os visiveis, preserva os escondidos e emite', () => {
+      component.initialSelectMany = ['3'];
+      digitar('sao');
+      const emitido: any[] = [];
+      component.selectedOut.subscribe(v => emitido.push(v));
+
+      component.marcarTodos();
+
+      expect(component.selecionados).toEqual(['3', '1', '2']);
+      expect(emitido).toEqual([['3', '1', '2']]);
+      expect(component.todosVisiveisMarcados).toBe(true);
+    });
+
+    it('Marcar todos fica desabilitado sem visiveis', () => {
+      digitar('xyz');
+      expect(component.todosVisiveisMarcados).toBe(true);
+    });
+  });
 });
 
 describe('SelectComponent no modo multiple agrupado', () => {
@@ -306,5 +351,99 @@ describe('SelectComponent no modo multiple agrupado', () => {
     expect(fixture.nativeElement.querySelector('.app-select-todos')).toBeNull();
     expect(fixture.nativeElement.querySelector('.app-select-grupo')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('label.dropdown-item').length).toBe(1);
+  });
+
+  it('modo agrupado nao ganha busca nem "Marcar todos"', () => {
+    expect(fixture.nativeElement.querySelector('.app-select-topo')).toBeNull();
+  });
+});
+
+describe('SelectComponent busca e "Marcar todos"', () => {
+  let component: SelectComponent;
+  let fixture: ComponentFixture<SelectComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [SelectComponent],
+      imports: [FormsModule],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(SelectComponent);
+    component = fixture.componentInstance;
+    component.multiple = true;
+    component.options = [new Option('A', 'Alfa'), new Option('B', 'Beta')];
+    fixture.detectChanges();
+  });
+
+  const el = (sel: string) => fixture.nativeElement.querySelector(sel);
+  const marcarTodosBtn = () =>
+    Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'))
+      .find(b => b.textContent!.includes('Marcar todos'))!;
+
+  it('valor visivel duplicado nao entra duas vezes', () => {
+    component.options = [new Option('A', 'Alfa'), new Option('A', 'Alfa 2')];
+    component.initialSelectMany = ['X'];
+    const emitido: any[] = [];
+    component.selectedOut.subscribe(v => emitido.push(v));
+
+    component.marcarTodos();
+
+    expect(component.selecionados).toEqual(['X', 'A']);
+    expect(emitido).toEqual([['X', 'A']]);
+  });
+
+  it('Enter na busca nao submete o form que envolve o seletor', () => {
+    const form = document.createElement('form');
+    const submit = jasmine.createSpy('submit').and.callFake((e: Event) => e.preventDefault());
+    form.addEventListener('submit', submit);
+    form.appendChild(fixture.nativeElement);
+    document.body.appendChild(form);
+    try {
+      const evento = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+      el('input[aria-label=Pesquisar]').dispatchEvent(evento);
+      expect(evento.defaultPrevented).toBe(true);
+      expect(submit).not.toHaveBeenCalled();
+    } finally {
+      form.remove();
+    }
+  });
+
+  it('so [grupos] ligado e vazio mantem a apresentacao antiga, sem busca nem "Marcar todos"', () => {
+    const f = TestBed.createComponent(SelectComponent);
+    f.componentInstance.multiple = true;
+    f.componentInstance.grupos = [];
+    f.detectChanges();
+
+    expect(f.nativeElement.querySelector('input[aria-label=Pesquisar]')).toBeNull();
+    expect(f.nativeElement.textContent).not.toContain('Marcar todos');
+    expect(f.nativeElement.textContent).not.toContain('Nenhuma opção encontrada');
+    expect(f.nativeElement.textContent).toContain('Limpar seleção');
+  });
+
+  it('filtra pela busca, marca so os visiveis, desabilita o botao e limpa a busca ao reabrir', async () => {
+    el('.app-select-multi-toggle').click();
+    fixture.detectChanges();
+
+    const input: HTMLInputElement = el('input[aria-label=Pesquisar]');
+    input.value = 'alf';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    marcarTodosBtn().click();
+    fixture.detectChanges();
+
+    expect(component.selecionados).toEqual(['A']);
+    expect(marcarTodosBtn().disabled).toBe(true);
+
+    el('.app-select-multi-toggle').click(); // fecha
+    fixture.detectChanges();
+    el('.app-select-multi-toggle').click(); // reabre
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(el('input[aria-label=Pesquisar]').value).toBe('');
   });
 });
