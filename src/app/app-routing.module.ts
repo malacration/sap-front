@@ -518,9 +518,9 @@ import { NotaFiscalLoteComponent } from './modulos/nota-fiscal-lote/componentes/
       {
         path: 'analise-pedidos',
         title: 'Análise Pedidos',
-        // Permissao so de tela: o formulario da ordem de carregamento tambem chama GET /painel/pedidos.
+        // Permissao so de tela: o unico consumidor de GET /painel/pedidos e /painel/pedidos/totais e o painel-expedicao-pedidos.component.
         data: ["icon:fas fa-clipboard-list", "role:vendedor_admin", "role:logistica", "role:qualidade", "api:get:/tela/relatorios/analise-pedidos",
-              "usa:get:/painel/pedidos", "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/sales-person/search", "usa:post:/locais/search",
+              "usa:get:/painel/pedidos", "usa:get:/painel/pedidos/totais", "usa:get:/branch", "usa:post:/business-partners/search", "usa:post:/sales-person/search", "usa:post:/locais/search",
               "usa:post:/item/search"],
         canActivate: [authGuard, roleGuard],
         component: PainelExpedicaoPedidosComponent

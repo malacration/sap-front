@@ -33,11 +33,13 @@ export class FormularioComponent implements OnInit, OnChanges {
   // '' = todos, 'pedido' ou 'nf-venda-futura' (parametro tipo de /carregamento/search)
   tipoDocumento: string = '';
   cidade: string = '';
+  // 'todos', 'com' ou 'sem' (parametro frete de /carregamento/search-pedidos)
+  frete: string = 'todos';
   paginaPedidos = 0;
   temMaisPedidos = false;
   carregandoMais = false;
   // Filtros da busca em tela (Carregar Mais usa estes, nao os campos atuais) e numero da busca.
-  private filtrosBusca: { dataInicial: string; dataFinal: string; filial: string; localidade?: string; vendedor: any; cidade: string; tipo: string };
+  private filtrosBusca: { dataInicial: string; dataFinal: string; filial: string; localidade?: string; vendedor: any; cidade: string; tipo: string; frete: string };
   private buscaAtual = 0;
   paginaFaturas = 0;
   temMaisFaturas = false;
@@ -178,7 +180,7 @@ updateOrderName(): void {
 
     this.filtrosBusca = {
       dataInicial: this.dtInicial || '', dataFinal: this.dtFinal || '', filial: this.selectedBranch.Bplid,
-      localidade: this.localidade?.Code, vendedor: this.vendedor, cidade: this.cidade, tipo: this.tipoDocumento,
+      localidade: this.localidade?.Code, vendedor: this.vendedor, cidade: this.cidade, tipo: this.tipoDocumento, frete: this.frete,
     };
     const busca = ++this.buscaAtual;
     this.isLoadingOrders = true;
@@ -242,7 +244,7 @@ updateOrderName(): void {
     if (f.tipo === 'nf-venda-futura') {
       return of({ content: [], temMais: false });
     }
-    return this.ordemCarregamentoService.searchPedidos(f.dataInicial, f.dataFinal, f.filial, f.localidade, f.vendedor, f.cidade, pagina);
+    return this.ordemCarregamentoService.searchPedidos(f.dataInicial, f.dataFinal, f.filial, f.localidade, f.vendedor, f.cidade, f.frete, pagina);
   }
 
   private buscarFaturas(pagina: number): Observable<{ content: PedidoVenda[]; temMais: boolean }> {
